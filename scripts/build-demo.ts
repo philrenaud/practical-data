@@ -30,7 +30,7 @@ await esbuild.build({
   logLevel: "info",
 });
 execFileSync("zip", ["-qr", "../site/practical-data-extension.zip", "."], { cwd: "dist" });
-// Launch videos, when rendered (node scripts/video.ts), are published alongside.
+// Launch videos, when present (rendered outside this repository), are published alongside.
 await mkdir("site/media", { recursive: true });
-for (const f of ["practical-data-reel.mp4", "practical-data-loop.mp4"]) await cp(`video/out/${f}`, `site/media/${f}`).catch(() => undefined);
+for (const f of ["practical-data-reel.mp4", "practical-data-loop.mp4"]) await cp(`launch/stage/out/${f}`, `site/media/${f}`).catch(() => undefined);
 console.log("site/ ready");

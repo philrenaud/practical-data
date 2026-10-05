@@ -5,7 +5,6 @@ artifacts/
 dist-probe/
 site/
 .wrangler/
-video/out/
-video/video.js
+launch/
 .impeccable/
 release/

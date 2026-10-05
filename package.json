@@ -25,8 +25,7 @@
     "check": "npm run typecheck && npm test && npm run build && npm run eval -- --offline --strict && npm run e2e -- --offline",
     "demo": "npm run build && node scripts/demo-data.ts && node scripts/build-demo.ts",
     "deploy": "npm run demo && npx wrangler@4.147.0 deploy",
-    "package": "node scripts/package.ts",
-    "publish:store": "node scripts/publish-store.ts"
+    "package": "node scripts/package.ts"
   },
   "dependencies": {
     "d3-color": "3.1.0",

@@ -158,7 +158,6 @@ compares every palette on the same tables in light and dark.
 | `node scripts/readme-media.ts` | Regenerates the README images in `docs/media/` (light and dark) from `docs/media-src/cards.html` |
 | `node scripts/shoot-demo.ts [url]` | Screenshots the demo in light, dark, desktop, and phone, and reports page errors |
 | `npm run package` | Builds `release/practical-data-<version>.zip` for the Chrome Web Store |
-| `node scripts/store-assets.ts` | Renders store screenshots and promo tiles into `store/assets/`; listing copy is in [store/listing.md](store/listing.md) |
 
 To see why a column on any page was or wasn't colored, run
 `node scripts/explain-url.ts <url>`.
