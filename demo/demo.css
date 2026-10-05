@@ -63,6 +63,7 @@ code { font: 0.86em "IBM Plex Mono", ui-monospace, monospace; background: color-
 .hero-inner { max-width: 1040px; margin: 0 auto; }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 28px; font-weight: 600; letter-spacing: 0.02em; color: #c9c3b8; }
 .eyebrow img { border-radius: 6px; }
+.tag { margin-left: 4px; padding: 3px 9px; border-radius: 999px; border: 1px solid #3a3842; font: 500 12px "IBM Plex Mono", monospace; letter-spacing: 0; color: #a7a196; }
 h1 { margin: 0; font-size: clamp(42px, 7.4vw, 88px); line-height: 0.98; font-weight: 760; letter-spacing: -0.035em; }
 .lede { max-width: 60ch; margin: 24px 0 0; font-size: 19px; color: #cfc9be; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
@@ -76,6 +77,7 @@ h1 { margin: 0; font-size: clamp(42px, 7.4vw, 88px); line-height: 0.98; font-wei
 .button.primary { background: #f4f0e8; color: #16151a; border-color: transparent; }
 .button.primary:hover { background: #ffffff; }
 .button:focus-visible { outline: 2px solid #9a8ef2; outline-offset: 3px; }
+.button .gh { margin-right: 9px; }
 
 /* ── Controls ── */
 .controls {
@@ -146,6 +148,31 @@ h2 { margin: 0 0 28px; font-size: clamp(30px, 4vw, 44px); font-weight: 740; lett
 .install li + li { margin-top: 8px; }
 .note { color: var(--muted); max-width: 70ch; margin-top: 18px; }
 
+/* ── Open source ── */
+.open { margin-top: 72px; padding: 40px; border-radius: calc(var(--radius) + 6px); background: var(--hero); color: var(--hero-ink); position: relative; overflow: hidden; }
+.open::before {
+  /* Same palette band as the hero, along the top edge. */
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, #a50026, #f46d43, #fee08b, #d9ef8b, #66bd63, #006837 60%, #9e9ac8, #54278f);
+}
+.open h2 { margin-bottom: 14px; line-height: 1.05; }
+.open-head p { max-width: 62ch; margin: 0; font-size: 18px; color: #cfc9be; }
+.open a { color: var(--hero-ink); }
+.open-points { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.open-points li { border-top: 1px solid #3a3842; padding-top: 16px; }
+.open-points h3 { margin: 0 0 6px; font-size: 19px; font-weight: 700; }
+.open-points p { margin: 0; color: #a7a196; font-size: 15.5px; }
+.terminal { margin-top: 32px; border-radius: 12px; background: #000; border: 1px solid #2c2a31; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.terminal pre { margin: 0; padding: 18px 20px; }
+.terminal code { background: none; padding: 0; font: 14px/1.75 "IBM Plex Mono", ui-monospace, monospace; color: #e8e4dc; }
+.terminal .prompt { color: #66bd63; user-select: none; }
+.open-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; margin: 26px 0 0; font-size: 15px; }
+.open-links a:not(.text-button) { color: #a7a196; }
+.open-links a:not(.text-button):hover { color: var(--hero-ink); }
+.text-button { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #f4f0e8; color: #16151a !important; font-weight: 620; text-decoration: none; }
+.text-button:hover { background: #fff; }
+.text-button:focus-visible { outline: 2px solid #9a8ef2; outline-offset: 3px; }
+
 footer { max-width: 1040px; margin: 64px auto 0; padding: 24px 16px 48px; border-top: 1px solid var(--line); color: var(--faint); font-size: 14px; }
 
 @media (max-width: 760px) {
@@ -153,7 +180,13 @@ footer { max-width: 1040px; margin: 64px auto 0; padding: 24px 16px 48px; border
   br.wide { display: none; }
   .lede { font-size: 17px; }
   .hint { margin: 0; flex-basis: 100%; }
-  .steps, .stats { grid-template-columns: 1fr; }
+  .steps, .stats, .open-points { grid-template-columns: 1fr; }
+  .open { padding: 28px 20px; margin-left: -8px; margin-right: -8px; }
+  .open-points { gap: 20px; }
+  .text-button { width: 100%; justify-content: center; }
+  .terminal code { font-size: 12.5px; }
+  .terminal pre { padding: 16px; }
+  .actions .button { flex: 1 1 100%; justify-content: center; }
   .why li { grid-template-columns: 1fr; gap: 2px; }
 }
 
