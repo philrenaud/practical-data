@@ -1,0 +1,535 @@
+{
+ "url": "fixture://live/github-copilot-pricing.html",
+ "title": "Models and pricing for GitHub Copilot - GitHub Docs",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "OpenAI",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Tier",
+    "Threshold (input tokens)",
+    "Input",
+    "Cached input",
+    "Cache write",
+    "Output"
+   ],
+   "rows": [
+    [
+     "GPT-5 mini",
+     "GA",
+     "Lightweight",
+     "Default",
+     "Not applicable",
+     "$0.25",
+     "$0.025",
+     "Not applicable",
+     "$2.00"
+    ],
+    [
+     "GPT-5.3-Codex",
+     "GA",
+     "Powerful",
+     "Default",
+     "Not applicable",
+     "$1.75",
+     "$0.175",
+     "Not applicable",
+     "$14.00"
+    ],
+    [
+     "GPT-5.4",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 272K",
+     "$2.50",
+     "$0.25",
+     "Not applicable",
+     "$15.00"
+    ],
+    [
+     "GPT-5.4",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 272K",
+     "$5.00",
+     "$0.50",
+     "Not applicable",
+     "$22.50"
+    ],
+    [
+     "GPT-5.4 mini",
+     "GA",
+     "Lightweight",
+     "Default",
+     "Not applicable",
+     "$0.75",
+     "$0.075",
+     "Not applicable",
+     "$4.50"
+    ],
+    [
+     "GPT-5.4 nano",
+     "GA",
+     "Lightweight",
+     "Default",
+     "Not applicable",
+     "$0.20",
+     "$0.02",
+     "Not applicable",
+     "$1.25"
+    ],
+    [
+     "GPT-5.5",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 272K",
+     "$5.00",
+     "$0.50",
+     "Not applicable",
+     "$30.00"
+    ],
+    [
+     "GPT-5.5",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 272K",
+     "$10.00",
+     "$1.00",
+     "Not applicable",
+     "$45.00"
+    ],
+    [
+     "GPT-5.6 Luna",
+     "GA",
+     "Lightweight",
+     "Default",
+     "≤ 200K",
+     "$0.20",
+     "$0.02",
+     "$0.25",
+     "$1.20"
+    ],
+    [
+     "GPT-5.6 Luna",
+     "GA",
+     "Lightweight",
+     "Long context",
+     "> 200K",
+     "$0.40",
+     "$0.04",
+     "$0.50",
+     "$1.80"
+    ],
+    [
+     "GPT-5.6 Sol",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 272K",
+     "$4.00",
+     "$0.40",
+     "$5.00",
+     "$20.00"
+    ],
+    [
+     "GPT-5.6 Sol",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 272K",
+     "$8.00",
+     "$0.80",
+     "$10.00",
+     "$30.00"
+    ],
+    [
+     "GPT-5.6 Terra",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 272K",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$12.00"
+    ],
+    [
+     "GPT-5.6 Terra",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 272K",
+     "$4.00",
+     "$0.40",
+     "$5.00",
+     "$18.00"
+    ],
+    [
+     "GPT-6 Astra",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 272K",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$50.00"
+    ],
+    [
+     "GPT-6 Astra",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 272K",
+     "$20.00",
+     "$2.00",
+     "$25.00",
+     "$75.00"
+    ],
+    [
+     "GPT-6 Luna",
+     "GA",
+     "Lightweight",
+     "Default",
+     "≤ 272K",
+     "$0.10",
+     "$0.01",
+     "$0.125",
+     "$0.50"
+    ],
+    [
+     "GPT-6 Luna",
+     "GA",
+     "Lightweight",
+     "Long context",
+     "> 272K",
+     "$0.20",
+     "$0.02",
+     "$0.25",
+     "$0.75"
+    ],
+    [
+     "GPT-6 Sol",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 272K",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$10.00"
+    ],
+    [
+     "GPT-6 Sol",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 272K",
+     "$4.00",
+     "$0.40",
+     "$5.00",
+     "$15.00"
+    ],
+    [
+     "GPT-6.1 Sol",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 272K",
+     "$2.00",
+     "$0.10",
+     "$2.50",
+     "$10.00"
+    ],
+    [
+     "GPT-6.1 Sol",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 272K",
+     "$4.00",
+     "$0.20",
+     "$5.00",
+     "$15.00"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Anthropic",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Input",
+    "Cached input",
+    "Cache write",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Claude Haiku 4.5",
+     "GA",
+     "Versatile",
+     "$1.00",
+     "$0.10",
+     "$1.25",
+     "$5.00"
+    ],
+    [
+     "Claude Sonnet 4",
+     "GA",
+     "Versatile",
+     "$3.00",
+     "$0.30",
+     "$3.75",
+     "$15.00"
+    ],
+    [
+     "Claude Sonnet 4.6",
+     "GA",
+     "Versatile",
+     "$3.00",
+     "$0.30",
+     "$3.75",
+     "$15.00"
+    ],
+    [
+     "Claude Opus 4.8",
+     "GA",
+     "Powerful",
+     "$5.00",
+     "$0.50",
+     "$6.25",
+     "$25.00"
+    ],
+    [
+     "Claude Opus 5",
+     "GA",
+     "Powerful",
+     "$5.00",
+     "$0.50",
+     "$6.25",
+     "$25.00"
+    ],
+    [
+     "Claude Opus 5.5",
+     "GA",
+     "Powerful",
+     "$4.00",
+     "$0.20",
+     "$5.00",
+     "$20.00"
+    ],
+    [
+     "Claude Sonnet 5",
+     "GA",
+     "Versatile",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$10.00"
+    ],
+    [
+     "Claude Sonnet 5.5",
+     "GA",
+     "Versatile",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$10.00"
+    ],
+    [
+     "Claude Opus 4.8 (fast mode) (preview)",
+     "GA",
+     "Powerful",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$50.00"
+    ],
+    [
+     "Claude Fable 5",
+     "GA",
+     "Powerful",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$50.00"
+    ],
+    [
+     "Claude Fable 5.1",
+     "GA",
+     "Powerful",
+     "$10.00",
+     "$0.25",
+     "$12.50",
+     "$50.00"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Google",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Tier",
+    "Threshold (input tokens)",
+    "Input",
+    "Cached input",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Gemini 3.7 Flash",
+     "GA",
+     "Versatile",
+     "Default",
+     "Not applicable",
+     "$0.75",
+     "$0.075",
+     "$3.75"
+    ],
+    [
+     "Gemini 3.8 Flash",
+     "GA",
+     "Versatile",
+     "Default",
+     "Not applicable",
+     "$0.75",
+     "$0.075",
+     "$3.75"
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "Microsoft",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Input",
+    "Cached input",
+    "Output"
+   ],
+   "rows": [
+    [
+     "MAI-Code-1.1-Flash",
+     "GA",
+     "Lightweight",
+     "$0.20",
+     "$0.02",
+     "$1.20"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "xAI",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Tier",
+    "Threshold (input tokens)",
+    "Input",
+    "Cached input",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Grok 4.5",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 200K",
+     "$2.00",
+     "$0.50",
+     "$6.00"
+    ],
+    [
+     "Grok 4.5",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 200K",
+     "$4.00",
+     "$1.00",
+     "$12.00"
+    ],
+    [
+     "Grok 4.6",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 200K",
+     "$2.00",
+     "$0.50",
+     "$6.00"
+    ],
+    [
+     "Grok 4.6",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 200K",
+     "$4.00",
+     "$1.00",
+     "$12.00"
+    ],
+    [
+     "Grok 4.7",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 200K",
+     "$2.00",
+     "$0.50",
+     "$6.00"
+    ],
+    [
+     "Grok 4.7",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 200K",
+     "$4.00",
+     "$1.00",
+     "$12.00"
+    ]
+   ]
+  },
+  {
+   "id": "t6",
+   "title": "Moonshot AI",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Input",
+    "Cached input",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Kimi K3",
+     "GA",
+     "Powerful",
+     "$3.00",
+     "$0.30",
+     "$15.00"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,420 @@
+{
+ "url": "fixture://synthetic/edge-cases.html",
+ "title": "Practical Data: edge cases",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Apparel sizes",
+   "headers": [
+    "SKU",
+    "Size",
+    "Price",
+    "In stock"
+   ],
+   "rows": [
+    [
+     "A-100",
+     "M",
+     "$24.00",
+     "12"
+    ],
+    [
+     "A-101",
+     "XS",
+     "$22.00",
+     "3"
+    ],
+    [
+     "A-102",
+     "XL",
+     "$28.00",
+     "0"
+    ],
+    [
+     "A-103",
+     "S",
+     "$22.00",
+     "9"
+    ],
+    [
+     "A-104",
+     "L",
+     "$26.00",
+     "15"
+    ],
+    [
+     "A-105",
+     "M",
+     "$24.00",
+     "7"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Roster",
+   "headers": [
+    "Player",
+    "Jersey #",
+    "Born",
+    "Zip code",
+    "Height (in)",
+    "Points per game"
+   ],
+   "rows": [
+    [
+     "Ada Park",
+     "23",
+     "1998",
+     "94110",
+     "74",
+     "21.4"
+    ],
+    [
+     "Ben Ortiz",
+     "7",
+     "2001",
+     "10027",
+     "79",
+     "12.9"
+    ],
+    [
+     "Cy Moreau",
+     "11",
+     "1995",
+     "60614",
+     "81",
+     "8.2"
+    ],
+    [
+     "Di Okafor",
+     "34",
+     "1999",
+     "30307",
+     "77",
+     "17.5"
+    ],
+    [
+     "Eli Sato",
+     "0",
+     "2003",
+     "98103",
+     "72",
+     "5.1"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Regional sales",
+   "headers": [
+    "Region",
+    "Revenue",
+    "Returns",
+    "Margin"
+   ],
+   "rows": [
+    [
+     "North",
+     "$1,240,000",
+     "312",
+     "18.5%"
+    ],
+    [
+     "South",
+     "$980,500",
+     "401",
+     "14.2%"
+    ],
+    [
+     "East",
+     "$1,610,250",
+     "220",
+     "21.0%"
+    ],
+    [
+     "West",
+     "$1,105,000",
+     "298",
+     "16.8%"
+    ],
+    [
+     "Central",
+     "$760,900",
+     "350",
+     "12.1%"
+    ],
+    [
+     "Total",
+     "$5,696,650",
+     "1,581",
+     "16.9%"
+    ]
+   ]
+  },
+  {
+   "id": "t3",
+   "title": "Incident queue",
+   "headers": [
+    "Ticket",
+    "Summary",
+    "Priority",
+    "Status",
+    "Hours open"
+   ],
+   "rows": [
+    [
+     "INC-4411",
+     "Checkout failing for EU cards",
+     "Critical",
+     "Investigating",
+     "2.5"
+    ],
+    [
+     "INC-4408",
+     "Slow dashboard load",
+     "Medium",
+     "Open",
+     "30"
+    ],
+    [
+     "INC-4402",
+     "Typo on pricing page",
+     "Low",
+     "Resolved",
+     "96"
+    ],
+    [
+     "INC-4399",
+     "Webhook retries duplicated",
+     "High",
+     "Open",
+     "14"
+    ],
+    [
+     "INC-4397",
+     "Export missing a column",
+     "Medium",
+     "Investigating",
+     "41"
+    ],
+    [
+     "INC-4390",
+     "Login rate limit too strict",
+     "High",
+     "Resolved",
+     "8"
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "Selected mountains",
+   "headers": [
+    "Mountain",
+    "Elevation: m",
+    "Elevation: ft",
+    "Range",
+    "First ascent"
+   ],
+   "rows": [
+    [
+     "Everest",
+     "8,849",
+     "29,032",
+     "Himalaya",
+     "1953"
+    ],
+    [
+     "Aconcagua",
+     "6,961",
+     "22,838",
+     "Andes",
+     "1897"
+    ],
+    [
+     "Denali",
+     "6,190",
+     "20,310",
+     "Alaska Range",
+     "1913"
+    ],
+    [
+     "Kilimanjaro",
+     "5,895",
+     "19,341",
+     "Eastern Rift",
+     "1889"
+    ],
+    [
+     "Mont Blanc",
+     "4,806",
+     "15,768",
+     "Alps",
+     "1786"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "Weekly temperature change",
+   "headers": [
+    "City",
+    "Change (°C)",
+    "Conditions"
+   ],
+   "rows": [
+    [
+     "Oslo",
+     "-4.2",
+     "Snow"
+    ],
+    [
+     "Lisbon",
+     "+1.1",
+     "Sunny"
+    ],
+    [
+     "Cairo",
+     "+3.8",
+     "Sunny"
+    ],
+    [
+     "Lima",
+     "-0.6",
+     "Cloudy"
+    ],
+    [
+     "Perth",
+     "+0.2",
+     "Rain"
+    ]
+   ]
+  },
+  {
+   "id": "t6",
+   "title": "Store A prices",
+   "headers": [
+    "Item",
+    "Price (USD)"
+   ],
+   "rows": [
+    [
+     "Kettle",
+     "$39.00"
+    ],
+    [
+     "Toaster",
+     "$54.00"
+    ],
+    [
+     "Blender",
+     "$89.00"
+    ]
+   ]
+  },
+  {
+   "id": "t7",
+   "title": "Store B prices",
+   "headers": [
+    "Item",
+    "Price (USD)"
+   ],
+   "rows": [
+    [
+     "Kettle",
+     "$35.00"
+    ],
+    [
+     "Toaster",
+     "$61.00"
+    ],
+    [
+     "Blender",
+     "$120.00"
+    ],
+    [
+     "Mixer",
+     "$249.00"
+    ]
+   ]
+  },
+  {
+   "id": "t8",
+   "title": "Glossary",
+   "headers": [
+    "Term",
+    "Definition"
+   ],
+   "rows": [
+    [
+     "Latency",
+     "Time between a request and its response."
+    ],
+    [
+     "Throughput",
+     "Requests handled per unit of time."
+    ],
+    [
+     "Jitter",
+     "Variation in latency between requests."
+    ]
+   ]
+  },
+  {
+   "id": "t9",
+   "title": "Wine list",
+   "headers": [
+    "Wine",
+    "Region",
+    "Sweetness",
+    "Body",
+    "Glass"
+   ],
+   "rows": [
+    [
+     "Riesling Kabinett",
+     "Mosel",
+     "Off-dry",
+     "Light",
+     "€9"
+    ],
+    [
+     "Sauternes",
+     "Bordeaux",
+     "Sweet",
+     "Full",
+     "€16"
+    ],
+    [
+     "Chablis",
+     "Burgundy",
+     "Dry",
+     "Medium",
+     "€12"
+    ],
+    [
+     "Muscat",
+     "Alsace",
+     "Sweet",
+     "Medium",
+     "€10"
+    ],
+    [
+     "Barolo",
+     "Piedmont",
+     "Dry",
+     "Full",
+     "€18"
+    ],
+    [
+     "Vinho Verde",
+     "Minho",
+     "Dry",
+     "Light",
+     "€7"
+    ]
+   ]
+  }
+ ]
+}

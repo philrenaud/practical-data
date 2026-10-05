@@ -1,0 +1,647 @@
+{
+ "url": "fixture://live/wiki-mlb-career-era-leaders.html",
+ "title": "List of Major League Baseball career ERA leaders - Wikipedia",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Key",
+   "headers": [
+    "Rank",
+    "Rank amongst leaders in career earned run average. A blank field indicates a tie."
+   ],
+   "rows": [
+    [
+     "Player",
+     "Name of player."
+    ],
+    [
+     "ERA",
+     "Total career earned run average."
+    ],
+    [
+     "*",
+     "Denotes elected to National Baseball Hall of Fame."
+    ],
+    [
+     "Bold",
+     "Denotes an active player."
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "List",
+   "headers": [
+    "Rank",
+    "Player",
+    "ERA"
+   ],
+   "rows": [
+    [
+     "1",
+     "Ed Walsh*",
+     "1.816"
+    ],
+    [
+     "2",
+     "Addie Joss*",
+     "1.887"
+    ],
+    [
+     "3",
+     "Jim Devlin",
+     "1.896"
+    ],
+    [
+     "4",
+     "Jack Pfiester",
+     "2.024"
+    ],
+    [
+     "5",
+     "Smoky Joe Wood",
+     "2.033"
+    ],
+    [
+     "6",
+     "Mordecai Brown*",
+     "2.057"
+    ],
+    [
+     "7",
+     "John Montgomery Ward*",
+     "2.099"
+    ],
+    [
+     "8",
+     "Christy Mathewson*",
+     "2.133"
+    ],
+    [
+     "",
+     "Al Spalding*",
+     "2.133"
+    ],
+    [
+     "10",
+     "Tommy Bond",
+     "2.138"
+    ],
+    [
+     "11",
+     "Rube Waddell*",
+     "2.161"
+    ],
+    [
+     "12",
+     "Walter Johnson*",
+     "2.167"
+    ],
+    [
+     "13",
+     "Mariano Rivera*",
+     "2.209"
+    ],
+    [
+     "14",
+     "Jake Weimer",
+     "2.231"
+    ],
+    [
+     "15",
+     "Orval Overall",
+     "2.257"
+    ],
+    [
+     "16",
+     "Will White",
+     "2.276"
+    ],
+    [
+     "17",
+     "Babe Ruth*",
+     "2.277"
+    ],
+    [
+     "18",
+     "Ed Reulbach",
+     "2.284"
+    ],
+    [
+     "19",
+     "Jim Scott",
+     "2.298"
+    ],
+    [
+     "20",
+     "Reb Russell",
+     "2.334"
+    ],
+    [
+     "21",
+     "Andy Coakley",
+     "2.350"
+    ],
+    [
+     "",
+     "Eddie Plank*",
+     "2.350"
+    ],
+    [
+     "23",
+     "Larry Corcoran",
+     "2.355"
+    ],
+    [
+     "24",
+     "Eddie Cicotte",
+     "2.380"
+    ],
+    [
+     "25",
+     "George McQuillan",
+     "2.381"
+    ],
+    [
+     "26",
+     "Ed Killian",
+     "2.382"
+    ],
+    [
+     "27",
+     "Doc White",
+     "2.391"
+    ],
+    [
+     "28",
+     "Harry Coveleski",
+     "2.394"
+    ],
+    [
+     "29",
+     "Carl Lundgren",
+     "2.417"
+    ],
+    [
+     "30",
+     "Nap Rucker",
+     "2.421"
+    ],
+    [
+     "31",
+     "Candy Cummings*",
+     "2.424"
+    ],
+    [
+     "32",
+     "Jeff Tesreau",
+     "2.428"
+    ],
+    [
+     "33",
+     "Joe Benz",
+     "2.429"
+    ],
+    [
+     "34",
+     "Jim McCormick",
+     "2.431"
+    ],
+    [
+     "35",
+     "George Bradley",
+     "2.434"
+    ],
+    [
+     "36",
+     "Terry Larkin",
+     "2.435"
+    ],
+    [
+     "37",
+     "Chief Bender*",
+     "2.455"
+    ],
+    [
+     "38",
+     "Hooks Wiltse",
+     "2.471"
+    ],
+    [
+     "39",
+     "Sam Leever",
+     "2.473"
+    ],
+    [
+     "",
+     "Lefty Leifield",
+     "2.473"
+    ],
+    [
+     "41",
+     "Hippo Vaughn",
+     "2.486"
+    ],
+    [
+     "42",
+     "Bob Ewing",
+     "2.492"
+    ],
+    [
+     "43",
+     "Cy Morgan",
+     "2.509"
+    ],
+    [
+     "44",
+     "Ray Collins",
+     "2.513"
+    ],
+    [
+     "45",
+     "Hoyt Wilhelm*",
+     "2.523"
+    ],
+    [
+     "46",
+     "Clayton Kershaw",
+     "2.534"
+    ],
+    [
+     "47",
+     "Lew Richie",
+     "2.536"
+    ],
+    [
+     "48",
+     "Noodles Hahn",
+     "2.546"
+    ],
+    [
+     "49",
+     "George Zettlein",
+     "2.547"
+    ],
+    [
+     "50",
+     "Frank Owen",
+     "2.552"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "List",
+   "headers": [
+    "Rank",
+    "Player",
+    "ERA"
+   ],
+   "rows": [
+    [
+     "51",
+     "Grover Cleveland Alexander*",
+     "2.560"
+    ],
+    [
+     "52",
+     "Slim Sallee",
+     "2.564"
+    ],
+    [
+     "53",
+     "Deacon Phillippe",
+     "2.586"
+    ],
+    [
+     "54",
+     "Russ Ford",
+     "2.590"
+    ],
+    [
+     "55",
+     "Frank Smith",
+     "2.592"
+    ],
+    [
+     "56",
+     "Ed Siever",
+     "2.598"
+    ],
+    [
+     "57",
+     "Bob Rhoads",
+     "2.612"
+    ],
+    [
+     "58",
+     "Cherokee Fisher",
+     "2.613"
+    ],
+    [
+     "59",
+     "Fred Glade",
+     "2.618"
+    ],
+    [
+     "60",
+     "Tim Keefe*",
+     "2.627"
+    ],
+    [
+     "",
+     "Cy Young*",
+     "2.627"
+    ],
+    [
+     "62",
+     "Vic Willis*",
+     "2.628"
+    ],
+    [
+     "63",
+     "Red Ames",
+     "2.629"
+    ],
+    [
+     "64",
+     "Barney Pelty",
+     "2.632"
+    ],
+    [
+     "65",
+     "Claude Hendrix",
+     "2.649"
+    ],
+    [
+     "66",
+     "Jack Taylor",
+     "2.653"
+    ],
+    [
+     "67",
+     "Joe McGinnity",
+     "2.657"
+    ],
+    [
+     "",
+     "Dick Rudolph",
+     "2.657"
+    ],
+    [
+     "69",
+     "Pete Schneider",
+     "2.663"
+    ],
+    [
+     "70",
+     "Nick Altrock",
+     "2.669"
+    ],
+    [
+     "",
+     "Carl Weilman",
+     "2.669"
+    ],
+    [
+     "72",
+     "Charlie Ferguson",
+     "2.674"
+    ],
+    [
+     "73",
+     "Charles Radbourn*",
+     "2.678"
+    ],
+    [
+     "74",
+     "Johnny Lush",
+     "2.680"
+    ],
+    [
+     "75",
+     "Cy Falkenberg",
+     "2.682"
+    ],
+    [
+     "76",
+     "Jack Chesbro*",
+     "2.684"
+    ],
+    [
+     "77",
+     "Fred Toney",
+     "2.689"
+    ],
+    [
+     "78",
+     "Bill Donovan",
+     "2.690"
+    ],
+    [
+     "79",
+     "Larry Cheney",
+     "2.698"
+    ],
+    [
+     "80",
+     "Vean Gregg",
+     "2.701"
+    ],
+    [
+     "81",
+     "Dick McBride",
+     "2.706"
+    ],
+    [
+     "82",
+     "Mickey Welch*",
+     "2.712"
+    ],
+    [
+     "83",
+     "Ned Garvin",
+     "2.718"
+    ],
+    [
+     "84",
+     "Bob Wicker",
+     "2.726"
+    ],
+    [
+     "85",
+     "Jacob deGrom",
+     "2.728"
+    ],
+    [
+     "86",
+     "Fred Goldsmith",
+     "2.729"
+    ],
+    [
+     "87",
+     "Bill Foster*",
+     "2.732"
+    ],
+    [
+     "88",
+     "Nick Cullop",
+     "2.733"
+    ],
+    [
+     "89",
+     "Harry Howell",
+     "2.738"
+    ],
+    [
+     "",
+     "Bullet Rogan*",
+     "2.738"
+    ],
+    [
+     "91",
+     "Whitey Ford*",
+     "2.745"
+    ],
+    [
+     "92",
+     "Dummy Taylor",
+     "2.747"
+    ],
+    [
+     "93",
+     "Howie Camnitz",
+     "2.749"
+    ],
+    [
+     "",
+     "Roy Patterson",
+     "2.749"
+    ],
+    [
+     "95",
+     "Babe Adams",
+     "2.755"
+    ],
+    [
+     "96",
+     "Dutch Leonard",
+     "2.759"
+    ],
+    [
+     "97",
+     "Dan Quisenberry",
+     "2.760"
+    ],
+    [
+     "98",
+     "Sandy Koufax*",
+     "2.761"
+    ],
+    [
+     "99",
+     "Jeff Pfeffer",
+     "2.774"
+    ],
+    [
+     "100",
+     "Al Demaree",
+     "2.775"
+    ],
+    [
+     "",
+     "Earl Moore",
+     "2.775"
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "External links",
+   "headers": [
+    "Career",
+    "Batting average Hits 3,000 club Progressive At bats Singles Doubles Triples Home runs 500 club 600 club Progressive Pitchers Extra base hits RBIs Walks Intentional On-base percentage Slugging percentage OPS Times on base Total bases HBP Strikeouts Plate appearances Games played"
+   ],
+   "rows": [
+    [
+     "Annual",
+     "Batting average Doubles Triples Home runs RBI"
+    ],
+    [
+     "Season",
+     "Batting average Doubles Triples Home run Progressive"
+    ],
+    [
+     "Game",
+     "Home runs Game Inning Hitting for the cycle Grand slams Ultimate grand slams RBI Game Inning Hits"
+    ],
+    [
+     "Misc",
+     "Consecutive game hitting streak Hits Home runs Doubles Triples RBIs"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "External links",
+   "headers": [
+    "Career",
+    "Runs Stolen bases"
+   ],
+   "rows": [
+    [
+     "Annual",
+     "Runs Stolen bases"
+    ],
+    [
+     "Game",
+     "Runs"
+    ],
+    [
+     "Misc",
+     "Runs Stolen bases"
+    ]
+   ]
+  },
+  {
+   "id": "t6",
+   "title": "External links",
+   "headers": [
+    "Career",
+    "Wins 300 club Losses Games started Games finished Innings pitched Strikeouts 3,000 club Hold Saves 300 club Complete games Shutouts ERA FIP WHIP Walks Hit batsmen Wild pitches Batters faced"
+   ],
+   "rows": [
+    [
+     "Annual",
+     "Wins Saves Shutouts Strikeouts ERA"
+    ],
+    [
+     "Season",
+     "Wins Losses Strikeouts"
+    ],
+    [
+     "Game",
+     "No-hitters Perfect games Strikeouts Game Inning Immaculate innings"
+    ],
+    [
+     "Misc",
+     "Consecutive scoreless innings streak Wins"
+    ]
+   ]
+  },
+  {
+   "id": "t7",
+   "title": "External links",
+   "headers": [
+    "Career",
+    "Games played P C 1B 2B 3B SS OF LF CF RF Putouts Assists Double plays Errors Passed balls"
+   ],
+   "rows": [
+    [
+     "Annual",
+     "Putouts Assists Errors"
+    ]
+   ]
+  }
+ ]
+}

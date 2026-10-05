@@ -1,0 +1,68 @@
+{
+ "url": "fixture://synthetic/dark-theme.html",
+ "title": "Practical Data: dark theme",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "GPU benchmarks",
+   "headers": [
+    "Card",
+    "Tier",
+    "Avg FPS (1440p)",
+    "Power draw",
+    "Launch price",
+    "Release year"
+   ],
+   "rows": [
+    [
+     "Aurora 9900",
+     "Flagship",
+     "182",
+     "450 W",
+     "$1,599",
+     "2025"
+    ],
+    [
+     "Aurora 9700",
+     "High-end",
+     "141",
+     "320 W",
+     "$999",
+     "2025"
+    ],
+    [
+     "Aurora 9600",
+     "Mid-range",
+     "104",
+     "220 W",
+     "$549",
+     "2024"
+    ],
+    [
+     "Aurora 9500",
+     "Entry",
+     "68",
+     "150 W",
+     "$299",
+     "2024"
+    ],
+    [
+     "Borealis X",
+     "High-end",
+     "133",
+     "300 W",
+     "$899",
+     "2025"
+    ],
+    [
+     "Borealis S",
+     "Mid-range",
+     "97",
+     "200 W",
+     "$479",
+     "2023"
+    ]
+   ]
+  }
+ ]
+}

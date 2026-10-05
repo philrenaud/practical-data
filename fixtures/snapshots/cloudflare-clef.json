@@ -1,0 +1,180 @@
+{
+ "url": "fixture://live/cloudflare-clef.html",
+ "title": "Introducing Clef: our open-source decision models, and new RL fine-tuning platform | Cloudflare Blog",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Copy linkHow is Clef different from other decision models?",
+   "headers": [
+    "Benchmark",
+    "Clef",
+    "Clef-flash",
+    "Jev",
+    "DiffusionGemma Jev",
+    "Kev 9B",
+    "Laya"
+   ],
+   "rows": [
+    [
+     "BFCL · case exact",
+     "98.47",
+     "98.76",
+     "95.75",
+     "96.52",
+     "94.51",
+     "38.13"
+    ],
+    [
+     "ToolRet · nDCG@10",
+     "69.19",
+     "66.43",
+     "65.28",
+     "61.21",
+     "64.26",
+     "12.69"
+    ],
+    [
+     "API-Bank · accuracy",
+     "91.93",
+     "93.11",
+     "88.19",
+     "83.66",
+     "56.30",
+     "11.41"
+    ],
+    [
+     "Home appliances · case exact",
+     "82.95",
+     "97.73",
+     "52.27",
+     "42.05",
+     "25.00",
+     "0.00"
+    ],
+    [
+     "When2Call · accuracy",
+     "72.37",
+     "65.58",
+     "80.97",
+     "75.44",
+     "49.62",
+     "11.94"
+    ],
+    [
+     "BANKING77 · macro-F1",
+     "94.20",
+     "90.93",
+     "79.74",
+     "74.28",
+     "84.83",
+     "14.29"
+    ],
+    [
+     "CLINC150+OOS · macro-F1",
+     "97.43",
+     "66.77",
+     "89.27",
+     "83.49",
+     "79.03",
+     "3.19"
+    ],
+    [
+     "BRIGHT · nDCG@10",
+     "45.91",
+     "39.26",
+     "47.52",
+     "42.94",
+     "38.53",
+     "19.90"
+    ],
+    [
+     "Amazon ESCI · macro-F1",
+     "57.48",
+     "57.39",
+     "55.21",
+     "53.37",
+     "49.22",
+     "24.40"
+    ],
+    [
+     "PhishNChips · accuracy",
+     "79.60",
+     "75.05",
+     "62.55",
+     "85.35",
+     "50.75",
+     "50.15"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Copy linkHow is Clef different from other decision models?",
+   "headers": [
+    "Workflow",
+    "Clef",
+    "Clef-flash",
+    "Jev"
+   ],
+   "rows": [
+    [
+     "Invoice processing",
+     "64.7",
+     "57.1",
+     "61.8"
+    ],
+    [
+     "Customer service",
+     "76.3",
+     "77",
+     "76.0"
+    ],
+    [
+     "Security incidents",
+     "62.9",
+     "61.7",
+     "61.7"
+    ],
+    [
+     "Agent trace observability",
+     "68.5",
+     "69.8",
+     "71.6"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Copy linkHow is Clef different from other decision models?",
+   "headers": [
+    "Benchmark",
+    "Clef",
+    "Clef-flash",
+    "Jev",
+    "DiffusionGemma Jev",
+    "Kev-9B",
+    "Laya"
+   ],
+   "rows": [
+    [
+     "Median latency · ms",
+     "209.3",
+     "38.8",
+     "524.1",
+     "84.4",
+     "51.4",
+     "5.8"
+    ],
+    [
+     "p95 latency · ms",
+     "238.6",
+     "122.4",
+     "536.0",
+     "211.2",
+     "187.9",
+     "222.5"
+    ]
+   ]
+  }
+ ]
+}

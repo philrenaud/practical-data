@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icon32.png" alt="" width="20" height="20">
+    <span class="name">Practical Data</span>
+  </header>
+  <p class="summary" id="summary" aria-live="polite">Checking this page…</p>
+  <label class="switch">
+    <span><b>Shade this page</b><small>Until you close the browser</small></span>
+    <input type="checkbox" id="page" role="switch">
+    <i aria-hidden="true"></i>
+  </label>
+  <label class="switch">
+    <span><b id="site-label">Shade tables on this site</b><small>Remembered</small></span>
+    <input type="checkbox" id="site" role="switch">
+    <i aria-hidden="true"></i>
+  </label>
+  <p class="privacy">Shading sends this page's table text to your model provider. <a href="#" id="privacy">What's sent</a></p>
+  <footer>
+    <a href="#" id="options">Options</a>
+    <span class="kbd" id="shortcut"></span>
+  </footer>
+  <footer class="build">
+    <span id="build"></span>
+  </footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

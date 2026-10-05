@@ -1,0 +1,1394 @@
+{
+ "url": "fixture://live/wiki-super-bowl-champions.html",
+ "title": "List of Super Bowl champions - Wikipedia",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Championships table key and summary",
+   "headers": [
+    "(1966–1969)",
+    "(1970–present)"
+   ],
+   "rows": [
+    [
+     "American Football League (AFL) AFL champion (4, 2–2)",
+     "American Football Conference (AFC) AFC champion (56, 27–29)"
+    ],
+    [
+     "National Football League (NFL) NFL champion (4, 2–2)",
+     "National Football Conference (NFC) NFC champion (56, 29–27)"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Super Bowl championships",
+   "headers": [
+    "Game",
+    "Date (season)",
+    "Winning team",
+    "Score",
+    "Losing team",
+    "Score",
+    "Venue",
+    "City",
+    "Attendance",
+    "Referee",
+    "Ref."
+   ],
+   "rows": [
+    [
+     "I",
+     "Jan 15, 1967 (1966 AFL/1966 NFL)",
+     "Green Bay Packers (1, 1–0)",
+     "35",
+     "Kansas City Chiefs (1, 0–1)",
+     "10",
+     "Los Angeles Memorial Coliseum",
+     "Los Angeles, California",
+     "61,946",
+     "Norm Schachter",
+     ""
+    ],
+    [
+     "II",
+     "Jan 14, 1968 (1967 AFL/1967 NFL)",
+     "Green Bay Packers (2, 2–0)",
+     "33",
+     "Oakland Raiders (1, 0–1)",
+     "14",
+     "Miami Orange Bowl",
+     "Miami, Florida",
+     "75,546",
+     "Jack Vest",
+     ""
+    ],
+    [
+     "III",
+     "Jan 12, 1969 (1968 AFL/1968 NFL)",
+     "New York Jets (1, 1–0)",
+     "16",
+     "Baltimore Colts (1, 0–1)",
+     "7",
+     "Miami Orange Bowl (2)",
+     "Miami, Florida (2)",
+     "75,389",
+     "Tom Bell",
+     ""
+    ],
+    [
+     "IV",
+     "Jan 11, 1970 (1969 AFL/1969 NFL)",
+     "Kansas City Chiefs (2, 1–1)",
+     "23",
+     "Minnesota Vikings (1, 0–1)",
+     "7",
+     "Tulane Stadium",
+     "New Orleans, Louisiana",
+     "80,562",
+     "John McDonough",
+     ""
+    ],
+    [
+     "V",
+     "Jan 17, 1971 (1970)",
+     "Baltimore Colts (2, 1–1)",
+     "16",
+     "Dallas Cowboys (1, 0–1)",
+     "13",
+     "Miami Orange Bowl (3)",
+     "Miami, Florida (3)",
+     "79,204",
+     "Norm Schachter",
+     ""
+    ],
+    [
+     "VI",
+     "Jan 16, 1972 (1971)",
+     "Dallas Cowboys (2, 1–1)",
+     "24",
+     "Miami Dolphins (1, 0–1)",
+     "3",
+     "Tulane Stadium (2)",
+     "New Orleans, Louisiana (2)",
+     "81,023",
+     "Jim Tunney",
+     ""
+    ],
+    [
+     "VII",
+     "Jan 14, 1973 (1972)",
+     "Miami Dolphins (2, 1–1)",
+     "14",
+     "Washington Redskins (1, 0–1)",
+     "7",
+     "Los Angeles Memorial Coliseum (2)",
+     "Los Angeles, California (2)",
+     "90,182",
+     "Tom Bell",
+     ""
+    ],
+    [
+     "VIII",
+     "Jan 13, 1974 (1973)",
+     "Miami Dolphins (3, 2–1)",
+     "24",
+     "Minnesota Vikings (2, 0–2)",
+     "7",
+     "Rice Stadium",
+     "Houston, Texas",
+     "71,882",
+     "Ben Dreith",
+     ""
+    ],
+    [
+     "IX",
+     "Jan 12, 1975 (1974)",
+     "Pittsburgh Steelers (1, 1–0)",
+     "16",
+     "Minnesota Vikings (3, 0–3)",
+     "6",
+     "Tulane Stadium (3)",
+     "New Orleans, Louisiana (3)",
+     "80,997",
+     "Bernie Ulman",
+     ""
+    ],
+    [
+     "X",
+     "Jan 18, 1976 (1975)",
+     "Pittsburgh Steelers (2, 2–0)",
+     "21",
+     "Dallas Cowboys (3, 1–2)",
+     "17",
+     "Miami Orange Bowl (4)",
+     "Miami, Florida (4)",
+     "80,187",
+     "Norm Schachter",
+     ""
+    ],
+    [
+     "XI",
+     "Jan 9, 1977 (1976)",
+     "Oakland Raiders (2, 1–1)",
+     "32",
+     "Minnesota Vikings (4, 0–4)",
+     "14",
+     "Rose Bowl",
+     "Pasadena, California (3)",
+     "103,438",
+     "Jim Tunney",
+     ""
+    ],
+    [
+     "XII",
+     "Jan 15, 1978 (1977)",
+     "Dallas Cowboys (4, 2–2)",
+     "27",
+     "Denver Broncos (1, 0–1)",
+     "10",
+     "Louisiana Superdome",
+     "New Orleans, Louisiana (4)",
+     "76,400",
+     "Jim Tunney",
+     ""
+    ],
+    [
+     "XIII",
+     "Jan 21, 1979 (1978)",
+     "Pittsburgh Steelers (3, 3–0)",
+     "35",
+     "Dallas Cowboys (5, 2–3)",
+     "31",
+     "Miami Orange Bowl (5)",
+     "Miami, Florida (5)",
+     "79,484",
+     "Pat Haggerty",
+     ""
+    ],
+    [
+     "XIV",
+     "Jan 20, 1980 (1979)",
+     "Pittsburgh Steelers (4, 4–0)",
+     "31",
+     "Los Angeles Rams (1, 0–1)",
+     "19",
+     "Rose Bowl (2)",
+     "Pasadena, California (4)",
+     "103,985",
+     "Fred Silva",
+     ""
+    ],
+    [
+     "XV",
+     "Jan 25, 1981 (1980)",
+     "Oakland Raiders (3, 2–1)",
+     "27",
+     "Philadelphia Eagles (1, 0–1)",
+     "10",
+     "Louisiana Superdome (2)",
+     "New Orleans, Louisiana (5)",
+     "76,135",
+     "Ben Dreith",
+     ""
+    ],
+    [
+     "XVI",
+     "Jan 24, 1982 (1981)",
+     "San Francisco 49ers (1, 1–0)",
+     "26",
+     "Cincinnati Bengals (1, 0–1)",
+     "21",
+     "Pontiac Silverdome",
+     "Pontiac, Michigan",
+     "81,270",
+     "Pat Haggerty",
+     ""
+    ],
+    [
+     "XVII",
+     "Jan 30, 1983 (1982)",
+     "Washington Redskins (2, 1–1)",
+     "27",
+     "Miami Dolphins (4, 2–2)",
+     "17",
+     "Rose Bowl (3)",
+     "Pasadena, California (5)",
+     "103,667",
+     "Jerry Markbreit",
+     ""
+    ],
+    [
+     "XVIII",
+     "Jan 22, 1984 (1983)",
+     "Los Angeles Raiders (4, 3–1)",
+     "38",
+     "Washington Redskins (3, 1–2)",
+     "9",
+     "Tampa Stadium",
+     "Tampa, Florida",
+     "72,980",
+     "Gene Barth",
+     ""
+    ],
+    [
+     "XIX",
+     "Jan 20, 1985 (1984)",
+     "San Francisco 49ers (2, 2–0)",
+     "38",
+     "Miami Dolphins (5, 2–3)",
+     "16",
+     "Stanford Stadium",
+     "Stanford, California",
+     "84,059",
+     "Pat Haggerty",
+     ""
+    ],
+    [
+     "XX",
+     "Jan 26, 1986 (1985)",
+     "Chicago Bears (1, 1–0)",
+     "46",
+     "New England Patriots (1, 0–1)",
+     "10",
+     "Louisiana Superdome (3)",
+     "New Orleans, Louisiana (6)",
+     "73,818",
+     "Red Cashion",
+     ""
+    ],
+    [
+     "XXI",
+     "Jan 25, 1987 (1986)",
+     "New York Giants (1, 1–0)",
+     "39",
+     "Denver Broncos (2, 0–2)",
+     "20",
+     "Rose Bowl (4)",
+     "Pasadena, California (6)",
+     "101,063",
+     "Jerry Markbreit",
+     ""
+    ],
+    [
+     "XXII",
+     "Jan 31, 1988 (1987)",
+     "Washington Redskins (4, 2–2)",
+     "42",
+     "Denver Broncos (3, 0–3)",
+     "10",
+     "San Diego–Jack Murphy Stadium",
+     "San Diego, California",
+     "73,302",
+     "Bob McElwee",
+     ""
+    ],
+    [
+     "XXIII",
+     "Jan 22, 1989 (1988)",
+     "San Francisco 49ers (3, 3–0)",
+     "20",
+     "Cincinnati Bengals (2, 0–2)",
+     "16",
+     "Joe Robbie Stadium",
+     "Miami, Florida (6)",
+     "75,129",
+     "Jerry Seeman",
+     ""
+    ],
+    [
+     "XXIV",
+     "Jan 28, 1990 (1989)",
+     "San Francisco 49ers (4, 4–0)",
+     "55",
+     "Denver Broncos (4, 0–4)",
+     "10",
+     "Louisiana Superdome (4)",
+     "New Orleans, Louisiana (7)",
+     "72,919",
+     "Dick Jorgensen",
+     ""
+    ],
+    [
+     "XXV",
+     "Jan 27, 1991 (1990)",
+     "New York Giants (2, 2–0)",
+     "20",
+     "Buffalo Bills (1, 0–1)",
+     "19",
+     "Tampa Stadium (2)",
+     "Tampa, Florida (2)",
+     "73,813",
+     "Jerry Seeman",
+     ""
+    ],
+    [
+     "XXVI",
+     "Jan 26, 1992 (1991)",
+     "Washington Redskins (5, 3–2)",
+     "37",
+     "Buffalo Bills (2, 0–2)",
+     "24",
+     "Metrodome",
+     "Minneapolis, Minnesota",
+     "63,130",
+     "Jerry Markbreit",
+     ""
+    ],
+    [
+     "XXVII",
+     "Jan 31, 1993 (1992)",
+     "Dallas Cowboys (6, 3–3)",
+     "52",
+     "Buffalo Bills (3, 0–3)",
+     "17",
+     "Rose Bowl (5)",
+     "Pasadena, California (7)",
+     "98,374",
+     "Dick Hantak",
+     ""
+    ],
+    [
+     "XXVIII",
+     "Jan 30, 1994 (1993)",
+     "Dallas Cowboys (7, 4–3)",
+     "30",
+     "Buffalo Bills (4, 0–4)",
+     "13",
+     "Georgia Dome",
+     "Atlanta, Georgia",
+     "72,817",
+     "Bob McElwee",
+     ""
+    ],
+    [
+     "XXIX",
+     "Jan 29, 1995 (1994)",
+     "San Francisco 49ers (5, 5–0)",
+     "49",
+     "San Diego Chargers (1, 0–1)",
+     "26",
+     "Joe Robbie Stadium (2)",
+     "Miami, Florida (7)",
+     "74,107",
+     "Jerry Markbreit",
+     ""
+    ],
+    [
+     "XXX",
+     "Jan 28, 1996 (1995)",
+     "Dallas Cowboys (8, 5–3)",
+     "27",
+     "Pittsburgh Steelers (5, 4–1)",
+     "17",
+     "Sun Devil Stadium",
+     "Tempe, Arizona",
+     "76,347",
+     "Red Cashion",
+     ""
+    ],
+    [
+     "XXXI",
+     "Jan 26, 1997 (1996)",
+     "Green Bay Packers (3, 3–0)",
+     "35",
+     "New England Patriots (2, 0–2)",
+     "21",
+     "Louisiana Superdome (5)",
+     "New Orleans, Louisiana (8)",
+     "72,301",
+     "Gerry Austin",
+     ""
+    ],
+    [
+     "XXXII",
+     "Jan 25, 1998 (1997)",
+     "Denver Broncos (5, 1–4)",
+     "31",
+     "Green Bay Packers (4, 3–1)",
+     "24",
+     "Qualcomm Stadium (2)",
+     "San Diego, California (2)",
+     "68,912",
+     "Ed Hochuli",
+     ""
+    ],
+    [
+     "XXXIII",
+     "Jan 31, 1999 (1998)",
+     "Denver Broncos (6, 2–4)",
+     "34",
+     "Atlanta Falcons (1, 0–1)",
+     "19",
+     "Pro Player Stadium (3)",
+     "Miami, Florida (8)",
+     "74,803",
+     "Bernie Kukar",
+     ""
+    ],
+    [
+     "XXXIV",
+     "Jan 30, 2000 (1999)",
+     "St. Louis Rams (2, 1–1)",
+     "23",
+     "Tennessee Titans (1, 0–1)",
+     "16",
+     "Georgia Dome (2)",
+     "Atlanta, Georgia (2)",
+     "72,625",
+     "Bob McElwee",
+     ""
+    ],
+    [
+     "XXXV",
+     "Jan 28, 2001 (2000)",
+     "Baltimore Ravens (1, 1–0)",
+     "34",
+     "New York Giants (3, 2–1)",
+     "7",
+     "Raymond James Stadium",
+     "Tampa, Florida (3)",
+     "71,921",
+     "Gerry Austin",
+     ""
+    ],
+    [
+     "XXXVI",
+     "Feb 3, 2002 (2001)",
+     "New England Patriots (3, 1–2)",
+     "20",
+     "St. Louis Rams (3, 1–2)",
+     "17",
+     "Louisiana Superdome (6)",
+     "New Orleans, Louisiana (9)",
+     "72,922",
+     "Bernie Kukar",
+     ""
+    ],
+    [
+     "XXXVII",
+     "Jan 26, 2003 (2002)",
+     "Tampa Bay Buccaneers (1, 1–0)",
+     "48",
+     "Oakland Raiders (5, 3–2)",
+     "21",
+     "Qualcomm Stadium (3)",
+     "San Diego, California (3)",
+     "67,603",
+     "Bill Carollo",
+     ""
+    ],
+    [
+     "XXXVIII",
+     "Feb 1, 2004 (2003)",
+     "New England Patriots (4, 2–2)",
+     "32",
+     "Carolina Panthers (1, 0–1)",
+     "29",
+     "Reliant Stadium",
+     "Houston, Texas (2)",
+     "71,525",
+     "Ed Hochuli",
+     ""
+    ],
+    [
+     "XXXIX",
+     "Feb 6, 2005 (2004)",
+     "New England Patriots (5, 3–2)",
+     "24",
+     "Philadelphia Eagles (2, 0–2)",
+     "21",
+     "Alltel Stadium",
+     "Jacksonville, Florida",
+     "78,125",
+     "Terry McAulay",
+     ""
+    ],
+    [
+     "XL",
+     "Feb 5, 2006 (2005)",
+     "Pittsburgh Steelers (6, 5–1)",
+     "21",
+     "Seattle Seahawks (1, 0–1)",
+     "10",
+     "Ford Field",
+     "Detroit, Michigan (2)",
+     "68,206",
+     "Bill Leavy",
+     ""
+    ],
+    [
+     "XLI",
+     "Feb 4, 2007 (2006)",
+     "Indianapolis Colts (3, 2–1)",
+     "29",
+     "Chicago Bears (2, 1–1)",
+     "17",
+     "Dolphin Stadium (4)",
+     "Miami Gardens, Florida (9)",
+     "74,512",
+     "Tony Corrente",
+     ""
+    ],
+    [
+     "XLII",
+     "Feb 3, 2008 (2007)",
+     "New York Giants (4, 3–1)",
+     "17",
+     "New England Patriots (6, 3–3)",
+     "14",
+     "University of Phoenix Stadium",
+     "Glendale, Arizona (2)",
+     "71,101",
+     "Mike Carey",
+     ""
+    ],
+    [
+     "XLIII",
+     "Feb 1, 2009 (2008)",
+     "Pittsburgh Steelers (7, 6–1)",
+     "27",
+     "Arizona Cardinals (1, 0–1)",
+     "23",
+     "Raymond James Stadium (2)",
+     "Tampa, Florida (4)",
+     "70,774",
+     "Terry McAulay",
+     ""
+    ],
+    [
+     "XLIV",
+     "Feb 7, 2010 (2009)",
+     "New Orleans Saints (1, 1–0)",
+     "31",
+     "Indianapolis Colts (4, 2–2)",
+     "17",
+     "Sun Life Stadium (5)",
+     "Miami Gardens, Florida (10)",
+     "74,059",
+     "Scott Green",
+     ""
+    ],
+    [
+     "XLV",
+     "Feb 6, 2011 (2010)",
+     "Green Bay Packers (5, 4–1)",
+     "31",
+     "Pittsburgh Steelers (8, 6–2)",
+     "25",
+     "Cowboys Stadium",
+     "Arlington, Texas",
+     "103,219",
+     "Walt Anderson",
+     ""
+    ],
+    [
+     "XLVI",
+     "Feb 5, 2012 (2011)",
+     "New York Giants (5, 4–1)",
+     "21",
+     "New England Patriots (7, 3–4)",
+     "17",
+     "Lucas Oil Stadium",
+     "Indianapolis, Indiana",
+     "68,658",
+     "John Parry",
+     ""
+    ],
+    [
+     "XLVII",
+     "Feb 3, 2013 (2012)",
+     "Baltimore Ravens (2, 2–0)",
+     "34",
+     "San Francisco 49ers (6, 5–1)",
+     "31",
+     "Mercedes-Benz Superdome (7)",
+     "New Orleans, Louisiana (10)",
+     "71,024",
+     "Jerome Boger",
+     ""
+    ],
+    [
+     "XLVIII",
+     "Feb 2, 2014 (2013)",
+     "Seattle Seahawks (2, 1–1)",
+     "43",
+     "Denver Broncos (7, 2–5)",
+     "8",
+     "MetLife Stadium",
+     "East Rutherford, New Jersey",
+     "82,529",
+     "Terry McAulay",
+     ""
+    ],
+    [
+     "XLIX",
+     "Feb 1, 2015 (2014)",
+     "New England Patriots (8, 4–4)",
+     "28",
+     "Seattle Seahawks (3, 1–2)",
+     "24",
+     "University of Phoenix Stadium (2)",
+     "Glendale, Arizona (3)",
+     "70,288",
+     "Bill Vinovich",
+     ""
+    ],
+    [
+     "50",
+     "Feb 7, 2016 (2015)",
+     "Denver Broncos (8, 3–5)",
+     "24",
+     "Carolina Panthers (2, 0–2)",
+     "10",
+     "Levi's Stadium",
+     "Santa Clara, California (2)",
+     "71,088",
+     "Clete Blakeman",
+     ""
+    ],
+    [
+     "LI",
+     "Feb 5, 2017 (2016)",
+     "New England Patriots (9, 5–4)",
+     "34",
+     "Atlanta Falcons (2, 0–2)",
+     "28",
+     "NRG Stadium (2)",
+     "Houston, Texas (3)",
+     "70,807",
+     "Carl Cheffers",
+     ""
+    ],
+    [
+     "LII",
+     "Feb 4, 2018 (2017)",
+     "Philadelphia Eagles (3, 1–2)",
+     "41",
+     "New England Patriots (10, 5–5)",
+     "33",
+     "U.S. Bank Stadium",
+     "Minneapolis, Minnesota (2)",
+     "67,612",
+     "Gene Steratore",
+     ""
+    ],
+    [
+     "LIII",
+     "Feb 3, 2019 (2018)",
+     "New England Patriots (11, 6–5)",
+     "13",
+     "Los Angeles Rams (4, 1–3)",
+     "3",
+     "Mercedes-Benz Stadium",
+     "Atlanta, Georgia (3)",
+     "70,081",
+     "John Parry",
+     ""
+    ],
+    [
+     "LIV",
+     "Feb 2, 2020 (2019)",
+     "Kansas City Chiefs (3, 2–1)",
+     "31",
+     "San Francisco 49ers (7, 5–2)",
+     "20",
+     "Hard Rock Stadium (6)",
+     "Miami Gardens, Florida (11)",
+     "62,417",
+     "Bill Vinovich",
+     ""
+    ],
+    [
+     "LV",
+     "Feb 7, 2021 (2020)",
+     "Tampa Bay Buccaneers (2, 2–0)",
+     "31",
+     "Kansas City Chiefs (4, 2–2)",
+     "9",
+     "Raymond James Stadium (3)",
+     "Tampa, Florida (5)",
+     "24,835",
+     "Carl Cheffers",
+     ""
+    ],
+    [
+     "LVI",
+     "Feb 13, 2022 (2021)",
+     "Los Angeles Rams (5, 2–3)",
+     "23",
+     "Cincinnati Bengals (3, 0–3)",
+     "20",
+     "SoFi Stadium",
+     "Inglewood, California (8)",
+     "70,048",
+     "Ron Torbert",
+     ""
+    ],
+    [
+     "LVII",
+     "Feb 12, 2023 (2022)",
+     "Kansas City Chiefs (5, 3–2)",
+     "38",
+     "Philadelphia Eagles (4, 1–3)",
+     "35",
+     "State Farm Stadium (3)",
+     "Glendale, Arizona (4)",
+     "67,827",
+     "Carl Cheffers",
+     ""
+    ],
+    [
+     "LVIII",
+     "Feb 11, 2024 (2023)",
+     "Kansas City Chiefs (6, 4–2)",
+     "25",
+     "San Francisco 49ers (8, 5–3)",
+     "22",
+     "Allegiant Stadium",
+     "Paradise, Nevada",
+     "61,629",
+     "Bill Vinovich",
+     ""
+    ],
+    [
+     "LIX",
+     "Feb 9, 2025 (2024)",
+     "Philadelphia Eagles (5, 2–3)",
+     "40",
+     "Kansas City Chiefs (7, 4–3)",
+     "22",
+     "Caesars Superdome (8)",
+     "New Orleans, Louisiana (11)",
+     "65,719",
+     "Ron Torbert",
+     ""
+    ],
+    [
+     "LX",
+     "Feb 8, 2026 (2025)",
+     "Seattle Seahawks (4, 2–2)",
+     "29",
+     "New England Patriots (12, 6–6)",
+     "13",
+     "Levi's Stadium (2)",
+     "Santa Clara, California (3)",
+     "70,823",
+     "Shawn Smith",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Upcoming games",
+   "headers": [
+    "Game",
+    "Date/Season",
+    "Away team",
+    "Home team",
+    "Venue",
+    "City",
+    "Ref"
+   ],
+   "rows": [
+    [
+     "LXI",
+     "Feb 14, 2027 (2026)",
+     "2026–27 AFC champion",
+     "2026–27 NFC champion",
+     "SoFi Stadium (2)",
+     "Inglewood, California (9)",
+     ""
+    ],
+    [
+     "LXII",
+     "Feb 13, 2028 (2027)",
+     "2027–28 NFC champion",
+     "2027–28 AFC champion",
+     "Mercedes-Benz Stadium (2)",
+     "Atlanta, Georgia (4)",
+     ""
+    ],
+    [
+     "LXIII",
+     "Feb 11, 2029 (2028)",
+     "2028–29 AFC champion",
+     "2028–29 NFC champion",
+     "Allegiant Stadium (2)",
+     "Paradise, Nevada (2)",
+     ""
+    ],
+    [
+     "LXIV",
+     "Feb 2030 (2029)",
+     "2029–30 NFC champion",
+     "2029–30 AFC champion",
+     "New Nissan Stadium",
+     "Nashville, Tennessee",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t3",
+   "title": "Records by franchise",
+   "headers": [
+    "AFL/AFC team",
+    "NFL/NFC team"
+   ],
+   "rows": [
+    [
+     "Pre-merger NFL team Post-merger AFC team",
+     "Pre-merger NFL team Post-merger AFC team"
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "Records by franchise",
+   "headers": [
+    "Franchise",
+    "Wins",
+    "Losses",
+    "Win %",
+    "Points for",
+    "Points against",
+    "Appearances",
+    "Seasons (champions in bold)"
+   ],
+   "rows": [
+    [
+     "Boston / New England Patriots",
+     "6",
+     "6",
+     ".500",
+     "259",
+     "311",
+     "12",
+     "1985, 1996, 2001, 2003, 2004, 2007, 2011, 2014, 2016, 2017, 2018, 2025"
+    ],
+    [
+     "Pittsburgh Steelers",
+     "6",
+     "2",
+     ".750",
+     "193",
+     "164",
+     "8",
+     "1974, 1975, 1978, 1979, 1995, 2005, 2008, 2010"
+    ],
+    [
+     "San Francisco 49ers",
+     "5",
+     "3",
+     ".625",
+     "261",
+     "179",
+     "8",
+     "1981, 1984, 1988, 1989, 1994, 2012, 2019, 2023"
+    ],
+    [
+     "Dallas Cowboys",
+     "5",
+     "3",
+     ".625",
+     "221",
+     "132",
+     "8",
+     "1970, 1971, 1975, 1977, 1978, 1992, 1993, 1995"
+    ],
+    [
+     "Kansas City Chiefs",
+     "4",
+     "3",
+     ".571",
+     "158",
+     "190",
+     "7",
+     "1966, 1969, 2019, 2020, 2022, 2023, 2024"
+    ],
+    [
+     "Green Bay Packers",
+     "4",
+     "1",
+     ".800",
+     "158",
+     "101",
+     "5",
+     "1966, 1967, 1996, 1997, 2010"
+    ],
+    [
+     "New York Giants",
+     "4",
+     "1",
+     ".800",
+     "104",
+     "104",
+     "5",
+     "1986, 1990, 2000, 2007, 2011"
+    ],
+    [
+     "Denver Broncos",
+     "3",
+     "5",
+     ".375",
+     "147",
+     "259",
+     "8",
+     "1977, 1986, 1987, 1989, 1997, 1998, 2013, 2015"
+    ],
+    [
+     "Oakland / Los Angeles / Las Vegas Raiders",
+     "3",
+     "2",
+     ".600",
+     "132",
+     "114",
+     "5",
+     "1967, 1976, 1980, 1983, 2002"
+    ],
+    [
+     "Washington Redskins / Football Team / Commanders",
+     "3",
+     "2",
+     ".600",
+     "122",
+     "103",
+     "5",
+     "1972, 1982, 1983, 1987, 1991"
+    ],
+    [
+     "Philadelphia Eagles",
+     "2",
+     "3",
+     ".400",
+     "147",
+     "144",
+     "5",
+     "1980, 2004, 2017, 2022, 2024"
+    ],
+    [
+     "St. Louis / Los Angeles Rams",
+     "2",
+     "3",
+     ".400",
+     "85",
+     "100",
+     "5",
+     "1979, 1999, 2001, 2018, 2021"
+    ],
+    [
+     "Miami Dolphins",
+     "2",
+     "3",
+     ".400",
+     "74",
+     "103",
+     "5",
+     "1971, 1972, 1973, 1982, 1984"
+    ],
+    [
+     "Seattle Seahawks",
+     "2",
+     "2",
+     ".500",
+     "106",
+     "70",
+     "4",
+     "2005, 2013, 2014, 2025"
+    ],
+    [
+     "Baltimore / Indianapolis Colts",
+     "2",
+     "2",
+     ".500",
+     "69",
+     "77",
+     "4",
+     "1968, 1970, 2006, 2009"
+    ],
+    [
+     "Tampa Bay Buccaneers",
+     "2",
+     "0",
+     "1.000",
+     "79",
+     "30",
+     "2",
+     "2002, 2020"
+    ],
+    [
+     "Baltimore Ravens",
+     "2",
+     "0",
+     "1.000",
+     "68",
+     "38",
+     "2",
+     "2000, 2012"
+    ],
+    [
+     "Chicago Bears",
+     "1",
+     "1",
+     ".500",
+     "63",
+     "39",
+     "2",
+     "1985, 2006"
+    ],
+    [
+     "New Orleans Saints",
+     "1",
+     "0",
+     "1.000",
+     "31",
+     "17",
+     "1",
+     "2009"
+    ],
+    [
+     "New York Jets",
+     "1",
+     "0",
+     "1.000",
+     "16",
+     "7",
+     "1",
+     "1968"
+    ],
+    [
+     "Buffalo Bills",
+     "0",
+     "4",
+     ".000",
+     "73",
+     "139",
+     "4",
+     "1990, 1991, 1992, 1993"
+    ],
+    [
+     "Minnesota Vikings",
+     "0",
+     "4",
+     ".000",
+     "34",
+     "95",
+     "4",
+     "1969, 1973, 1974, 1976"
+    ],
+    [
+     "Cincinnati Bengals",
+     "0",
+     "3",
+     ".000",
+     "57",
+     "69",
+     "3",
+     "1981, 1988, 2021"
+    ],
+    [
+     "Atlanta Falcons",
+     "0",
+     "2",
+     ".000",
+     "47",
+     "68",
+     "2",
+     "1998, 2016"
+    ],
+    [
+     "Carolina Panthers",
+     "0",
+     "2",
+     ".000",
+     "39",
+     "56",
+     "2",
+     "2003, 2015"
+    ],
+    [
+     "San Diego / Los Angeles Chargers",
+     "0",
+     "1",
+     ".000",
+     "26",
+     "49",
+     "1",
+     "1994"
+    ],
+    [
+     "St. Louis / Phoenix / Arizona Cardinals",
+     "0",
+     "1",
+     ".000",
+     "23",
+     "27",
+     "1",
+     "2008"
+    ],
+    [
+     "Houston / Tennessee Oilers / Titans",
+     "0",
+     "1",
+     ".000",
+     "16",
+     "23",
+     "1",
+     "1999"
+    ],
+    [
+     "Cleveland Browns",
+     "0",
+     "0",
+     "–",
+     "–",
+     "–",
+     "0",
+     "—"
+    ],
+    [
+     "Detroit Lions",
+     "0",
+     "0",
+     "–",
+     "–",
+     "–",
+     "0",
+     "—"
+    ],
+    [
+     "Houston Texans",
+     "0",
+     "0",
+     "–",
+     "–",
+     "–",
+     "0",
+     "—"
+    ],
+    [
+     "Jacksonville Jaguars",
+     "0",
+     "0",
+     "–",
+     "–",
+     "–",
+     "0",
+     "—"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "External links",
+   "headers": [
+    "v t e Super Bowl champions",
+    "v t e Super Bowl champions"
+   ],
+   "rows": [
+    [
+     "I: Green Bay Packers II: Green Bay Packers III: New York Jets IV: Kansas City Chiefs V: Baltimore Colts VI: Dallas Cowboys VII: Miami Dolphins VIII: Miami Dolphins IX: Pittsburgh Steelers X: Pittsburgh Steelers XI: Oakland Raiders XII: Dallas Cowboys XIII: Pittsburgh Steelers XIV: Pittsburgh Steelers XV: Oakland Raiders XVI: San Francisco 49ers XVII: Washington Redskins XVIII: Los Angeles Raiders XIX: San Francisco 49ers XX: Chicago Bears XXI: New York Giants XXII: Washington Redskins XXIII: San Francisco 49ers XXIV: San Francisco 49ers XXV: New York Giants XXVI: Washington Redskins XXVII: Dallas Cowboys XXVIII: Dallas Cowboys XXIX: San Francisco 49ers XXX: Dallas Cowboys XXXI: Green Bay Packers XXXII: Denver Broncos XXXIII: Denver Broncos XXXIV: St. Louis Rams XXXV: Baltimore Ravens XXXVI: New England Patriots XXXVII: Tampa Bay Buccaneers XXXVIII: New England Patriots XXXIX: New England Patriots XL: Pittsburgh Steelers XLI: Indianapolis Colts XLII: New York Giants XLIII: Pittsburgh Steelers XLIV: New Orleans Saints XLV: Green Bay Packers XLVI: New York Giants XLVII: Baltimore Ravens XLVIII: Seattle Seahawks XLIX: New England Patriots 50: Denver Broncos LI: New England Patriots LII: Philadelphia Eagles LIII: New England Patriots LIV: Kansas City Chiefs LV: Tampa Bay Buccaneers LVI: Los Angeles Rams LVII: Kansas City Chiefs LVIII: Kansas City Chiefs LIX: Philadelphia Eagles LX: Seattle Seahawks",
+     "I: Green Bay Packers II: Green Bay Packers III: New York Jets IV: Kansas City Chiefs V: Baltimore Colts VI: Dallas Cowboys VII: Miami Dolphins VIII: Miami Dolphins IX: Pittsburgh Steelers X: Pittsburgh Steelers XI: Oakland Raiders XII: Dallas Cowboys XIII: Pittsburgh Steelers XIV: Pittsburgh Steelers XV: Oakland Raiders XVI: San Francisco 49ers XVII: Washington Redskins XVIII: Los Angeles Raiders XIX: San Francisco 49ers XX: Chicago Bears XXI: New York Giants XXII: Washington Redskins XXIII: San Francisco 49ers XXIV: San Francisco 49ers XXV: New York Giants XXVI: Washington Redskins XXVII: Dallas Cowboys XXVIII: Dallas Cowboys XXIX: San Francisco 49ers XXX: Dallas Cowboys XXXI: Green Bay Packers XXXII: Denver Broncos XXXIII: Denver Broncos XXXIV: St. Louis Rams XXXV: Baltimore Ravens XXXVI: New England Patriots XXXVII: Tampa Bay Buccaneers XXXVIII: New England Patriots XXXIX: New England Patriots XL: Pittsburgh Steelers XLI: Indianapolis Colts XLII: New York Giants XLIII: Pittsburgh Steelers XLIV: New Orleans Saints XLV: Green Bay Packers XLVI: New York Giants XLVII: Baltimore Ravens XLVIII: Seattle Seahawks XLIX: New England Patriots 50: Denver Broncos LI: New England Patriots LII: Philadelphia Eagles LIII: New England Patriots LIV: Kansas City Chiefs LV: Tampa Bay Buccaneers LVI: Los Angeles Rams LVII: Kansas City Chiefs LVIII: Kansas City Chiefs LIX: Philadelphia Eagles LX: Seattle Seahawks"
+    ]
+   ]
+  },
+  {
+   "id": "t15",
+   "title": "External links",
+   "headers": [
+    "People",
+    "Champions Pre-Super Bowl NFL champions Pre-Super Bowl AFL champions Head coaches Quarterbacks Officials"
+   ],
+   "rows": [
+    [
+     "Awards, trophies, records",
+     "Super Bowl ring Vince Lombardi Trophy Most Valuable Players Pete Rozelle Trophy Records"
+    ],
+    [
+     "Broadcast and production",
+     "National anthem Halftime Commercials USA Today Ad Meter List Broadcast Network broadcasters Counterprogramming Puppy Bowl Lead-out programming Television ratings"
+    ]
+   ]
+  },
+  {
+   "id": "t16",
+   "title": "External links",
+   "headers": [
+    "v t e NFL championships (1933–present)",
+    "v t e NFL championships (1933–present)"
+   ],
+   "rows": [
+    [
+     "NFL Championship (1933–1969)",
+     "1933 1934 1935 1936 1937 1938 1939 1940 1941 1942 1943 1944 1945 1946 1947 1948 1949 1950 1951 1952 1953 1954 1955 1956 1957 1958 1959 1960 1961 1962 1963 1964 1965 1966 1967 1968 1969"
+    ],
+    [
+     "1921 APFA de facto championship game 1925 NFL Championship controversy 1932 NFL Playoff Game Pre-Super Bowl NFL playoffs Pre-Super Bowl NFL champions broadcasters Playoff Bowl broadcasters",
+     "1921 APFA de facto championship game 1925 NFL Championship controversy 1932 NFL Playoff Game Pre-Super Bowl NFL playoffs Pre-Super Bowl NFL champions broadcasters Playoff Bowl broadcasters"
+    ],
+    [
+     "AFL Championship (1960–1969)",
+     "1960 1961 1962 1963 1964 1965 1966 1967 1968 1969"
+    ],
+    [
+     "Pre-Super Bowl AFL playoffs Pre-Super Bowl AFL champions AFL All-Star game broadcasters",
+     "Pre-Super Bowl AFL playoffs Pre-Super Bowl AFL champions AFL All-Star game broadcasters"
+    ],
+    [
+     "AFL–NFL World Championship Game (1966–1969)[1][2]",
+     "1966 (I) 1967 (II) 1968 (III) 1969 (IV)"
+    ],
+    [
+     "Super Bowl (1970–present)[1][3]",
+     "1970 (V) 1971 (VI) 1972 (VII) 1973 (VIII) 1974 (IX) 1975 (X) 1976 (XI) 1977 (XII) 1978 (XIII) 1979 (XIV) 1980 (XV) 1981 (XVI) 1982 (XVII) 1983 (XVIII) 1984 (XIX) 1985 (XX) 1986 (XXI) 1987 (XXII) 1988 (XXIII) 1989 (XXIV) 1990 (XXV) 1991 (XXVI) 1992 (XXVII) 1993 (XXVIII) 1994 (XXIX) 1995 (XXX) 1996 (XXXI) 1997 (XXXII) 1998 (XXXIII) 1999 (XXXIV) 2000 (XXXV) 2001 (XXXVI) 2002 (XXXVII) 2003 (XXXVIII) 2004 (XXXIX) 2005 (XL) 2006 (XLI) 2007 (XLII) 2008 (XLIII) 2009 (XLIV) 2010 (XLV) 2011 (XLVI) 2012 (XLVII) 2013 (XLVIII) 2014 (XLIX) 2015 (50) 2016 (LI) 2017 (LII) 2018 (LIII) 2019 (LIV) 2020 (LV) 2021 (LVI) 2022 (LVII) 2023 (LVIII) 2024 (LIX) 2025 (LX) 2026 (LXI) 2027 (LXII) 2028 (LXIII) 2029 (LXIV)"
+    ],
+    [
+     "NFL playoffs results Super Bowl champions broadcasters Pro Bowl Super Bowl Most Valuable Players Super Bowl records Super Bowl officials Super Bowl halftime Super Bowl commercials AFC Championship Game NFC Championship Game AAFC playoffs",
+     "NFL playoffs results Super Bowl champions broadcasters Pro Bowl Super Bowl Most Valuable Players Super Bowl records Super Bowl officials Super Bowl halftime Super Bowl commercials AFC Championship Game NFC Championship Game AAFC playoffs"
+    ],
+    [
+     "1 – Dates in the list denote the season, not necessarily the calendar year in which the championship game was played. For instance, Super Bowl LIV was played in 2020, but was the championship for the 2019 season. 2 – From 1966 to 1969, the first four Super Bowls were \"World Championship\" games played between two independent professional football leagues, AFL and NFL, and when the league merged in 1970 the Super Bowl became the NFL Championship Game. 3 – Italics indicate future games.",
+     "1 – Dates in the list denote the season, not necessarily the calendar year in which the championship game was played. For instance, Super Bowl LIV was played in 2020, but was the championship for the 2019 season. 2 – From 1966 to 1969, the first four Super Bowls were \"World Championship\" games played between two independent professional football leagues, AFL and NFL, and when the league merged in 1970 the Super Bowl became the NFL Championship Game. 3 – Italics indicate future games."
+    ]
+   ]
+  },
+  {
+   "id": "t17",
+   "title": "External links",
+   "headers": [
+    "v t e NFL playoffs",
+    "v t e NFL playoffs"
+   ],
+   "rows": [
+    [
+     "Overview",
+     "NFL playoff games NFL playoff results AFL Championship Game NFL Championship Game Playoff Bowl AFC Championship Game NFC Championship Game Super Bowl champions records Vince Lombardi Trophy Post-season streaks Post-season droughts Quarterback playoff records career passing touchdowns leaders Head coaches by playoff record"
+    ],
+    [
+     "Playoff/conference tiebreaker games",
+     "1932 1941 1943 1947 1950 1952 1957 1958 1965"
+    ],
+    [
+     "NFL playoff system",
+     "1967–68 1968–69 1969–70 1970–71 1971–72 1972–73 1973–74 1974–75 1975–76 1976–77 1977–78 1978–79 1979–80 1980–81 1981–82 1982–83 1983–84 1984–85 1985–86 1986–87 1987–88 1988–89 1989–90 1990–91 1991–92 1992–93 1993–94 1994–95 1995–96 1996–97 1997–98 1998–99 1999–00 2000–01 2001–02 2002–03 2003–04 2004–05 2005–06 2006–07 2007–08 2008–09 2009–10 2010–11 2011–12 2012–13 2013–14 2014–15 2015–16 2016–17 2017–18 2018–19 2019–20 2020–21 2021–22 2022–23 2023–24 2024–25 2025–26"
+    ],
+    [
+     "AFL",
+     "American Football League playoffs 1968 1969"
+    ],
+    [
+     "Broadcasters",
+     "NFL Championship Game Playoff Bowl Super Bowl"
+    ]
+   ]
+  },
+  {
+   "id": "t21",
+   "title": "External links",
+   "headers": [
+    "East",
+    "North",
+    "South",
+    "West"
+   ],
+   "rows": [
+    [
+     "Buffalo Bills Miami Dolphins New England Patriots New York Jets",
+     "Baltimore Ravens Cincinnati Bengals Cleveland Browns Pittsburgh Steelers",
+     "Houston Texans Indianapolis Colts Jacksonville Jaguars Tennessee Titans",
+     "Denver Broncos Kansas City Chiefs Las Vegas Raiders Los Angeles Chargers"
+    ]
+   ]
+  },
+  {
+   "id": "t23",
+   "title": "External links",
+   "headers": [
+    "East",
+    "North",
+    "South",
+    "West"
+   ],
+   "rows": [
+    [
+     "Dallas Cowboys New York Giants Philadelphia Eagles Washington Commanders",
+     "Chicago Bears Detroit Lions Green Bay Packers Minnesota Vikings",
+     "Atlanta Falcons Carolina Panthers New Orleans Saints Tampa Bay Buccaneers",
+     "Arizona Cardinals Los Angeles Rams San Francisco 49ers Seattle Seahawks"
+    ]
+   ]
+  },
+  {
+   "id": "t24",
+   "title": "External links",
+   "headers": [
+    "Seasons",
+    "Seasons by team Preseason Hall of Fame Game American Bowl Regular season Kickoff Thursday Night Football Sunday Night Football Monday Night Football Thanksgiving games Christmas games Playoffs list of games streaks droughts AFC Championship NFC Championship Super Bowl champions quarterbacks Pro Bowl"
+   ],
+   "rows": [
+    [
+     "History",
+     "League history Commissioner championship history Timeline defunct franchises moves and mergers NFL in Los Angeles Eastern and Western Conferences (1933–1969) Century Division All-America Football Conference (1946–1949) American Football League (1960–1969) playoffs merger NFL Championship (1920–1969) Playoff Bowl NFL records individual quarterback team Super Bowl win–loss records last undefeated Tied games Canceled games Nicknamed games and plays Controversies League of Denial List of players with CTE List of proposed NFL teams"
+    ],
+    [
+     "International",
+     "International Series London Toronto Bills Series NFL Europe Non-American players International Player Pathway"
+    ],
+    [
+     "Business",
+     "Team owners Properties Management Council Competition committee NFLPA Collective bargaining agreement NFL Players Inc. NFL Referees Association Lockouts Valuations Television NFL Network NFL RedZone NFL Films In Canada Antitrust cases Radovich v. National Football League Mid-South Grizzlies v. National Football League American Needle, Inc. v. National Football League"
+    ],
+    [
+     "Related",
+     "Head coaches current wins leaders playoff record Starting quarterbacks Officials Stadiums chronology Awards All-Pro Hall of Fame members Player conduct suspensions Combine Draft Training camp NFL Foundation NFL Alumni Next Gen Stats Flag football league"
+    ],
+    [
+     "Culture",
+     "Mascots Nicknames Uniform numbers Color Rush Rivalries Cheerleading Conflicts Retired numbers"
+    ]
+   ]
+  }
+ ]
+}

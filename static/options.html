@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practical Data</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icon128.png" alt="" width="44" height="44">
+      <div>
+        <h1>Practical Data</h1>
+        <p class="lede">Shades the comparable columns of web tables. A decision model judges which columns are amounts, which direction is better, which labels are ranked, and whether to compare by rows or columns.</p>
+      </div>
+    </header>
+
+    <section>
+      <h2>Decision model</h2>
+      <div class="segmented" role="radiogroup" aria-label="Provider">
+        <label><input type="radio" name="provider" value="jev"><span>Jev <small>TypeSafe</small></span></label>
+        <label><input type="radio" name="provider" value="clef"><span>Clef <small>Cloudflare</small></span></label>
+      </div>
+
+      <div class="fields" data-for="jev">
+        <label class="field">
+          <span>TypeSafe API key</span>
+          <input type="password" name="typesafeApiKey" autocomplete="off" spellcheck="false" placeholder="ts_…">
+        </label>
+      </div>
+      <div class="fields" data-for="clef">
+        <label class="field">
+          <span>Cloudflare account ID</span>
+          <input type="text" name="cloudflareAccountId" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Workers AI API token</span>
+          <input type="password" name="cloudflareApiToken" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Model</span>
+          <select name="clefModel">
+            <option value="clef">clef: higher accuracy</option>
+            <option value="clef-flash">clef-flash: lower latency</option>
+          </select>
+        </label>
+      </div>
+      <p class="note">Keys stay in this browser's extension storage and are only sent to the provider you pick.</p>
+    </section>
+
+    <section>
+      <h2>Palette</h2>
+      <div class="palettes" id="palettes" role="radiogroup" aria-label="Palette"></div>
+      <p class="note">Each palette has a light and a dark version, picked automatically from the page's background.</p>
+      <div class="preview-wrap">
+        <table class="preview" id="preview"></table>
+      </div>
+      <p class="note" id="preview-note">Preview uses example judgments. Press <b>Test</b> to have the model judge this table.</p>
+    </section>
+
+    <section>
+      <h2>Where to shade</h2>
+      <div class="segmented" role="radiogroup" aria-label="Where to shade">
+        <label><input type="radio" name="mode" value="everywhere"><span>Every site</span></label>
+        <label><input type="radio" name="mode" value="chosen"><span>Only sites I turn on</span></label>
+      </div>
+      <p class="note" id="hosts-note"></p>
+      <ul id="hosts" class="hosts"></ul>
+      <p class="note">Use the toolbar button to turn a page or a site on or off. <kbd>⌥⇧H</kbd> toggles the current page.</p>
+    </section>
+
+    <section>
+      <h2>What leaves your browser</h2>
+      <p class="disclosure">To judge a table, the extension sends the page title, the table's caption and headers, a few sample values from each column, the distinct labels in label columns, and the first and last two rows to the provider you picked above. Nothing is sent for tables you never scroll near, for sites you turn off, or for pages that opt out. Answers are cached in this browser, so an unchanged table is not sent twice. Your API key stays in this browser's extension storage. It is read by the extension's own pages (this one, the popup) and its background worker, and sent only to the provider you picked; web pages and the scripts that run on them can't read it. <a href="https://practicaldata.dev/privacy" target="_blank" rel="noopener">Privacy policy</a></p>
+    </section>
+
+    <footer>
+      <button id="save" class="primary" type="button">Save</button>
+      <button id="test" type="button">Test</button>
+      <button id="clear" type="button">Clear cached answers</button>
+      <output id="status" aria-live="polite"></output>
+      <span class="build" id="build"></span>
+    </footer>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

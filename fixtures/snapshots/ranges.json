@@ -1,0 +1,131 @@
+{
+ "url": "fixture://synthetic/ranges.html",
+ "title": "Practical Data: ranges",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Survey respondents by age bracket",
+   "headers": [
+    "Age bracket",
+    "Typical salary",
+    "Respondents"
+   ],
+   "rows": [
+    [
+     "20-25",
+     "$38,000–$52,000",
+     "412"
+    ],
+    [
+     "26-30",
+     "$50,000–$71,000",
+     "655"
+    ],
+    [
+     "31-40",
+     "$64,000–$95,000",
+     "903"
+    ],
+    [
+     "41-50",
+     "$72,000–$110,000",
+     "587"
+    ],
+    [
+     "51-64",
+     "$70,000–$115,000",
+     "331"
+    ],
+    [
+     "65+",
+     "$40,000–$80,000",
+     "94"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Division standings",
+   "headers": [
+    "Team",
+    "Record",
+    "Home",
+    "Run differential"
+   ],
+   "rows": [
+    [
+     "Harbor Gulls",
+     "4-12",
+     "3-5",
+     "-41"
+    ],
+    [
+     "Mesa Owls",
+     "7-9",
+     "5-3",
+     "-6"
+    ],
+    [
+     "Pine Elks",
+     "9-7",
+     "6-2",
+     "+12"
+    ],
+    [
+     "River Foxes",
+     "11-5",
+     "6-2",
+     "+30"
+    ],
+    [
+     "Canyon Hawks",
+     "12-4",
+     "7-1",
+     "+44"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "This week's games",
+   "headers": [
+    "Matchup",
+    "First pitch",
+    "Game length",
+    "Attendance"
+   ],
+   "rows": [
+    [
+     "Gulls at Owls",
+     "7:05",
+     "2:38",
+     "31,204"
+    ],
+    [
+     "Elks at Foxes",
+     "1:10",
+     "3:05",
+     "27,880"
+    ],
+    [
+     "Hawks at Gulls",
+     "6:40",
+     "2:51",
+     "35,112"
+    ],
+    [
+     "Owls at Elks",
+     "12:35",
+     "2:29",
+     "22,417"
+    ],
+    [
+     "Foxes at Hawks",
+     "7:10",
+     "2:44",
+     "40,005"
+    ]
+   ]
+  }
+ ]
+}

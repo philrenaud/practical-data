@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="practical-data" content="off">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palette study</title>
+  <link rel="icon" href="icon128.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f4f0e8; --ink: #1c1a17; --muted: #6b655c; --line: #e2dbcf; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Bricolage Grotesque", sans-serif; }
+    header { max-width: 1320px; margin: 0 auto; padding: 40px 16px 8px; }
+    h1 { margin: 0; font-size: 40px; letter-spacing: -0.03em; }
+    header p { color: var(--muted); max-width: 70ch; }
+    .palette { max-width: 1320px; margin: 0 auto; padding: 28px 16px; border-top: 1px solid var(--line); }
+    .palette h2 { margin: 0; font-size: 24px; letter-spacing: -0.02em; }
+    .palette .note { margin: 2px 0 14px; color: var(--muted); }
+    .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .panel { border-radius: 12px; padding: 14px; overflow-x: auto; }
+    .panel.light { background: #ffffff; color: #1f2328; border: 1px solid #d1d9e0; }
+    .panel.dark { background: #0d1117; color: #e6edf3; border: 1px solid #30363d; }
+    .panel h3 { margin: 0 0 8px; font: 600 12px "IBM Plex Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 14px; font: 12.5px/1.35 "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+    th, td { padding: 5px 8px; text-align: left; white-space: nowrap; }
+    .light th, .light td { border-bottom: 1px solid #d1d9e0; }
+    .dark th, .dark td { border-bottom: 1px solid #30363d; }
+    th { font: 600 11.5px "Bricolage Grotesque", sans-serif; }
+    @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Palette study</h1>
+    <p>The same recorded judgments, painted with each diverging palette on a GitHub-light and a GitHub-dark page. Neutral columns (blue) and ranked categories (purple) don't change between palettes.</p>
+  </header>
+  <main id="study"></main>
+  <script type="module" src="palettes.js"></script>
+</body>
+</html>

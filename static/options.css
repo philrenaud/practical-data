@@ -1,0 +1,122 @@
+/* Fonts ship with the extension (SIL OFL; licenses in fonts/), so Options makes no third-party requests. */
+@font-face { font-family: "Bricolage Grotesque"; src: url("fonts/bricolage-grotesque-latin.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url("fonts/ibm-plex-mono-500-latin.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --bg: #f6f3ee;
+  --panel: #fffdf9;
+  --ink: #1d1b19;
+  --muted: #6d675f;
+  --line: #e4ded4;
+  --accent: #5b4bc4;
+  --accent-ink: #fff;
+  --focus: #5b4bc4;
+  --radius: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141317;
+    --panel: #1c1b20;
+    --ink: #eeeae3;
+    --muted: #9b958c;
+    --line: #2d2b33;
+    --accent: #8f82f0;
+    --accent-ink: #141317;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  font-optical-sizing: auto;
+}
+main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
+
+header { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 28px; }
+header img { border-radius: 11px; flex: none; }
+h1 { margin: 0; font-size: 30px; font-weight: 720; letter-spacing: -0.02em; line-height: 1.1; }
+.lede { margin: 6px 0 0; color: var(--muted); max-width: 52ch; }
+
+section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+h2 { margin: 0 0 14px; font-size: 13px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.note { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+
+.segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); flex-wrap: wrap; }
+.segmented label { position: relative; }
+.segmented input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.segmented span { display: block; padding: 7px 14px; border-radius: 7px; font-weight: 560; cursor: pointer; transition: background 120ms, color 120ms; }
+.segmented small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+@media (max-width: 480px) {
+  .segmented { display: grid; width: 100%; }
+  .segmented span { padding: 10px 14px; }
+}
+.segmented input:checked + span { background: var(--panel); box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line); }
+.segmented input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+.fields { display: grid; gap: 12px; margin-top: 16px; }
+.fields[hidden] { display: none; }
+.field { display: grid; gap: 5px; }
+.field > span { font-size: 13px; font-weight: 560; }
+input[type="text"], input[type="password"], select {
+  font: 14px/1.4 "IBM Plex Mono", ui-monospace, monospace;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  min-height: 40px;
+  width: 100%;
+}
+input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
+
+.preview-wrap { margin-top: 16px; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.preview { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+.preview th, .preview td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.preview th { font-weight: 620; font-size: 12px; color: var(--muted); background: var(--panel); }
+.preview tr:last-child td { border-bottom: 0; }
+.preview td.num { text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+.hosts { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.hosts:empty::before { content: "None"; color: var(--muted); font-size: 13px; }
+.hosts li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); font: 13px "IBM Plex Mono", monospace; }
+.hosts button { all: unset; cursor: pointer; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); }
+.hosts button:hover { background: var(--line); color: var(--ink); }
+.hosts button:focus-visible { outline: 2px solid var(--focus); }
+
+footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 20px; }
+footer button {
+  font: 600 14px "Bricolage Grotesque", sans-serif;
+  padding: 10px 18px; min-height: 42px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  transition: transform 80ms, background 120ms;
+}
+footer button:active { transform: translateY(1px); }
+footer button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+footer button.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+#status { font-size: 13px; color: var(--muted); }
+#status.error { color: #c2412d; }
+
+.palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.palette { position: relative; display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; background: var(--bg); }
+.palette input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.palette:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.palette:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.palette b { font-weight: 620; font-size: 14px; }
+.palette small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.swatches span { height: 8px; border-radius: 4px; }
+.build { margin-left: auto; font: 12px "IBM Plex Mono", monospace; color: var(--muted); }
+.disclosure { margin: 0; max-width: 64ch; }
+#hosts-note { margin-top: 14px; }

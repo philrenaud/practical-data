@@ -1,0 +1,44 @@
+{
+ "url": "fixture://synthetic/collapsed.html",
+ "title": "Practical Data: collapsed tables",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Life expectancy",
+   "headers": [
+    "Period",
+    "Life expectancy (years)"
+   ],
+   "rows": [
+    [
+     "1950–1954",
+     "59.1"
+    ],
+    [
+     "1960–1964",
+     "66.4"
+    ],
+    [
+     "1970–1974",
+     "68.9"
+    ],
+    [
+     "1980–1984",
+     "70.3"
+    ],
+    [
+     "1990–1994",
+     "71.6"
+    ],
+    [
+     "2000–2004",
+     "72.5"
+    ],
+    [
+     "2010–2014",
+     "75.0"
+    ]
+   ]
+  }
+ ]
+}

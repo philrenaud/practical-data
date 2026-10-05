@@ -1,0 +1,395 @@
+{
+ "url": "fixture://synthetic/readme-cards.html",
+ "title": "Models and pricing for GitHub Copilot",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "OpenAI models",
+   "headers": [
+    "Model",
+    "Category",
+    "Input",
+    "Cached input",
+    "Cache write",
+    "Output"
+   ],
+   "rows": [
+    [
+     "GPT-5 mini",
+     "Lightweight",
+     "$0.25",
+     "$0.025",
+     "Not applicable",
+     "$2.00"
+    ],
+    [
+     "GPT-5.3-Codex",
+     "Powerful",
+     "$1.75",
+     "$0.175",
+     "Not applicable",
+     "$14.00"
+    ],
+    [
+     "GPT-5.4",
+     "Versatile",
+     "$2.50",
+     "$0.25",
+     "Not applicable",
+     "$15.00"
+    ],
+    [
+     "GPT-5.4 mini",
+     "Lightweight",
+     "$0.75",
+     "$0.075",
+     "Not applicable",
+     "$4.50"
+    ],
+    [
+     "GPT-5.6 Luna",
+     "Lightweight",
+     "$0.20",
+     "$0.02",
+     "$0.25",
+     "$1.20"
+    ],
+    [
+     "GPT-5.6 Sol",
+     "Powerful",
+     "$4.00",
+     "$0.40",
+     "$5.00",
+     "$20.00"
+    ],
+    [
+     "GPT-6 Astra",
+     "Powerful",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$50.00"
+    ],
+    [
+     "GPT-6 Terra",
+     "Versatile",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$12.00"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "OpenAI models",
+   "headers": [
+    "Model",
+    "Category",
+    "Input",
+    "Cached input",
+    "Cache write",
+    "Output"
+   ],
+   "rows": [
+    [
+     "GPT-5 mini",
+     "Lightweight",
+     "$0.25",
+     "$0.025",
+     "Not applicable",
+     "$2.00"
+    ],
+    [
+     "GPT-5.3-Codex",
+     "Powerful",
+     "$1.75",
+     "$0.175",
+     "Not applicable",
+     "$14.00"
+    ],
+    [
+     "GPT-5.4",
+     "Versatile",
+     "$2.50",
+     "$0.25",
+     "Not applicable",
+     "$15.00"
+    ],
+    [
+     "GPT-5.4 mini",
+     "Lightweight",
+     "$0.75",
+     "$0.075",
+     "Not applicable",
+     "$4.50"
+    ],
+    [
+     "GPT-5.6 Luna",
+     "Lightweight",
+     "$0.20",
+     "$0.02",
+     "$0.25",
+     "$1.20"
+    ],
+    [
+     "GPT-5.6 Sol",
+     "Powerful",
+     "$4.00",
+     "$0.40",
+     "$5.00",
+     "$20.00"
+    ],
+    [
+     "GPT-6 Astra",
+     "Powerful",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$50.00"
+    ],
+    [
+     "GPT-6 Terra",
+     "Versatile",
+     "$2.00",
+     "$0.20",
+     "$2.50",
+     "$12.00"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "OpenAI models",
+   "headers": [
+    "Season",
+    "Age",
+    "W",
+    "L",
+    "ERA",
+    "WHIP",
+    "SO9",
+    "ERA+"
+   ],
+   "rows": [
+    [
+     "2020",
+     "23",
+     "1",
+     "4",
+     "5.63",
+     "1.219",
+     "10.4",
+     "81"
+    ],
+    [
+     "2021",
+     "24",
+     "8",
+     "12",
+     "4.34",
+     "1.259",
+     "9.9",
+     "98"
+    ],
+    [
+     "2022",
+     "25",
+     "7",
+     "8",
+     "3.52",
+     "1.156",
+     "8.9",
+     "111"
+    ],
+    [
+     "2023",
+     "26",
+     "7",
+     "3",
+     "2.80",
+     "0.896",
+     "11.4",
+     "155"
+    ],
+    [
+     "2024",
+     "27",
+     "18",
+     "4",
+     "2.39",
+     "0.922",
+     "10.7",
+     "174"
+    ],
+    [
+     "2025",
+     "28",
+     "13",
+     "6",
+     "2.21",
+     "0.891",
+     "11.1",
+     "185"
+    ]
+   ]
+  },
+  {
+   "id": "t3",
+   "title": "OpenAI models",
+   "headers": [
+    "Population centre",
+    "Greenness (%)",
+    "Typical rent",
+    "Density (/km²)",
+    "Median age"
+   ],
+   "rows": [
+    [
+     "Kelowna",
+     "78.2",
+     "$1,450–$1,900",
+     "1,123[4]",
+     "40–44"
+    ],
+    [
+     "Saskatoon",
+     "71.6",
+     "$1,100–$1,350",
+     "1,867",
+     "35–39"
+    ],
+    [
+     "Halifax",
+     "74.9",
+     "$1,600–$2,050",
+     "1,402[4]",
+     "35–39"
+    ],
+    [
+     "Iqaluit",
+     "..",
+     "$2,800–$3,400",
+     "— N/a",
+     "30–34"
+    ],
+    [
+     "Montréal",
+     "66.3",
+     "$1,250–$1,700",
+     "4,833",
+     "40–44"
+    ],
+    [
+     "Calgary",
+     "69.8",
+     "$1,500–$1,950",
+     "1,592",
+     "35–39"
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "OpenAI models",
+   "headers": [
+    "Ticket",
+    "Priority",
+    "Size",
+    "Storm at landfall"
+   ],
+   "rows": [
+    [
+     "OPS-412",
+     "Critical",
+     "XL",
+     "Category 5 hurricane"
+    ],
+    [
+     "OPS-409",
+     "Medium",
+     "M",
+     "Category 2 hurricane"
+    ],
+    [
+     "OPS-403",
+     "Low",
+     "S",
+     "Tropical storm"
+    ],
+    [
+     "OPS-398",
+     "High",
+     "L",
+     "Category 4 hurricane"
+    ],
+    [
+     "OPS-391",
+     "Medium",
+     "XS",
+     "Category 1 hurricane"
+    ],
+    [
+     "OPS-388",
+     "High",
+     "M",
+     "Category 3 hurricane"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "OpenAI models",
+   "headers": [
+    "Player",
+    "Jersey #",
+    "Born",
+    "Zip code",
+    "Height",
+    "Points per game"
+   ],
+   "rows": [
+    [
+     "Ada Park",
+     "23",
+     "1998",
+     "94110",
+     "6' 2\"",
+     "21.4"
+    ],
+    [
+     "Ben Ortiz",
+     "7",
+     "2001",
+     "10027",
+     "6' 7\"",
+     "12.9"
+    ],
+    [
+     "Cy Moreau",
+     "11",
+     "1995",
+     "60614",
+     "6' 9\"",
+     "8.2"
+    ],
+    [
+     "Di Okafor",
+     "34",
+     "1999",
+     "30307",
+     "6' 5\"",
+     "17.5"
+    ],
+    [
+     "Eli Sato",
+     "0",
+     "2003",
+     "98103",
+     "6' 0\"",
+     "5.1"
+    ]
+   ]
+  }
+ ]
+}

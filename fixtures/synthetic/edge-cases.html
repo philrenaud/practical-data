@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: edge cases</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  tbody tr:nth-child(even) td { background: #f4f4f4; }
+</style>
+</head>
+<body>
+<h1>Edge cases</h1>
+
+<h2>Apparel sizes</h2>
+<table id="sizes">
+  <thead><tr><th>SKU</th><th>Size</th><th>Price</th><th>In stock</th></tr></thead>
+  <tbody>
+    <tr><td>A-100</td><td>M</td><td>$24.00</td><td>12</td></tr>
+    <tr><td>A-101</td><td>XS</td><td>$22.00</td><td>3</td></tr>
+    <tr><td>A-102</td><td>XL</td><td>$28.00</td><td>0</td></tr>
+    <tr><td>A-103</td><td>S</td><td>$22.00</td><td>9</td></tr>
+    <tr><td>A-104</td><td>L</td><td>$26.00</td><td>15</td></tr>
+    <tr><td>A-105</td><td>M</td><td>$24.00</td><td>7</td></tr>
+  </tbody>
+</table>
+
+<h2>Roster</h2>
+<table id="roster">
+  <thead><tr><th>Player</th><th>Jersey #</th><th>Born</th><th>Zip code</th><th>Height (in)</th><th>Points per game</th></tr></thead>
+  <tbody>
+    <tr><td>Ada Park</td><td>23</td><td>1998</td><td>94110</td><td>74</td><td>21.4</td></tr>
+    <tr><td>Ben Ortiz</td><td>7</td><td>2001</td><td>10027</td><td>79</td><td>12.9</td></tr>
+    <tr><td>Cy Moreau</td><td>11</td><td>1995</td><td>60614</td><td>81</td><td>8.2</td></tr>
+    <tr><td>Di Okafor</td><td>34</td><td>1999</td><td>30307</td><td>77</td><td>17.5</td></tr>
+    <tr><td>Eli Sato</td><td>0</td><td>2003</td><td>98103</td><td>72</td><td>5.1</td></tr>
+  </tbody>
+</table>
+
+<h2>Regional sales</h2>
+<table id="sales">
+  <thead><tr><th>Region</th><th>Revenue</th><th>Returns</th><th>Margin</th></tr></thead>
+  <tbody>
+    <tr><td>North</td><td>$1,240,000</td><td>312</td><td>18.5%</td></tr>
+    <tr><td>South</td><td>$980,500</td><td>401</td><td>14.2%</td></tr>
+    <tr><td>East</td><td>$1,610,250</td><td>220</td><td>21.0%</td></tr>
+    <tr><td>West</td><td>$1,105,000</td><td>298</td><td>16.8%</td></tr>
+    <tr><td>Central</td><td>$760,900</td><td>350</td><td>12.1%</td></tr>
+    <tr><td>Total</td><td>$5,696,650</td><td>1,581</td><td>16.9%</td></tr>
+  </tbody>
+</table>
+
+<h2>Incident queue</h2>
+<table id="incidents">
+  <thead><tr><th>Ticket</th><th>Summary</th><th>Priority</th><th>Status</th><th>Hours open</th></tr></thead>
+  <tbody>
+    <tr><td>INC-4411</td><td>Checkout failing for EU cards</td><td>Critical</td><td>Investigating</td><td>2.5</td></tr>
+    <tr><td>INC-4408</td><td>Slow dashboard load</td><td>Medium</td><td>Open</td><td>30</td></tr>
+    <tr><td>INC-4402</td><td>Typo on pricing page</td><td>Low</td><td>Resolved</td><td>96</td></tr>
+    <tr><td>INC-4399</td><td>Webhook retries duplicated</td><td>High</td><td>Open</td><td>14</td></tr>
+    <tr><td>INC-4397</td><td>Export missing a column</td><td>Medium</td><td>Investigating</td><td>41</td></tr>
+    <tr><td>INC-4390</td><td>Login rate limit too strict</td><td>High</td><td>Resolved</td><td>8</td></tr>
+  </tbody>
+</table>
+
+<h2>Peaks</h2>
+<table id="peaks">
+  <caption>Selected mountains</caption>
+  <thead>
+    <tr><th rowspan="2">Mountain</th><th colspan="2">Elevation</th><th rowspan="2">Range</th><th rowspan="2">First ascent</th></tr>
+    <tr><th>m</th><th>ft</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Everest</td><td>8,849</td><td>29,032</td><td>Himalaya</td><td>1953</td></tr>
+    <tr><td>Aconcagua</td><td>6,961</td><td>22,838</td><td>Andes</td><td>1897</td></tr>
+    <tr><td>Denali</td><td>6,190</td><td>20,310</td><td>Alaska Range</td><td>1913</td></tr>
+    <tr><td>Kilimanjaro</td><td>5,895</td><td>19,341</td><td>Eastern Rift</td><td>1889</td></tr>
+    <tr><td>Mont Blanc</td><td>4,806</td><td>15,768</td><td>Alps</td><td>1786</td></tr>
+  </tbody>
+</table>
+
+<h2>Weekly temperature change</h2>
+<table id="temps">
+  <thead><tr><th>City</th><th>Change (°C)</th><th>Conditions</th></tr></thead>
+  <tbody>
+    <tr><td>Oslo</td><td>-4.2</td><td>Snow</td></tr>
+    <tr><td>Lisbon</td><td>+1.1</td><td>Sunny</td></tr>
+    <tr><td>Cairo</td><td>+3.8</td><td>Sunny</td></tr>
+    <tr><td>Lima</td><td>-0.6</td><td>Cloudy</td></tr>
+    <tr><td>Perth</td><td>+0.2</td><td>Rain</td></tr>
+  </tbody>
+</table>
+
+<h2>Store A prices</h2>
+<table id="store-a">
+  <thead><tr><th>Item</th><th>Price (USD)</th></tr></thead>
+  <tbody>
+    <tr><td>Kettle</td><td>$39.00</td></tr><tr><td>Toaster</td><td>$54.00</td></tr><tr><td>Blender</td><td>$89.00</td></tr>
+  </tbody>
+</table>
+<h2>Store B prices</h2>
+<table id="store-b">
+  <thead><tr><th>Item</th><th>Price (USD)</th></tr></thead>
+  <tbody>
+    <tr><td>Kettle</td><td>$35.00</td></tr><tr><td>Toaster</td><td>$61.00</td></tr><tr><td>Blender</td><td>$120.00</td></tr><tr><td>Mixer</td><td>$249.00</td></tr>
+  </tbody>
+</table>
+
+<h2>Glossary</h2>
+<table id="glossary">
+  <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+  <tbody>
+    <tr><td>Latency</td><td>Time between a request and its response.</td></tr>
+    <tr><td>Throughput</td><td>Requests handled per unit of time.</td></tr>
+    <tr><td>Jitter</td><td>Variation in latency between requests.</td></tr>
+  </tbody>
+</table>
+
+<h2>Wine list</h2>
+<table id="wine">
+  <thead><tr><th>Wine</th><th>Region</th><th>Sweetness</th><th>Body</th><th>Glass</th></tr></thead>
+  <tbody>
+    <tr><td>Riesling Kabinett</td><td>Mosel</td><td>Off-dry</td><td>Light</td><td>€9</td></tr>
+    <tr><td>Sauternes</td><td>Bordeaux</td><td>Sweet</td><td>Full</td><td>€16</td></tr>
+    <tr><td>Chablis</td><td>Burgundy</td><td>Dry</td><td>Medium</td><td>€12</td></tr>
+    <tr><td>Muscat</td><td>Alsace</td><td>Sweet</td><td>Medium</td><td>€10</td></tr>
+    <tr><td>Barolo</td><td>Piedmont</td><td>Dry</td><td>Full</td><td>€18</td></tr>
+    <tr><td>Vinho Verde</td><td>Minho</td><td>Dry</td><td>Light</td><td>€7</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

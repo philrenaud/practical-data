@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: collapsed tables</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 760px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  table.collapsed tbody tr:not(.head) { display: none; }
+  button { font: inherit; margin-left: 8px; }
+</style>
+</head>
+<body>
+<h1>Collapsed tables</h1>
+<p>Like Wikipedia's [show] tables: the header row is visible, the body is hidden until expanded.</p>
+<h2>Life expectancy</h2>
+<table id="life" class="collapsed">
+  <tbody>
+    <tr class="head"><th>Period</th><th>Life expectancy (years)<button type="button" data-e2e-expand onclick="this.closest('table').classList.remove('collapsed')">show</button></th></tr>
+    <tr><td>1950–1954</td><td>59.1</td></tr>
+    <tr><td>1960–1964</td><td>66.4</td></tr>
+    <tr><td>1970–1974</td><td>68.9</td></tr>
+    <tr><td>1980–1984</td><td>70.3</td></tr>
+    <tr><td>1990–1994</td><td>71.6</td></tr>
+    <tr><td>2000–2004</td><td>72.5</td></tr>
+    <tr><td>2010–2014</td><td>75.0</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

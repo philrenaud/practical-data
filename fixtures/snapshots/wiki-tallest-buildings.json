@@ -1,0 +1,3816 @@
+{
+ "url": "fixture://live/wiki-tallest-buildings.html",
+ "title": "List of tallest buildings - Wikipedia",
+ "tables": [
+  {
+   "id": "t1",
+   "title": "Tallest buildings in the world",
+   "headers": [
+    "",
+    "Name",
+    "Height: m",
+    "Height: ft",
+    "Floors",
+    "Image",
+    "City",
+    "Country",
+    "Year",
+    "Comments",
+    "Ref"
+   ],
+   "rows": [
+    [
+     "1",
+     "Burj Khalifa",
+     "828",
+     "2,717",
+     "163 (+ 2 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2010",
+     "Tallest building in the world since 2009",
+     ""
+    ],
+    [
+     "2",
+     "Merdeka Maybank Tower",
+     "678.9",
+     "2,227",
+     "118 (+ 5 below ground)",
+     "",
+     "Kuala Lumpur",
+     "Malaysia",
+     "2024",
+     "Tallest building in Southeast Asia",
+     ""
+    ],
+    [
+     "3",
+     "Shanghai Tower",
+     "632",
+     "2,073",
+     "128 (+ 5 below ground)",
+     "",
+     "Shanghai",
+     "China",
+     "2015",
+     "Tallest building in East Asia, tallest twisted building in the world; second tallest by floor count; contains the highest luxury hotel in the world. Tallest building in China.",
+     ""
+    ],
+    [
+     "4",
+     "Mecca Royal Clock Tower",
+     "601",
+     "1,972",
+     "120 (+ 3 below ground)",
+     "",
+     "Mecca",
+     "Saudi Arabia",
+     "2012",
+     "Tallest building in Saudi Arabia, tallest clock tower and contains the highest museum in the world",
+     ""
+    ],
+    [
+     "5",
+     "Ping An Finance Centre",
+     "599.1",
+     "1,966",
+     "115 (+ 5 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2017",
+     "Tallest all-office building in the world; tallest in Guangdong Province",
+     ""
+    ],
+    [
+     "6",
+     "Lotte World Tower",
+     "554.5",
+     "1,819",
+     "123 (+ 6 below ground)",
+     "",
+     "Seoul",
+     "South Korea",
+     "2017",
+     "Tallest building in South Korea and the OECD",
+     ""
+    ],
+    [
+     "7",
+     "One World Trade Center",
+     "541.3",
+     "1,776",
+     "104 (+ 5 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2014",
+     "Tallest building outside of Asia; tallest building on an island. Tallest building in the Western Hemisphere, the United States and New York City.",
+     ""
+    ],
+    [
+     "8",
+     "Guangzhou CTF Finance Centre",
+     "530",
+     "1,740",
+     "111 (+ 5 below ground)",
+     "",
+     "Guangzhou",
+     "China",
+     "2016",
+     "",
+     ""
+    ],
+    [
+     "8",
+     "Tianjin CTF Finance Centre",
+     "530",
+     "1,740",
+     "97 (+ 4 below ground)",
+     "",
+     "Tianjin",
+     "China",
+     "2019",
+     "Tallest completed building in Tianjin; tallest building in the world fewer than 100 floors",
+     ""
+    ],
+    [
+     "10",
+     "CITIC Tower",
+     "527.7",
+     "1,731",
+     "109 (+ 8 below ground)",
+     "",
+     "Beijing",
+     "China",
+     "2018",
+     "Tallest building in Beijing",
+     ""
+    ],
+    [
+     "11",
+     "Taipei 101",
+     "508",
+     "1,667",
+     "101 (+ 5 below ground)",
+     "",
+     "Taipei",
+     "Taiwan",
+     "2004",
+     "Tallest building in the world from 2004 to 2009; tallest building in Taiwan",
+     ""
+    ],
+    [
+     "12",
+     "Shanghai World Financial Center",
+     "492",
+     "1,614",
+     "101 (+ 3 below ground)",
+     "",
+     "Shanghai",
+     "China",
+     "2008",
+     "Tallest building in the world with a hole",
+     ""
+    ],
+    [
+     "13",
+     "International Commerce Centre",
+     "484",
+     "1,588",
+     "108 (+ 4 below ground)",
+     "",
+     "Hong Kong",
+     "China",
+     "2010",
+     "Tallest building in Hong Kong",
+     ""
+    ],
+    [
+     "14",
+     "Wuhan Greenland Center",
+     "475.6",
+     "1,560",
+     "101 (+ 6 below ground)",
+     "",
+     "Wuhan",
+     "China",
+     "2023",
+     "Tallest building in Hubei Province",
+     ""
+    ],
+    [
+     "15",
+     "Central Park Tower",
+     "472.4",
+     "1,550",
+     "98 (+ 4 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2021",
+     "Tallest residential building",
+     ""
+    ],
+    [
+     "16",
+     "Lakhta Center",
+     "462",
+     "1,516",
+     "87 (+ 3 below ground)",
+     "",
+     "Saint Petersburg",
+     "Russia",
+     "2019",
+     "Tallest building in Europe and Russia; Northernmost skyscraper in the world",
+     ""
+    ],
+    [
+     "17",
+     "Landmark 81",
+     "461.2",
+     "1,513",
+     "81 (+ 3 below ground)",
+     "",
+     "Ho Chi Minh City",
+     "Vietnam",
+     "2018",
+     "Tallest building in Vietnam",
+     ""
+    ],
+    [
+     "18",
+     "International Land-Sea Center",
+     "458",
+     "1,503",
+     "98 (+ 4 below ground)",
+     "",
+     "Chongqing",
+     "China",
+     "2024",
+     "Tallest building in Chongqing",
+     ""
+    ],
+    [
+     "19",
+     "The Exchange 106",
+     "453.6",
+     "1,488",
+     "95 (+ 6 below ground)",
+     "",
+     "Kuala Lumpur",
+     "Malaysia",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "20",
+     "Changsha IFS T1",
+     "452.1",
+     "1,483",
+     "94 (+ 5 below ground)",
+     "",
+     "Changsha",
+     "China",
+     "2018",
+     "Tallest building in Hunan Province",
+     ""
+    ],
+    [
+     "21",
+     "Petronas Tower 1",
+     "451.9",
+     "1,483",
+     "88 (+ 5 below ground)",
+     "",
+     "Kuala Lumpur",
+     "Malaysia",
+     "1998",
+     "Tallest buildings in the world from 1998 to 2004; tallest buildings built in the 20th century; Tallest twin buildings",
+     ""
+    ],
+    [
+     "21",
+     "Petronas Tower 2",
+     "451.9",
+     "1,483",
+     "88 (+ 5 below ground)",
+     "",
+     "Kuala Lumpur",
+     "Malaysia",
+     "1998",
+     "Tallest buildings in the world from 1998 to 2004; tallest buildings built in the 20th century; Tallest twin buildings",
+     ""
+    ],
+    [
+     "23",
+     "Zifeng Tower",
+     "450",
+     "1,480",
+     "89 (+ 5 below ground)",
+     "",
+     "Nanjing",
+     "China",
+     "2010",
+     "Tallest building in Jiangsu Province, tied with Suzhou IFS",
+     ""
+    ],
+    [
+     "23",
+     "Suzhou International Financial Center",
+     "450",
+     "1,480",
+     "95 (+ 5 below ground)",
+     "",
+     "Suzhou",
+     "China",
+     "2019",
+     "Tallest building in Jiangsu Province, tied with Zifeng Tower",
+     ""
+    ],
+    [
+     "25",
+     "Wuhan Center",
+     "443.1",
+     "1,454",
+     "88 (+ 4 below ground)",
+     "",
+     "Wuhan",
+     "China",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "26",
+     "Willis Tower",
+     "442.1",
+     "1,450",
+     "108 (+ 3 below ground)",
+     "",
+     "Chicago",
+     "United States",
+     "1974",
+     "Tallest building in the world from 1974 to 1998 as Sears Tower; tallest building in Illinois",
+     ""
+    ],
+    [
+     "27",
+     "KK100",
+     "441.8",
+     "1,449",
+     "98 (+ 4 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2011",
+     "",
+     ""
+    ],
+    [
+     "28",
+     "Guangzhou International Finance Center",
+     "438.6",
+     "1,439",
+     "101 (+ 4 below ground)",
+     "",
+     "Guangzhou",
+     "China",
+     "2010",
+     "",
+     ""
+    ],
+    [
+     "29",
+     "111 West 57th Street",
+     "435.3",
+     "1,428",
+     "84 (+ 2 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2021",
+     "Thinnest skyscraper in the world with a width-to-height ratio of about 1:24",
+     ""
+    ],
+    [
+     "30",
+     "Shandong International Financial Center",
+     "428",
+     "1,404",
+     "88 (+ 4 below ground)",
+     "",
+     "Jinan",
+     "China",
+     "2025",
+     "Tallest building in Shandong Province",
+     ""
+    ],
+    [
+     "31",
+     "One Vanderbilt",
+     "427",
+     "1,401",
+     "62 (+ 4 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2020",
+     "",
+     ""
+    ],
+    [
+     "32",
+     "432 Park Avenue",
+     "425.7",
+     "1,397",
+     "85 (+ 3 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2015",
+     "",
+     ""
+    ],
+    [
+     "33",
+     "Marina 101",
+     "425",
+     "1,394",
+     "101 (+ 6 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2017",
+     "",
+     ""
+    ],
+    [
+     "34",
+     "Trump International Hotel and Tower",
+     "423.2",
+     "1,388",
+     "98 (+ 2 below ground)",
+     "",
+     "Chicago",
+     "United States",
+     "2009",
+     "",
+     ""
+    ],
+    [
+     "35",
+     "270 Park Avenue",
+     "423",
+     "1,388",
+     "60",
+     "",
+     "New York City",
+     "United States",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "36",
+     "Minying International Trade Center T2",
+     "422.6",
+     "1,386",
+     "85 (+ 3 below ground)",
+     "",
+     "Dongguan",
+     "China",
+     "2021",
+     "",
+     ""
+    ],
+    [
+     "37",
+     "Jin Mao Tower",
+     "420.5",
+     "1,380",
+     "88 (+ 3 below ground)",
+     "",
+     "Shanghai",
+     "China",
+     "1999",
+     "",
+     ""
+    ],
+    [
+     "38",
+     "Nanjing Financial City Phase II Plot C Tower 1",
+     "416.6",
+     "1,367",
+     "88",
+     "",
+     "Nanjing",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "39",
+     "Princess Tower",
+     "413.4",
+     "1,356",
+     "101 (+ 6 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2012",
+     "",
+     ""
+    ],
+    [
+     "40",
+     "Al Hamra Tower",
+     "412.6",
+     "1,354",
+     "80 (+ 3 below ground)",
+     "",
+     "Kuwait City",
+     "Kuwait",
+     "2011",
+     "Tallest building in Kuwait",
+     ""
+    ],
+    [
+     "41",
+     "International Finance Centre",
+     "412",
+     "1,352",
+     "88 (+ 6 below ground)",
+     "",
+     "Hong Kong",
+     "China",
+     "2003",
+     "",
+     ""
+    ],
+    [
+     "42",
+     "Haeundae LCT The Sharp Landmark Tower",
+     "411.6",
+     "1,350",
+     "101 (+ 5 below ground)",
+     "",
+     "Busan",
+     "South Korea",
+     "2019",
+     "Tallest building in Busan",
+     ""
+    ],
+    [
+     "43",
+     "Ningbo Central Plaza",
+     "409",
+     "1,342",
+     "80",
+     "",
+     "Ningbo",
+     "China",
+     "2024",
+     "Tallest building in Zhejiang Province",
+     ""
+    ],
+    [
+     "44",
+     "Guangxi China Resources Tower",
+     "402.7",
+     "1,321",
+     "86 (+ 3 below ground)",
+     "",
+     "Nanning",
+     "China",
+     "2020",
+     "Tallest building in Guangxi Province",
+     ""
+    ],
+    [
+     "45",
+     "Guiyang International Financial Center T1",
+     "401",
+     "1,316",
+     "79 (+ 5 below ground)",
+     "",
+     "Guiyang",
+     "China",
+     "2020",
+     "Tallest building in Guizhou Province",
+     ""
+    ],
+    [
+     "46",
+     "Iconic Tower",
+     "393.8",
+     "1,292",
+     "77 (+ 2 below ground)",
+     "",
+     "New Administrative Capital",
+     "Egypt",
+     "2023",
+     "Tallest building in Africa and Egypt",
+     ""
+    ],
+    [
+     "47",
+     "China Merchants Bank Global Headquarters Main Tower",
+     "393",
+     "1,289",
+     "77",
+     "",
+     "Shenzhen",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "48",
+     "China Resources Tower",
+     "392.5",
+     "1,288",
+     "68 (+ 5 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2018",
+     "",
+     ""
+    ],
+    [
+     "49",
+     "23 Marina",
+     "392.4",
+     "1,287",
+     "88 (+ 4 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2012",
+     "",
+     ""
+    ],
+    [
+     "50",
+     "CITIC Plaza",
+     "390.2",
+     "1,280",
+     "80 (+ 2 below ground)",
+     "",
+     "Guangzhou",
+     "China",
+     "1996",
+     "",
+     ""
+    ],
+    [
+     "51",
+     "Citymark Centre",
+     "388.3",
+     "1,274",
+     "70 (+ 7 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2022",
+     "",
+     ""
+    ],
+    [
+     "52",
+     "Shum Yip Upperhills Tower 1",
+     "388.1",
+     "1,273",
+     "80 (+ 3 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2020",
+     "",
+     ""
+    ],
+    [
+     "53",
+     "30 Hudson Yards",
+     "387.1",
+     "1,270",
+     "73 (+ 1 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "54",
+     "Public Investment Fund Tower",
+     "385",
+     "1,263",
+     "72 (+ 4 below ground)",
+     "",
+     "Riyadh",
+     "Saudi Arabia",
+     "2021",
+     "Tallest building in Riyadh",
+     ""
+    ],
+    [
+     "55",
+     "Shun Hing Square",
+     "384",
+     "1,260",
+     "69 (+ 3 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "1996",
+     "",
+     ""
+    ],
+    [
+     "56",
+     "Eton Place Dalian Tower 1",
+     "383.2",
+     "1,257",
+     "80 (+ 4 below ground)",
+     "",
+     "Dalian",
+     "China",
+     "2016",
+     "Tallest building in Liaoning Province",
+     ""
+    ],
+    [
+     "57",
+     "Autograph Tower",
+     "382.9",
+     "1,256",
+     "75 (+ 6 below ground)",
+     "",
+     "Jakarta",
+     "Indonesia",
+     "2022",
+     "Tallest building in Indonesia. Tallest building in the Southern Hemisphere.",
+     ""
+    ],
+    [
+     "58",
+     "Logan Century Center 1",
+     "381.3",
+     "1,251",
+     "82 (+ 4 below ground)",
+     "",
+     "Nanning",
+     "China",
+     "2018",
+     "",
+     ""
+    ],
+    [
+     "59",
+     "Burj Mohammed bin Rashid",
+     "381.2",
+     "1,251",
+     "88 (+ 5 below ground)",
+     "",
+     "Abu Dhabi",
+     "United Arab Emirates",
+     "2014",
+     "",
+     ""
+    ],
+    [
+     "60",
+     "Empire State Building",
+     "381",
+     "1,250",
+     "102 (+ 1 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "1931",
+     "Tallest building in the world from 1931 to 1972",
+     ""
+    ],
+    [
+     "61",
+     "Elite Residence",
+     "380.5",
+     "1,248",
+     "87 (+ 4 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2012",
+     "",
+     ""
+    ],
+    [
+     "62",
+     "Ciel Dubai Marina",
+     "377",
+     "1,237",
+     "81",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2025",
+     "Tallest hotel in the world",
+     ""
+    ],
+    [
+     "63",
+     "Riverview Plaza",
+     "376",
+     "1,234",
+     "73 (+ 3 below ground)",
+     "",
+     "Wuhan",
+     "China",
+     "2021",
+     "",
+     ""
+    ],
+    [
+     "64",
+     "Guangdong Business Center",
+     "375.5",
+     "1,232",
+     "60 (+ 5 below ground)",
+     "",
+     "Guangzhou",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "65",
+     "Dabaihui Plaza",
+     "375.6",
+     "1,232",
+     "70 (+ 4 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2021",
+     "",
+     ""
+    ],
+    [
+     "66",
+     "Central Plaza",
+     "373.9",
+     "1,227",
+     "78 (+ 3 below ground)",
+     "",
+     "Hong Kong",
+     "China",
+     "1992",
+     "Contains the highest church in the world",
+     ""
+    ],
+    [
+     "67",
+     "Federation Tower (East Tower)",
+     "373.7",
+     "1,226",
+     "93 (+ 4 below ground)",
+     "",
+     "Moscow",
+     "Russia",
+     "2016",
+     "Tallest building in Moscow",
+     ""
+    ],
+    [
+     "68",
+     "Hengfeng Guiyang Center Tower 1",
+     "373.5",
+     "1,225",
+     "77 (+ 5 below ground)",
+     "",
+     "Guiyang",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "69",
+     "Dalian International Trade Center",
+     "370.2",
+     "1,215",
+     "86 (+ 7 below ground)",
+     "",
+     "Dalian",
+     "China",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "69",
+     "Shanghai International Trade Center Tower 1",
+     "370",
+     "1,210",
+     "70",
+     "",
+     "Shanghai",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "69",
+     "Kempinski The Boulevard Dubai",
+     "370",
+     "1,210",
+     "73 (+ 3 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2017",
+     "",
+     ""
+    ],
+    [
+     "72",
+     "Haitian Center Tower 2",
+     "368.9",
+     "1,210",
+     "73 (+ 6 below ground)",
+     "",
+     "Qingdao",
+     "China",
+     "2021",
+     "",
+     ""
+    ],
+    [
+     "73",
+     "Golden Eagle Tiandi Tower A",
+     "368.1",
+     "1,208",
+     "77 (+ 4 below ground)",
+     "",
+     "Nanjing",
+     "China",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "74",
+     "Bank of China Tower",
+     "367.4",
+     "1,205",
+     "72 (+ 4 below ground)",
+     "",
+     "Hong Kong",
+     "China",
+     "1990",
+     "",
+     ""
+    ],
+    [
+     "75",
+     "Bank of America Tower",
+     "365.8",
+     "1,200",
+     "55 (+ 3 below ground)",
+     "",
+     "New York City",
+     "United States",
+     "2009",
+     "",
+     ""
+    ],
+    [
+     "76",
+     "St. Regis Chicago",
+     "362.9",
+     "1,191",
+     "101 (+ 5 below ground)",
+     "",
+     "Chicago",
+     "United States",
+     "2020",
+     "Tallest structure in the world designed by a woman",
+     ""
+    ],
+    [
+     "77",
+     "Almas Tower",
+     "360",
+     "1,180",
+     "68 (+ 5 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2008",
+     "",
+     ""
+    ],
+    [
+     "77",
+     "Ping An Finance Center Tower 1",
+     "360",
+     "1,180",
+     "62 (+ 3 below ground)",
+     "",
+     "Jinan",
+     "China",
+     "2023",
+     "",
+     ""
+    ],
+    [
+     "79",
+     "Huiyun Center",
+     "359.2",
+     "1,178",
+     "80",
+     "",
+     "Shenzhen",
+     "China",
+     "2023",
+     "",
+     ""
+    ],
+    [
+     "80",
+     "Hanking Center",
+     "358.9",
+     "1,177",
+     "65 (+ 5 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2018",
+     "",
+     ""
+    ],
+    [
+     "81",
+     "Greenland Group Suzhou Center",
+     "358",
+     "1,175",
+     "77 (+ 3 below ground)",
+     "",
+     "Suzhou",
+     "China",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "81",
+     "City Tower 1",
+     "358",
+     "1,175",
+     "94",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2025",
+     "",
+     ""
+    ],
+    [
+     "83",
+     "Gevora Hotel",
+     "356.3",
+     "1,169",
+     "75 (+ 2 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2017",
+     "",
+     ""
+    ],
+    [
+     "84",
+     "Galaxy World Tower 1",
+     "356",
+     "1,168",
+     "71 (+ 5 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2023",
+     "",
+     ""
+    ],
+    [
+     "84",
+     "Galaxy World Tower 2",
+     "356",
+     "1,168",
+     "71 (+ 5 below ground)",
+     "",
+     "Shenzhen",
+     "China",
+     "2023",
+     "",
+     ""
+    ],
+    [
+     "84",
+     "Il Primo Tower",
+     "356",
+     "1,168",
+     "79",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2022",
+     "",
+     ""
+    ],
+    [
+     "87",
+     "JW Marriott Marquis Dubai Tower 1",
+     "355.4",
+     "1,166",
+     "82 (+ 2 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2012",
+     "",
+     ""
+    ],
+    [
+     "87",
+     "JW Marriott Marquis Dubai Tower 2",
+     "355.4",
+     "1,166",
+     "82 (+ 2 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2013",
+     "",
+     ""
+    ],
+    [
+     "89",
+     "Emirates Office Tower",
+     "354.6",
+     "1,163",
+     "54",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2000",
+     "",
+     ""
+    ],
+    [
+     "90",
+     "Raffles City Chongqing T3N",
+     "354.5",
+     "1,163",
+     "79 (+ 3 below ground)",
+     "",
+     "Chongqing",
+     "China",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "90",
+     "Raffles City Chongqing T4N",
+     "354.5",
+     "1,163",
+     "74 (+ 3 below ground)",
+     "",
+     "Chongqing",
+     "China",
+     "2019",
+     "",
+     ""
+    ],
+    [
+     "92",
+     "OKO – South Tower",
+     "354.2",
+     "1,162",
+     "90 (+ 2 below ground)",
+     "",
+     "Moscow",
+     "Russia",
+     "2015",
+     "",
+     ""
+    ],
+    [
+     "93",
+     "CBRT Tower",
+     "352",
+     "1,155",
+     "59",
+     "",
+     "Istanbul",
+     "Turkey",
+     "2024",
+     "Tallest building in Turkey",
+     ""
+    ],
+    [
+     "93",
+     "The Marina Torch",
+     "352",
+     "1,155",
+     "86 (+ 4 below ground)",
+     "",
+     "Dubai",
+     "United Arab Emirates",
+     "2011",
+     "",
+     ""
+    ],
+    [
+     "95",
+     "SkyTower at Pinnacle One Yonge",
+     "351.4",
+     "1,153",
+     "106",
+     "",
+     "Toronto",
+     "Canada",
+     "2026",
+     "Tallest building in Canada. Tallest building in North America and the Western Hemisphere outside of the United States.",
+     ""
+    ],
+    [
+     "96",
+     "Forum 66 Tower 1",
+     "350.6",
+     "1,150",
+     "68 (+ 4 below ground)",
+     "",
+     "Shenyang",
+     "China",
+     "2015",
+     "",
+     ""
+    ],
+    [
+     "97",
+     "The Pinnacle",
+     "350.3",
+     "1,149",
+     "60 (+ 6 below ground)",
+     "",
+     "Guangzhou",
+     "China",
+     "2012",
+     "",
+     ""
+    ],
+    [
+     "98",
+     "Xi'an Glory International Financial Center",
+     "350",
+     "1,148",
+     "75 (+ 4 below ground)",
+     "",
+     "Xi'an",
+     "China",
+     "2021",
+     "Tallest building in Shaanxi Province",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t4",
+   "title": "Height to pinnacle (highest point)",
+   "headers": [
+    "Rank",
+    "Building",
+    "City",
+    "Country",
+    "Height",
+    "Height",
+    "Floors",
+    "Built"
+   ],
+   "rows": [
+    [
+     "1",
+     "Burj Khalifa†",
+     "Dubai",
+     "United Arab Emirates",
+     "829.8 m",
+     "2,722 ft",
+     "163",
+     "2010"
+    ],
+    [
+     "2",
+     "Merdeka Maybank Tower†",
+     "Kuala Lumpur",
+     "Malaysia",
+     "680.1 m",
+     "2,231 ft",
+     "118",
+     "2023"
+    ],
+    [
+     "3",
+     "Shanghai Tower",
+     "Shanghai",
+     "China",
+     "632 m",
+     "2,073 ft",
+     "128",
+     "2015"
+    ],
+    [
+     "4",
+     "Mecca Royal Clock Tower",
+     "Mecca",
+     "Saudi Arabia",
+     "601 m",
+     "1,971 ft",
+     "120",
+     "2012"
+    ],
+    [
+     "5",
+     "Ping An Finance Centre",
+     "Shenzhen",
+     "China",
+     "599.1 m",
+     "1,965 ft",
+     "115",
+     "2016"
+    ],
+    [
+     "6",
+     "Lotte World Tower†",
+     "Seoul",
+     "South Korea",
+     "555.7 m",
+     "1,823 ft",
+     "123",
+     "2016"
+    ],
+    [
+     "7",
+     "One World Trade Center†",
+     "New York City",
+     "United States",
+     "546.2 m",
+     "1,792 ft",
+     "104",
+     "2014"
+    ],
+    [
+     "8",
+     "Tianjin CTF Finance Centre†",
+     "Tianjin",
+     "China",
+     "530.4 m",
+     "1,740 ft",
+     "98",
+     "2019"
+    ],
+    [
+     "9",
+     "Guangzhou CTF Finance Centre",
+     "Guangzhou",
+     "China",
+     "530 m",
+     "1,739 ft",
+     "111",
+     "2016"
+    ],
+    [
+     "10",
+     "China Zun",
+     "Beijing",
+     "China",
+     "528 m",
+     "1,732 ft",
+     "108",
+     "2018"
+    ],
+    [
+     "11",
+     "Willis Tower†",
+     "Chicago",
+     "United States",
+     "527 m",
+     "1,729 ft",
+     "108",
+     "1974"
+    ],
+    [
+     "12",
+     "Taipei 101",
+     "Taipei",
+     "Taiwan",
+     "508 m",
+     "1,667 ft",
+     "101",
+     "2004"
+    ],
+    [
+     "13",
+     "Shanghai World Financial Center†",
+     "Shanghai",
+     "China",
+     "494.3 m",
+     "1,622 ft",
+     "101",
+     "2008"
+    ],
+    [
+     "14",
+     "International Commerce Centre",
+     "Hong Kong",
+     "China",
+     "484 m",
+     "1,588 ft",
+     "118",
+     "2010"
+    ],
+    [
+     "15",
+     "Wuhan Greenland Center",
+     "Wuhan",
+     "China",
+     "475.6 m",
+     "1,560 ft",
+     "97",
+     "2021"
+    ],
+    [
+     "16",
+     "Central Park Tower",
+     "New York City",
+     "United States",
+     "472.4 m",
+     "1,550 ft",
+     "98",
+     "2020"
+    ],
+    [
+     "17",
+     "Landmark 81†",
+     "Ho Chi Minh City",
+     "Vietnam",
+     "469.5 m",
+     "1,540 ft",
+     "81",
+     "2018"
+    ],
+    [
+     "18",
+     "Lakhta Center",
+     "St. Petersburg",
+     "Russia",
+     "462 m",
+     "1,516 ft",
+     "87",
+     "2019"
+    ],
+    [
+     "19",
+     "International Land-Sea Center",
+     "Chongqing",
+     "China",
+     "458.2 m",
+     "1,503 ft",
+     "98",
+     "2022"
+    ],
+    [
+     "20",
+     "875 North Michigan Avenue†",
+     "Chicago",
+     "United States",
+     "456.9 m",
+     "1,499 ft",
+     "100",
+     "1969"
+    ],
+    [
+     "21",
+     "The Exchange 106",
+     "Kuala Lumpur",
+     "Malaysia",
+     "453.6 m",
+     "1,488 ft",
+     "95",
+     "2019"
+    ],
+    [
+     "22",
+     "Changsha IFS Tower T1",
+     "Changsha",
+     "China",
+     "452.1 m",
+     "1,483 ft",
+     "94",
+     "2018"
+    ],
+    [
+     "23",
+     "Petronas Tower 1",
+     "Kuala Lumpur",
+     "Malaysia",
+     "451.9 m",
+     "1,483 ft",
+     "88",
+     "1998"
+    ],
+    [
+     "23",
+     "Petronas Tower 2",
+     "Kuala Lumpur",
+     "Malaysia",
+     "451.9 m",
+     "1,483 ft",
+     "88",
+     "1998"
+    ],
+    [
+     "25",
+     "Zifeng Tower",
+     "Nanjing",
+     "China",
+     "450 m",
+     "1,476 ft",
+     "89",
+     "2010"
+    ],
+    [
+     "25",
+     "Suzhou IFS",
+     "Suzhou",
+     "China",
+     "450 m",
+     "1,476 ft",
+     "98",
+     "2019"
+    ],
+    [
+     "27",
+     "Empire State Building†",
+     "New York City",
+     "United States",
+     "443.2 m",
+     "1,454 ft",
+     "102",
+     "1931"
+    ],
+    [
+     "28",
+     "Kingkey 100",
+     "Shenzhen",
+     "China",
+     "441.8 m",
+     "1,449 ft",
+     "100",
+     "2011"
+    ],
+    [
+     "29",
+     "Guangzhou International Finance Center",
+     "Guangzhou",
+     "China",
+     "438.6 m",
+     "1,445 ft",
+     "103",
+     "2009"
+    ],
+    [
+     "30",
+     "Wuhan Center",
+     "Wuhan",
+     "China",
+     "438 m",
+     "1,437 ft",
+     "88",
+     "2019"
+    ],
+    [
+     "31",
+     "111 West 57th Street",
+     "New York City",
+     "United States",
+     "435.3 m",
+     "1,428 ft",
+     "82",
+     "2020"
+    ],
+    [
+     "32",
+     "Minying International Trade Center T2",
+     "Dongguan",
+     "China",
+     "426.9 m",
+     "1,401 ft",
+     "88",
+     "2020"
+    ],
+    [
+     "33",
+     "One Vanderbilt",
+     "New York City",
+     "United States",
+     "427 m",
+     "1,401 ft",
+     "58",
+     "2020"
+    ],
+    [
+     "34",
+     "432 Park Avenue",
+     "New York City",
+     "United States",
+     "425.5 m",
+     "1,396 ft",
+     "85",
+     "2015"
+    ],
+    [
+     "35",
+     "Marina 101",
+     "Dubai",
+     "United Arab Emirates",
+     "425 m",
+     "1,394 ft",
+     "101",
+     "2017"
+    ],
+    [
+     "36",
+     "Trump International Hotel and Tower",
+     "Chicago",
+     "United States",
+     "423.2 m",
+     "1,388 ft",
+     "96",
+     "2009"
+    ],
+    [
+     "37",
+     "Jin Mao Tower",
+     "Shanghai",
+     "China",
+     "421 m",
+     "1,381 ft",
+     "88",
+     "1998"
+    ],
+    [
+     "38",
+     "Princess Tower†",
+     "Dubai",
+     "United Arab Emirates",
+     "414 m",
+     "1,358 ft",
+     "101",
+     "2012"
+    ],
+    [
+     "39",
+     "Al Hamra Tower",
+     "Kuwait City",
+     "Kuwait",
+     "412.6 m",
+     "1,354 ft",
+     "80",
+     "2010"
+    ],
+    [
+     "40",
+     "Two International Finance Centre",
+     "Hong Kong",
+     "China",
+     "412 m",
+     "1,352 ft",
+     "88",
+     "2003"
+    ],
+    [
+     "41",
+     "Haeundae LCT The Sharp Landmark Tower",
+     "Busan",
+     "South Korea",
+     "411.6 m",
+     "1,350 ft",
+     "101",
+     "2019"
+    ],
+    [
+     "42",
+     "Guangxi China Resources Tower",
+     "Nanning",
+     "China",
+     "402.7 m",
+     "1,321 ft",
+     "85",
+     "2019"
+    ],
+    [
+     "43",
+     "Guiyang Financial Center Tower 1",
+     "Guiyang",
+     "China",
+     "401 m",
+     "1,316 ft",
+     "79",
+     "2021"
+    ]
+   ]
+  },
+  {
+   "id": "t5",
+   "title": "Height to occupied floor",
+   "headers": [
+    "Building",
+    "City",
+    "Country",
+    "Height",
+    "Floors",
+    "Built"
+   ],
+   "rows": [
+    [
+     "Burj Khalifa",
+     "Dubai",
+     "United Arab Emirates",
+     "585.4 m (1,921 ft)",
+     "163",
+     "2010"
+    ],
+    [
+     "Shanghai Tower",
+     "Shanghai",
+     "China",
+     "583.4 m (1,914 ft)",
+     "128",
+     "2015"
+    ],
+    [
+     "Ping An Finance Center",
+     "Shenzhen",
+     "China",
+     "562.2 m (1,844 ft)",
+     "115",
+     "2016"
+    ],
+    [
+     "China Zun",
+     "Beijing",
+     "China",
+     "515.5 m (1,691 ft)",
+     "108",
+     "2018"
+    ],
+    [
+     "Merdeka Maybank Tower",
+     "Kuala Lumpur",
+     "Malaysia",
+     "502.8 m (1,650 ft)",
+     "118",
+     "2023"
+    ],
+    [
+     "Lotte World Tower",
+     "Seoul",
+     "South Korea",
+     "497.6 m (1,633 ft)",
+     "123",
+     "2016"
+    ],
+    [
+     "Guangzhou CTF Finance Centre",
+     "Guangzhou",
+     "China",
+     "495.5 m (1,626 ft)",
+     "111",
+     "2016"
+    ],
+    [
+     "Mecca Royal Clock Tower",
+     "Mecca",
+     "Saudi Arabia",
+     "494.4 m (1,622 ft)",
+     "120",
+     "2012"
+    ],
+    [
+     "Shanghai World Financial Center",
+     "Shanghai",
+     "China",
+     "474 m (1,555 ft)",
+     "101",
+     "2008"
+    ],
+    [
+     "International Commerce Centre",
+     "Hong Kong",
+     "China",
+     "468.8 m (1,538 ft)",
+     "118",
+     "2010"
+    ],
+    [
+     "Wuhan Greenland Center",
+     "Wuhan",
+     "China",
+     "467 m (1,532 ft)",
+     "101",
+     "2023"
+    ],
+    [
+     "Tianjin CTF Finance Centre",
+     "Tianjin",
+     "China",
+     "439.4 m (1,442 ft)",
+     "97",
+     "2018"
+    ],
+    [
+     "Taipei 101",
+     "Taipei",
+     "Taiwan",
+     "438 m (1,437 ft)",
+     "101",
+     "2004"
+    ],
+    [
+     "Central Park Tower",
+     "New York City",
+     "United States",
+     "431.8 m (1,417 ft)",
+     "98",
+     "2020"
+    ],
+    [
+     "Changsha IFS Tower T1",
+     "Changsha",
+     "China",
+     "431 m (1,414 ft)",
+     "94",
+     "2017"
+    ],
+    [
+     "International Land-Sea Center",
+     "Chongqing",
+     "China",
+     "429.8 m (1,410 ft)",
+     "98",
+     "2022"
+    ],
+    [
+     "KK100",
+     "Shenzhen",
+     "China",
+     "427.1 m (1,401 ft)",
+     "98",
+     "2011"
+    ],
+    [
+     "Guangzhou International Finance Center",
+     "Guangzhou",
+     "China",
+     "415.1 m (1,362 ft)",
+     "101",
+     "2010"
+    ],
+    [
+     "Willis Tower",
+     "Chicago",
+     "United States",
+     "412.7 m (1,354 ft)",
+     "108",
+     "1974"
+    ],
+    [
+     "Zijin Financial Building",
+     "Nanjing",
+     "China",
+     "412.2 m (1,352 ft)",
+     "88",
+     "2025"
+    ]
+   ]
+  },
+  {
+   "id": "t6",
+   "title": "Height to roof",
+   "headers": [
+    "Rank",
+    "Building",
+    "City",
+    "Country",
+    "Height (m)",
+    "Height (ft)",
+    "Floors",
+    "Built",
+    "Reference"
+   ],
+   "rows": [
+    [
+     "1",
+     "Burj Khalifa",
+     "Dubai",
+     "UAE",
+     "739.4 m",
+     "2,426 ft",
+     "163",
+     "2010",
+     ""
+    ],
+    [
+     "2",
+     "Shanghai Tower",
+     "Shanghai",
+     "China",
+     "574.5 m",
+     "1,885 ft",
+     "127",
+     "2015",
+     ""
+    ],
+    [
+     "3",
+     "Ping An Finance Center",
+     "Shenzhen",
+     "China",
+     "555 m",
+     "1,821 ft",
+     "115",
+     "2016",
+     ""
+    ],
+    [
+     "4",
+     "China Zun",
+     "Beijing",
+     "China",
+     "524 m",
+     "1719 ft",
+     "109",
+     "2018",
+     ""
+    ],
+    [
+     "5",
+     "Merdeka Maybank Tower",
+     "Kuala Lumpur",
+     "Malaysia",
+     "518.2 m",
+     "1,700 ft",
+     "118",
+     "2023",
+     ""
+    ],
+    [
+     "6",
+     "Guangzhou CTF Finance Centre",
+     "Guangzhou",
+     "China",
+     "518 m",
+     "1,699 ft",
+     "111",
+     "2016",
+     ""
+    ],
+    [
+     "7",
+     "Mecca Royal Clock Tower",
+     "Mecca",
+     "Saudi Arabia",
+     "508 m",
+     "1,666 ft",
+     "120",
+     "2012",
+     ""
+    ],
+    [
+     "8",
+     "Lotte World Tower",
+     "Seoul",
+     "South Korea",
+     "497.6 m",
+     "1,633 ft",
+     "123",
+     "2016",
+     ""
+    ],
+    [
+     "9",
+     "Shanghai World Financial Center",
+     "Shanghai",
+     "China",
+     "487.41 m",
+     "1,599 ft",
+     "101",
+     "2008",
+     ""
+    ],
+    [
+     "10",
+     "International Commerce Centre",
+     "Hong Kong",
+     "China",
+     "479.83 m",
+     "1,574 ft",
+     "118",
+     "2010",
+     ""
+    ],
+    [
+     "11",
+     "Central Park Tower",
+     "New York City",
+     "United States",
+     "472.44 m",
+     "1,550 ft",
+     "131",
+     "2019",
+     ""
+    ],
+    [
+     "12",
+     "Tianjin CTF Finance Centre",
+     "Tianjin",
+     "China",
+     "471.1 m",
+     "1,545 ft",
+     "97",
+     "2019",
+     ""
+    ],
+    [
+     "13",
+     "Taipei 101",
+     "Taipei",
+     "Taiwan",
+     "449.20 m",
+     "1,471 ft",
+     "101",
+     "2004",
+     ""
+    ],
+    [
+     "14",
+     "Willis Tower",
+     "Chicago",
+     "United States",
+     "442.14 m",
+     "1,451 ft",
+     "108",
+     "1974",
+     ""
+    ],
+    [
+     "15",
+     "KK100",
+     "Shenzhen",
+     "China",
+     "442 m",
+     "1,449 ft",
+     "100",
+     "2011",
+     "-->"
+    ],
+    [
+     "16",
+     "Guangzhou International Finance Center",
+     "Guangzhou",
+     "China",
+     "432 m",
+     "1,417 ft",
+     "103",
+     "2009",
+     ""
+    ],
+    [
+     "17",
+     "432 Park Avenue",
+     "New York City",
+     "United States",
+     "425.5 m",
+     "1,396 ft",
+     "96",
+     "2015",
+     "-->"
+    ],
+    [
+     "18",
+     "One World Trade Center",
+     "New York City",
+     "United States",
+     "417 m",
+     "1,368 ft",
+     "104",
+     "2014",
+     ""
+    ],
+    [
+     "19",
+     "Haeundae LCT Landmark Tower",
+     "Busan",
+     "South Korea",
+     "411.6 m",
+     "1,350 ft",
+     "101",
+     "2019",
+     ""
+    ],
+    [
+     "20",
+     "International Finance Centre",
+     "Hong Kong",
+     "China",
+     "401.1 m",
+     "1,316 ft",
+     "88",
+     "2003",
+     ""
+    ],
+    [
+     "21",
+     "Princess Tower",
+     "Dubai",
+     "UAE",
+     "392 m",
+     "1,286 ft",
+     "101",
+     "2012",
+     ""
+    ],
+    [
+     "22",
+     "Jin Mao Tower",
+     "Shanghai",
+     "China",
+     "382.5 m",
+     "1,255 ft",
+     "88",
+     "1998",
+     ""
+    ],
+    [
+     "23",
+     "Zifeng Tower",
+     "Nanjing",
+     "China",
+     "381.3 m",
+     "1,251 ft",
+     "89",
+     "2009",
+     ""
+    ],
+    [
+     "24",
+     "Empire State Building",
+     "New York City",
+     "United States",
+     "381 m",
+     "1,250 ft",
+     "102",
+     "1931",
+     ""
+    ],
+    [
+     "25",
+     "Petronas Tower 1",
+     "Kuala Lumpur",
+     "Malaysia",
+     "378.5 m",
+     "1,250 ft",
+     "88",
+     "1998",
+     ""
+    ],
+    [
+     "25",
+     "Petronas Tower 2",
+     "Kuala Lumpur",
+     "Malaysia",
+     "378.5 m",
+     "1,250 ft",
+     "88",
+     "1998",
+     ""
+    ],
+    [
+     "27",
+     "Marina 101",
+     "Dubai",
+     "UAE",
+     "371 m",
+     "1,207 ft",
+     "80",
+     "2014",
+     ""
+    ],
+    [
+     "27",
+     "Al Hamra Tower",
+     "Kuwait City",
+     "Kuwait",
+     "368 m",
+     "1,207 ft",
+     "80",
+     "2011",
+     ""
+    ],
+    [
+     "29",
+     "Trump International Hotel and Tower",
+     "Chicago",
+     "United States",
+     "357.8 m",
+     "1,174 ft",
+     "96",
+     "2009",
+     ""
+    ],
+    [
+     "30",
+     "Tuntex Sky Tower",
+     "Kaohsiung",
+     "Taiwan",
+     "347.5 m",
+     "1,140 ft",
+     "85",
+     "1997",
+     ""
+    ],
+    [
+     "31",
+     "Aon Center",
+     "Chicago",
+     "United States",
+     "346.25 m",
+     "1,136 ft",
+     "83",
+     "1973",
+     ""
+    ],
+    [
+     "32",
+     "John Hancock Center",
+     "Chicago",
+     "United States",
+     "343.5 m",
+     "1,127 ft",
+     "100",
+     "1969",
+     ""
+    ],
+    [
+     "33",
+     "Haeundae LCT the Sharp I",
+     "Busan",
+     "South Korea",
+     "339.1 m",
+     "1,112 ft",
+     "85",
+     "2019",
+     ""
+    ],
+    [
+     "34",
+     "Mercury City Tower",
+     "Moscow",
+     "Russia",
+     "339 m",
+     "1,112 ft",
+     "75",
+     "2012",
+     ""
+    ],
+    [
+     "35",
+     "Haeundae LCT the Sharp II",
+     "Busan",
+     "South Korea",
+     "333.1 m",
+     "1,093 ft",
+     "85",
+     "2019",
+     ""
+    ],
+    [
+     "35",
+     "China World Trade Center Tower 3",
+     "Beijing",
+     "China",
+     "333 m",
+     "1,093 ft",
+     "74",
+     "2008",
+     ""
+    ],
+    [
+     "35",
+     "Parc1 Tower 1",
+     "Seoul",
+     "South Korea",
+     "333 m",
+     "1,093 ft",
+     "69",
+     "2020",
+     ""
+    ],
+    [
+     "38",
+     "SkyTower at Pinnacle One Yonge",
+     "Toronto",
+     "Canada",
+     "331 m",
+     "1,086 ft",
+     "106",
+     "2026",
+     ""
+    ],
+    [
+     "39",
+     "Ryugyong Hotel",
+     "Pyongyang",
+     "North Korea",
+     "330 m",
+     "1,083 ft",
+     "105",
+     "1992",
+     ""
+    ],
+    [
+     "40",
+     "The Index",
+     "Dubai",
+     "UAE",
+     "328 m",
+     "1,076 ft",
+     "80",
+     "2009",
+     ""
+    ],
+    [
+     "41",
+     "Azabudai Hills Mori JP Tower",
+     "Tokyo",
+     "Japan",
+     "325.4 m",
+     "1,067 ft",
+     "64",
+     "2023",
+     ""
+    ],
+    [
+     "42",
+     "Shun Hing Square",
+     "Shenzhen",
+     "China",
+     "324.8 m",
+     "1,066 ft",
+     "69",
+     "1996",
+     ""
+    ],
+    [
+     "43",
+     "Four Seasons Place KLCC",
+     "Kuala Lumpur",
+     "Malaysia",
+     "323 m",
+     "1,076 ft",
+     "74",
+     "2018",
+     ""
+    ],
+    [
+     "44",
+     "CITIC Plaza",
+     "Guangzhou",
+     "China",
+     "321.9 m",
+     "1,056 ft",
+     "80",
+     "1997",
+     ""
+    ],
+    [
+     "45",
+     "Nina Tower",
+     "Hong Kong",
+     "China",
+     "318.8 m",
+     "1,046 ft",
+     "80",
+     "2006",
+     ""
+    ],
+    [
+     "46",
+     "Rose Tower",
+     "Dubai",
+     "UAE",
+     "315 m",
+     "1,033 ft",
+     "72",
+     "2008",
+     ""
+    ],
+    [
+     "46",
+     "Bank of China Tower",
+     "Hong Kong",
+     "China",
+     "315 m",
+     "1,033 ft",
+     "72",
+     "1990",
+     ""
+    ],
+    [
+     "48",
+     "Bank of America Plaza",
+     "Atlanta",
+     "United States",
+     "311.8 m",
+     "1,023 ft",
+     "55",
+     "1992",
+     ""
+    ],
+    [
+     "49",
+     "Emirates Office Tower",
+     "Dubai",
+     "UAE",
+     "311 m",
+     "1,020 ft",
+     "56",
+     "2000",
+     ""
+    ],
+    [
+     "50",
+     "U.S. Bank Tower",
+     "Los Angeles",
+     "United States",
+     "310.3 m",
+     "1,018 ft",
+     "73",
+     "1989",
+     ""
+    ],
+    [
+     "51",
+     "Menara Telekom",
+     "Kuala Lumpur",
+     "Malaysia",
+     "309.9 m",
+     "1,017 ft",
+     "55",
+     "2001",
+     ""
+    ],
+    [
+     "52",
+     "Almas Tower",
+     "Dubai",
+     "UAE",
+     "310 m",
+     "1,017 ft",
+     "74",
+     "2008",
+     ""
+    ],
+    [
+     "52",
+     "The Shard",
+     "London",
+     "United Kingdom",
+     "310 m",
+     "1,017 ft",
+     "72",
+     "2012",
+     ""
+    ],
+    [
+     "54",
+     "Central Plaza",
+     "Hong Kong",
+     "China",
+     "309 m",
+     "1,014 ft",
+     "78",
+     "1992",
+     ""
+    ],
+    [
+     "55",
+     "One57",
+     "New York City",
+     "United States",
+     "306m",
+     "1,005 ft",
+     "73",
+     "2014",
+     ""
+    ],
+    [
+     "56",
+     "The Address Downtown Burj Khalifa",
+     "Dubai",
+     "UAE",
+     "306 m",
+     "1,004 ft",
+     "78",
+     "2008",
+     ""
+    ],
+    [
+     "57",
+     "JPMorgan Chase Tower",
+     "Houston",
+     "United States",
+     "305.4 m",
+     "1,002 ft",
+     "75",
+     "1982",
+     ""
+    ],
+    [
+     "58",
+     "Northeast Asia Trade Tower",
+     "Incheon",
+     "South Korea",
+     "305.1 m",
+     "1,001 ft",
+     "68",
+     "2010",
+     ""
+    ],
+    [
+     "59",
+     "Baiyoke Tower II",
+     "Bangkok",
+     "Thailand",
+     "304 m",
+     "997 ft",
+     "85",
+     "1997",
+     ""
+    ],
+    [
+     "60",
+     "Wells Fargo Plaza",
+     "Houston",
+     "United States",
+     "302.4 m",
+     "992 ft",
+     "71",
+     "1983",
+     ""
+    ],
+    [
+     "61",
+     "Kingdom Centre",
+     "Riyadh",
+     "Saudi Arabia",
+     "302 m",
+     "991 ft",
+     "41",
+     "2002",
+     ""
+    ],
+    [
+     "62",
+     "Moscow Tower",
+     "Moscow",
+     "Russia",
+     "302 m",
+     "989 ft",
+     "76",
+     "2010",
+     ""
+    ],
+    [
+     "63",
+     "Haeundae Doosan We've the Zenith 101",
+     "Busan",
+     "South Korea",
+     "300 m",
+     "984 ft",
+     "80",
+     "2011",
+     ""
+    ],
+    [
+     "63",
+     "Abeno Harukas",
+     "Osaka",
+     "Japan",
+     "300 m",
+     "984 ft",
+     "60",
+     "2014",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t7",
+   "title": "Under construction",
+   "headers": [
+    "Building",
+    "Country",
+    "City",
+    "Planned architectural height",
+    "Floors",
+    "Planned completion",
+    "Ref."
+   ],
+   "rows": [
+    [
+     "Jeddah Tower",
+     "Saudi Arabia",
+     "Jeddah",
+     "1,008 m (3,307 ft)",
+     "167+",
+     "2028",
+     ""
+    ],
+    [
+     "Burj Azizi",
+     "UAE",
+     "Dubai",
+     "725 m (2,379 ft)",
+     "133",
+     "2030",
+     ""
+    ],
+    [
+     "Goldin Finance 117",
+     "China",
+     "Tianjin",
+     "597 m (1,959 ft)",
+     "128",
+     "2027",
+     ""
+    ],
+    [
+     "Burj Binghatti Jacob & Co Residences",
+     "UAE",
+     "Dubai",
+     "557 m (1,827 ft)",
+     "105",
+     "2027",
+     ""
+    ],
+    [
+     "Senna Tower",
+     "Brazil",
+     "Balneário Camboriú",
+     "550 m (1,800 ft)",
+     "154",
+     "2030",
+     ""
+    ],
+    [
+     "Tiger Sky Tower",
+     "UAE",
+     "Dubai",
+     "532 m (1,745 ft)",
+     "116",
+     "2029",
+     ""
+    ],
+    [
+     "Six Senses Residences Dubai Marina",
+     "UAE",
+     "Dubai",
+     "517 m (1,696 ft)",
+     "125",
+     "2028",
+     ""
+    ],
+    [
+     "The Line",
+     "Saudi Arabia",
+     "Neom",
+     "500 m (1,600 ft)",
+     "?",
+     "2030",
+     ""
+    ],
+    [
+     "Greenland Jinmao International Finance Center",
+     "China",
+     "Nanjing",
+     "499.8 m (1,640 ft)",
+     "102",
+     "2028",
+     ""
+    ],
+    [
+     "HeXi Yuzui Tower A",
+     "China",
+     "Nanjing",
+     "498.8 m (1,636 ft)",
+     "84",
+     "2028",
+     ""
+    ],
+    [
+     "Panda Tower - Tianfu Center",
+     "China",
+     "Chengdu",
+     "488.9 m (1,604 ft)",
+     "95",
+     "2027",
+     ""
+    ],
+    [
+     "Rizhao Center",
+     "China",
+     "Rizhao",
+     "485 m (1,591 ft)",
+     "94",
+     "2028",
+     ""
+    ],
+    [
+     "Torre Rise",
+     "Mexico",
+     "Monterrey",
+     "484 m (1,588 ft)",
+     "88",
+     "2027",
+     ""
+    ],
+    [
+     "North Bund Tower",
+     "China",
+     "Shanghai",
+     "480 m (1,570 ft)",
+     "97",
+     "2030",
+     ""
+    ],
+    [
+     "Wuhan CTF Centre",
+     "China",
+     "Wuhan",
+     "475 m (1,558 ft)",
+     "84",
+     "2029",
+     ""
+    ],
+    [
+     "Suzhou CSC Fortune Center",
+     "China",
+     "Suzhou",
+     "470 m (1,540 ft)",
+     "100",
+     "2028",
+     ""
+    ],
+    [
+     "Chengdu Greenland Tower",
+     "China",
+     "Chengdu",
+     "468 m (1,535 ft)",
+     "101",
+     "2029",
+     ""
+    ],
+    [
+     "Aeternitas Tower",
+     "UAE",
+     "Dubai",
+     "450 m (1,480 ft)",
+     "106",
+     "2027",
+     ""
+    ],
+    [
+     "China Resources Land Center",
+     "China",
+     "Dongguan",
+     "436.1 m (1,431 ft)",
+     "98",
+     "2026",
+     ""
+    ],
+    [
+     "Haikou Tower 1",
+     "China",
+     "Haikou",
+     "428 m (1,404 ft)",
+     "93",
+     "2027",
+     ""
+    ],
+    [
+     "Tour F",
+     "Ivory Coast",
+     "Abidjan",
+     "421 m (1,381 ft)",
+     "75",
+     "2026",
+     ""
+    ],
+    [
+     "Tsingshan Holdings Group Global Headquarters Tower 1",
+     "China",
+     "Wenzhou",
+     "418 m (1,371 ft)",
+     "",
+     "",
+     ""
+    ],
+    [
+     "Shenzhen Cloud of Innovation Center",
+     "China",
+     "Shenzhen",
+     "407 m (1,335 ft)",
+     "83",
+     "2026",
+     ""
+    ],
+    [
+     "Great River Center",
+     "China",
+     "Wuhan",
+     "400 m (1,300 ft)",
+     "82",
+     "2026",
+     ""
+    ],
+    [
+     "Hangzhou West Railway Station Hub Tower 1",
+     "China",
+     "Hangzhou",
+     "399.8 m (1,312 ft)",
+     "83",
+     "",
+     ""
+    ],
+    [
+     "China Merchants Group West Headquarters",
+     "China",
+     "Chengdu",
+     "396 m (1,299 ft)",
+     "82",
+     "2028",
+     ""
+    ],
+    [
+     "Shenzhen Bay Super Headquarters Base Tower B",
+     "China",
+     "Shenzhen",
+     "394.4 m (1,294 ft)",
+     "81",
+     "2029",
+     ""
+    ],
+    [
+     "Shenzhen Bay Super Headquarters Base Tower C-1",
+     "China",
+     "Shenzhen",
+     "394 m (1,293 ft)",
+     "78",
+     "2027",
+     ""
+    ],
+    [
+     "Lucheng Square",
+     "China",
+     "Wenzhou",
+     "388.8 m (1,276 ft)",
+     "79",
+     "2026",
+     ""
+    ],
+    [
+     "Guohua Financial Center Tower 1",
+     "China",
+     "Wuhan",
+     "388 m (1,273 ft)",
+     "79",
+     "",
+     ""
+    ],
+    [
+     "Torch Tower",
+     "Japan",
+     "Tokyo",
+     "385 m (1,263 ft)",
+     "62",
+     "2028",
+     ""
+    ],
+    [
+     "Shekou Prince Bay Tower",
+     "China",
+     "Shenzhen",
+     "380 m (1,250 ft)",
+     "70",
+     "",
+     ""
+    ],
+    [
+     "Shenzhen Luohu Friendship Trading Centre",
+     "China",
+     "Shenzhen",
+     "379.9 m (1,246 ft)",
+     "83",
+     "2026",
+     ""
+    ],
+    [
+     "China Merchants Prince Bay Tower",
+     "China",
+     "Shenzhen",
+     "374 m (1,227 ft)",
+     "59",
+     "2028",
+     ""
+    ],
+    [
+     "2 World Trade Center",
+     "United States",
+     "New York City",
+     "374 m (1,227 ft)",
+     "55",
+     "2031",
+     ""
+    ],
+    [
+     "Hengli Global Operations Headquarters Tower 1",
+     "China",
+     "Suzhou",
+     "369 m (1,211 ft)",
+     "",
+     "",
+     ""
+    ],
+    [
+     "Shenyang International Center Tower 1",
+     "China",
+     "Shenyang",
+     "366 m (1,201 ft)",
+     "75",
+     "2027",
+     ""
+    ],
+    [
+     "Bayz 101 Tower",
+     "UAE",
+     "Dubai",
+     "363 m (1,191 ft)",
+     "108",
+     "",
+     ""
+    ],
+    [
+     "Bayz 102 Tower",
+     "UAE",
+     "Dubai",
+     "362 m (1,188 ft)",
+     "103",
+     "",
+     ""
+    ],
+    [
+     "Taipei Twin Tower 1",
+     "Taiwan",
+     "Taipei",
+     "360 m (1,181 ft)",
+     "70",
+     "2027",
+     ""
+    ],
+    [
+     "Naga 3 Tower 1",
+     "Cambodia",
+     "Phnom Penh",
+     "358 m (1,175 ft)",
+     "70",
+     "",
+     ""
+    ],
+    [
+     "Bay Area Smart Plaza",
+     "China",
+     "Shenzhen",
+     "358 m (1,175 ft)",
+     "77",
+     "2027",
+     ""
+    ],
+    [
+     "Binghatti Skyblade",
+     "UAE",
+     "Dubai",
+     "357 m (1,171 ft)",
+     "66",
+     "2027",
+     ""
+    ],
+    [
+     "Guohong Center",
+     "China",
+     "Wenzhou",
+     "356 m (1,168 ft)",
+     "71",
+     "2028",
+     ""
+    ],
+    [
+     "Shenzhen Bay Super Headquarters Base Tower C-2",
+     "China",
+     "Shenzhen",
+     "355.7 m (1,167 ft)",
+     "68",
+     "2027",
+     ""
+    ],
+    [
+     "Poly Liangxi Plaza",
+     "China",
+     "Foshan",
+     "350 m (1,150 ft)",
+     "",
+     "2026",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t8",
+   "title": "On hold",
+   "headers": [
+    "Building",
+    "Planned architectural height",
+    "Floors",
+    "Planned completion",
+    "Country",
+    "City",
+    "Ref."
+   ],
+   "rows": [
+    [
+     "BUMN Tower",
+     "780 m (2,560 ft)",
+     "156",
+     "",
+     "Indonesia",
+     "Nusantara",
+     ""
+    ],
+    [
+     "Tower M",
+     "700 m (2,300 ft)",
+     "145",
+     "",
+     "Malaysia",
+     "Kuala Lumpur",
+     ""
+    ],
+    [
+     "Legends Tower",
+     "581 m (1,906 ft)",
+     "134",
+     "",
+     "United States",
+     "Oklahoma City",
+     ""
+    ],
+    [
+     "Evergrande Hefei Center T1",
+     "518 m (1,699 ft)",
+     "112",
+     "",
+     "China",
+     "Hefei",
+     ""
+    ],
+    [
+     "Greenland Jinmao International Financial Center",
+     "499.8 m (1,640 ft)",
+     "102",
+     "",
+     "China",
+     "Nanjing",
+     ""
+    ],
+    [
+     "Suzhou Zhongnan Center",
+     "499.2 m (1,638 ft)",
+     "103",
+     "",
+     "China",
+     "Suzhou",
+     ""
+    ],
+    [
+     "China International Silk Road Center",
+     "498 m (1,634 ft)",
+     "101",
+     "",
+     "China",
+     "Xi'an",
+     ""
+    ],
+    [
+     "Chushang Building",
+     "475 m (1,558 ft)",
+     "111",
+     "",
+     "China",
+     "Wuhan",
+     ""
+    ],
+    [
+     "Fosun Bund Center T1",
+     "470 m (1,540 ft)",
+     "",
+     "",
+     "China",
+     "Wuhan",
+     ""
+    ],
+    [
+     "Evergrande City Light",
+     "453.5 m (1,488 ft)",
+     "88",
+     "",
+     "China",
+     "Ningbo",
+     ""
+    ],
+    [
+     "Tianshan Gate of the World Plots 27 and 28",
+     "450 m (1,480 ft)",
+     "106",
+     "",
+     "China",
+     "Shijiazhuang",
+     ""
+    ],
+    [
+     "Dubai Towers Doha",
+     "436.5 m (1,432 ft)",
+     "91",
+     "",
+     "Qatar",
+     "Doha",
+     ""
+    ],
+    [
+     "One Bangkok",
+     "436.1 m (1,431 ft)",
+     "92",
+     "",
+     "Thailand",
+     "Bangkok",
+     ""
+    ],
+    [
+     "Burj Almasa",
+     "432 m (1,417 ft)",
+     "93",
+     "",
+     "Saudi Arabia",
+     "Jeddah",
+     ""
+    ],
+    [
+     "Greenland Center Tower 1",
+     "428 m (1,404 ft)",
+     "",
+     "",
+     "China",
+     "Kunming",
+     ""
+    ],
+    [
+     "Najning Olympic Suning Tower",
+     "419.8 m (1,377 ft)",
+     "99",
+     "",
+     "China",
+     "Nanjing",
+     ""
+    ],
+    [
+     "Dongfeng Plaza Landmark Tower",
+     "407 m (1,335 ft)",
+     "100",
+     "",
+     "China",
+     "Kunming",
+     ""
+    ],
+    [
+     "One Tower",
+     "405.3 m (1,330 ft)",
+     "108",
+     "",
+     "Russia",
+     "Moscow",
+     ""
+    ],
+    [
+     "Haiyun Plaza Tower 1",
+     "390 m (1,280 ft)",
+     "86",
+     "",
+     "China",
+     "Rizhao",
+     ""
+    ],
+    [
+     "Icon Towers 1",
+     "384 m (1,260 ft)",
+     "77",
+     "",
+     "Indonesia",
+     "Jakarta",
+     ""
+    ],
+    [
+     "Forum 66 Tower 2",
+     "384 m (1,260 ft)",
+     "76",
+     "",
+     "China",
+     "Shenyang",
+     ""
+    ],
+    [
+     "Guiyang World Trade Center Landmark Tower",
+     "380 m (1,250 ft)",
+     "92",
+     "",
+     "China",
+     "Guiyang",
+     ""
+    ],
+    [
+     "Greenland Star City Light Tower",
+     "379.9 m (1,246 ft)",
+     "83",
+     "",
+     "China",
+     "Changsha",
+     ""
+    ],
+    [
+     "Nanchang Ping An Financial Center",
+     "373 m (1,224 ft)",
+     "72",
+     "",
+     "China",
+     "Nanchang",
+     ""
+    ],
+    [
+     "Kweichow Moutai Tower",
+     "369 m (1,211 ft)",
+     "",
+     "",
+     "China",
+     "Guiyang",
+     ""
+    ],
+    [
+     "VietinBank Business Center Office Tower",
+     "363.2 m (1,192 ft)",
+     "68",
+     "",
+     "Vietnam",
+     "Hanoi",
+     ""
+    ],
+    [
+     "Wanda One",
+     "360 m (1,180 ft)",
+     "86",
+     "",
+     "China",
+     "Xi'an",
+     ""
+    ],
+    [
+     "Fosun Bund Center T2",
+     "356 m (1,168 ft)",
+     "",
+     "",
+     "China",
+     "Wuhan",
+     ""
+    ],
+    [
+     "Global Port Tower 1",
+     "350 m (1,150 ft)",
+     "",
+     "",
+     "China",
+     "Lanzhou",
+     ""
+    ],
+    [
+     "Global Port Tower 2",
+     "350 m (1,150 ft)",
+     "",
+     "",
+     "China",
+     "Lanzhou",
+     ""
+    ],
+    [
+     "Guowei ZY Plaza",
+     "350 m (1,150 ft)",
+     "62",
+     "",
+     "China",
+     "Zhuhai",
+     ""
+    ],
+    [
+     "Baolixian Village Old Reform Project Main Building",
+     "350 m (1,150 ft)",
+     "70",
+     "",
+     "China",
+     "Guangzhou",
+     ""
+    ]
+   ]
+  },
+  {
+   "id": "t9",
+   "title": "List by continent",
+   "headers": [
+    "Continent",
+    "Building",
+    "Height",
+    "Floor count",
+    "Completed",
+    "Country",
+    "City"
+   ],
+   "rows": [
+    [
+     "Asia",
+     "Burj Khalifa",
+     "828 m (2,717 ft)",
+     "163",
+     "2010",
+     "United Arab Emirates",
+     "Dubai"
+    ],
+    [
+     "North America",
+     "One World Trade Center",
+     "541.3 m (1,776 ft)",
+     "94",
+     "2014",
+     "United States",
+     "New York City"
+    ],
+    [
+     "Europe",
+     "Lakhta Center",
+     "462 m (1,516 ft)",
+     "87",
+     "2018",
+     "Russia",
+     "Saint Petersburg"
+    ],
+    [
+     "Africa",
+     "Iconic Tower",
+     "393.8 m (1,292 ft)",
+     "77",
+     "2023",
+     "Egypt",
+     "New Administrative Capital"
+    ],
+    [
+     "Oceania",
+     "Q1 Tower",
+     "323 m (1,060 ft)",
+     "78",
+     "2005",
+     "Australia",
+     "Gold Coast"
+    ],
+    [
+     "South America",
+     "Gran Torre Costanera",
+     "300 m (980 ft)",
+     "64",
+     "2012",
+     "Chile",
+     "Santiago"
+    ],
+    [
+     "Antarctica",
+     "Vostok Station",
+     "17.5 m (57 ft)",
+     "2",
+     "2023",
+     "Russia",
+     "-"
+    ]
+   ]
+  },
+  {
+   "id": "t10",
+   "title": "Countries with most buildings on list",
+   "headers": [
+    "Rank",
+    "Country / Region",
+    "Number of skyscrapers on list",
+    "City(s) with most skyscrapers on list",
+    "Tallest building",
+    "Height of tallest building"
+   ],
+   "rows": [
+    [
+     "1",
+     "Mainland China",
+     "48",
+     "Shenzhen",
+     "Shanghai Tower",
+     "632 m (2,073 ft)"
+    ],
+    [
+     "2",
+     "United Arab Emirates",
+     "16",
+     "Dubai",
+     "Burj Khalifa",
+     "828 m (2,717 ft)"
+    ],
+    [
+     "3",
+     "United States",
+     "12",
+     "New York City",
+     "One World Trade Center",
+     "541.3 m (1,776 ft)"
+    ],
+    [
+     "4",
+     "Malaysia",
+     "4",
+     "Kuala Lumpur",
+     "Merdeka Maybank Tower",
+     "678.9 m (2,227 ft)"
+    ],
+    [
+     "4",
+     "Hong Kong",
+     "4",
+     "Hong Kong",
+     "International Commerce Centre",
+     "484 m (1588 ft)"
+    ],
+    [
+     "6",
+     "Russia",
+     "3",
+     "Moscow",
+     "Lakhta Center",
+     "462 m (1,516 ft)"
+    ],
+    [
+     "7",
+     "Saudi Arabia",
+     "2",
+     "Mecca, Riyadh",
+     "Mecca Royal Clock Tower",
+     "601 m (1,972 ft)"
+    ],
+    [
+     "7",
+     "South Korea",
+     "2",
+     "Seoul, Busan",
+     "Lotte World Tower",
+     "554.5 m (1,819 ft)"
+    ],
+    [
+     "9",
+     "Taiwan",
+     "1",
+     "Taipei",
+     "Taipei 101",
+     "508 m (1,667 ft)"
+    ],
+    [
+     "9",
+     "Vietnam",
+     "1",
+     "Ho Chi Minh City",
+     "Landmark 81",
+     "461.2 m (1,513 ft)"
+    ],
+    [
+     "9",
+     "Kuwait",
+     "1",
+     "Kuwait City",
+     "Al Hamra Tower",
+     "412.6 m (1,354 ft)"
+    ],
+    [
+     "9",
+     "Egypt",
+     "1",
+     "New Administrative Capital",
+     "Iconic Tower (Egypt)",
+     "393.8 m (1,292 ft)"
+    ],
+    [
+     "9",
+     "Indonesia",
+     "1",
+     "Jakarta",
+     "Autograph Tower",
+     "382.9 m (1,256 ft)"
+    ],
+    [
+     "9",
+     "Turkey",
+     "1",
+     "Istanbul",
+     "CBRT Tower",
+     "352 m (1,155 ft)"
+    ],
+    [
+     "9",
+     "Canada",
+     "1",
+     "Toronto",
+     "SkyTower at Pinnacle One Yonge",
+     "351.4 m (1,153 ft)"
+    ]
+   ]
+  },
+  {
+   "id": "t12",
+   "title": "External links",
+   "headers": [
+    "By region",
+    "Africa Asia South Southeast Europe European Union Baltic states Scandinavia Oceania Southern Hemisphere The Americas North America Central America Latin America South America"
+   ],
+   "rows": [
+    [
+     "By country",
+     "Afghanistan Albania Algeria Argentina Australia Austria Azerbaijan Bangladesh Bolivia Bosnia and Herzegovina Brazil Bulgaria Cambodia Canada Chile China Hong Kong Macau Colombia Croatia Cyprus Czech Republic Denmark Ecuador Egypt Estonia Finland France Georgia Germany Greece Hungary Iceland India Indonesia Iraq Iran Ireland Israel Italy Japan Kazakhstan Kenya Kuwait Latvia Lebanon Lithuania Malaysia Malta Mexico Monaco Mongolia Morocco Myanmar Netherlands Nigeria North Korea North Macedonia Norway New Zealand Panama Pakistan Paraguay Peru Philippines Poland Portugal Qatar Romania Russia Saudi Arabia Serbia Singapore Slovakia Slovenia South Africa South Korea Spain Sweden Switzerland Taiwan Tanzania Thailand Turkey Ukraine United Arab Emirates United Kingdom United States By state Uruguay Uzbekistan Venezuela Vietnam Zimbabwe"
+    ],
+    [
+     "Lists",
+     "100+ floors Architects Buildings by height to roof By city Cities with most skyscrapers Australia Canada United States Countries with most skyscrapers Churches Eastern Orthodox Naves Demolished Designed by women Early skyscrapers Hindu temples Industrial Megatall Mosques Minarets Educational Future Hospitals Hotels Most expensive Residential Skyscrapers by floor area Supertall Twin buildings Visionary buildings Wood"
+    ]
+   ]
+  },
+  {
+   "id": "t13",
+   "title": "External links",
+   "headers": [
+    "By region",
+    "Africa Asia Indian subcontinent West Asia Europe former Soviet Union The Americas South America"
+   ],
+   "rows": [
+    [
+     "By country",
+     "Afghanistan Albania Algeria Armenia Australia Austria Bahrain Belgium Bulgaria Canada China Czech Republic Denmark Egypt Estonia Finland France Germany Greece Hungary Iceland India Indonesia Iran Ireland Italy Japan Luxembourg Mongolia Morocco Myanmar Netherlands New Zealand Norway Philippines Poland Portugal Romania Saudi Arabia Serbia Slovakia South Africa Spain Sri Lanka Sweden Switzerland Thailand Tunisia Turkey Turkmenistan United Kingdom United States By state By type Uzbekistan"
+    ],
+    [
+     "Lists",
+     "Before the 20th century Bridges Highest Tallest Chimneys Clock towers Cooling towers Crosses Dams Demolished Domes Elevator test towers Flagpoles Ferris wheels Freestanding Freestanding steel Hyperboloid Lighthouses Mines Oil platforms Pyramids Roller coasters Statues Colossal sculpture in situ Hindu deity Twin structures Visionary structures Wood"
+    ]
+   ]
+  },
+  {
+   "id": "t14",
+   "title": "External links",
+   "headers": [
+    "v t e Structural extremes",
+    "v t e Structural extremes"
+   ],
+   "rows": [
+    [
+     "Largest",
+     "Aircraft Airports by passenger international cargo Amusement parks Aquariums Bells Buildings Camera phones Cannons Churches Evangelical Eastern Orthodox Cities historically city squares Clock faces cuckoo clocks hourglasses Dams Domes Gold mines Hindu temples temple tanks Hindu ashrams Hospitals networks Hotels Jain temples Libraries Machines Monoliths Mosques Museums art museums most-visited most-visited art museums Offices Oil refineries Palaces Passenger vehicles Photographs Ports by tonnage container ports by passengers Power stations hydroelectric Restaurants chains individual Ships container ships cruise ships sailing vessels sailing yachts Shopping malls Spherical buildings Stadiums Swimming pools Telescopes infrared optical reflecting optical refracting Tram and light rail transit systems current universities by country Urban parks Video screens Wastewater treatment plants"
+    ],
+    [
+     "Longest",
+     "Buildings Bridges arched cable-stayed cantilevered continuous truss masonry arch suspension Churches Highways ring roads Roller coasters Runways shortest Ships naval sailing yachts motor yachts wooden Spans timeline Trains road train Tunnels by type railway road subway tunnel sections"
+    ],
+    [
+     "Oldest",
+     "Banks Buildings Churches Companies Hydroelectric power plants Institutions Jain temples Mosques minarets Newspapers Radio stations Schools higher-learning institutions universities in continuous operation Islamic seminaries Settlements cities Ships since 500 AD Spiral stairs Synagogues Watermills Whisky distilleries"
+    ]
+   ]
+  },
+  {
+   "id": "t21",
+   "title": "External links",
+   "headers": [
+    "Chile",
+    "Gran Torre Santiago"
+   ],
+   "rows": [
+    [
+     "Mexico",
+     "Torres Obispado"
+    ],
+    [
+     "United States",
+     "1 World Trade Center (1970–2001) † 111 West 57th Street 2 World Trade Center (1971–2001) † 270 Park Avenue 3 World Trade Center 30 Hudson Yards 35 Hudson Yards 432 Park Avenue 50 Hudson Yards 53W53 875 North Michigan Avenue Aon Center Bank of America Plaza Bank of America Tower Brooklyn Tower Central Park Tower Chrysler Building Comcast Technology Center Empire State Building Franklin Center JPMorgan Chase Tower One57 One Manhattan West One Vanderbilt One World Trade Center Salesforce Tower St. Regis Chicago The New York Times Building The Spiral Trump International Hotel and Tower Two Prudential Plaza U.S. Bank Tower Wells Fargo Plaza Willis Tower Wilshire Grand Center"
+    ]
+   ]
+  },
+  {
+   "id": "t23",
+   "title": "External links",
+   "headers": [
+    "China",
+    "Baoneng Center Changsha A9 Financial District Changsha IFS Tower T1 China Merchants Bank Tower Global HQ China Resources Headquarters China World Trade Center Tower III China Zun Chongqing IFS T1 Chongqing World Financial Center CITIC Plaza Citymark Centre Dalian International Trade Center Diwang International Fortune Center Minying International Trade Center T2 East Pacific Center Eton Place Dalian Fortune Center Gate to the East Greenland Hangzhou Center Golden Eagle Tiandi Tower A Golden Eagle Tiandi Tower B Greenland Puli Center Guangdong Business Center Guangxi China Resources Tower Guangzhou CTF Finance Centre Guangzhou International Finance Center Guiyang International Financial Center Tower 1 Hanking Center Heartland 66 Office Tower Hengqin International Finance Center Hon Kwok City Center Huachuang International Plaza Huaguoyuan Tower 1 Huaguoyuan Tower 2 Huijin Center Guangzhou Huiyun Center Jiangxi Nanchang Greenland Central Plaza Jin Mao Tower Jin Wan Plaza 9 Jinan Center Financial City KK100 Leatop Plaza Logan Century Center 1 Longxi International Hotel Minsheng Bank Building Nanjing International Youth Cultural Centre Tower 1 Nanjing Financial City Phase II Plot C Tower 1 One Shenzhen Bay Pearl River Tower Ping An International Finance Centre The Pinnacle Poly Pazhou Riverview Plaza Shanghai Tower Shanghai World Financial Center Shenglong Global Center Shenzhen Center Shenzhen CFC Changfu Centre Shenzhen Urban Construction & Tower Shimao Hunan Center Shanghai Shimao Festival City Shum Yip Upperhills Tower 1 Shun Hing Square Spring City 66 Suning Plaza 1, Wuxi Suning Plaza Tower 1, Zhenjiang Suzhou IFS Tianjin CTF Finance Centre Tianjin Modern City Office Tower Tianjin World Financial Center Wanda Plaza Wenzhou World Trade Center White Magnolia Plaza Wuhan Center Wuhan Greenland Center Wuhan Yangtze River Shipping Center Wuxi IFS Wuxi Maoye City – Marriott Hotel Xi'an Glory International Financial Center Xiangjiang Fortune Finance Center Yantai Shimao No.1 The Harbour Yuexiu Fortune Center Tower 1 Zhongzhou Holdings Financial Center Zhuhai Tower Zhujiang New City Tower Zifeng Tower"
+   ],
+   "rows": [
+    [
+     "Hong Kong",
+     "Bank of China Tower Central Plaza International Commerce Centre International Finance Centre Nina Tower The Center"
+    ],
+    [
+     "Indonesia",
+     "Autograph Tower Luminary Tower"
+    ],
+    [
+     "Japan",
+     "Abeno Harukas Azabudai Hills Mori JP Tower"
+    ],
+    [
+     "Kazakhstan",
+     "Abu Dhabi Plaza"
+    ],
+    [
+     "Kuwait",
+     "Al Hamra Tower Arraya Tower"
+    ],
+    [
+     "Malaysia",
+     "The Exchange 106 Four Seasons Place Kuala Lumpur Merdeka 118 Oxley Tower 1 Petronas Towers Telekom Tower"
+    ],
+    [
+     "Philippines",
+     "Metrobank Center"
+    ],
+    [
+     "Qatar",
+     "Aspire Tower Lusail Plaza Towers 3 and 4"
+    ],
+    [
+     "Saudi Arabia",
+     "The Clock Towers Kingdom Centre PIF Tower"
+    ],
+    [
+     "South Korea",
+     "Haeundae Doosan We've the Zenith Haeundae LCT The Sharp Lotte World Tower Parc1 Posco Tower-Songdo"
+    ],
+    [
+     "Taiwan",
+     "85 Sky Tower Taipei 101"
+    ],
+    [
+     "Thailand",
+     "Baiyoke Tower II ICONSIAM MahaNakhon"
+    ],
+    [
+     "Turkey",
+     "CBRT Tower"
+    ],
+    [
+     "United Arab Emirates",
+     "23 Marina Address Boulevard Address Downtown ADNOC Headquarters Almas Tower Amna Tower Burj Al Arab Burj Khalifa Cayan Tower DAMAC Residenze Elite Residence Emirates Office Tower Etihad Towers Gevora Hotel HHHR Tower Il Primo Dubai The Index Jumeirah Emirates Towers Hotel JW Marriott Marquis Dubai The Landmark Marina 101 The Marina Torch Ocean Heights Princess Tower Rose Tower World Trade Center Abu Dhabi"
+    ],
+    [
+     "Vietnam",
+     "Landmark 72 Landmark 81"
+    ]
+   ]
+  },
+  {
+   "id": "t25",
+   "title": "External links",
+   "headers": [
+    "Poland",
+    "Varso Tower"
+   ],
+   "rows": [
+    [
+     "Russia",
+     "City of Capitals Eurasia Federation Tower Lakhta Center Mercury City Tower Neva Towers 2 OKO Tower"
+    ],
+    [
+     "United Kingdom",
+     "The Shard"
+    ]
+   ]
+  },
+  {
+   "id": "t30",
+   "title": "External links",
+   "headers": [
+    "Ethiopia",
+    "Ethiopian Electric Power Headquarters"
+   ],
+   "rows": [
+    [
+     "Côte d'Ivoire",
+     "Tour F"
+    ]
+   ]
+  },
+  {
+   "id": "t31",
+   "title": "External links",
+   "headers": [
+    "China",
+    "Chongqing Corporate Avenue 1 Evergrande Center Eye of Spring Trade Center Greenland Group Suzhou Center Haikou Tower Knowledge Tower Nanjing World Trade Center Tower 1 Ningbo Center North Bund Centre Shandong IFC South Asian Gate Suzhou Zhongnan Center Tianshan Gate of the World Plots 27 and 28 Wuhan CTF Finance Center Xi'an Greenland Center Xiamen International Centre Xiangmi Lake New Financial Center"
+   ],
+   "rows": [
+    [
+     "Other",
+     "Beyond Office Tower Burj Azizi Burj Binghatti Jacob & Co Residences Highwealth Huiguo 90 Jeddah Tower Legacy Tower One Bangkok Taipei Twin Towers Thamrin Nine Torch Tower"
+    ]
+   ]
+  },
+  {
+   "id": "t32",
+   "title": "External links",
+   "headers": [
+    "On hold",
+    "On hold"
+   ],
+   "rows": [
+    [
+     "2 World Trade Center 45 Broad Street Baoneng Shenyang Global Financial Center Busan Lotte Town Tower Chengdu Greenland Tower Chongqing Tall Tower Dalian Greenland Center Diamond Tower (Jeddah) Dubai Pearl Dubai Towers Doha Forum 66 Gate of Kuwait Goldin Finance 117 Hyundai Global Business Center Sumou Towers Mandarin Oriental Chengdu Marina 106 Namaste Tower Nanjing Olympic Suning Tower One Tower Palais Royale, Mumbai Pentominium Runhua Global Center 1 Ryugyong Hotel Sino-Steel Tower Skycity Square Capital Tower The Stratford Residences Tameer Commercial Tower Tianjin R&F Guangdong Tower Tour Financial Hub Center Tower Infinity VietinBank Business Center Office Tower",
+     "2 World Trade Center 45 Broad Street Baoneng Shenyang Global Financial Center Busan Lotte Town Tower Chengdu Greenland Tower Chongqing Tall Tower Dalian Greenland Center Diamond Tower (Jeddah) Dubai Pearl Dubai Towers Doha Forum 66 Gate of Kuwait Goldin Finance 117 Hyundai Global Business Center Sumou Towers Mandarin Oriental Chengdu Marina 106 Namaste Tower Nanjing Olympic Suning Tower One Tower Palais Royale, Mumbai Pentominium Runhua Global Center 1 Ryugyong Hotel Sino-Steel Tower Skycity Square Capital Tower The Stratford Residences Tameer Commercial Tower Tianjin R&F Guangdong Tower Tour Financial Hub Center Tower Infinity VietinBank Business Center Office Tower"
+    ]
+   ]
+  },
+  {
+   "id": "t33",
+   "title": "External links",
+   "headers": [
+    "v t e Proposed supertall and megatall skyscrapers",
+    "v t e Proposed supertall and megatall skyscrapers"
+   ],
+   "rows": [
+    [
+     "Proposed",
+     "247 Cherry 4/C Affirmation Tower Hyundai Global Business Center Legacy Tower Legends Tower One Bayfront Plaza PVN Tower Senna Tower Signature Tower Jakarta STH BNK by Beulah The One (Colombo) Taipei Twin Towers Tower Fifth Tower M Tribune East Tower Uptown Dubai Tower 1 350 Park Avenue"
+    ],
+    [
+     "Cancelled or stale proposal",
+     "1 Dubai 1 New York Place 6 & 8 Parramatta Square 7 South Dearborn 15 Penn Plaza 80 South Street 102 Incheon Tower American Commerce Center Ameritrust Tower Anara Tower Asia Plaza Azerbaijan Tower Bank of the Southwest Tower BDNI Center 1 Burj Al Alam Center City Tower City Hall and City Duma Crown Las Vegas Dubai One Tower Dubai Towers Dubai Dynamic Tower East Office Tower Eaton's / John Maryon Tower Eighth Sister Fairmont Kuala Lumpur Towers Faros del Panamá Grant USA Tower Grollo Tower Hermitage Plaza Hotel Attraction Houston Tower Ice Tower India Tower International Business Center London Millennium Tower Lopez Center Lotte World II Hotel Madison Square Garden Towers I & II Meraas Tower Metropolitan Life North Building (original design) Miglin-Beitler Skyneedle Nakheel Tower Ocean 1 Tower Old Chicago Main Post Office Twin Towers One Galleon Place One Queensbridge Otterspool Tower Karachi Port Tower Palacio de la Bahia Phoenix Towers Rama IX Super Tower Signature Towers Sapphire Tower Seoul Lite Shenyang International Finance Center Signature Tower Sky City South Ferry Plaza Tianlong Hotel Torre Bicentenario Torre Bicentenario II Torre Generali Torre Planetarium Tour Generali Tour Sans Fins Tour Signal Tower Infinity Tradewinds Square Tower Trans National Place Waldorf-Astoria Hotel and Residence Tower"
+    ],
+    [
+     "Never realized",
+     "Aeropolis 2001 Al Noor Tower Al Rajhi Tower Bionic Tower Chicago Spire Crystal Island DIB-200 Doha Tower and Convention Center Dream Tower Empire World Towers Gateway Tower Frankfurt Millennium Tower The Illinois Kostabi World Trade Center Millennium Tower, Tokyo Murjan Tower PAGCOR Tower Palace of the Soviets Russia Tower Shimizu Mega-City Pyramid Sky City 1000 Sky Mile Tower Tatlin's Tower Taiwan Tower Twin Towers 2 Ultima Tower Vortex Tower X-Seed 4000 Xtopia"
+    ],
+    [
+     "Arcology List of tallest buildings Supertall skyscrapers Megatall skyscrapers",
+     "Arcology List of tallest buildings Supertall skyscrapers Megatall skyscrapers"
+    ]
+   ]
+  }
+ ]
+}

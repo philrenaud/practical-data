@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="practical-data" content="off">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practical Data</title>
+  <meta name="description" content="A Chrome extension that colors the comparable columns of any HTML table, using a decision model to judge what each column means.">
+  <link rel="icon" href="icon128.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow"><img src="icon128.png" alt="" width="22" height="22"> Practical Data</p>
+      <h1>Tables you can read <br class="wide">at a glance.</h1>
+      <p class="lede">Conditional formatting for every table on the web, with the direction figured out for you. A Chrome extension that shades the comparable columns of any HTML table, so the better and worse rows show without reading every cell.</p>
+      <div class="actions">
+        <!--store--><a class="button primary" href="{{STORE_URL}}">Add to Chrome</a><!--/store-->
+        <!--unpacked--><a class="button primary" href="practical-data-extension.zip" download>Download the extension</a><!--/unpacked-->
+        <a class="button" href="#install">How to install</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="controls" aria-label="Display options">
+    <div class="segmented" role="radiogroup" aria-label="View">
+      <label><input type="radio" name="view" value="colored" checked><span>Shaded</span></label>
+      <label><input type="radio" name="view" value="original"><span>Original</span></label>
+    </div>
+    <div class="control-group">
+      <span class="control-label" id="palette-label">Palette</span>
+      <div class="palettes" id="palettes" role="radiogroup" aria-labelledby="palette-label"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label" id="theme-label">Page</span>
+      <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+        <label><input type="radio" name="theme" value="auto" checked><span>Auto</span></label>
+        <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+        <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+      </div>
+    </div>
+    <a class="hint-link" href="palettes.html">Palette study</a>
+    <p class="hint">Hover a shaded header to see how it was read. Switch the page to dark: the shading picks its dark ramps on its own.</p>
+  </nav>
+
+  <main>
+    <section id="examples" class="examples" aria-label="Examples"></section>
+
+    <section class="how" aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <ol class="steps">
+        <li>
+          <h3>Read</h3>
+          <p>Code extracts each table, resolves merged cells, and parses values: <code>$0.025</code>, <code>.312</code>, <code>6' 6"</code>, <code>1.5B</code>, <code>20–25</code>, <code>2:59</code>, <code>≤ 272K</code>. A <code>2:41</code> game length is a duration; a <code>7:05</code> start time is not. It computes the ranges and spreads, and describes them in words.</p>
+        </li>
+        <li>
+          <h3>Judge</h3>
+          <p>A System One model (<a href="https://typesafe.ai">Jev</a>) answers narrow, typed questions with probabilities:</p>
+          <ul class="questions">
+            <li>Is this column an amount, an identifier, a time, a rank, or a cutoff?</li>
+            <li>Is a higher value better, worse, or neither?</li>
+            <li>Do ratios matter more than differences (log scale)?</li>
+            <li>Are these labels ordered grades? Which of two is the lower grade?</li>
+            <li>Is this row a total? Do same-named columns in other tables share a scale?</li>
+            <li>Are values compared down each column, or across each row?</li>
+          </ul>
+        </li>
+        <li>
+          <h3>Paint</h3>
+          <p>D3 maps each value onto a ColorBrewer scale and blends it over the page's own background. Every cell keeps WCAG AA text contrast, and the extension restores the page exactly when you turn it off.</p>
+        </li>
+      </ol>
+      <dl class="stats">
+        <div><dt>165 / 165</dt><dd>hand-labeled columns shaded or left plain correctly, across 21 test pages (a regression check, not an accuracy estimate)</dd></div>
+        <div><dt>81 / 81</dt><dd>directions of "better" judged correctly</dd></div>
+        <div><dt>~$0.001</dt><dd>typical cost to judge a page; repeat visits are free</dd></div>
+      </dl>
+    </section>
+
+    <section class="install" id="install" aria-labelledby="install-title">
+      <h2 id="install-title">Install</h2>
+      <!--store--><ol>
+        <li>Install <a href="{{STORE_URL}}">Practical Data from the Chrome Web Store</a>.</li>
+        <li>On the options page, paste a <a href="https://typesafe.ai">TypeSafe</a> API key and select <b>Test</b>. A typical page costs about a tenth of a cent; unchanged tables aren't judged twice.</li>
+      </ol><!--/store-->
+      <!--unpacked--><ol>
+        <li>Download <a href="practical-data-extension.zip" download>the extension</a> and unzip it.</li>
+        <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
+        <li>Select <b>Load unpacked</b> and choose the unzipped folder.</li>
+        <li>On the options page, paste a <a href="https://typesafe.ai">TypeSafe</a> API key and select <b>Test</b>. A typical page costs about a tenth of a cent; unchanged tables aren't judged twice.</li>
+      </ol>
+      <p class="note">The Chrome Web Store listing is coming soon. Until then, the extension loads unpacked.</p><!--/unpacked-->
+      <p class="note">Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is sent to the provider you choose to be judged; nothing is sent for sites you turn off. Your key stays in the extension's storage. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current page.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a href="privacy.html">Privacy policy</a> · <a href="https://github.com/philrenaud/practical-data">Source (MIT)</a></p>
+  </footer>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

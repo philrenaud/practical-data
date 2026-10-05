@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Practical Data",
+  "version": "1.0.0",
+  "description": "Conditional formatting for every web table: shades comparable columns, with the better direction figured out for you.",
+  "homepage_url": "https://practicaldata.dev",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://api.typesafe.ai/*",
+    "https://api.cloudflare.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Practical Data",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "commands": {
+    "toggle-page": {
+      "suggested_key": {
+        "default": "Alt+Shift+H"
+      },
+      "description": "Turn colors on or off for this page"
+    }
+  }
+}

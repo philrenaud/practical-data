@@ -1,0 +1,820 @@
+{
+ "url": "fixture://live/wiki-costliest-atlantic-hurricanes.html",
+ "title": "List of costliest Atlantic hurricanes - Wikipedia",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "List of costliest Atlantic hurricane seasons (as of 2026)",
+   "headers": [
+    "Rank",
+    "Cost",
+    "Season"
+   ],
+   "rows": [
+    [
+     "1",
+     "≥ $294.811 billion",
+     "2017"
+    ],
+    [
+     "2",
+     "$179.253 billion",
+     "2005"
+    ],
+    [
+     "3",
+     "$138.8 billion",
+     "2024"
+    ],
+    [
+     "4",
+     "$118 billion",
+     "2022"
+    ],
+    [
+     "5",
+     "≥ $80.78 billion",
+     "2021"
+    ],
+    [
+     "6",
+     "$73.05 billion",
+     "2012"
+    ],
+    [
+     "7",
+     "$60.4 billion",
+     "2004"
+    ],
+    [
+     "8",
+     "$54.336 billion",
+     "2020"
+    ],
+    [
+     "9",
+     "≥ $50.562 billion",
+     "2018"
+    ],
+    [
+     "10",
+     "≥ $49.53 billion",
+     "2008"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Costliest Atlantic hurricanes",
+   "headers": [
+    "Name",
+    "Nominal damage (Billions USD)",
+    "Normalized damage (Billions USD)",
+    "Season",
+    "Storm classification at peak intensity",
+    "Areas affected",
+    "References"
+   ],
+   "rows": [
+    [
+     "Katrina",
+     "$125.0",
+     "$226.21",
+     "2005",
+     "Category 5 hurricane",
+     "Louisiana Mississippi The Bahamas United States Gulf Coast South Florida Northeast Eastern Canada",
+     ""
+    ],
+    [
+     "Harvey",
+     "$125.0",
+     "$164.70",
+     "2017",
+     "Category 4 hurricane",
+     "Texas Louisiana South America Central America The Caribbean Yucatan Peninsula",
+     ""
+    ],
+    [
+     "Ian",
+     "$112.0",
+     "data not available",
+     "2022",
+     "Category 5 hurricane",
+     "Trinidad and Tobago Venezuela Colombia ABC islands Jamaica Cayman Island Cuba Southeast United States",
+     ""
+    ],
+    [
+     "Maria",
+     "$91.6",
+     "data not available",
+     "2017",
+     "Category 5 hurricane",
+     "Puerto Rico Lesser Antilles Greater Antilles Caribbean Sea Eastern United States",
+     ""
+    ],
+    [
+     "Helene",
+     "$78.7",
+     "data not available",
+     "2024",
+     "Category 4 hurricane",
+     "Yucatán Peninsula Honduras Cayman Islands Cuba Southeastern United States Midwestern United States",
+     ""
+    ],
+    [
+     "Irma",
+     "$77.2",
+     "$74.17",
+     "2017",
+     "Category 5 hurricane",
+     "Lesser Antilles Greater Antilles Caribbean Sea Eastern United States",
+     ""
+    ],
+    [
+     "Ida",
+     "$75.3",
+     "$81.88",
+     "2021",
+     "Category 4 hurricane",
+     "Venezuela Colombia Panama Cayman Islands Cuba Southeastern United States Northeastern United States Canada",
+     ""
+    ],
+    [
+     "Sandy",
+     "$68.7",
+     "$104.19",
+     "2012",
+     "Category 3 hurricane",
+     "The Caribbean United States East Coast Eastern Canada",
+     ""
+    ],
+    [
+     "Ike",
+     "$38.0",
+     "$60.48",
+     "2008",
+     "Category 4 hurricane",
+     "Greater Antilles Texas Louisiana Midwestern United States Eastern Canada Iceland",
+     ""
+    ],
+    [
+     "Milton",
+     "$34.6",
+     "data not available",
+     "2024",
+     "Category 5 hurricane",
+     "Mexico Florida The Bahamas",
+     ""
+    ],
+    [
+     "Andrew",
+     "$27.3",
+     "$125.16",
+     "1992",
+     "Category 5 hurricane",
+     "The Bahamas Florida Louisiana",
+     ""
+    ],
+    [
+     "Wilma",
+     "$26.5",
+     "$45.08",
+     "2005",
+     "Category 5 hurricane",
+     "Greater Antilles Central America Florida",
+     ""
+    ],
+    [
+     "Ivan",
+     "$26.1",
+     "$48.38",
+     "2004",
+     "Category 5 hurricane",
+     "The Caribbean Venezuela United States Gulf Coast",
+     ""
+    ],
+    [
+     "Michael",
+     "$25.5",
+     "$32.21",
+     "2018",
+     "Category 5 hurricane",
+     "Central America Florida Georgia United States Gulf Coast Eastern United States Eastern Canada Iberian Peninsula",
+     ""
+    ],
+    [
+     "Florence",
+     "$24.2",
+     "$33.56",
+     "2018",
+     "Category 4 hurricane",
+     "West Africa Cape Verde Bermuda Eastern United States Atlantic Canada",
+     ""
+    ],
+    [
+     "Laura",
+     "$23.3",
+     "$20.98",
+     "2020",
+     "Category 4 hurricane",
+     "Leeward Islands Puerto Rico Dominican Republic Haiti Cuba Southeastern United States",
+     ""
+    ],
+    [
+     "Rita",
+     "$18.5",
+     "$35.04",
+     "2005",
+     "Category 5 hurricane",
+     "Cuba Texas Louisiana",
+     ""
+    ],
+    [
+     "Charley",
+     "$16.9",
+     "$53.75",
+     "2004",
+     "Category 4 hurricane",
+     "Jamaica Cayman Islands Cuba Florida The Carolinas",
+     ""
+    ],
+    [
+     "Matthew",
+     "$16.5",
+     "$15.17",
+     "2016",
+     "Category 5 hurricane",
+     "Colombia Venezuela The Caribbean United States East Coast",
+     ""
+    ],
+    [
+     "Irene",
+     "$14.2",
+     "$23.23",
+     "2011",
+     "Category 3 hurricane",
+     "The Caribbean United States East Coast Eastern Canada",
+     ""
+    ],
+    [
+     "Melissa",
+     "$12.2",
+     "data not available",
+     "2025",
+     "Category 5 hurricane",
+     "Windward Islands Greater Antilles (particularly Jamaica, Hispaniola, and Cuba)",
+     ""
+    ],
+    [
+     "Hugo",
+     "$11.0",
+     "$48.33",
+     "1989",
+     "Category 5 hurricane",
+     "The Caribbean United States East Coast",
+     ""
+    ],
+    [
+     "Frances",
+     "$10.1",
+     "$25.74",
+     "2004",
+     "Category 4 hurricane",
+     "The Caribbean Eastern United States Ontario",
+     ""
+    ],
+    [
+     "Georges",
+     "$9.3",
+     "<$8.0",
+     "1998",
+     "Category 4 hurricane",
+     "The Caribbean United States Gulf Coast",
+     ""
+    ],
+    [
+     "Beryl",
+     "$9.0",
+     "data not available",
+     "2024",
+     "Category 5 hurricane",
+     "Barbados Venezuela Caribbean Yucatán Peninsula United States Eastern Canada",
+     ""
+    ],
+    [
+     "Allison",
+     "$9.0",
+     "<$8.0",
+     "2001",
+     "Tropical storm",
+     "Texas Louisiana Southern United States",
+     ""
+    ],
+    [
+     "Gustav",
+     "$8.3",
+     "<$8.0",
+     "2008",
+     "Category 4 hurricane",
+     "Hispaniola Jamaica Cuba Louisiana",
+     ""
+    ],
+    [
+     "Jeanne",
+     "$7.9",
+     "$19.7",
+     "2004",
+     "Category 3 hurricane",
+     "The Caribbean Eastern United States",
+     ""
+    ],
+    [
+     "Sally †",
+     "$7.3",
+     "$9.4",
+     "2020",
+     "Category 2 hurricane",
+     "The Bahamas Florida Southeastern United States",
+     ""
+    ],
+    [
+     "Eta",
+     "$7.2",
+     "data not available",
+     "2020",
+     "Category 4 hurricane",
+     "The Caribbean Central America Cuba Eastern United States",
+     ""
+    ],
+    [
+     "Floyd",
+     "$6.5",
+     "$32.62",
+     "1999",
+     "Category 4 hurricane",
+     "The Bahamas Eastern United States Atlantic Canada",
+     ""
+    ],
+    [
+     "Mitch",
+     "$6.1",
+     "<$8.0",
+     "1998",
+     "Category 5 hurricane",
+     "Central America Yucatán Peninsula South Florida",
+     ""
+    ],
+    [
+     "Isabel",
+     "$5.5",
+     "$13.19",
+     "2003",
+     "Category 5 hurricane",
+     "Greater Antilles The Bahamas Eastern United States Ontario",
+     ""
+    ],
+    [
+     "Dorian",
+     "$5.1",
+     "data not available",
+     "2019",
+     "Category 5 hurricane",
+     "The Caribbean The Bahamas Eastern United States Atlantic Canada",
+     ""
+    ],
+    [
+     "Imelda †",
+     "$5.0",
+     "data not available",
+     "2019",
+     "Tropical storm",
+     "Texas Louisiana Oklahoma Arkansas",
+     ""
+    ],
+    [
+     "Fran",
+     "$5.0",
+     "$30.73",
+     "1996",
+     "Category 3 hurricane",
+     "Eastern United States Ontario",
+     ""
+    ],
+    [
+     "Isaias †",
+     "$5.0",
+     "data not available",
+     "2020",
+     "Category 1 hurricane",
+     "Puerto Rico Dominican Republic Haiti Bahamas Eastern United States",
+     ""
+    ],
+    [
+     "Opal",
+     "$4.7",
+     "$22.5",
+     "1995",
+     "Category 4 hurricane",
+     "Guatemala Yucatán Peninsula Eastern United States",
+     ""
+    ],
+    [
+     "Zeta †",
+     "$4.4",
+     "data not available",
+     "2020",
+     "Category 3 hurricane",
+     "Jamaica Yucatan Peninsula Louisiana Mississippi",
+     ""
+    ],
+    [
+     "Debby †",
+     "$4.3",
+     "data not available",
+     "2024",
+     "Category 1 hurricane",
+     "Caribbean East Coast of the United States Atlantic Canada",
+     ""
+    ],
+    [
+     "Dennis",
+     "$4.0",
+     "<$8.0",
+     "2005",
+     "Category 4 hurricane",
+     "Greater Antilles Southeastern United States",
+     ""
+    ],
+    [
+     "Stan",
+     "$3.9",
+     "<$8.0",
+     "2005",
+     "Category 1 hurricane",
+     "Mexico Central America",
+     ""
+    ],
+    [
+     "Karl †",
+     "$3.9",
+     "<$8.0",
+     "2010",
+     "Category 3 hurricane",
+     "Mexico Central America",
+     ""
+    ],
+    [
+     "Idalia †",
+     "$3.5",
+     "data not available",
+     "2023",
+     "Category 4 hurricane",
+     "Yucatán Peninsula Cuba Eastern United States",
+     ""
+    ],
+    [
+     "Fiona",
+     "$3.4",
+     "data not available",
+     "2022",
+     "Category 4 hurricane",
+     "Lesser Antilles Puerto Rico Dominican Republic Bahamas Turks and Caicos Islands Bermuda Eastern Canada",
+     ""
+    ],
+    [
+     "Luis",
+     "$3.3",
+     "<$8.0",
+     "1995",
+     "Category 4 hurricane",
+     "Leeward Islands Puerto Rico Bermuda",
+     ""
+    ],
+    [
+     "Isaac †",
+     "$3.1",
+     "<$8.0",
+     "2012",
+     "Category 1 hurricane",
+     "The Caribbean Eastern United States",
+     ""
+    ],
+    [
+     "Delta †",
+     "$3.0",
+     "data not available",
+     "2020",
+     "Category 4 hurricane",
+     "Jamaica Cayman Islands Yucatan Peninsula Southeastern United States",
+     ""
+    ],
+    [
+     "Alicia",
+     "$3.0",
+     "$28.68",
+     "1983",
+     "Category 3 hurricane",
+     "East Texas Louisiana",
+     ""
+    ],
+    [
+     "Gilbert",
+     "$3.0",
+     "<$8.0",
+     "1988",
+     "Category 5 hurricane",
+     "Venezuela Central America Hispaniola Mexico",
+     ""
+    ],
+    [
+     "Lee †",
+     "$2.8",
+     "<$8.0",
+     "2011",
+     "Tropical storm",
+     "Louisiana Mississippi",
+     ""
+    ],
+    [
+     "Marilyn",
+     "$2.5",
+     "<$8.0",
+     "1995",
+     "Category 3 hurricane",
+     "The Caribbean Bermuda",
+     ""
+    ],
+    [
+     "Michelle",
+     "$2.4",
+     "<$8.0",
+     "2001",
+     "Category 4 hurricane",
+     "Central America Jamaica Cuba The Bahamas",
+     ""
+    ],
+    [
+     "Agnes",
+     "$2.1",
+     "$50.7",
+     "1972",
+     "Category 1 hurricane",
+     "Mexico Cuba Eastern United States",
+     ""
+    ],
+    [
+     "Joan",
+     "$2.0",
+     "<$8.0",
+     "1988",
+     "Category 4 hurricane",
+     "Lesser Antilles Colombia Venezuela Central America",
+     ""
+    ],
+    [
+     "Fifi",
+     "$1.8",
+     "<$8.0",
+     "1974",
+     "Category 2 hurricane",
+     "Jamaica Central America Mexico",
+     ""
+    ],
+    [
+     "Frederic",
+     "$1.8",
+     "$22.19",
+     "1979",
+     "Category 4 hurricane",
+     "The Caribbean Southeastern United States",
+     ""
+    ],
+    [
+     "Dean",
+     "$1.7",
+     "<$8.0",
+     "2007",
+     "Category 5 hurricane",
+     "The Caribbean Central America",
+     ""
+    ],
+    [
+     "Dolly †",
+     "$1.6",
+     "<$8.0",
+     "2008",
+     "Category 2 hurricane",
+     "Cayman Islands Mexico Southwestern United States",
+     ""
+    ],
+    [
+     "Allen",
+     "$1.6",
+     "<$8.0",
+     "1980",
+     "Category 5 hurricane",
+     "The Caribbean Yucatán Peninsula Mexico South Texas",
+     ""
+    ],
+    [
+     "David",
+     "$1.5",
+     "<$8.0",
+     "1979",
+     "Category 5 hurricane",
+     "The Caribbean United States East Coast",
+     ""
+    ],
+    [
+     "Alex †",
+     "$1.5",
+     "<$8.0",
+     "2010",
+     "Category 2 hurricane",
+     "Central America Greater Antilles Texas",
+     ""
+    ],
+    [
+     "Juan †",
+     "$1.5",
+     "<$8.0",
+     "1985",
+     "Category 1 hurricane",
+     "United States Gulf Coast",
+     ""
+    ],
+    [
+     "Bob",
+     "$1.5",
+     "<$8.0",
+     "1991",
+     "Category 3 hurricane",
+     "United States East Coast Canada",
+     ""
+    ],
+    [
+     "Roxanne",
+     "$1.5",
+     "<$8.0",
+     "1995",
+     "Category 3 hurricane",
+     "Mexico",
+     ""
+    ],
+    [
+     "Ingrid",
+     "$1.5",
+     "<$8.0",
+     "2013",
+     "Category 1 hurricane",
+     "Mexico",
+     ""
+    ],
+    [
+     "Betsy",
+     "$1.4",
+     "<$8.0",
+     "1965",
+     "Category 4 hurricane",
+     "Louisiana South Florida Caribbean",
+     ""
+    ],
+    [
+     "Camille",
+     "$1.4",
+     "$58.16",
+     "1969",
+     "Category 5 hurricane",
+     "Mississippi Louisiana Alabama Virginia Cuba",
+     ""
+    ],
+    [
+     "Iota",
+     "$1.4",
+     "data not available",
+     "2020",
+     "Category 4 hurricane",
+     "Colombia Central America",
+     ""
+    ],
+    [
+     "Elena",
+     "$1.3",
+     "<$8.0",
+     "1985",
+     "Category 3 hurricane",
+     "Cuba United States Gulf Coast",
+     ""
+    ],
+    [
+     "Isidore",
+     "$1.3",
+     "<$8.0",
+     "2002",
+     "Category 3 hurricane",
+     "Cuba Yucatán Peninsula Louisiana",
+     ""
+    ],
+    [
+     "Francine†",
+     "$1.3",
+     "data not available",
+     "2024",
+     "Category 2 hurricane",
+     "Eastern Mexico Gulf Coast of the United States",
+     ""
+    ],
+    [
+     "Fred †",
+     "$1.3",
+     "data not available",
+     "2021",
+     "Tropical storm",
+     "Puerto Rico Hispaniola Cuba Jamaica Southeastern United States",
+     ""
+    ],
+    [
+     "Rafael †",
+     "$1.3",
+     "data not available",
+     "2024",
+     "Category 3 hurricane",
+     "Panama Costa Rica Colombia Jamaica Cayman Islands Cuba",
+     ""
+    ],
+    [
+     "Hanna †",
+     "$1.2",
+     "data not available",
+     "2020",
+     "Category 1 hurricane",
+     "Hispaniola Cuba Gulf Coast of the United States Mexico",
+     ""
+    ],
+    [
+     "Elsa †",
+     "$1.2",
+     "data not available",
+     "2021",
+     "Category 1 hurricane",
+     "Lesser Antilles Greater Antilles Venezuela Colombia East Coast of the United States Atlantic Canada",
+     ""
+    ],
+    [
+     "Lili",
+     "$1.2",
+     "<$8.0",
+     "2002",
+     "Category 4 hurricane",
+     "Lesser Antilles Greater Antilles Gulf Coast of the United States",
+     ""
+    ],
+    [
+     "Nicholas †",
+     "$1.1",
+     "data not available",
+     "2021",
+     "Category 1 hurricane",
+     "Mexico Gulf Coast of the United States",
+     ""
+    ],
+    [
+     "Nicole †",
+     "$1.0",
+     "data not available",
+     "2022",
+     "Category 1 hurricane",
+     "Puerto Rico Dominican Republic Bahamas South Atlantic states",
+     ""
+    ],
+    [
+     "Arthur",
+     "$1.0",
+     "data not available",
+     "2026",
+     "Tropical storm",
+     "Veracruz Northern Mexico Gulf Coast of the United States",
+     ""
+    ],
+    [
+     "Alberto †",
+     "$1.0",
+     "<$8.0",
+     "1994",
+     "Tropical storm",
+     "Southeastern United States",
+     ""
+    ],
+    [
+     "Bonnie †",
+     "$1.0",
+     "<$8.0",
+     "1998",
+     "Category 3 hurricane",
+     "Lesser Antilles East Coast of the United States",
+     ""
+    ]
+   ]
+  }
+ ]
+}

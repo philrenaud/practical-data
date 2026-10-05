@@ -1,0 +1,841 @@
+[
+  {
+    "slug": "github-copilot-pricing",
+    "url": "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing",
+    "title": "GitHub Copilot: Models and pricing",
+    "notes": "7 plain <table> elements (no class/id), one per vendor under h3#openai, #anthropic, #google, #fine-tuned-github, #microsoft, #xai, #moonshot-ai. Prices are '$' strings; lower is better (cost). 'Not applicable' mixed into numeric columns. Release status / Category / Tier are categorical text. Footnote digits glued to model names (e.g. 'Gemini 3.7 Flash1').",
+    "tables": [
+      {
+        "selector_hint": "first <table> in article (after h3#openai)",
+        "index": 0,
+        "headers": [
+          "Model",
+          "Release status",
+          "Category",
+          "Tier",
+          "Threshold (input tokens)",
+          "Input",
+          "Cached input",
+          "Cache write",
+          "Output"
+        ],
+        "sample_row": [
+          "GPT-5 mini",
+          "GA",
+          "Lightweight",
+          "Default",
+          "Not applicable",
+          "$0.25",
+          "$0.025",
+          "Not applicable",
+          "$2.00"
+        ]
+      },
+      {
+        "selector_hint": "second <table> (after h3#anthropic)",
+        "index": 1,
+        "headers": [
+          "Model",
+          "Release status",
+          "Category",
+          "Input",
+          "Cached input",
+          "Cache write",
+          "Output"
+        ],
+        "sample_row": [
+          "Claude Haiku 4.5",
+          "GA",
+          "Versatile",
+          "$1.00",
+          "$0.10",
+          "$1.25",
+          "$5.00"
+        ]
+      },
+      {
+        "selector_hint": "sixth <table> (after h3#xai); Tier/Threshold rows split one model into two rows",
+        "index": 5,
+        "headers": [
+          "Model",
+          "Release status",
+          "Category",
+          "Tier",
+          "Threshold (input tokens)",
+          "Input",
+          "Cached input",
+          "Output"
+        ],
+        "sample_row": [
+          "Grok 4.5",
+          "GA",
+          "Versatile",
+          "Default",
+          "\u2264 200K",
+          "$2.00",
+          "$0.50",
+          "$6.00"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "bbref-aaron-judge",
+    "url": "https://www.baseball-reference.com/players/j/judgeaa01.shtml",
+    "title": "Aaron Judge Stats | Baseball-Reference.com",
+    "notes": "Only 8 tables are live DOM; 5 more are inside HTML comments (<!-- <div class=table_container>... -->) and are revealed by bbref JS, so they will NOT exist when opened locally. Main batting table is live. Many identifier-like numbers: Season (year), Age. BA/OBP/SLG/OPS use leading-dot format ('.284'). Footer rows (career totals, 162-game avg) in <tfoot>. Batting: higher better for HR, BA, OBP, SLG, OPS, OPS+; SO and GIDP are lower-better for a batter.",
+    "tables": [
+      {
+        "selector_hint": "table#players_standard_batting",
+        "index": 1,
+        "headers": [
+          "Season",
+          "Age",
+          "Team",
+          "Lg",
+          "WAR",
+          "G",
+          "PA",
+          "AB",
+          "R",
+          "H",
+          "2B",
+          "3B",
+          "HR",
+          "RBI",
+          "SB",
+          "CS",
+          "BB",
+          "SO",
+          "BA",
+          "OBP",
+          "SLG",
+          "OPS",
+          "OPS+",
+          "rOBA",
+          "Rbat+",
+          "TB",
+          "GIDP",
+          "HBP",
+          "SH",
+          "SF",
+          "IBB",
+          "Pos",
+          "Awards"
+        ],
+        "sample_row": [
+          "2017",
+          "25",
+          "NYY",
+          "AL",
+          "8.1",
+          "155",
+          "678",
+          "542",
+          "128",
+          "154",
+          "24",
+          "3",
+          "52",
+          "114",
+          "9",
+          "4",
+          "127",
+          "208",
+          ".284",
+          ".422",
+          ".627",
+          "1.049",
+          "171",
+          ".435",
+          "172",
+          "340",
+          "15",
+          "5",
+          "0",
+          "4",
+          "11",
+          "*9D/H",
+          "AS,MVP-2,ROY-1,SS"
+        ],
+        "id": "players_standard_batting"
+      },
+      {
+        "selector_hint": "table#players_advanced_batting (two-row thead: over-header group row + column row)",
+        "index": 4,
+        "headers": [
+          "Season",
+          "Age",
+          "Team",
+          "Lg",
+          "PA",
+          "rOBA",
+          "Rbat+",
+          "BAbip",
+          "ISO",
+          "HR%",
+          "SO%",
+          "BB%",
+          "EV",
+          "HardH%",
+          "LD%",
+          "GB%",
+          "FB%",
+          "GB/FB",
+          "Pull%",
+          "Cent%",
+          "Oppo%",
+          "WPA",
+          "cWPA",
+          "RE24",
+          "RS%",
+          "SB%",
+          "XBT%",
+          "Pos",
+          "Awards"
+        ],
+        "sample_row": [
+          "2016",
+          "24",
+          "NYY",
+          "AL",
+          "95",
+          ".272",
+          "60",
+          ".282",
+          ".167",
+          "4.2",
+          "44.2",
+          "9.5",
+          "95.5",
+          "59.5",
+          "20.9",
+          "34.9",
+          "34.9",
+          "0.54",
+          "24.4",
+          "58.5",
+          "17.1",
+          "-0.2",
+          "-0.2%",
+          "-5.05",
+          "28.6",
+          "0.0",
+          "37.5",
+          "9/H",
+          ""
+        ],
+        "id": "players_advanced_batting"
+      }
+    ]
+  },
+  {
+    "slug": "bbref-tarik-skubal",
+    "url": "https://www.baseball-reference.com/players/s/skubata01.shtml",
+    "title": "Tarik Skubal Stats | Baseball-Reference.com",
+    "notes": "Pitcher page. 10 live tables, 9 more inside HTML comments (not rendered without bbref JS). Lower-is-better columns: ERA, FIP, WHIP, H9, HR9, BB9, L, ER, BB. Higher-is-better: W, SO, SO9, SO/BB, ERA+, WAR. Season/Age are identifiers. W-L% uses '.200' format.",
+    "tables": [
+      {
+        "selector_hint": "table#players_standard_pitching",
+        "index": 1,
+        "headers": [
+          "Season",
+          "Age",
+          "Team",
+          "Lg",
+          "WAR",
+          "W",
+          "L",
+          "W-L%",
+          "ERA",
+          "G",
+          "GS",
+          "GF",
+          "CG",
+          "SHO",
+          "SV",
+          "IP",
+          "H",
+          "R",
+          "ER",
+          "HR",
+          "BB",
+          "IBB",
+          "SO",
+          "HBP",
+          "BK",
+          "WP",
+          "BF",
+          "ERA+",
+          "FIP",
+          "WHIP",
+          "H9",
+          "HR9",
+          "BB9",
+          "SO9",
+          "SO/BB",
+          "Awards"
+        ],
+        "sample_row": [
+          "2021",
+          "24",
+          "DET",
+          "AL",
+          "1.8",
+          "8",
+          "12",
+          ".400",
+          "4.34",
+          "31",
+          "29",
+          "1",
+          "0",
+          "0",
+          "0",
+          "149.1",
+          "141",
+          "76",
+          "72",
+          "35",
+          "47",
+          "0",
+          "164",
+          "6",
+          "0",
+          "4",
+          "634",
+          "98",
+          "5.09",
+          "1.259",
+          "8.5",
+          "2.1",
+          "2.8",
+          "9.9",
+          "3.49",
+          ""
+        ],
+        "id": "players_standard_pitching"
+      },
+      {
+        "selector_hint": "table#players_advanced_pitching (two-row thead; BA/OBP/SLG/OPS AGAINST are lower-better for a pitcher, opposite of the batting page)",
+        "index": 4,
+        "headers": [
+          "Season",
+          "Age",
+          "Team",
+          "Lg",
+          "IP",
+          "BA",
+          "OBP",
+          "SLG",
+          "OPS",
+          "BAbip",
+          "HR%",
+          "K%",
+          "BB%",
+          "EV",
+          "HardH%",
+          "LD%",
+          "GB%",
+          "FB%",
+          "GB/FB",
+          "WPA",
+          "cWPA",
+          "RE24",
+          "Awards"
+        ],
+        "sample_row": [
+          "2020",
+          "23",
+          "DET",
+          "AL",
+          "32.0",
+          ".235",
+          ".306",
+          ".496",
+          ".802",
+          ".253",
+          "6.7",
+          "27.6",
+          "8.2",
+          "89.0",
+          "39.3",
+          "23.8",
+          "27.4",
+          "40.5",
+          "0.38",
+          "-0.5",
+          "-0.2%",
+          "-4.57",
+          ""
+        ],
+        "id": "players_advanced_pitching"
+      }
+    ]
+  },
+  {
+    "slug": "wiki-mlb-career-era-leaders",
+    "url": "https://en.wikipedia.org/wiki/List_of_Major_League_Baseball_career_ERA_leaders",
+    "title": "List of Major League Baseball career ERA leaders - Wikipedia",
+    "notes": "Simple 3-column lists split across two side-by-side wikitables (rank 1-50, 51-100). Table index 0 is the key/legend table (not data). ERA is lower-is-better; Rank is an identifier and blank for ties. Tight value range (1.816-2.6) - tests color spread over a narrow domain.",
+    "tables": [
+      {
+        "selector_hint": "second table.wikitable (first is the legend)",
+        "index": 1,
+        "headers": [
+          "Rank",
+          "Player",
+          "ERA"
+        ],
+        "sample_row": [
+          "1",
+          "Ed Walsh*",
+          "1.816"
+        ]
+      },
+      {
+        "selector_hint": "third table.wikitable (ranks 51+)",
+        "index": 2,
+        "headers": [
+          "Rank",
+          "Player",
+          "ERA"
+        ],
+        "sample_row": [
+          "51",
+          "Grover Cleveland Alexander*",
+          "2.560"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "scryfall-blb-checklist",
+    "url": "https://scryfall.com/search?q=set%3Ablb&unique=prints&as=checklist&order=set",
+    "title": "Scryfall checklist: Bloomburrow (BLB)",
+    "notes": "Single table#js-checklist with ~397 rows. 'R' column is rarity as single letters C/U/R/M (ordinal: C<U<R<M; also S/T possible). USD/EUR/TIX prices span a few cents to $838 (special prints; strong log-scale candidate), with currency symbols in cells and blanks for missing prices. '\u2116' collector number is an identifier that must not be colored. Cost is mana-symbol text like {2}{W}{W}.",
+    "tables": [
+      {
+        "selector_hint": "table#js-checklist (only table on page)",
+        "index": 0,
+        "headers": [
+          "Set \u25b2",
+          "\u2116",
+          "Name",
+          "Cost",
+          "Type",
+          "R",
+          "La",
+          "Artist",
+          "USD",
+          "EUR",
+          "TIX"
+        ],
+        "sample_row": [
+          "BLB",
+          "2",
+          "Beza, the Bounding Spring",
+          "{2}{W}{W}",
+          "Lgd. Creature",
+          "M",
+          "EN",
+          "Martin Wittfooth",
+          "$4.04",
+          "\u20ac5.79",
+          "2.10"
+        ],
+        "id": "js-checklist"
+      }
+    ]
+  },
+  {
+    "slug": "mtggoldfish-modern-price-index",
+    "url": "https://www.mtggoldfish.com/index/modern",
+    "title": "Modern Staples Price Index | MTGGoldfish",
+    "notes": "Two full price tables in raw HTML: paper (index 1) and MTGO online (index 2); the online one is in an inactive tab and may be display:none without site JS. Index 0 is a small header price-summary table (not data). Rarity column is full words (Common/Uncommon/Rare/Mythic, plus Special) - ordinal. Price has no currency symbol. Daily/Weekly deltas are signed ('+2.59','-11.17') and percentages ('-4.00%') - diverging scale candidate. Card names include '#223' collector numbers inline.",
+    "tables": [
+      {
+        "selector_hint": "table.tablesorter-bootstrap-popover-paper",
+        "index": 1,
+        "headers": [
+          "Card",
+          "Set",
+          "Rarity",
+          "Price",
+          "Daily",
+          "Daily(%)",
+          "Weekly",
+          "Weekly (%)",
+          ""
+        ],
+        "sample_row": [
+          "Mox Opal #223",
+          "MM2",
+          "Mythic",
+          "237.09",
+          "+2.59",
+          "+1.00%",
+          "-11.17",
+          "-4.00%",
+          "View Card DetailsAdd to Card TrayCreate Price Alert"
+        ]
+      },
+      {
+        "selector_hint": "table.tablesorter-bootstrap-popover-online",
+        "index": 2,
+        "headers": [
+          "Card",
+          "Set",
+          "Rarity",
+          "Price",
+          "Daily",
+          "Daily(%)",
+          "Weekly",
+          "Weekly (%)",
+          ""
+        ],
+        "sample_row": [
+          "Quantum Riddler #305 Borderless Surreal Space",
+          "EOE",
+          "Mythic",
+          "31.18",
+          "-4.86",
+          "-13.00%",
+          "-8.75",
+          "-22.00%",
+          "View Card DetailsAdd to Card TrayCreate Price Alert"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "wiki-mtg-sets",
+    "url": "https://en.wikipedia.org/wiki/List_of_Magic:_The_Gathering_sets",
+    "title": "List of Magic: The Gathering sets - Wikipedia",
+    "notes": "Hard header case: two-row thead where 'Size' spans Total cards / Common / Uncommon / Rare / Mythic Rare / Basic Land / Other (colspan+rowspan). Cards-per-rarity counts are numeric with '\u2014' for missing. Section label rows (e.g. 'Pre-cycle sets') span the full width inside tbody. Set code (e.g. 'ARN') and dates are identifiers.",
+    "tables": [
+      {
+        "selector_hint": "second table.wikitable (table.wikitable.sortable, main expansion list)",
+        "index": 1,
+        "headers": [
+          "Set",
+          "Expansionsymbol",
+          "Expansionsymbol description",
+          "Expansioncode",
+          "Developmentcodename",
+          "Pre-release date",
+          "Release date",
+          "Size: TotalCards",
+          "Size: Common",
+          "Size: Uncommon",
+          "Size: Rare",
+          "Size: Mythic Rare",
+          "Size: BasicLand",
+          "Size: Other"
+        ],
+        "sample_row": [
+          "Arabian Nights",
+          "expansion symbol",
+          "A scimitar",
+          "ARN",
+          "Arabian Nights",
+          "none",
+          "December 1993",
+          "92",
+          "41",
+          "19",
+          "32",
+          "\u2014",
+          "1",
+          "\u2014"
+        ]
+      },
+      {
+        "selector_hint": "fifth table.wikitable (compilation/reprint sets)",
+        "index": 4,
+        "headers": [
+          "Set",
+          "Expansion symbol description",
+          "Expansion code",
+          "Release date",
+          "Size: Total cards",
+          "Size: Common",
+          "Size: Uncommon",
+          "Size: Rare",
+          "Size: Mythic Rare",
+          "Size: Basic Land",
+          "Size: Other"
+        ],
+        "sample_row": [
+          "Chronicles",
+          "No specific symbol",
+          "CHR",
+          "July 1995",
+          "125",
+          "37",
+          "43",
+          "45",
+          "\u2014",
+          "\u2014",
+          "\u2014"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "wiki-countries-by-population",
+    "url": "https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population",
+    "title": "List of countries and dependencies by population - Wikipedia",
+    "notes": "Population spans ~50 (Pitcairn) to ~1.4 billion: strongest log-scale candidate. First data row is 'World' (an aggregate outlier that should arguably be excluded). '% of world' is a percent string. Date column contains dates (identifier). Uses static-row-numbers class (CSS-generated rank, not in DOM).",
+    "tables": [
+      {
+        "selector_hint": "first table.wikitable (caption: 'List of countries and territories by total population')",
+        "index": 0,
+        "headers": [
+          "Location",
+          "Population",
+          "% ofworld",
+          "Date",
+          "Source (official or fromthe United Nations)",
+          "Notes"
+        ],
+        "sample_row": [
+          "India",
+          "1,429,404,000",
+          "17.3%",
+          "1 Jul 2026",
+          "Official projection",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "wiki-costliest-atlantic-hurricanes",
+    "url": "https://en.wikipedia.org/wiki/List_of_costliest_Atlantic_hurricanes",
+    "title": "List of costliest Atlantic hurricanes - Wikipedia",
+    "notes": "Ordinal text column 'Storm classification at peak intensity': Tropical storm < Category 1 ... < Category 5 hurricane. Damage in '$125.0' billions (skewed, log-scale candidate). Season is a year identifier. Some rows use rowspan (storms sharing a name/season), so ~10 rows have fewer cells and columns shift if rowspan is not resolved. Table index 0 (costliest seasons) has 'Cost' strings like '\u2265 $294.811 billion' - text-embedded numbers with a comparison prefix.",
+    "tables": [
+      {
+        "selector_hint": "table.wikitable.sortable.mw-collapsible (caption 'Costliest Atlantic hurricanes')",
+        "index": 1,
+        "headers": [
+          "Name",
+          "Nominal damage(Billions USD)",
+          "Normalized damage(Billions USD)",
+          "Season",
+          "Storm classificationat peak intensity",
+          "Areas affected",
+          "References"
+        ],
+        "sample_row": [
+          "Katrina",
+          "$125.0",
+          "$226.21",
+          "2005",
+          "Category 5 hurricane",
+          "Louisiana Mississippi The Bahamas United States Gulf Coast South Florida Northeast Eastern Canada",
+          ""
+        ]
+      },
+      {
+        "selector_hint": "first table.wikitable (caption 'List of costliest Atlantic hurricane seasons')",
+        "index": 0,
+        "headers": [
+          "Rank",
+          "Cost",
+          "Season"
+        ],
+        "sample_row": [
+          "1",
+          "\u2265 $294.811 billion",
+          "2017"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "wiki-super-bowl-champions",
+    "url": "https://en.wikipedia.org/wiki/List_of_Super_Bowl_champions",
+    "title": "List of Super Bowl champions - Wikipedia",
+    "notes": "Identifier trap: Game is a Roman numeral, Date contains years, two 'Score' columns with the same header (winner/loser), Attendance is a true quantity with thousands separators. Team cells carry trailing superscript markers ('n(1, 1\u20130)'). Franchise table has Wins/Losses/Win%/Points with 'Seasons' list of years that must not be colored.",
+    "tables": [
+      {
+        "selector_hint": "table.wikitable.sortable with caption 'Super Bowl championships'",
+        "index": 1,
+        "headers": [
+          "Game",
+          "Date (season)",
+          "Winning team",
+          "Score",
+          "Losing team",
+          "Score",
+          "Venue",
+          "City",
+          "Attendance",
+          "Referee",
+          "Ref."
+        ],
+        "sample_row": [
+          "I",
+          "Jan 15, 1967 (1966 AFL/1966 NFL)",
+          "Green Bay Packersn(1, 1\u20130)",
+          "35",
+          "Kansas City Chiefsa(1, 0\u20131)",
+          "10",
+          "Los Angeles Memorial Coliseum",
+          "Los Angeles, California",
+          "61,946",
+          "Norm Schachter",
+          ""
+        ]
+      },
+      {
+        "selector_hint": "table.wikitable.sortable franchise records (Franchise/Wins/Losses/Win%)",
+        "index": 4,
+        "headers": [
+          "Franchise",
+          "Wins",
+          "Losses",
+          "Win%",
+          "Points for",
+          "Points against",
+          "Appearances",
+          "Seasons (champions in bold)"
+        ],
+        "sample_row": [
+          "Boston / New England PatriotsA",
+          "6",
+          "6",
+          ".500",
+          "259",
+          "311",
+          "12",
+          "1985A, 1996A, 2001A, 2003A, 2004A, 2007A, 2011A, 2014A, 2016A, 2017A, 2018A, 2025A"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "wiki-tallest-buildings",
+    "url": "https://en.wikipedia.org/wiki/List_of_tallest_buildings",
+    "title": "List of tallest buildings - Wikipedia",
+    "notes": "Identifier trap: Year (completion) sits next to Height and Floors; rank column header is empty. Height has a two-row header (Height -> m / ft). Floors cells include text like '163 (+ 2 below ground)'. Image column is empty text.",
+    "tables": [
+      {
+        "selector_hint": "table.wikitable.sortable with sticky-header-multi (first big table)",
+        "index": 1,
+        "headers": [
+          "",
+          "Name",
+          "Height (m)",
+          "Height (ft)",
+          "Floors",
+          "Image",
+          "City",
+          "Country",
+          "Year",
+          "Comments",
+          "Ref"
+        ],
+        "sample_row": [
+          "1",
+          "Burj Khalifa",
+          "828",
+          "2,717",
+          "163 (+ 2 below ground)",
+          "",
+          "Dubai",
+          "United Arab Emirates",
+          "2010",
+          "Tallest building in the world since 2009",
+          ""
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "statcan-urban-greenness",
+    "url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3810015801",
+    "title": "Urban greenness and NDVI by 2021 population centre",
+    "notes": "Superscript footnotes and quality flags (74.3<sup>r</sup>), '..' for not available, and a units row (Percent / Index) written as <td>.",
+    "tables": [
+      {
+        "selector_hint": "the only table",
+        "index": 0,
+        "headers": [
+          "Geography",
+          "Average greenness: 2021\u20262025",
+          "Average NDVI: 2021\u20262025"
+        ],
+        "sample_row": [
+          "Canada, all population centres",
+          "74.3",
+          "\u2026"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "cloudflare-clef",
+    "url": "https://blog.cloudflare.com/clef-decision-models/",
+    "title": "Introducing Clef (Cloudflare blog)",
+    "notes": "Benchmark table: benchmarks as rows, models as columns; values compare across each row.",
+    "tables": [
+      {
+        "selector_hint": "first table",
+        "index": 0,
+        "headers": [
+          "Benchmark",
+          "Clef",
+          "Clef-flash",
+          "Jev",
+          "DiffusionGemma Jev",
+          "Kev 9B",
+          "Laya"
+        ],
+        "sample_row": [
+          "BFCL \u00b7 case exact",
+          "98.47",
+          "98.76",
+          "95.75",
+          "96.52",
+          "94.51",
+          "38.13"
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "bbref-rules-changes",
+    "url": "https://www.baseball-reference.com/friv/rules-changes-stats.shtml",
+    "title": "2023 MLB rules changes effect on stats and pace of play",
+    "notes": "Time of Game table: AvgTime (h:mm) and time between PA/BIP (m:ss) as clock durations.",
+    "tables": [
+      {
+        "selector_hint": "table titled 'Time of Game For Season'",
+        "index": 10,
+        "headers": [
+          "Year",
+          "G",
+          "AvgTime",
+          "%\u22642:30",
+          "%\u22653:30",
+          "Avg Tm Btwn PA",
+          "Avg Tm Btwn BIP",
+          "Pos.Pitcher %"
+        ],
+        "sample_row": [
+          "2026-Apr",
+          "354",
+          "2:42",
+          "24.0",
+          "0.8",
+          "2:10",
+          "3:15",
+          "0.540%"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Introducing Clef: our open-source decision models, and new RL fine-tuning platform | Cloudflare Blog</title>
+<!--
+  Test fixture: headings and tables only, from https://blog.cloudflare.com/clef-decision-models/
+  Retrieved October 2026 for testing table extraction. See fixtures/NOTICE.md.
+-->
+</head>
+<body>
+<h1 class="m-0 text-4xl mb-5 leading-none font-medium font-display text-display sm:text-[42px] text-balance">Introducing Clef: our open-source decision models, and new RL fine-tuning platform</h1>
+<h2><span class="heading-anchor-tooltip">Copy link</span>What is a decision model?</h2>
+<h2><span class="heading-anchor-tooltip">Copy link</span>How is Clef different from other decision models?</h2>
+<table class="emdash-table" style="min-width: 678px;"><colgroup><col style="width: 102px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"></colgroup><tbody><tr><td><p><strong>Benchmark</strong></p></td><td><p><strong><u>Clef</u></strong></p></td><td><p><strong><u>Clef-flash</u></strong></p></td><td><p><strong><u>Jev</u></strong></p></td><td><p><strong>DiffusionGemma Jev</strong></p></td><td><p><strong><u>Kev 9B</u></strong></p></td><td><p><strong><u>Laya</u></strong></p></td></tr><tr><td><p>BFCL · case exact</p></td><td><p>98.47</p></td><td><p><strong>98.76</strong></p></td><td><p>95.75</p></td><td><p>96.52</p></td><td><p>94.51</p></td><td><p>38.13</p></td></tr><tr><td><p>ToolRet · nDCG@10</p></td><td><p><strong>69.19</strong></p></td><td><p>66.43</p></td><td><p>65.28</p></td><td><p>61.21</p></td><td><p>64.26</p></td><td><p>12.69</p></td></tr><tr><td><p>API-Bank · accuracy</p></td><td><p>91.93</p></td><td><p><strong>93.11</strong></p></td><td><p>88.19</p></td><td><p>83.66</p></td><td><p>56.30</p></td><td><p>11.41</p></td></tr><tr><td><p>Home appliances · case exact</p></td><td><p>82.95</p></td><td><p><strong>97.73</strong></p></td><td><p>52.27</p></td><td><p>42.05</p></td><td><p>25.00</p></td><td><p>0.00</p></td></tr><tr><td><p>When2Call · accuracy</p></td><td><p>72.37</p></td><td><p>65.58</p></td><td><p><strong>80.97</strong></p></td><td><p>75.44</p></td><td><p>49.62</p></td><td><p>11.94</p></td></tr><tr><td><p>BANKING77 · macro-F1</p></td><td><p><strong>94.20</strong></p></td><td><p>90.93</p></td><td><p>79.74</p></td><td><p>74.28</p></td><td><p>84.83</p></td><td><p>14.29</p></td></tr><tr><td><p>CLINC150+OOS · macro-F1</p></td><td><p><strong>97.43</strong></p></td><td><p>66.77</p></td><td><p>89.27</p></td><td><p>83.49</p></td><td><p>79.03</p></td><td><p>3.19</p></td></tr><tr><td><p>BRIGHT · nDCG@10</p></td><td><p>45.91</p></td><td><p>39.26</p></td><td><p><strong>47.52</strong></p></td><td><p>42.94</p></td><td><p>38.53</p></td><td><p>19.90</p></td></tr><tr><td><p>Amazon ESCI · macro-F1</p></td><td><p><strong>57.48</strong></p></td><td><p>57.39</p></td><td><p>55.21</p></td><td><p>53.37</p></td><td><p>49.22</p></td><td><p>24.40</p></td></tr><tr><td><p>PhishNChips · accuracy</p></td><td><p>79.60</p></td><td><p>75.05</p></td><td><p>62.55</p></td><td><p><strong>85.35</strong></p></td><td><p>50.75</p></td><td><p>50.15</p></td></tr></tbody></table>
+<table class="emdash-table" style="min-width: 637px;"><colgroup><col style="width: 177px;"><col style="width: 147px;"><col style="width: 156px;"><col style="width: 157px;"></colgroup><tbody><tr><td><p><strong>Workflow</strong></p></td><td><p><strong><u>Clef</u></strong></p></td><td><p><strong><u>Clef-flash</u></strong></p></td><td><p><strong><u>Jev</u></strong></p></td></tr><tr><td><p>Invoice processing</p></td><td><p><strong>64.7</strong></p></td><td><p>57.1</p></td><td><p>61.8</p></td></tr><tr><td><p>Customer service</p></td><td><p>76.3</p></td><td><p><strong>77</strong></p></td><td><p>76.0</p></td></tr><tr><td><p>Security incidents</p></td><td><p><strong>62.9</strong></p></td><td><p>61.7</p></td><td><p>61.7</p></td></tr><tr><td><p>Agent trace observability</p></td><td><p>68.5</p></td><td><p>69.8</p></td><td><p><strong>71.6</strong></p></td></tr></tbody></table>
+<table class="emdash-table" style="min-width: 672px;"><colgroup><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"><col style="width: 96px;"></colgroup><tbody><tr><td><p><strong>Benchmark</strong></p></td><td><p><strong><u>Clef</u></strong></p></td><td><p><strong><u>Clef-flash</u></strong></p></td><td><p><strong><u>Jev</u></strong></p></td><td><p><strong>DiffusionGemma Jev</strong></p></td><td><p><strong><u>Kev-9B</u></strong></p></td><td><p><strong><u>Laya</u></strong></p></td></tr><tr><td><p>Median latency&nbsp; · ms</p></td><td><p>209.3</p></td><td><p>38.8</p></td><td><p>524.1</p></td><td><p>84.4<br></p></td><td><p>51.4</p></td><td><p><strong>5.8</strong></p></td></tr><tr><td><p>p95 latency · ms</p></td><td><p>238.6</p></td><td><p><strong>122.4</strong></p></td><td><p>536.0</p></td><td><p>211.2<br></p></td><td><p>187.9</p></td><td><p>222.5</p></td></tr></tbody></table>
+<h3><span class="heading-anchor-tooltip">Copy link</span>How we trained Clef</h3>
+<h3><span class="heading-anchor-tooltip">Copy link</span>How fine-tuning can extend the capabilities of Clef</h3>
+<h3><span class="heading-anchor-tooltip">Copy link</span>Our new RL service</h3>
+<h3><span class="heading-anchor-tooltip">Copy link</span>Try it out today</h3>
+<h2 class="date mb-4">Related tags</h2>
+<h2 class="mb-5 text-2xl font-bold email-subscribe-heading">Subscribe to receive notifications of new posts</h2>
+<h3 class="m-0 text-2xl font-medium leading-6 text-display transition-colors duration-200 group-hover/title:text-accent-text">Streamline: custom video pipelines with Cloudflare Stream and Workers</h3>
+<h3 class="m-0 text-2xl font-medium leading-6 text-display transition-colors duration-200 group-hover/title:text-accent-text">Introducing Web Search API via AI Gateway</h3>
+<h3 class="m-0 text-2xl font-medium leading-6 text-display transition-colors duration-200 group-hover/title:text-accent-text">8 major updates to Cloudflare Observability</h3>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Getting Started</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Public interest</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Resources</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Solutions</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Company</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Compliance</h2>
+<h2 class="mb-2 lg:mb-3 text-[13px] font-medium leading-normal text-footer-heading">Developers</h2>
+</body>
+</html>

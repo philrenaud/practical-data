@@ -1,0 +1,28 @@
+{
+ "url": "fixture://synthetic/opted-out.html",
+ "title": "Practical Data: opted-out page",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "This page paints its own tables",
+   "headers": [
+    "Item",
+    "Price"
+   ],
+   "rows": [
+    [
+     "A",
+     "$1"
+    ],
+    [
+     "B",
+     "$5"
+    ],
+    [
+     "C",
+     "$9"
+    ]
+   ]
+  }
+ ]
+}

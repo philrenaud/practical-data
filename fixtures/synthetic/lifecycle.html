@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: lifecycle</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 760px; margin: 24px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 6px 0 18px; }
+  th, td { border: 1px solid #ccc; padding: 3px 10px; position: relative; }
+  .dark { background: oklch(0.2 0.02 260); color: oklch(0.95 0 0); padding: 10px 14px; }
+  .dark th, .dark td { border-color: oklch(0.35 0.02 260); }
+  button { font: inherit; margin-right: 6px; }
+</style>
+</head>
+<body>
+<h1>Lifecycle</h1>
+<p>
+  <button id="reprice" onclick="document.querySelectorAll('#prices tbody tr').forEach((r) => { r.cells[1].firstChild.nodeValue = r.dataset.price; })">Reprice in place</button>
+  <button id="insert" onclick="document.getElementById('slot').innerHTML = '<table><thead><tr><th>Promo</th><th>Discount</th></tr></thead><tbody><tr><td>A</td><td>5%</td></tr><tr><td>B</td><td>10%</td></tr><tr><td>C</td><td>15%</td></tr></tbody></table>'">Insert table above</button>
+  <button id="nudge" onclick="document.querySelector('#prices tbody td:nth-child(2)').style.left = '3px'">Nudge a cell</button>
+  <button id="navigate" onclick="history.pushState({}, '', '?page=2')">Go to page 2</button>
+</p>
+<div id="slot"></div>
+<h2>Prices</h2>
+<table id="prices">
+  <thead><tr><th>Item</th><th>Price</th><th>In stock</th></tr></thead>
+  <tbody>
+    <tr data-price="$9.00"><td>Kettle</td><td>$1.00</td><td>14</td></tr>
+    <tr data-price="$7.00"><td>Toaster</td><td>$3.00</td><td>9</td></tr>
+    <tr data-price="$5.00"><td>Blender</td><td>$5.00</td><td>4</td></tr>
+    <tr data-price="$3.00"><td>Mixer</td><td>$7.00</td><td>11</td></tr>
+    <tr data-price="$1.00"><td>Grinder</td><td>$9.00</td><td>2</td></tr>
+  </tbody>
+</table>
+<h2>Standings</h2>
+<table id="standings">
+  <thead><tr><th>Team</th><th>Wins</th><th>Losses</th></tr></thead>
+  <tbody>
+    <tr><td>Harbor Gulls</td><td>4</td><td>12</td></tr>
+    <tr><td>Mesa Owls</td><td>7</td><td>9</td></tr>
+    <tr><td>Pine Elks</td><td>9</td><td>7</td></tr>
+    <tr><td>River Foxes</td><td>11</td><td>5</td></tr>
+    <tr><td>Canyon Hawks</td><td>12</td><td>4</td></tr>
+  </tbody>
+</table>
+<section class="dark">
+  <h2>Rainfall</h2>
+  <table id="rain">
+    <thead><tr><th>City</th><th>Rainfall (mm)</th></tr></thead>
+    <tbody>
+      <tr><td>Lima</td><td>16</td></tr>
+      <tr><td>Madrid</td><td>420</td></tr>
+      <tr><td>London</td><td>690</td></tr>
+      <tr><td>Mumbai</td><td>2,200</td></tr>
+      <tr><td>Bergen</td><td>2,250</td></tr>
+    </tbody>
+  </table>
+</section>
+</body>
+</html>
