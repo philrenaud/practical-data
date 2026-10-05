@@ -149,12 +149,7 @@ h2 { margin: 0 0 28px; font-size: clamp(30px, 4vw, 44px); font-weight: 740; lett
 .note { color: var(--muted); max-width: 70ch; margin-top: 18px; }
 
 /* ── Open source ── */
-.open { margin-top: 72px; padding: 40px; border-radius: calc(var(--radius) + 6px); background: var(--hero); color: var(--hero-ink); position: relative; overflow: hidden; }
-.open::before {
-  /* Same palette band as the hero, along the top edge. */
-  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
-  background: linear-gradient(90deg, #a50026, #f46d43, #fee08b, #d9ef8b, #66bd63, #006837 60%, #9e9ac8, #54278f);
-}
+.open { margin-top: 72px; padding: 40px; border-radius: calc(var(--radius) + 6px); background: var(--hero); color: var(--hero-ink); }
 .open h2 { margin-bottom: 14px; line-height: 1.05; }
 .open-head p { max-width: 62ch; margin: 0; font-size: 18px; color: #cfc9be; }
 .open a { color: var(--hero-ink); }
