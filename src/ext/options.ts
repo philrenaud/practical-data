@@ -7,7 +7,7 @@ import { cellFill, isDark } from "../core/tint.ts";
 import type { ColumnEncoding, PageSnapshot, TableJudgment } from "../core/types.ts";
 import { judgePage } from "../decide/judge.ts";
 import { layerFromConfig } from "../decide/model.ts";
-import { DEFAULT_SETTINGS, loadSettings, providerConfig, saveSettings, setSiteEnabledIn, type Settings } from "./settings.ts";
+import { DEFAULT_SETTINGS, getInstallId, loadSettings, providerConfig, saveSettings, setSiteEnabledIn, type Settings } from "./settings.ts";
 
 const SAMPLE: PageSnapshot = {
   url: "chrome-extension://options",
@@ -60,7 +60,7 @@ const setStatus = (text: string, error = false) => {
 
 const read = (base: Settings): Settings => ({
   ...base,
-  provider: radio("provider") === "clef" ? "clef" : "jev",
+  provider: ((p) => (p === "clef" || p === "jev" ? p : "hosted"))(radio("provider")),
   palette: currentPalette(),
   typesafeApiKey: field("typesafeApiKey").value.trim(),
   cloudflareAccountId: field("cloudflareAccountId").value.trim(),
@@ -86,6 +86,7 @@ const syncProvider = () => {
   form.querySelectorAll<HTMLElement>(".fields").forEach((el) => {
     el.hidden = el.dataset["for"] !== provider;
   });
+  form.querySelector<HTMLElement>("#key-note")!.hidden = provider === "hosted";
 };
 
 const currentPalette = (): Palette => {
@@ -176,7 +177,7 @@ const renderHosts = (s: Settings) => {
 };
 
 const test = async () => {
-  const config = providerConfig(read(await loadSettings()));
+  const config = providerConfig(read(await loadSettings()), await getInstallId());
   if (config === null) {
     setStatus("Add credentials first.", true);
     return;

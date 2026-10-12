@@ -28,3 +28,23 @@ test("rejects missing answers, wrong types, unknown options and out-of-range pro
   );
   assert.equal(validateAnswers(questions, { ...ok, answers: { ...ok.answers, log: { type: "noul", noul: 2 } } }), "log: noul 2 out of range");
 });
+
+test("a spent hosted allowance fails at once as quota, without waiting or retrying", async () => {
+  const { Effect } = await import("effect");
+  const { hosted } = await import("../src/decide/model.ts");
+  let calls = 0;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    calls++;
+    return new Response('{"error":"install_limit"}', { status: 429, headers: { "Retry-After": "40000", "X-Practical-Data-Quota": "install_limit" } });
+  };
+  try {
+    const started = Date.now();
+    const error = await Effect.runPromise(hosted("id").evaluate({ state: {}, questions }).pipe(Effect.flip));
+    assert.equal(error.reason, "quota");
+    assert.equal(calls, 1);
+    assert.ok(Date.now() - started < 1000);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
