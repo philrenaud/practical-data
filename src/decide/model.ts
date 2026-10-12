@@ -65,7 +65,9 @@ export type DecisionErrorReason =
   | "bad_request"
   | "network"
   | "decode"
-  | "missing_config";
+  | "missing_config"
+  /** The hosted endpoint's daily allowance is used up. */
+  | "quota";
 
 export class DecisionError extends Data.TaggedError("DecisionError")<{
   readonly reason: DecisionErrorReason;
@@ -227,11 +229,13 @@ const sendOnce = (transport: Transport, body: unknown) =>
     });
     if (!response.ok) {
       const text = yield* Effect.promise(() => response.text().catch(() => ""));
+      // A spent daily allowance is final for the day: no waiting, no retries.
+      const quota = response.headers.get("x-practical-data-quota") !== null;
       // Honor the server's pacing before the retry schedule's own backoff.
-      const wait = response.status === 429 || response.status === 529 ? retryAfterMs(response) : null;
+      const wait = !quota && (response.status === 429 || response.status === 529) ? retryAfterMs(response) : null;
       if (wait !== null) yield* Effect.sleep(wait);
       return yield* new DecisionError({
-        reason: reasonForStatus(response.status),
+        reason: quota ? "quota" : reasonForStatus(response.status),
         message: `${transport.name} ${response.status}: ${text.slice(0, 500)}`,
       });
     }
@@ -289,6 +293,7 @@ const makeModel = (transport: Transport) =>
 // ── Providers ───────────────────────────────────────────────────────────────
 
 export type ProviderConfig =
+  | { readonly provider: "hosted"; readonly installId: string }
   | { readonly provider: "jev"; readonly apiKey: string; readonly model?: string }
   | {
       readonly provider: "clef";
@@ -303,6 +308,30 @@ export const jev = (apiKey: string, model = "jev-latest") =>
     name: model,
     maxQuestions: 200,
     send: (body, signal) => postJson("https://api.typesafe.ai/v1/systemone", apiKey, body, signal),
+    unwrap: (json) => json,
+  });
+
+declare const PD_API_ORIGIN: string | undefined;
+
+/** The hosted endpoint's origin; builds can point it at a local `wrangler dev`. */
+export const API_ORIGIN = typeof PD_API_ORIGIN === "string" ? PD_API_ORIGIN : "https://api.practicaldata.dev";
+
+/**
+ * Jev through practicaldata.dev's hosted endpoint: no key of the reader's own,
+ * within daily limits per install. The endpoint uses the same request shape
+ * and the same 200-question chunks as Jev itself.
+ */
+export const hosted = (installId: string) =>
+  makeModel({
+    name: "jev-hosted",
+    maxQuestions: 200,
+    send: (body, signal) =>
+      fetch(`${API_ORIGIN}/v1/systemone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Practical-Data-Install": installId },
+        body: JSON.stringify(body),
+        signal,
+      }),
     unwrap: (json) => json,
   });
 
@@ -328,7 +357,9 @@ export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-
 export const layerFromConfig = (config: ProviderConfig): Layer.Layer<DecisionModel> =>
   Layer.succeed(
     DecisionModel,
-    config.provider === "jev"
-      ? jev(config.apiKey, config.model)
-      : clef(config.accountId, config.apiToken, config.model),
+    config.provider === "hosted"
+      ? hosted(config.installId)
+      : config.provider === "jev"
+        ? jev(config.apiKey, config.model)
+        : clef(config.accountId, config.apiToken, config.model),
   );
