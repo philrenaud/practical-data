@@ -6,6 +6,7 @@
  * key, within per-install, per-IP and daily limits.
  *
  *   POST /v1/systemone   { model?, state, questions } → System One response
+ *   POST /v1/judge       { title, table } → the table's judgment (for the Sheets add-on)
  *   GET  /v1/health      → { ok: true }
  *   GET  /v1/stats       today's counts (Authorization: Bearer STATS_TOKEN)
  *
@@ -14,8 +15,9 @@
  * deleted two days later.
  */
 import { Effect, Schema } from "effect";
-import { DecisionResponse, hashJson, validateAnswers, type Question } from "../decide/model.ts";
-import { checkQuestions, LIMITS } from "./allow.ts";
+import { judgePage } from "../decide/judge.ts";
+import { DecisionError, DecisionModel, DecisionResponse, hashJson, validateAnswers, type Question } from "../decide/model.ts";
+import { checkQuestions, LIMITS, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -49,11 +51,16 @@ const secondsToMidnightUtc = () => {
   return Math.ceil((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now.getTime()) / 1000);
 };
 
-/** Only the extension may call: never a web page, and only listed extension ids when configured. */
+/**
+ * Never a web page. Requests with no Origin come from servers, such as the
+ * Sheets add-on's Apps Script; extension origins must be listed when
+ * ALLOWED_ORIGINS is set.
+ */
 const originAllowed = (origin: string | null, env: Env): boolean => {
-  if (origin !== null && !origin.startsWith("chrome-extension://")) return false;
+  if (origin === null) return true;
+  if (!origin.startsWith("chrome-extension://")) return false;
   const allowed = env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean);
-  return allowed.length === 0 || (origin !== null && allowed.includes(origin));
+  return allowed.length === 0 || allowed.includes(origin);
 };
 
 const readBody = async (request: Request): Promise<unknown> => {
@@ -64,46 +71,63 @@ const readBody = async (request: Request): Promise<unknown> => {
   return JSON.parse(text);
 };
 
-const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
-  if (!originAllowed(request.headers.get("origin"), env)) return refuse(403, "origin", "This endpoint serves the Practical Data extension only.");
+/** Who is asking, once the origin, install id and rate limits have passed. */
+interface Caller {
+  readonly install: string;
+}
+
+/** Origin, install id and rate limits: shared by every route that spends the operator's key. */
+const admit = async (request: Request, env: Env): Promise<Caller | Response> => {
+  if (!originAllowed(request.headers.get("origin"), env)) return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
   const install = request.headers.get("x-practical-data-install") ?? "";
   if (!INSTALL_ID.test(install)) return refuse(400, "install", "Missing or malformed install id.");
-
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   const [byInstall, byIp] = await Promise.all([env.RL_INSTALL.limit({ key: install }), env.RL_IP.limit({ key: ip })]);
   if (!byInstall.success || !byIp.success) return refuse(429, "rate_limited", "Too many requests; slow down.", { "Retry-After": "10" });
+  return { install };
+};
 
-  let body: unknown;
-  try {
-    body = await readBody(request);
-  } catch {
-    return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
-  }
-  const { state, questions } = (body ?? {}) as { state?: unknown; questions?: unknown };
-  const problem = checkQuestions(questions);
-  if (problem !== null) return refuse(400, "questions", problem);
+type Asked = { readonly response: DecisionResponse; readonly cached: boolean } | { readonly refusal: Response };
+
+/**
+ * One System One request: from the shared cache when anyone has asked it
+ * before, otherwise forwarded upstream within the caller's daily allowance.
+ * `questions` must already be known to be the extension's own.
+ */
+const ask = async (
+  env: Env,
+  ctx: ExecutionContext,
+  caller: Caller,
+  state: unknown,
+  questions: Readonly<Record<string, Question>>,
+): Promise<Asked> => {
   const forward = { model: env.MODEL, state: state ?? {}, questions };
 
   // Shared answers: the same table on the same page asks the same questions for every reader.
   const key = await Effect.runPromise(hashJson(forward));
   const cacheKey = new Request(`https://answers.practicaldata.dev/${key}`);
   const hit = await caches.default.match(cacheKey);
-  if (hit !== undefined) return new Response(hit.body, { headers: { "Content-Type": "application/json", "X-Cache": "hit" } });
+  if (hit !== undefined) {
+    const decoded = Schema.decodeUnknownOption(DecisionResponse)(await hit.json().catch(() => null));
+    if (decoded._tag === "Some") return { response: decoded.value, cached: true };
+  }
 
   const quota = env.QUOTA.get(env.QUOTA.idFromName(today()));
-  const reservation = await quota.reserve(install, {
+  const reservation = await quota.reserve(caller.install, {
     installRequests: Number(env.INSTALL_DAILY_REQUESTS),
     tokenBudget: Number(env.DAILY_TOKEN_BUDGET),
   });
   if (reservation !== "ok") {
-    return refuse(
-      429,
-      reservation,
-      reservation === "install_limit"
-        ? "Today's free allowance for this browser is used up. Add your own key in the extension's options for unlimited use."
-        : "Today's free allowance for everyone is used up. Add your own key in the extension's options, or try again tomorrow.",
-      { "Retry-After": String(secondsToMidnightUtc()), "X-Practical-Data-Quota": reservation },
-    );
+    return {
+      refusal: refuse(
+        429,
+        reservation,
+        reservation === "install_limit"
+          ? "Today's free allowance for this browser is used up. Add your own key in the extension's options for unlimited use."
+          : "Today's free allowance for everyone is used up. Add your own key in the extension's options, or try again tomorrow.",
+        { "Retry-After": String(secondsToMidnightUtc()), "X-Practical-Data-Quota": reservation },
+      ),
+    };
   }
 
   let upstream: Response;
@@ -115,32 +139,111 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
-    return refuse(503, "upstream", "The model didn't answer in time.");
+    return { refusal: refuse(503, "upstream", "The model didn't answer in time.") };
   }
   if (!upstream.ok) {
     // The operator's key and the provider's messages stay here; the client learns only whether to retry.
     const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
-    return refuse(status, "upstream", `The model returned ${upstream.status}.`, retry === null ? {} : { "Retry-After": retry });
+    return { refusal: refuse(status, "upstream", `The model returned ${upstream.status}.`, retry === null ? {} : { "Retry-After": retry }) };
   }
   const decoded = Schema.decodeUnknownOption(DecisionResponse)(await upstream.json().catch(() => null));
-  if (decoded._tag === "None" || validateAnswers(questions as Record<string, Question>, decoded.value) !== null) {
-    return refuse(502, "upstream", "The model's answer didn't match the questions.");
+  if (decoded._tag === "None" || validateAnswers(questions, decoded.value) !== null) {
+    return { refusal: refuse(502, "upstream", "The model's answer didn't match the questions.") };
   }
-  const answer = JSON.stringify(decoded.value);
   ctx.waitUntil(
     Promise.all([
       quota.charge(decoded.value.usage.input_tokens),
-      caches.default.put(cacheKey, new Response(answer, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${CACHE_TTL_S}` } })),
+      caches.default.put(
+        cacheKey,
+        new Response(JSON.stringify(decoded.value), { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${CACHE_TTL_S}` } }),
+      ),
     ]),
   );
-  return new Response(answer, { headers: { "Content-Type": "application/json", "X-Cache": "miss" } });
+  return { response: decoded.value, cached: false };
+};
+
+/** POST /v1/systemone: the extension's own requests, checked against the allowlist. */
+const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
+  const caller = await admit(request, env);
+  if (caller instanceof Response) return caller;
+  let body: unknown;
+  try {
+    body = await readBody(request);
+  } catch {
+    return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
+  }
+  const { state, questions } = (body ?? {}) as { state?: unknown; questions?: unknown };
+  const problem = checkQuestions(questions);
+  if (problem !== null) return refuse(400, "questions", problem);
+  const asked = await ask(env, ctx, caller, state, questions as Record<string, Question>);
+  if ("refusal" in asked) return asked.refusal;
+  return new Response(JSON.stringify(asked.response), {
+    headers: { "Content-Type": "application/json", "X-Cache": asked.cached ? "hit" : "miss" },
+  });
+};
+
+/**
+ * POST /v1/judge: a whole table in, its judgment out. The questions are built
+ * here from the table, so clients that can't run the judge themselves (the
+ * Sheets add-on) need no allowlist, and can't send anything but table text.
+ *
+ *   { title, table: { title, headers, rows } } → { table: TableJudgment | null, usage }
+ */
+const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
+  const caller = await admit(request, env);
+  if (caller instanceof Response) return caller;
+  let body: unknown;
+  try {
+    body = await readBody(request);
+  } catch {
+    return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
+  }
+  const page = readJudgeBody(body);
+  if (typeof page === "string") return refuse(400, "table", page);
+
+  // The first refusal (a spent allowance, an upstream failure) is what the caller sees.
+  let refusal: Response | null = null;
+  const model = DecisionModel.of({
+    name: env.MODEL,
+    evaluate: (req) =>
+      Effect.forEach(
+        chunk(Object.entries(req.questions), LIMITS.questions),
+        (entries) =>
+          Effect.promise(() => ask(env, ctx, caller, req.state, Object.fromEntries(entries))).pipe(
+            Effect.flatMap((asked) => {
+              if ("response" in asked) return Effect.succeed(asked.response);
+              refusal ??= asked.refusal;
+              const quota = asked.refusal.headers.get("x-practical-data-quota") !== null;
+              return Effect.fail(new DecisionError({ reason: quota ? "quota" : "network", message: "refused" }));
+            }),
+          ),
+        { concurrency: 4 },
+      ).pipe(
+        Effect.map((responses) => ({
+          model: env.MODEL,
+          answers: Object.assign({}, ...responses.map((r) => r.answers)),
+          usage: { input_tokens: responses.reduce((n, r) => n + r.usage.input_tokens, 0) },
+        })),
+      ),
+  });
+  const result = await Effect.runPromise(Effect.result(judgePage(page).pipe(Effect.provideService(DecisionModel, model))));
+  if (result._tag === "Failure") return refusal ?? refuse(502, "upstream", "The table couldn't be judged.");
+  if (result.success.failed.length > 0 && refusal !== null) return refusal;
+  return json(200, { table: result.success.tables[0] ?? null, usage: result.success.usage });
+};
+
+const chunk = <A>(xs: readonly A[], size: number): A[][] => {
+  const out: A[][] = [];
+  for (let i = 0; i < xs.length; i += size) out.push(xs.slice(i, i + size));
+  return out;
 };
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url);
     if (pathname === "/v1/systemone" && request.method === "POST") return decide(request, env, ctx);
+    if (pathname === "/v1/judge" && request.method === "POST") return judge(request, env, ctx);
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
     if (pathname === "/v1/stats" && request.method === "GET") {
       const token = env.STATS_TOKEN ?? "";

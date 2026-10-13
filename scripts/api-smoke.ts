@@ -2,7 +2,8 @@
  * Runs the hosted endpoint locally (`wrangler dev`) against a stand-in for
  * TypeSafe that replays fixtures/recordings, then checks what the extension
  * and an abuser would see: a whole page judged through the endpoint matches
- * Jev's own judgment, repeats come from the shared cache, foreign questions,
+ * Jev's own judgment, as does a table sent whole to /v1/judge (the Sheets
+ * add-on's route), repeats come from the shared cache, foreign questions,
  * web-page origins and missing install ids are refused, and a spent daily
  * allowance surfaces as the "quota" error. Last, a fresh install of the
  * extension, built against the local endpoint and given no settings at all,
@@ -78,7 +79,7 @@ wrangler.stdout.on("data", (d) => (log += d));
 wrangler.stderr.on("data", (d) => (log += d));
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  fetch(`${ORIGIN}/v1/systemone`, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
+  fetch(`${ORIGIN}/v1/${body !== null && typeof body === "object" && "table" in body ? "judge" : "systemone"}`, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
 
 let failed = false;
 const check = async (name: string, f: () => Promise<void>) => {
@@ -119,6 +120,22 @@ try {
     const again = await Effect.runPromise(judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(randomUUID())))));
     assert.ok(again.usage.requests > 0);
     assert.equal(upstreamCalls, calls, "upstream was called again");
+  });
+
+  await check("a table sent whole to /v1/judge is judged as the extension would judge it", async () => {
+    const table = page.tables.find((t) => t.rows.length >= 3)!;
+    const r = await post({ title: page.title, table: { title: table.title, headers: table.headers, rows: table.rows } }, { "X-Practical-Data-Install": install });
+    assert.equal(r.status, 200, await r.clone().text());
+    const { table: judged } = (await r.json()) as { table: import("../src/core/types.ts").TableJudgment };
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response("offline", { status: 401 });
+    const direct = await Effect.runPromise(
+      judgePage({ url: "", title: page.title, tables: [{ ...table, id: "t0" }] }).pipe(
+        Effect.provide(Layer.merge(Layer.succeed(DecisionModel, jev("")), fileCache())),
+      ),
+    ).finally(() => (globalThis.fetch = realFetch));
+    assert.ok(judged.encodings.length > 0, "nothing judged");
+    assert.deepEqual(judged, direct.tables[0]);
   });
 
   await check("questions the extension doesn't ask are refused", async () => {

@@ -9,6 +9,7 @@
  * wording in questions.ts changes what the server accepts in the same commit.
  */
 import type { CategoricalProfile, NumericProfile } from "../core/profile.ts";
+import type { PageSnapshot } from "../core/types.ts";
 import type { Question } from "../decide/model.ts";
 import {
   aggregateQuestions,
@@ -25,6 +26,10 @@ export const LIMITS = {
   questions: 200,
   /** A header, label or reference interpolated into a question. */
   hole: 300,
+  /** A whole table sent to /v1/judge. */
+  columns: 60,
+  rows: 2000,
+  cell: 300,
 } as const;
 
 /** Stands in for interpolated text (a header, a label) in a reference question. */
@@ -114,4 +119,35 @@ export const checkQuestions = (questions: unknown): string | null => {
     if (!rule[1].some((m) => m(q))) return `question ${id} doesn't match the extension's wording`;
   }
   return null;
+};
+
+const isText = (v: unknown, max: number): v is string => typeof v === "string" && v.length <= max;
+
+/**
+ * The body of a /v1/judge request, `{ title, table: { title, headers, rows } }`,
+ * as a one-table page; or why it was refused.
+ */
+export const readJudgeBody = (body: unknown): PageSnapshot | string => {
+  if (typeof body !== "object" || body === null) return "expected { title, table }";
+  const { title, table } = body as { title?: unknown; table?: unknown };
+  if (title !== undefined && !isText(title, LIMITS.hole)) return `title: at most ${LIMITS.hole} characters`;
+  if (typeof table !== "object" || table === null) return "table: expected { title, headers, rows }";
+  const t = table as { title?: unknown; headers?: unknown; rows?: unknown };
+  if (t.title !== undefined && t.title !== null && !isText(t.title, LIMITS.hole)) return `table.title: at most ${LIMITS.hole} characters`;
+  if (!Array.isArray(t.headers) || t.headers.length === 0 || t.headers.length > LIMITS.columns) {
+    return `table.headers: 1 to ${LIMITS.columns} headers`;
+  }
+  if (!t.headers.every((h) => isText(h, LIMITS.hole))) return `table.headers: text of at most ${LIMITS.hole} characters`;
+  const width = t.headers.length;
+  if (!Array.isArray(t.rows) || t.rows.length > LIMITS.rows) return `table.rows: at most ${LIMITS.rows} rows`;
+  for (const row of t.rows as unknown[]) {
+    if (!Array.isArray(row) || row.length !== width || !row.every((c) => isText(c, LIMITS.cell))) {
+      return `table.rows: each row is ${width} cells of at most ${LIMITS.cell} characters`;
+    }
+  }
+  return {
+    url: "",
+    title: title ?? "",
+    tables: [{ id: "t0", title: (t.title as string | null | undefined) ?? null, headers: t.headers as string[], rows: t.rows as string[][] }],
+  };
 };

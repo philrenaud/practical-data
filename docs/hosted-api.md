@@ -5,10 +5,20 @@ own. It is a Cloudflare Worker (`src/api/worker.ts`, configured in
 `api/wrangler.jsonc`) that takes the same System One request the extension
 would send to Jev and forwards it to TypeSafe with the operator's key.
 
+A second route, `POST /v1/judge`, takes a whole table
+(`{ title, table: { title, headers, rows } }`) and returns its judgment. It
+serves the Sheets add-on (docs/sheets-addon.md), which can't run the judge in
+Apps Script. The questions are built on the server from the table, so this
+route needs no allowlist; it shares every other step below, and each model
+request it makes counts against the same allowance. Tables are capped at 60
+columns, 2,000 rows and 300 characters a cell (`readJudgeBody` in
+`src/api/allow.ts`).
+
 ## What it does with a request
 
 1. **Origin.** Requests from web pages (an `http(s)://` Origin) are refused.
-   With `ALLOWED_ORIGINS` set, only those `chrome-extension://` origins pass.
+   With `ALLOWED_ORIGINS` set, only those `chrome-extension://` origins pass,
+   plus requests with no Origin at all, which is how Apps Script calls.
    Non-browser clients can send any Origin, so this stops casual misuse from
    web pages, not a determined caller; the steps below bound the rest.
 2. **Install id.** Every request carries `X-Practical-Data-Install`, a random
