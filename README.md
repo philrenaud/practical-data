@@ -5,7 +5,7 @@ out for you. A Chrome extension that shades the comparable columns of any HTML
 table, so the better and worse rows show without reading every cell.
 
 **Demo:** https://practicaldata.dev ·
-**Chrome Web Store:** coming soon ([load it unpacked](#install) until then)
+**Chrome Web Store:** [Practical Data](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/hero-dark.png">
@@ -86,7 +86,7 @@ Sites that color their own tables can opt out with
 
 ## Install
 
-**From the Chrome Web Store**: coming soon. Once installed, paste a TypeSafe
+**From the [Chrome Web Store](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm)**: once installed, paste a TypeSafe
 API key on the options page and select **Test**.
 
 **Unpacked**, from source:
