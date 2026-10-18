@@ -126,7 +126,10 @@ const judge = (request: unknown): Judged => {
     // Non-JSON error page; the status says enough.
   }
   if (status === 200) return { table: body.table ?? null };
-  if (body.error === "install_limit" || body.error === "budget_spent") return { problem: "Today's free allowance is used up. It resets at midnight UTC." };
+  // The server says whose allowance ran out (this account's, or everyone's) and when it resets.
+  if (body.error === "install_limit" || body.error === "budget_spent") {
+    return { problem: body.message ?? "Today's free allowance is used up. It resets at midnight UTC." };
+  }
   if (status === 429) return { problem: "Practical Data is busy. Try again in a few seconds." };
   return { problem: `Practical Data couldn't judge this table (${body.message ?? `error ${status}`}).` };
 };

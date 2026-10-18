@@ -259,8 +259,11 @@ test("the add-on fills numbers stored as text, and restores the cells on removal
 test("a spent allowance is explained, and nothing changes", async () => {
   const addon = await import("../src/sheets/addon.ts");
   const sheet = new FakeSheet(raw);
-  const { alerts } = install(sheet, new FakeRange(sheet, 1, 1, 1, 1), () => ({ status: 429, body: { error: "install_limit", message: "…" } }));
+  const { alerts } = install(sheet, new FakeRange(sheet, 1, 1, 1, 1), () => ({
+    status: 429,
+    body: { error: "budget_spent", message: "Today's free allowance is used up for everyone. It resets at midnight UTC." },
+  }));
   addon.shadeTable();
-  assert.match(alerts[0]!, /allowance is used up/);
+  assert.equal(alerts[0], "Today's free allowance is used up for everyone. It resets at midnight UTC.");
   assert.equal(sheet.rules.length, 1);
 });
