@@ -25,7 +25,10 @@
     "check": "npm run typecheck && npm test && npm run build && npm run eval -- --offline --strict && npm run e2e -- --offline",
     "demo": "npm run build && node scripts/demo-data.ts && node scripts/build-demo.ts",
     "deploy": "npm run demo && npx wrangler@4.147.0 deploy",
-    "package": "node scripts/package.ts"
+    "package": "node scripts/package.ts",
+    "api:dev": "npx wrangler@4.147.0 dev -c api/wrangler.jsonc",
+    "api:smoke": "node scripts/api-smoke.ts",
+    "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc"
   },
   "dependencies": {
     "d3-color": "3.1.0",

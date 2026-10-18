@@ -93,8 +93,8 @@
           <p>The store package is built unminified from the same repository, so the code running in your browser reads like the source.</p>
         </li>
         <li>
-          <h3>No server in the middle</h3>
-          <p>Your key goes straight to the provider you pick. The author runs no backend and collects nothing: no analytics, no telemetry. <a href="privacy.html">Privacy policy</a></p>
+          <h3>Free, or bring your own key</h3>
+          <p>The free endpoint forwards table text to the model and keeps only the answers. With your own key, nothing goes through the author at all. No analytics, no telemetry. <a href="privacy.html">Privacy policy</a></p>
         </li>
         <li>
           <h3>Check the claims yourself</h3>
@@ -117,17 +117,16 @@
     <section class="install" id="install" aria-labelledby="install-title">
       <h2 id="install-title">Install</h2>
       <!--store--><ol>
-        <li>Install <a href="{{STORE_URL}}">Practical Data from the Chrome Web Store</a>.</li>
-        <li>On the options page, paste a <a href="https://typesafe.ai">TypeSafe</a> API key and select <b>Test</b>. A typical page costs about a tenth of a cent; unchanged tables aren't judged twice.</li>
+        <li>Install <a href="{{STORE_URL}}">Practical Data from the Chrome Web Store</a>. That's it: tables are shaded for free, no key or sign-up.</li>
       </ol><!--/store-->
       <!--unpacked--><ol>
         <li>Download <a href="practical-data-extension.zip" download>the extension</a> and unzip it.</li>
         <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
         <li>Select <b>Load unpacked</b> and choose the unzipped folder.</li>
-        <li>On the options page, paste a <a href="https://typesafe.ai">TypeSafe</a> API key and select <b>Test</b>. A typical page costs about a tenth of a cent; unchanged tables aren't judged twice.</li>
+        <li>That's it: tables are shaded for free, no key or sign-up.</li>
       </ol>
       <p class="note">The Chrome Web Store listing is coming soon. Until then, the extension loads unpacked.</p><!--/unpacked-->
-      <p class="note">Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is sent to the provider you choose to be judged; nothing is sent for sites you turn off. Your key stays in the extension's storage. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current page.</p>
+      <p class="note">Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is sent to be judged, through the free endpoint or straight to your own provider; nothing is sent for sites you turn off. The free endpoint has a daily allowance per browser; add a <a href="https://typesafe.ai">TypeSafe</a> key in the options for unlimited use (a typical page costs about a tenth of a cent). The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current page.</p>
     </section>
   </main>
 

@@ -65,7 +65,11 @@ export type DecisionErrorReason =
   | "bad_request"
   | "network"
   | "decode"
-  | "missing_config";
+  | "missing_config"
+  /** This install has used its daily allowance on the hosted endpoint. */
+  | "quota"
+  /** The hosted endpoint's allowance for everyone is spent for the day. */
+  | "quota_everyone";
 
 export class DecisionError extends Data.TaggedError("DecisionError")<{
   readonly reason: DecisionErrorReason;
@@ -134,6 +138,8 @@ interface Transport {
   readonly send: (body: unknown, signal: AbortSignal) => Promise<Response>;
   /** Unwraps the provider envelope (Workers AI nests the answer under `result`). */
   readonly unwrap: (json: unknown) => unknown;
+  /** Sees every response before it is read; the hosted endpoint reports the allowance in headers. */
+  readonly observe?: (response: Response) => void;
 }
 
 const postJson = (url: string, token: string, body: unknown, signal: AbortSignal) =>
@@ -225,13 +231,17 @@ const sendOnce = (transport: Transport, body: unknown) =>
       },
       catch: (e) => new DecisionError({ reason: "network", message: String(e) }),
     });
+    transport.observe?.(response);
     if (!response.ok) {
       const text = yield* Effect.promise(() => response.text().catch(() => ""));
+      // A spent daily allowance is final for the day: no waiting, no retries.
+      const spent = response.headers.get("x-practical-data-quota");
+      const quota = spent !== null;
       // Honor the server's pacing before the retry schedule's own backoff.
-      const wait = response.status === 429 || response.status === 529 ? retryAfterMs(response) : null;
+      const wait = !quota && (response.status === 429 || response.status === 529) ? retryAfterMs(response) : null;
       if (wait !== null) yield* Effect.sleep(wait);
       return yield* new DecisionError({
-        reason: reasonForStatus(response.status),
+        reason: spent === "budget_spent" ? "quota_everyone" : quota ? "quota" : reasonForStatus(response.status),
         message: `${transport.name} ${response.status}: ${text.slice(0, 500)}`,
       });
     }
@@ -289,6 +299,7 @@ const makeModel = (transport: Transport) =>
 // ── Providers ───────────────────────────────────────────────────────────────
 
 export type ProviderConfig =
+  | { readonly provider: "hosted"; readonly installId: string; readonly onAllowance?: (allowance: Allowance) => void }
   | { readonly provider: "jev"; readonly apiKey: string; readonly model?: string }
   | {
       readonly provider: "clef";
@@ -303,6 +314,48 @@ export const jev = (apiKey: string, model = "jev-latest") =>
     name: model,
     maxQuestions: 200,
     send: (body, signal) => postJson("https://api.typesafe.ai/v1/systemone", apiKey, body, signal),
+    unwrap: (json) => json,
+  });
+
+declare const PD_API_ORIGIN: string | undefined;
+
+/** The hosted endpoint's origin; builds can point it at a local `wrangler dev`. */
+export const API_ORIGIN = typeof PD_API_ORIGIN === "string" ? PD_API_ORIGIN : "https://api.practicaldata.dev";
+
+/** What's left of an install's daily allowance on the hosted endpoint. */
+export interface Allowance {
+  readonly remaining: number;
+  readonly limit: number;
+}
+
+/** The allowance a hosted response reports, if any (cache hits report none). */
+export const allowanceOf = (response: Response): Allowance | null => {
+  const remaining = Number(response.headers.get("x-practical-data-remaining") ?? NaN);
+  const limit = Number(response.headers.get("x-practical-data-limit") ?? NaN);
+  return Number.isFinite(remaining) && Number.isFinite(limit) && limit > 0 ? { remaining, limit } : null;
+};
+
+/**
+ * Jev through practicaldata.dev's hosted endpoint: no key of the reader's own,
+ * within daily limits per install. The endpoint uses the same request shape
+ * and the same 200-question chunks as Jev itself. `onAllowance` hears what's
+ * left after each request that spent from it.
+ */
+export const hosted = (installId: string, onAllowance?: (allowance: Allowance) => void) =>
+  makeModel({
+    name: "jev-hosted",
+    maxQuestions: 200,
+    observe: (response) => {
+      const allowance = allowanceOf(response);
+      if (allowance !== null) onAllowance?.(allowance);
+    },
+    send: (body, signal) =>
+      fetch(`${API_ORIGIN}/v1/systemone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Practical-Data-Install": installId },
+        body: JSON.stringify(body),
+        signal,
+      }),
     unwrap: (json) => json,
   });
 
@@ -328,7 +381,9 @@ export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-
 export const layerFromConfig = (config: ProviderConfig): Layer.Layer<DecisionModel> =>
   Layer.succeed(
     DecisionModel,
-    config.provider === "jev"
-      ? jev(config.apiKey, config.model)
-      : clef(config.accountId, config.apiToken, config.model),
+    config.provider === "hosted"
+      ? hosted(config.installId, config.onAllowance)
+      : config.provider === "jev"
+        ? jev(config.apiKey, config.model)
+        : clef(config.accountId, config.apiToken, config.model),
   );

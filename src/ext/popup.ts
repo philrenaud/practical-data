@@ -1,8 +1,10 @@
 /** Toolbar popup: what's colored here, and switches for this page and this site. */
+import { lowAllowanceNote, quotaMessage, type StoredAllowance } from "./allowance.ts";
 import type { PageState, ToContent, ToWorker } from "./messages.ts";
 import { isPagePaused, loadSettings, siteEnabled } from "./settings.ts";
 
 const summary = document.querySelector<HTMLParagraphElement>("#summary")!;
+const allowanceNote = document.querySelector<HTMLParagraphElement>("#allowance")!;
 const page = document.querySelector<HTMLInputElement>("#page")!;
 const site = document.querySelector<HTMLInputElement>("#site")!;
 
@@ -21,12 +23,19 @@ const first = await query();
 const url = first?.url ?? tab?.url ?? "";
 const host = /^https?:|^file:/.test(url) ? new URL(url).hostname || "local files" : "";
 
+const ERRORS: Readonly<Record<string, string>> = {
+  missing_config: "Add an API key in Options.",
+  quota: quotaMessage("quota", new Date()),
+  quota_everyone: quotaMessage("quota_everyone", new Date()),
+  rate_limited: "Busy right now; try again in a minute.",
+};
+
 const describe = (s: PageState | undefined, paused: boolean, siteOff: boolean): string => {
   if (siteOff) return `Off on ${host}.`;
   if (paused) return "Off on this page.";
   if (s === undefined) return "Not available on this page.";
   if (s.status === "working") return "Reading tables…";
-  if (s.status.startsWith("error:")) return s.status === "error:missing_config" ? "Add an API key in Options." : "Couldn't reach the model.";
+  if (s.status.startsWith("error:")) return ERRORS[s.status.slice("error:".length)] ?? "Couldn't reach the model.";
   if (s.columns === 0) return s.status === "none" ? "No tables on this page." : "No comparable columns yet.";
   return `${s.columns} column${s.columns === 1 ? "" : "s"} shaded in ${s.tables} table${s.tables === 1 ? "" : "s"}.`;
 };
@@ -41,6 +50,11 @@ const refresh = async () => {
   site.disabled = host === "";
   document.querySelector("#site-label")!.textContent = host === "" ? "Shade tables on this site" : `Shade tables on ${host}`;
   summary.textContent = describe(state, paused, siteOff);
+  // With the free provider, say when little of today's allowance is left (but not on top of "used up").
+  const { allowance } = (await chrome.storage.local.get("allowance")) as { allowance?: StoredAllowance };
+  const note = settings.provider === "hosted" && !state?.status.startsWith("error:quota") ? lowAllowanceNote(allowance, new Date()) : null;
+  allowanceNote.textContent = note ?? "";
+  allowanceNote.hidden = note === null;
 };
 
 const send = (msg: ToWorker) => chrome.runtime.sendMessage(msg);

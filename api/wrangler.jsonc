@@ -1,0 +1,24 @@
+// The hosted endpoint (src/api/worker.ts). Deploy: see docs/hosted-api.md.
+{
+  "name": "practical-data-api",
+  "main": "../src/api/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "api.practicaldata.dev", "custom_domain": true }],
+  "workers_dev": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "UPSTREAM_URL": "https://api.typesafe.ai/v1/systemone",
+    "MODEL": "jev-latest",
+    // Set to the Web Store id once published, e.g. "chrome-extension://abcdefghijklmnopabcdefghijklmnop".
+    "ALLOWED_ORIGINS": "",
+    "INSTALL_DAILY_REQUESTS": "400",
+    "DAILY_TOKEN_BUDGET": "5000000"
+  },
+  "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
+  "ratelimits": [
+    { "name": "RL_INSTALL", "namespace_id": "4101", "simple": { "limit": 60, "period": 60 } },
+    { "name": "RL_IP", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } }
+  ]
+}

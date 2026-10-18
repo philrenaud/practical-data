@@ -9,6 +9,7 @@
     "activeTab"
   ],
   "host_permissions": [
+    "https://api.practicaldata.dev/*",
     "https://api.typesafe.ai/*",
     "https://api.cloudflare.com/*"
   ],

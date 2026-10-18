@@ -3,7 +3,8 @@ import { DEFAULT_PALETTE, isPaletteId, type PaletteId as Palette } from "../core
 import type { ProviderConfig } from "../decide/model.ts";
 
 export interface Settings {
-  readonly provider: "jev" | "clef";
+  /** "hosted": Jev through practicaldata.dev, no key needed. The others use the reader's own credentials. */
+  readonly provider: "hosted" | "jev" | "clef";
   readonly typesafeApiKey: string;
   readonly cloudflareAccountId: string;
   readonly cloudflareApiToken: string;
@@ -18,7 +19,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  provider: "jev",
+  provider: "hosted",
   typesafeApiKey: "",
   cloudflareAccountId: "",
   cloudflareApiToken: "",
@@ -49,10 +50,28 @@ export const setSiteEnabledIn = (s: Settings, host: string, enabled: boolean): S
 };
 
 /** Null when the chosen provider is missing credentials. */
-export const providerConfig = (s: Settings): ProviderConfig | null => {
+export const providerConfig = (s: Settings, installId: string): ProviderConfig | null => {
+  if (s.provider === "hosted") return { provider: "hosted", installId };
   if (s.provider === "jev") return s.typesafeApiKey === "" ? null : { provider: "jev", apiKey: s.typesafeApiKey };
   if (s.cloudflareAccountId === "" || s.cloudflareApiToken === "") return null;
   return { provider: "clef", accountId: s.cloudflareAccountId, apiToken: s.cloudflareApiToken, model: s.clefModel };
+};
+
+// ── Install id ──────────────────────────────────────────────────────────────
+
+const INSTALL_ID = "installId";
+
+/**
+ * A random id for this install, sent only to the hosted endpoint so it can
+ * count each browser's daily allowance. Not derived from anything about the
+ * reader; uninstalling discards it.
+ */
+export const getInstallId = async (): Promise<string> => {
+  const stored = (await chrome.storage.local.get(INSTALL_ID))[INSTALL_ID];
+  if (typeof stored === "string" && stored !== "") return stored;
+  const id = crypto.randomUUID();
+  await chrome.storage.local.set({ [INSTALL_ID]: id });
+  return id;
 };
 
 // ── Per-page pause (session) ────────────────────────────────────────────────

@@ -4,9 +4,11 @@
  */
 import { Effect, Layer } from "effect";
 import { DEFAULT_POLICY, judgePage } from "../decide/judge.ts";
-import { AnswerCache, DecisionError, layerFromConfig, type DecisionResponse } from "../decide/model.ts";
+import { AnswerCache, DecisionError, layerFromConfig, type Allowance, type DecisionResponse } from "../decide/model.ts";
+import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
 import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
 import {
+  getInstallId,
   isPagePaused,
   loadSettings,
   providerConfig,
@@ -55,7 +57,25 @@ const ChromeAnswerCache = Layer.succeed(AnswerCache, {
 
 /** After rate limiting or overload, stop sending for a while instead of retrying on every scroll. */
 const COOL_DOWN_MS = 30_000;
+/** A spent daily allowance stays spent; check back now and then in case the reader added a key. */
+const QUOTA_COOL_DOWN_MS = 15 * 60_000;
 let coolUntil = 0;
+let coolReason = "";
+
+/** Writes are chained so concurrent reports can't overwrite each other's lower count. */
+let allowanceWrites = Promise.resolve();
+const recordAllowance = (reported: Allowance) => {
+  allowanceWrites = allowanceWrites.then(async () => {
+    try {
+      const { allowance } = (await chrome.storage.local.get("allowance")) as { allowance?: StoredAllowance };
+      await chrome.storage.local.set({ allowance: mergeAllowance(allowance, reported, new Date()) });
+    } catch {
+      // Best effort: the popup's note is a convenience.
+    }
+  });
+};
+
+const isQuota = (reason: string) => reason === "quota" || reason === "quota_everyone";
 
 /** Bounds on what one page can ask for, whatever the content script sends. */
 const MAX_TABLES = 200;
@@ -63,19 +83,25 @@ const MAX_ROWS = 10_000;
 
 const judge = async (msg: Extract<ToWorker, { type: "judge" }>): Promise<JudgeReply> => {
   const settings = await loadSettings();
-  const config = providerConfig(settings);
+  const base = providerConfig(settings, await getInstallId());
+  const config = base?.provider === "hosted" ? { ...base, onAllowance: recordAllowance } : base;
   if (config === null) {
     return { ok: false, reason: "missing_config", message: "Add an API key in the extension options." };
   }
   if (Date.now() < coolUntil) {
-    return { ok: false, reason: "rate_limited", message: "Cooling down after rate limiting; try again shortly." };
+    return isQuota(coolReason)
+      ? { ok: false, reason: coolReason, message: "Today's free allowance is used up." }
+      : { ok: false, reason: "rate_limited", message: "Cooling down after rate limiting; try again shortly." };
   }
   const page = { ...msg.page, tables: msg.page.tables.slice(0, MAX_TABLES).map((t) => ({ ...t, rows: t.rows.slice(0, MAX_ROWS) })) };
   const program = judgePage(page, DEFAULT_POLICY, msg.orientations).pipe(
     Effect.provide(Layer.merge(layerFromConfig(config), ChromeAnswerCache)),
     Effect.map((judgment): JudgeReply => ({ ok: true, judgment, palette: settings.palette })),
     Effect.catchTag("DecisionError", (e: DecisionError) => {
-      if (e.reason === "rate_limited" || e.reason === "overloaded") coolUntil = Date.now() + COOL_DOWN_MS;
+      if (e.reason === "rate_limited" || e.reason === "overloaded" || isQuota(e.reason)) {
+        coolUntil = Date.now() + (isQuota(e.reason) ? QUOTA_COOL_DOWN_MS : COOL_DOWN_MS);
+        coolReason = e.reason;
+      }
       return Effect.succeed<JudgeReply>({ ok: false, reason: e.reason, message: e.message });
     }),
   );
@@ -106,6 +132,10 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
         const n = reply.judgment.tables.reduce((s, t) => s + t.encodings.length, 0);
         void chrome.action.setBadgeText({ tabId, text: n === 0 ? "" : String(n) });
         void chrome.action.setBadgeBackgroundColor({ tabId, color: "#5b4bc4" });
+      } else if (tabId !== undefined && !reply.ok && isQuota(reply.reason)) {
+        // Out of free allowance: say so on the toolbar, since the page itself just stays plain.
+        void chrome.action.setBadgeText({ tabId, text: "!" });
+        void chrome.action.setBadgeBackgroundColor({ tabId, color: "#c2410c" });
       }
     },
     (e: unknown) => sendResponse({ ok: false, reason: "internal", message: String(e) } satisfies JudgeReply),
@@ -152,7 +182,7 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
 });
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason === "install" && providerConfig(await loadSettings()) === null) {
+  if (reason === "install" && providerConfig(await loadSettings(), await getInstallId()) === null) {
     await chrome.runtime.openOptionsPage();
   }
 });
@@ -160,6 +190,8 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 /** Repaint open tabs when the palette or provider changes. */
 chrome.storage.onChanged.addListener(async (changes) => {
   if (changes["settings"] === undefined) return;
+  // New credentials or provider: a spent free allowance no longer applies.
+  coolUntil = 0;
   for (const tab of await chrome.tabs.query({})) {
     if (tab.id !== undefined) {
       await chrome.tabs.sendMessage(tab.id, { type: "repaint" } satisfies ToContent).catch(() => undefined);
