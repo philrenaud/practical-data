@@ -15,7 +15,8 @@ export interface KindInfo {
   readonly about: string;
   /** Question kinds, as ids with numbers replaced by #. */
   readonly questions: readonly string[];
-  readonly rule: (p: Policy) => string;
+  /** `maxTransposeRows` is MAX_TRANSPOSE_ROWS from judge.ts, passed in from the build data. */
+  readonly rule: (p: Policy, maxTransposeRows: number) => string;
 }
 
 export const KINDS: readonly KindInfo[] = [
@@ -25,10 +26,10 @@ export const KINDS: readonly KindInfo[] = [
     title: "Shade or leave plain",
     short: "Is this column worth comparing at all?",
     about:
-      "Code first sorts each column into numbers, labels, or text it never sends. For numbers, the model says what kind of number it is: an amount worth comparing, or an identifier, a year, a rank, a range bracket, a record like 12-4, or a cutoff. For labels, whether they are ordered grades. Every hand-labeled column is scored: shaded when it should be, left plain when it shouldn't.",
+      "Code first sorts each column into numbers, labels, or text it never sends. For numbers, the model says what kind of number it is: an amount worth comparing, or an identifier, a year, a rank, a record like 12-4, or a cutoff. Brackets like 20-25 or 65+ count as amounts and are placed by their midpoints. For labels, whether they are ordered grades; labels with only two levels stay plain unless a shared scale widens them. Every hand-labeled column is scored: shaded when it should be, left plain when it shouldn't.",
     questions: ["n#.role", "c#.relation"],
     rule: (p) =>
-      `Shade numbers when P(measure) ≥ ${p.measure}. Shade labels when P(ordered) ≥ ${p.ordinal} and the recovered order holds at ≥ ${p.orderConfidence}, or P(ordered) ≥ ${p.ordinalWithStrongOrder} with the order at ≥ ${p.strongOrder}.`,
+      `Shade numbers when P(amount) + P(brackets) ≥ ${p.measure}. Shade labels when P(ordered) ≥ ${p.ordinal} and the recovered order holds at ≥ ${p.orderConfidence}, or P(ordered) ≥ ${p.ordinalWithStrongOrder} with the order at ≥ ${p.strongOrder}.`,
   },
   {
     kind: "polarity",
@@ -56,7 +57,7 @@ export const KINDS: readonly KindInfo[] = [
     title: "Order of labels",
     short: "Which grade is lower?",
     about:
-      "Ordered labels (Lightweight < Versatile < Powerful, Low < High) get a sequential scale once their order is known. The model compares every pair of labels in both directions; code recovers the order from those comparisons, so one contradictory answer can't flip it.",
+      "Ordered labels (Lightweight < Versatile < Powerful, or Low < Medium < High) get a sequential scale once their order is known; with only two levels they stay plain unless a shared scale widens them. The model compares every pair of labels in both directions; code recovers the order from those comparisons, so one contradictory answer can't flip it.",
     questions: ["c#.lt#_#"],
     rule: (p) => `The order is the one most consistent with every pairwise answer; it's used when its mean confidence reaches ${p.orderConfidence} (or ${p.strongOrder} for weakly ordered labels).`,
   },
@@ -88,10 +89,8 @@ export const KINDS: readonly KindInfo[] = [
     about:
       "Benchmark tables list benchmarks as rows and models as columns, so each row is one measure. When several numeric columns could be read either way, the model is asked, and a row-oriented table is judged transposed.",
     questions: ["table.orientation"],
-    // 40 is MAX_TRANSPOSE_ROWS in judge.ts, not imported so the client bundle stays free of the judge.
-    rule: (p) => `Judge the table transposed when P(rows) ≥ ${p.rows} and it has at most 40 rows.`,
+    rule: (p, rows) => `Judge the table transposed when P(rows) ≥ ${p.rows} and it has at most ${rows} rows.`,
   },
 ];
 
 export const kindBySlug = (slug: string) => KINDS.find((k) => k.slug === slug);
-export const kindInfo = (kind: CheckKind) => KINDS.find((k) => k.kind === kind)!;

@@ -10,7 +10,7 @@ export const load = async ({ params }) => {
   const index = await readIndex();
   return {
     slug: info.slug,
-    rule: info.rule(index.policy),
+    rule: info.rule(index.policy, index.maxTransposeRows),
     checks: index.checks.filter((c) => c.kind === info.kind),
     samples: info.questions.flatMap((q) => (index.samples[q] === undefined ? [] : [index.samples[q]])),
     names: Object.fromEntries(index.pages.map((p) => [p.slug, p.name])),

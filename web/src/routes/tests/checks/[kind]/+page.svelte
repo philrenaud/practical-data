@@ -1,6 +1,6 @@
 <script lang="ts">
   import { kindBySlug } from "#lib/tests/kinds.ts";
-  import { plain } from "#lib/tests/names.ts";
+  import { describeValue } from "#lib/tests/names.ts";
   import QuestionCard from "#lib/tests/QuestionCard.svelte";
   import Verdict from "#lib/tests/Verdict.svelte";
   import type { ScoredCheck } from "#lib/tests/types.ts";
@@ -29,7 +29,7 @@
 
 {#if data.samples.length > 0}
   <h2>The question, as sent</h2>
-  <p class="muted">Real questions from the test pages, verbatim, with the probabilities Jev returned. Question ids are for code and never reach the model; <code class="code-inline">columns[k]</code> points into the table description sent with them.</p>
+  <p class="muted">Real questions from the test pages, verbatim, with the probabilities Jev returned. The id is the key code reads the answer back by; <code class="code-inline">columns[k]</code> points into the table description sent with the questions.</p>
   <div class="grid samples">
     {#each data.samples as s (s.id)}
       <div>
@@ -54,8 +54,8 @@
               <td><Verdict ok={c.ok} known={c.known} /></td>
               <td>{where(c)}</td>
               <td class="mono muted">{c.table ?? "—"}</td>
-              <td>{plain(c.expected)}</td>
-              <td>{plain(c.actual)}</td>
+              <td>{describeValue(c.kind, c.expected)}</td>
+              <td>{describeValue(c.kind, c.actual)}</td>
             </tr>
             {#if !c.ok}
               <tr class="detail"><td></td><td colspan="4"><code class="code-inline">{c.message}</code>{#if c.known}<p class="why">{c.known}</p>{/if}</td></tr>

@@ -8,6 +8,8 @@
     let p = cache.get(slug);
     if (p === undefined) {
       p = fetch(`/tests/pages/${slug}/requests.json`).then((r) => (r.ok ? (r.json() as Promise<PageRequests>) : Promise.reject(new Error(String(r.status)))));
+      // A failure isn't kept: closing and reopening the panel tries again.
+      p.catch(() => cache.delete(slug));
       cache.set(slug, p);
     }
     return p;

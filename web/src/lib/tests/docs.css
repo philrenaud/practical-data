@@ -26,8 +26,8 @@
 /* ── Layout ── */
 .docs-body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 40px; padding: 0 16px; }
 .docs-nav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 28px 0 40px; font-size: 14px; }
-.docs-nav h2 { margin: 22px 0 6px; font: 500 11.5px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
-.docs-nav h2:first-child { margin-top: 0; }
+.docs-nav .nav-label { margin: 22px 0 6px; font: 500 11.5px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.docs-nav section:first-child .nav-label { margin-top: 0; }
 .docs-nav ul { list-style: none; margin: 0; padding: 0; }
 .docs-nav a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 10px; margin: 0 -10px; border-radius: 7px; color: var(--muted); text-decoration: none; }
 .docs-nav a:hover { color: var(--ink); background: var(--paper); }
@@ -82,7 +82,7 @@ details.raw[open] > summary { margin-bottom: 8px; }
   .docs-body { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .docs-nav { position: static; max-height: none; overflow: visible; padding: 12px 0 0; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid var(--line); }
   .docs-nav section { flex: none; }
-  .docs-nav h2 { display: none; }
+  .docs-nav .nav-label { display: none; }
   .docs-nav ul { display: flex; gap: 4px; padding-bottom: 10px; }
   .docs-nav li { flex: none; }
   .docs-nav a { margin: 0; white-space: nowrap; }

@@ -18,8 +18,9 @@ const read = async <T>(path: string): Promise<T> => {
   }
 };
 
+// Read once per build; in dev, on every request, so regenerated data shows without a restart.
 let index: Promise<TestsIndex> | undefined;
-export const readIndex = (): Promise<TestsIndex> => (index ??= read<TestsIndex>("index.json"));
+export const readIndex = (): Promise<TestsIndex> => (import.meta.env.DEV ? read<TestsIndex>("index.json") : (index ??= read<TestsIndex>("index.json")));
 export const readPage = (slug: string): Promise<TestPage> =>
   /^[a-z0-9-]+$/.test(slug) ? read<TestPage>(`pages/${slug}.json`) : error(404, "No such page");
 export const readRequests = (slug: string): Promise<PageRequests> =>

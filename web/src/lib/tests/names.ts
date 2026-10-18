@@ -19,3 +19,18 @@ export const plain = (value: string): string => {
     .map((v) => POLARITY[v] ?? v)
     .join(" or ");
 };
+
+/** A check's expected or actual value in words, aware of what the check is about. */
+export const describeValue = (kind: string, value: string): string => {
+  if (kind === "aggregates") {
+    const rows = JSON.parse(value) as number[];
+    return rows.length === 0 ? "no totals rows" : `${rows.length === 1 ? "row" : "rows"} ${rows.map((r) => r + 1).join(", ")} as totals`;
+  }
+  if (kind === "shared") {
+    if (value === "one scale") return value;
+    const groups = JSON.parse(value) as (string | null)[];
+    return groups[0] !== null && groups.every((g) => g === groups[0]) ? "one scale" : "separate scales";
+  }
+  if (kind === "orientation") return value === "rows" ? "compared across rows" : "compared down columns";
+  return plain(value);
+};

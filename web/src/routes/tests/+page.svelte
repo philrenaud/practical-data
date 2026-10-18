@@ -2,6 +2,8 @@
   import { KINDS } from "#lib/tests/kinds.ts";
 
   const { data } = $props();
+  const failing = $derived(data.checkCount - data.passCount);
+  const knownFailing = $derived(Object.values(data.totals).reduce((n, t) => n + t.known, 0));
 </script>
 
 <svelte:head>
@@ -19,7 +21,7 @@
 
 <div class="score">
   <span class="big">{data.passCount}<span class="of">/{data.checkCount}</span></span>
-  <span class="muted">checks pass. The one failure is documented below, and the CI gate fails on any other.</span>
+  <span class="muted">checks pass.{failing === 0 ? "" : failing === knownFailing ? ` ${failing === 1 ? "The failure is" : "All failures are"} documented below, and the CI gate fails on any other.` : ` ${failing - knownFailing} undocumented ${failing - knownFailing === 1 ? "failure" : "failures"}.`}</span>
 </div>
 
 <h2>Checks</h2>
@@ -50,7 +52,7 @@
   <li>
     <span class="step">03</span>
     <h3>Score</h3>
-    <p>The judgment is compared with hand labels: shade or not, direction, scale, label order, totals, shared scales, orientation. Columns without a label are ambiguous and left unscored. <code class="code-inline">fixtures/expectations.json</code></p>
+    <p>The judgment is compared with hand labels: shade or not, direction, scale, label order, totals, shared scales, orientation. Columns nobody hand-labeled are judged but not scored. <code class="code-inline">fixtures/expectations.json</code></p>
   </li>
   <li>
     <span class="step">04</span>

@@ -40,11 +40,12 @@
         <tr>
           <td><code class="code-inline cell">{x.input}</code></td>
           <td class="num">{x.parsed === null ? "—" : fmt(x.parsed.value)}</td>
-          <td class="mono">{x.parsed?.unit ?? ""}</td>
+          <td class="mono">{x.parsed?.unit === ":" ? "m:ss" : (x.parsed?.unit ?? "")}</td>
           <td class="muted">
             {#if x.missing}missing value
             {:else if x.parsed === null}{x.date ? "a date: not an amount" : "not a number"}
             {:else if x.parsed.range}range {fmt(x.parsed.range[0])} to {fmt(x.parsed.range[1])}, midpoint
+            {:else if x.parsed.unit === ":"}a clock reading: a duration or a time of day, the model decides
             {:else if x.parsed.bound}a bound, not an exact amount
             {:else}amount{/if}
           </td>
@@ -65,7 +66,7 @@
       {#if ABOUT[u.file]}<p class="muted about">{ABOUT[u.file]}</p>{/if}
       <ul>
         {#each u.tests as t, i (i)}
-          <li><Verdict ok={t.ok} /><span>{t.name}</span><span class="ms">{t.ms < 1 ? "<1" : Math.round(t.ms)} ms</span></li>
+          <li>{#if t.skipped}<span class="verdict known">skipped</span>{:else}<Verdict ok={t.ok} />{/if}<span>{t.name}</span><span class="ms">{t.ms < 1 ? "<1" : Math.round(t.ms)} ms</span></li>
         {/each}
       </ul>
     </section>

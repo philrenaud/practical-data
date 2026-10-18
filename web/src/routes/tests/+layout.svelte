@@ -19,11 +19,11 @@
   <div class="docs-body">
     <nav class="docs-nav" aria-label="Tests">
       <section>
-        <h2>Overview</h2>
+        <p class="nav-label">Overview</p>
         <ul><li><a href="/tests" aria-current={here("/tests")}>How it's tested</a></li></ul>
       </section>
       <section>
-        <h2>Checks</h2>
+        <p class="nav-label">Checks</p>
         <ul>
           {#each KINDS as k (k.kind)}
             {@const t = data.totals[k.kind]}
@@ -36,13 +36,13 @@
         </ul>
       </section>
       <section>
-        <h2>Code</h2>
+        <p class="nav-label">Code</p>
         <ul>
           <li><a href="/tests/units" aria-current={here("/tests/units")}><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a></li>
         </ul>
       </section>
       <section class="pages">
-        <h2>Test pages</h2>
+        <p class="nav-label">Test pages</p>
         <ul>
           {#each data.pages as p (p.slug)}
             <li>

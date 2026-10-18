@@ -16,15 +16,20 @@ import { Effect, Layer } from "effect";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 import { describeSpread, profileTable, type ColumnProfile } from "../src/core/profile.ts";
 import type { PageJudgment, PageSnapshot, TableSnapshot } from "../src/core/types.ts";
-import { DEFAULT_POLICY, judgePage } from "../src/decide/judge.ts";
+import { DEFAULT_POLICY, judgePage, MAX_TRANSPOSE_ROWS } from "../src/decide/judge.ts";
 import { DecisionModel, jev, type DecisionRequest, type DecisionResponse } from "../src/decide/model.ts";
 import { fileCache } from "./lib/cache.ts";
 import { knownReason, scorePage, type Check, type PageExpect } from "./lib/score.ts";
 
 const OUT = "demo/tests";
 
-// A miss fails loudly instead of calling the model: the site shows recorded answers only.
-globalThis.fetch = async () => new Response("offline: no recording for this request", { status: 401 });
+// A miss fails the build instead of calling the model: the site shows recorded answers only.
+// The judge absorbs a failed table or share request, so misses are counted here.
+let unrecorded = 0;
+globalThis.fetch = async () => {
+  unrecorded++;
+  return new Response("offline: no recording for this request", { status: 401 });
+};
 
 /** One request the judge sent, with the answers it got. */
 export interface Exchange {
@@ -84,7 +89,8 @@ const NAMES: Readonly<Record<string, string>> = {
 const SYNTHETIC: Readonly<Record<string, string>> = {
   "edge-cases":
     "Columns that look numeric but aren't amounts (SKUs, jersey numbers, zip codes, birth years), ordered labels (sizes, priorities, sweetness), a free-text glossary, two stores' prices that should share a scale, and signed changes with no better direction.",
-  ranges: "Values written as ranges and records: age brackets (20-25, 65+), win-loss records (12-4) and game scores (35-10), which must not be read as one amount.",
+  ranges:
+    "Values written as ranges and records: age brackets (20-25, 65+), placed on the scale by their midpoints, and win-loss records (12-4) and game scores (35-10), which are two counts and must not be read as one amount.",
   "dark-theme": "A dark page: shading picks the dark ramps and keeps text contrast from the page's own colors.",
   lifecycle: "Tables that change after load: cells edited in place, tables inserted later, page styles changing, and client-side navigation.",
   collapsed: "Like Wikipedia's [show] tables: the header row is visible and the body hidden until expanded.",
@@ -112,6 +118,7 @@ const pages = [];
 const samples: Record<string, { id: string; question: unknown; answer: unknown; page: string }> = {};
 let requests = 0;
 let inputTokens = 0;
+let model = "";
 
 /** The column profile as plain facts, without the parser's internals. */
 const profileFacts = (p: ColumnProfile) =>
@@ -125,6 +132,7 @@ for (const slug of slugs) {
   const page = JSON.parse(await readFile(`fixtures/snapshots/${slug}.json`, "utf8")) as PageSnapshot;
   const full = await judgeRecorded(page);
   requests += full.judgment.usage.requests;
+  model ||= full.judgment.model;
   inputTokens += full.judgment.usage.inputTokens;
   const pageChecks = scorePage(slug, full.judgment, expectations[slug]!).map((c) => ({ ...c, known: knownReason(c, known) }));
   checks.push(...pageChecks);
@@ -182,6 +190,7 @@ for (const slug of slugs) {
     JSON.stringify({ ...summary, judgment: full.judgment satisfies PageJudgment, tables: tables.map(({ exchanges: _, ...t }) => t), shared, checks: pageChecks }),
   );
   await writeFile(`${OUT}/requests/${slug}.json`, JSON.stringify(Object.fromEntries(tables.map((t) => [t.snapshot.id, t.exchanges]))));
+  if (unrecorded > 0) throw new Error(`${slug}: ${unrecorded} request(s) have no recording; run \`npm run eval\` online to record them.`);
   console.log(`${slug.padEnd(36)} ${summary.score[0]}/${summary.score[1]} checks  ${tables.length} tables`);
 }
 
@@ -195,11 +204,14 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
   } catch (e) {
     tap = (e as { stdout?: string }).stdout ?? "";
   }
-  const tests = [...tap.matchAll(/^(ok|not ok) \d+ - (.+?)(?: # (SKIP|TODO).*)?\n {2}---\n {2}duration_ms: ([\d.]+)/gm)].map((m) => ({
-    name: m[2]!,
-    ok: m[1] === "ok",
+  // Top-level tests only (the suite has no describe blocks); a TAP "#" in a name is escaped as "\#".
+  const tests = [...tap.matchAll(/^(ok|not ok) \d+ - (.+?)(?: # (SKIP|TODO)\b.*)?\n {2}---\n {2}duration_ms: ([\d.]+)/gm)].map((m) => ({
+    name: m[2]!.replaceAll("\\#", "#"),
+    ok: m[1] === "ok" && m[3] === undefined,
+    skipped: m[3] !== undefined,
     ms: Number(m[4]),
   }));
+  if (tests.length === 0) throw new Error(`test/${file}: no test results (did it crash?)`);
   units.push({ file, tests });
 }
 
@@ -226,7 +238,7 @@ const totals = Object.fromEntries(
 
 await writeFile(
   `${OUT}/index.json`,
-  JSON.stringify({ model: "jev-latest", requests, inputTokens, policy: DEFAULT_POLICY, totals, checks, pages, units, parsing, samples, known }),
+  JSON.stringify({ model, requests, inputTokens, policy: DEFAULT_POLICY, maxTransposeRows: MAX_TRANSPOSE_ROWS, totals, checks, pages, units, parsing, samples, known }),
 );
 console.log(
   `\n${checks.filter((c) => c.ok).length}/${checks.length} checks · ${units.reduce((n, u) => n + u.tests.length, 0)} unit tests · ${requests} requests replayed`,

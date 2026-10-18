@@ -5,7 +5,7 @@
   import ColumnCard from "#lib/tests/ColumnCard.svelte";
   import Requests from "#lib/tests/Requests.svelte";
   import QuestionCard from "#lib/tests/QuestionCard.svelte";
-  import { plain } from "#lib/tests/names.ts";
+  import { describeValue } from "#lib/tests/names.ts";
   import Verdict from "#lib/tests/Verdict.svelte";
   import type { TableJudgment } from "../../../../../../src/core/types.ts";
   import type { TraceTable } from "#lib/tests/types.ts";
@@ -48,7 +48,7 @@
   <div><dt>{p.requests}</dt><dd>requests · {p.inputTokens.toLocaleString("en-US")} tokens</dd></div>
 </dl>
 
-{#each judged as t (t.snapshot.id)}
+{#each judged as t (`${p.slug}:${t.snapshot.id}`)}
   {@const rows = t.judgment.orientation === "rows"}
   <section class="trace" id={t.snapshot.id}>
     <h2>
@@ -135,9 +135,12 @@
           <td class="mono">{c.kind}</td>
           <td class="mono muted">{c.table ?? "—"}</td>
           <td>{c.column ?? "—"}</td>
-          <td>{plain(c.expected)}</td>
-          <td>{plain(c.actual)}</td>
+          <td>{describeValue(c.kind, c.expected)}</td>
+          <td>{describeValue(c.kind, c.actual)}</td>
         </tr>
+        {#if !c.ok}
+          <tr class="detail"><td></td><td colspan="5"><code class="code-inline">{c.message}</code>{#if c.known}<p class="why">{c.known}</p>{/if}</td></tr>
+        {/if}
       {/each}
     </tbody>
   </table>
@@ -162,6 +165,8 @@
   .ruled ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; }
   .ruled li { display: inline-flex; align-items: baseline; gap: 8px; }
   .ruled .h { font-weight: 600; }
+  tr.detail td { padding-top: 0; }
+  .why { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
   .qs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 10px; }
   @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>

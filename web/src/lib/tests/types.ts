@@ -30,7 +30,7 @@ export interface PageSummary {
 
 export interface UnitFile {
   readonly file: string;
-  readonly tests: readonly { readonly name: string; readonly ok: boolean; readonly ms: number }[];
+  readonly tests: readonly { readonly name: string; readonly ok: boolean; readonly skipped: boolean; readonly ms: number }[];
 }
 
 export interface ParseExample {
@@ -45,6 +45,8 @@ export interface TestsIndex {
   readonly requests: number;
   readonly inputTokens: number;
   readonly policy: Policy;
+  /** MAX_TRANSPOSE_ROWS from judge.ts. */
+  readonly maxTransposeRows: number;
   readonly totals: Readonly<Record<CheckKind, { readonly ok: number; readonly total: number; readonly known: number }>>;
   readonly checks: readonly ScoredCheck[];
   readonly pages: readonly PageSummary[];
