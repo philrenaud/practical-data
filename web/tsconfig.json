@@ -1,0 +1,13 @@
+{
+  "extends": "$app/tsconfig",
+  "include": ["src", "*"],
+  "exclude": ["src/service-worker"],
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true
+  }
+}

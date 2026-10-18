@@ -160,7 +160,9 @@ compares every palette on the same tables in light and dark.
 
 | Command | What it does |
 | --- | --- |
-| `npm run demo` | Builds the extension, regenerates `demo/data.json` (replaying recorded answers), and writes `site/` with a downloadable zip of the extension |
+| `npm run demo` | Builds the extension, regenerates `demo/data.json` (replaying recorded answers), and writes `site/` (the SvelteKit app in `web/`, prerendered) with a downloadable zip of the extension |
+| `npm run web:dev` | The site with live reload at `localhost:5173`: edits to `web/` and the extension's own code show as you save |
+| `npm run web:check` | Type-checks the site (`svelte-check`) |
 | `npm run deploy` | Builds the demo and deploys `site/` to Cloudflare Workers static assets (`wrangler.jsonc`). Runs automatically on every push to `main` (`.github/workflows/site.yml`) |
 | `node scripts/readme-media.ts` | Regenerates the README images in `docs/media/` (light and dark) from `docs/media-src/cards.html` |
 | `node scripts/shoot-demo.ts [url]` | Screenshots the demo in light, dark, desktop, and phone, and reports page errors |
@@ -190,6 +192,7 @@ src/decide/    Effect: DecisionModel service (Jev, Clef), question builders, the
 src/dom/       Table extraction (span-aware grid) and D3 painting
 src/ext/       Content script, service worker, options page, settings
 src/api/       The free endpoint: a Cloudflare Worker with a question allowlist, shared answer cache, daily quotas
+web/           practicaldata.dev: SvelteKit, prerendered to site/; tables shaded by src/dom's own painter
 scripts/       build, snapshot, eval, e2e, screenshot helpers, question-design probes
 ```
 

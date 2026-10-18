@@ -8,3 +8,6 @@ site/
 launch/
 .impeccable/
 release/
+
+# SvelteKit
+web/.svelte-kit/

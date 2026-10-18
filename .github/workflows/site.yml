@@ -29,8 +29,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run web:check
       - run: npm test
-      # Builds the extension, then the site from recorded judgments: no model key needed.
+      # Builds the extension, then the SvelteKit site (web/) from recorded judgments: no model key needed.
       - run: npm run demo
       - name: Deploy
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

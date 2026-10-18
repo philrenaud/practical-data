@@ -1,55 +1,97 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="practical-data" content="off">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- practicaldata.dev home: recorded examples shaded by the extension's own painter. -->
+<script lang="ts">
+  import { DEFAULT_PALETTE, divergingStops, PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
+  import pkg from "../../../../package.json";
+  import Example from "#lib/Example.svelte";
+  import { sections } from "#lib/demo.ts";
+
+  const storeUrl = pkg.config.storeUrl;
+
+  let view = $state<"colored" | "original">("colored");
+  let palette = $state<PaletteId>(DEFAULT_PALETTE);
+  let theme = $state<"auto" | "light" | "dark">("auto");
+  let systemDark = $state(false);
+  // Swatches show the ramp the page will actually use; recomputed when the theme changes.
+  let swatches = $state<Record<string, string>>({});
+  // The theme as applied to the page. Tables repaint when it changes, and only after the
+  // page's colors have switched, since the painter blends over the backgrounds it finds.
+  let applied = $state("");
+
+  const palettes = Object.entries(PALETTES) as [PaletteId, (typeof PALETTES)[PaletteId]][];
+  const dark = $derived(theme === "dark" || (theme === "auto" && systemDark));
+
+  $effect(() => {
+    const query = matchMedia("(prefers-color-scheme: dark)");
+    systemDark = query.matches;
+    const change = () => (systemDark = query.matches);
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  });
+
+  $effect(() => {
+    if (theme === "auto") delete document.documentElement.dataset["theme"];
+    else document.documentElement.dataset["theme"] = theme;
+    const mid = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#fff";
+    swatches = Object.fromEntries(palettes.map(([id]) => [id, `linear-gradient(90deg, ${divergingStops(id, dark, mid).join(", ")})`]));
+    applied = `${theme}:${systemDark}`;
+  });
+</script>
+
+<svelte:head>
   <title>Practical Data</title>
   <meta name="description" content="A free, open-source Chrome extension that shades the comparable columns of any HTML table, using a decision model to judge which way is better.">
-  <link rel="icon" href="icon128.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="demo.css">
-</head>
-<body>
+</svelte:head>
+
   <header class="hero">
     <div class="hero-inner">
       <p class="eyebrow"><img src="icon128.png" alt="" width="22" height="22"> Practical Data <span class="tag">Free &amp; open source</span></p>
       <h1>Tables you can read <br class="wide">at a glance.</h1>
       <p class="lede">Conditional formatting for every table on the web, with the direction figured out for you. A Chrome extension that shades the comparable columns of any HTML table, so the better and worse rows show without reading every cell.</p>
       <div class="actions">
-        <!--store--><a class="button primary" href="{{STORE_URL}}">Add to Chrome</a><!--/store-->
-        <!--unpacked--><a class="button primary" href="practical-data-extension.zip" download>Download the extension</a><!--/unpacked-->
+        {#if storeUrl}<a class="button primary" href={storeUrl}>Add to Chrome</a>{/if}
+        {#if !storeUrl}<a class="button primary" href="practical-data-extension.zip" download>Download the extension</a>{/if}
         <a class="button" href="https://github.com/philrenaud/practical-data"><svg class="gh" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Source on GitHub</a>
-        <!--unpacked--><a class="button" href="#install">How to install</a><!--/unpacked-->
+        {#if !storeUrl}<a class="button" href="#install">How to install</a>{/if}
       </div>
     </div>
   </header>
 
+
   <nav class="controls" aria-label="Display options">
     <div class="segmented" role="radiogroup" aria-label="View">
-      <label><input type="radio" name="view" value="colored" checked><span>Shaded</span></label>
-      <label><input type="radio" name="view" value="original"><span>Original</span></label>
+      <label><input type="radio" name="view" value="colored" bind:group={view}><span>Shaded</span></label>
+      <label><input type="radio" name="view" value="original" bind:group={view}><span>Original</span></label>
     </div>
     <div class="control-group">
       <span class="control-label" id="palette-label">Palette</span>
-      <div class="palettes" id="palettes" role="radiogroup" aria-labelledby="palette-label"></div>
+      <div class="palettes" id="palettes" role="radiogroup" aria-labelledby="palette-label">
+        {#each palettes as [id, spec] (id)}
+          <label title={spec.note}>
+            <input type="radio" name="palette" value={id} bind:group={palette}>
+            <span class="swatch" style:background={swatches[id]}></span>
+            <span class="name">{spec.label}</span>
+          </label>
+        {/each}
+      </div>
     </div>
     <div class="control-group">
       <span class="control-label" id="theme-label">Page</span>
       <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
-        <label><input type="radio" name="theme" value="auto" checked><span>Auto</span></label>
-        <label><input type="radio" name="theme" value="light"><span>Light</span></label>
-        <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+        <label><input type="radio" name="theme" value="auto" bind:group={theme}><span>Auto</span></label>
+        <label><input type="radio" name="theme" value="light" bind:group={theme}><span>Light</span></label>
+        <label><input type="radio" name="theme" value="dark" bind:group={theme}><span>Dark</span></label>
       </div>
     </div>
-    <a class="hint-link" href="palettes.html">Palette study</a>
+    <a class="hint-link" href="/palettes" data-sveltekit-reload>Palette study</a>
     <p class="hint">Hover a shaded header to see how it was read. Switch the page to dark: the shading picks its dark ramps on its own.</p>
   </nav>
 
   <main>
-    <section id="examples" class="examples" aria-label="Examples"></section>
+    <section id="examples" class="examples" aria-label="Examples">
+      {#each sections as section, i (section.section.id)}
+        <Example {section} index={i} {palette} colored={view === "colored"} theme={applied} />
+      {/each}
+    </section>
 
     <section class="how" aria-labelledby="how-title">
       <h2 id="how-title">How it works</h2>
@@ -94,7 +136,7 @@
         </li>
         <li>
           <h3>Your key, or soon none at all</h3>
-          <p>With your own key, table text goes straight to your provider and nothing passes through the author. From 1.1.0, a free endpoint judges tables without a key and keeps only the answers. No analytics, no telemetry. <a href="privacy.html">Privacy policy</a></p>
+          <p>With your own key, table text goes straight to your provider and nothing passes through the author. From 1.1.0, a free endpoint judges tables without a key and keeps only the answers. No analytics, no telemetry. <a href="/privacy">Privacy policy</a></p>
         </li>
         <li>
           <h3>Check the claims yourself</h3>
@@ -116,24 +158,21 @@
 
     <section class="install" id="install" aria-labelledby="install-title">
       <h2 id="install-title">Install</h2>
-      <!--store--><ol>
-        <li>Install <a href="{{STORE_URL}}">Practical Data from the Chrome Web Store</a>.</li>
+      {#if storeUrl}<ol>
+        <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
         <li>Paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options page, which opens when it's installed. The next version, 1.1.0, works without a key.</li>
-      </ol><!--/store-->
-      <!--unpacked--><ol>
+      </ol>{/if}
+      {#if !storeUrl}<ol>
         <li>Download <a href="practical-data-extension.zip" download>the extension</a> and unzip it.</li>
         <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
         <li>Select <b>Load unpacked</b> and choose the unzipped folder.</li>
         <li>That's it: tables are shaded for free, no key or sign-up.</li>
       </ol>
-      <p class="note">The Chrome Web Store listing is coming soon. Until then, the extension loads unpacked.</p><!--/unpacked-->
+      <p class="note">The Chrome Web Store listing is coming soon. Until then, the extension loads unpacked.</p>{/if}
       <p class="note">Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is sent to be judged, straight to your own provider (or, from 1.1.0, through the free endpoint); nothing is sent for sites you turn off. A typical page costs about a tenth of a cent on your own key. From 1.1.0, the free endpoint has a daily allowance per browser, and a key gives unlimited use. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current page.</p>
     </section>
   </main>
 
   <footer>
-    <p>Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a href="privacy.html">Privacy policy</a> · <a href="https://github.com/philrenaud/practical-data">Source on GitHub</a> · <a href="https://github.com/philrenaud/practical-data/blob/main/LICENSE">MIT license</a></p>
+    <p>Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a href="/privacy">Privacy policy</a> · <a href="https://github.com/philrenaud/practical-data">Source on GitHub</a> · <a href="https://github.com/philrenaud/practical-data/blob/main/LICENSE">MIT license</a></p>
   </footer>
-  <script type="module" src="main.js"></script>
-</body>
-</html>
