@@ -13,10 +13,11 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { Effect } from "effect";
-import type { ColumnEncoding, PageJudgment, PageSnapshot, Polarity } from "../src/core/types.ts";
+import type { PageJudgment, PageSnapshot } from "../src/core/types.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import type { ProviderConfig } from "../src/decide/model.ts";
 import { recordedJev } from "./lib/cache.ts";
+import { describeEncoding, scorePage, type Check, type CheckKind, type PageExpect } from "./lib/score.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -27,12 +28,6 @@ const { values: args } = parseArgs({
     strict: { type: "boolean", default: false },
   },
 });
-
-type Spec =
-  | "none"
-  | { kind: ColumnEncoding["kind"]; polarity?: Polarity[]; transform?: "linear" | "log"; order?: string[] };
-type TableExpect = Record<string, Spec> & { aggregateRows?: number[] };
-type PageExpect = Record<string, TableExpect> & { shared?: string[][] };
 
 const config = (): ProviderConfig => {
   if (args.provider === "jev") return { provider: "jev", apiKey: process.env["TYPESAFE_API_KEY"] ?? "" };
@@ -51,108 +46,12 @@ if (args.offline) {
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
-interface Tally {
-  detect: [number, number];
-  falsePositive: string[];
-  falseNegative: string[];
-  polarity: [number, number];
-  transform: [number, number];
-  order: [number, number];
-  aggregates: [number, number];
-  shared: [number, number];
-  orientation: [number, number];
-  misses: string[];
-}
-
-const tally: Tally = {
-  detect: [0, 0],
-  falsePositive: [],
-  falseNegative: [],
-  polarity: [0, 0],
-  transform: [0, 0],
-  order: [0, 0],
-  aggregates: [0, 0],
-  shared: [0, 0],
-  orientation: [0, 0],
-  misses: [],
+const checks: Check[] = [];
+const tallyOf = (kind: CheckKind): [number, number] => {
+  const of = checks.filter((c) => c.kind === kind);
+  return [of.filter((c) => c.ok).length, of.length];
 };
-
-const score = (bucket: [number, number], ok: boolean) => {
-  bucket[0] += ok ? 1 : 0;
-  bucket[1] += 1;
-  return ok;
-};
-
-const describe = (e: ColumnEncoding | undefined) =>
-  e === undefined
-    ? "none"
-    : e.kind === "quantitative"
-      ? `${e.polarity}/${e.transform}`
-      : `ordinal[${e.order.join(" < ")}]`;
-
-const scorePage = (slug: string, judgment: PageJudgment, expect: PageExpect) => {
-  const byKey = new Map<string, ColumnEncoding>();
-  for (const t of judgment.tables) for (const e of t.encodings) byKey.set(`${t.id}:${e.header}`, e);
-
-  for (const [tableId, columns] of Object.entries(expect)) {
-    if (tableId === "shared" || tableId === "$comment") continue;
-    const table = judgment.tables.find((t) => t.id === tableId);
-    for (const [header, spec] of Object.entries(columns as TableExpect)) {
-      if (Array.isArray(spec)) continue; // aggregateRows
-      if (header === "@orientation") {
-        const want = spec as unknown as string;
-        const got = table?.orientation ?? "columns";
-        if (!score(tally.orientation, got === want)) {
-          tally.misses.push(`${slug} ${tableId} orientation ${got} (want ${want}) P(rows)=${table?.rowsScore?.toFixed(2) ?? "n/a"}`);
-        }
-        continue;
-      }
-      const where = `${slug} ${tableId} "${header}"`;
-      const actual = byKey.get(`${tableId}:${header}`);
-      const reason = table?.skipped.find((s) => s.header === header);
-      const why = reason === undefined ? "" : ` (skipped: ${reason.reason}${reason.comparable === null ? "" : ` p=${reason.comparable.toFixed(2)}`})`;
-      if (spec === "none") {
-        if (!score(tally.detect, actual === undefined)) tally.falsePositive.push(`${where} → ${describe(actual)}`);
-        continue;
-      }
-      if (!score(tally.detect, actual?.kind === spec.kind)) {
-        tally.falseNegative.push(`${where} expected ${spec.kind} → ${describe(actual)}${why}`);
-        continue;
-      }
-      if (spec.polarity !== undefined && actual !== undefined) {
-        const ok = score(tally.polarity, spec.polarity.includes(actual.polarity));
-        if (!ok) {
-          const p = actual.evidence.polarity;
-          tally.misses.push(
-            `${where} polarity ${actual.polarity} (want ${spec.polarity.join("|")}) ↑${p.higher_is_better.toFixed(2)} ↓${p.lower_is_better.toFixed(2)} ·${p.neutral.toFixed(2)}`,
-          );
-        }
-      }
-      if (spec.transform !== undefined && actual?.kind === "quantitative") {
-        if (!score(tally.transform, actual.transform === spec.transform)) {
-          tally.misses.push(`${where} transform ${actual.transform} (want ${spec.transform}) p(log)=${actual.evidence.log?.toFixed(2)}`);
-        }
-      }
-      if (spec.order !== undefined && actual?.kind === "ordinal") {
-        if (!score(tally.order, actual.order.join("|") === spec.order.join("|"))) {
-          tally.misses.push(`${where} order ${actual.order.join(" < ")}`);
-        }
-      }
-    }
-    const wantAgg = (columns as TableExpect).aggregateRows;
-    if (wantAgg !== undefined) {
-      const got = table?.aggregateRows ?? [];
-      if (!score(tally.aggregates, JSON.stringify([...got].sort()) === JSON.stringify(wantAgg))) {
-        tally.misses.push(`${slug} ${tableId} aggregate rows ${JSON.stringify(got)} (want ${JSON.stringify(wantAgg)})`);
-      }
-    }
-  }
-  for (const group of expect.shared ?? []) {
-    const groups = group.map((k) => byKey.get(k)?.group ?? null);
-    const ok = groups[0] !== null && groups.every((g) => g === groups[0]);
-    if (!score(tally.shared, ok)) tally.misses.push(`${slug} not shared: ${group.join(" + ")} → ${JSON.stringify(groups)}`);
-  }
-};
+const failures = (keep: (c: Check) => boolean) => checks.filter((c) => !c.ok && keep(c)).map((c) => c.message!);
 
 // ── Run ─────────────────────────────────────────────────────────────────────
 
@@ -174,12 +73,12 @@ for (const slug of slugs) {
   out[slug] = judgment;
   tokens += judgment.usage.inputTokens;
   requests += judgment.usage.requests;
-  scorePage(slug, judgment, expectations[slug]!);
+  checks.push(...scorePage(slug, judgment, expectations[slug]!));
   const colored = judgment.tables.reduce((n, t) => n + t.encodings.length, 0);
   console.log(`${slug.padEnd(36)} ${String(colored).padStart(3)} columns  ${Math.round(performance.now() - t0)} ms`);
   if (args.verbose) {
     for (const t of judgment.tables) {
-      for (const e of t.encodings) console.log(`    ${t.id} ${e.header.padEnd(28)} ${describe(e)}${e.group ? `  ⇄ ${e.group}` : ""}`);
+      for (const e of t.encodings) console.log(`    ${t.id} ${e.header.padEnd(28)} ${describeEncoding(e)}${e.group ? `  ⇄ ${e.group}` : ""}`);
     }
   }
 }
@@ -190,21 +89,24 @@ await writeFile(`artifacts/eval-${args.provider}.json`, JSON.stringify(out, null
 const pct = ([a, b]: [number, number]) => (b === 0 ? "  n/a" : `${((100 * a) / b).toFixed(0).padStart(4)}%  (${a}/${b})`);
 console.log(`
 model ${args.provider}${args.offline ? " (offline replay)" : ""} · ${requests} requests · ${tokens.toLocaleString()} input tokens · ${Math.round(performance.now() - started)} ms
-  color / don't color  ${pct(tally.detect)}
-  polarity             ${pct(tally.polarity)}
-  log vs linear        ${pct(tally.transform)}
-  ordinal order        ${pct(tally.order)}
-  aggregate rows       ${pct(tally.aggregates)}
-  shared scales        ${pct(tally.shared)}
-  rows vs columns      ${pct(tally.orientation)}`);
+  color / don't color  ${pct(tallyOf("detect"))}
+  polarity             ${pct(tallyOf("polarity"))}
+  log vs linear        ${pct(tallyOf("transform"))}
+  ordinal order        ${pct(tallyOf("order"))}
+  aggregate rows       ${pct(tallyOf("aggregates"))}
+  shared scales        ${pct(tallyOf("shared"))}
+  rows vs columns      ${pct(tallyOf("orientation"))}`);
 const list = (title: string, xs: string[]) => xs.length > 0 && console.log(`\n${title}\n${xs.map((x) => `  - ${x}`).join("\n")}`);
-list("Colored but shouldn't be:", tally.falsePositive);
-list("Missed:", tally.falseNegative);
-list("Wrong details:", tally.misses);
+const falsePositive = failures((c) => c.kind === "detect" && c.side === "colored");
+const falseNegative = failures((c) => c.kind === "detect" && c.side === "missed");
+const misses = failures((c) => c.kind !== "detect");
+list("Colored but shouldn't be:", falsePositive);
+list("Missed:", falseNegative);
+list("Wrong details:", misses);
 
 // --strict: fail on any regression not documented in expectations.$known.
 const known = Object.keys((expectations["$known"] ?? {}) as Record<string, unknown>);
-const unexpected = [...tally.falsePositive, ...tally.falseNegative, ...tally.misses].filter(
+const unexpected = [...falsePositive, ...falseNegative, ...misses].filter(
   (m) => !known.some((k) => m.startsWith(k)),
 );
 if (args.strict && unexpected.length > 0) {
