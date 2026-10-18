@@ -10,7 +10,7 @@
   },
   "homepage": "https://practicaldata.dev",
   "config": {
-    "storeUrl": ""
+    "storeUrl": "https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm"
   },
   "private": true,
   "type": "module",
