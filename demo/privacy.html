@@ -25,7 +25,7 @@
     <a class="back" href="./">← Practical Data</a>
 <h1>Privacy policy</h1>
 <p><em>Practical Data, a Chrome extension. Last updated October 12, 2026.</em></p>
-<p>Practical Data shades the comparable columns of tables on web pages. To decide what each column means, it asks a decision model. By default that goes through the free endpoint at <code>api.practicaldata.dev</code>, run by the extension's author; you can instead use your own key with a provider you pay for directly. This page says exactly what each involves.</p>
+<p>Practical Data shades the comparable columns of tables on web pages. To decide what each column means, it asks a decision model. From version 1.1.0, that goes by default through the free endpoint at <code>api.practicaldata.dev</code>, run by the extension's author; you can instead use your own key with a provider you pay for directly. Version 1.0.0 has no free endpoint and always uses your own key. This page says exactly what each involves.</p>
 <h2>What leaves your browser</h2>
 <p>When a table comes within about a screen of the viewport on a site where the extension is on, the extension sends this to the provider set in its options:</p>
 <ul>
@@ -38,7 +38,7 @@
 <h2>Who receives it</h2>
 <p>Only the provider set in the extension's options:</p>
 <ul>
-<li><strong>Free</strong> (the default), at <code>api.practicaldata.dev</code>: a Cloudflare Worker run by the extension's author. It forwards the table text to TypeSafe (below) with the author's key and returns the answers. It receives, along with the table text, a random id the extension makes when installed (not derived from you or your browser) and, like any web server, your IP address. It keeps:
+<li><strong>Free</strong> (the default from version 1.1.0), at <code>api.practicaldata.dev</code>: a Cloudflare Worker run by the extension's author. It forwards the table text to TypeSafe (below) with the author's key and returns the answers. It receives, along with the table text, a random id the extension makes when installed (not derived from you or your browser) and, like any web server, your IP address. It keeps:
 <ul>
 <li><strong>The answers</strong>, in Cloudflare's cache for up to 30 days, keyed by a one-way hash of the request, so a table another reader already asked about is answered without asking again. The table text itself is not stored.</li>
 <li><strong>Today's request count for each install id</strong> and the day's total, to enforce the daily allowance. Each day's counts are deleted two days later.</li>
