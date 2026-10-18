@@ -1,0 +1,12 @@
+{
+  "extends": "$app/tsconfig",
+  "include": ["src", "*"],
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true
+  }
+}

@@ -1,28 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="practical-data" content="off">
+<!-- Privacy policy. Keep in step with PRIVACY.md. -->
+<svelte:head>
   <title>Privacy policy · Practical Data</title>
-  <link rel="icon" href="icon128.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="demo.css">
-  <style>
-    .doc { max-width: 720px; margin: 0 auto; padding: 56px 16px 80px; }
-    .doc h1 { font-size: clamp(36px, 6vw, 56px); margin-bottom: 8px; }
-    .doc h2 { font-size: 24px; margin: 36px 0 10px; letter-spacing: -0.01em; }
-    .doc p, .doc li { font-size: 17px; color: var(--ink); }
-    .doc li + li { margin-top: 6px; }
-    .doc a { color: var(--accent); }
-    .back { font: 500 14px "IBM Plex Mono", monospace; color: var(--muted); }
-  </style>
-</head>
-<body>
-  <main class="doc">
-    <a class="back" href="./">← Practical Data</a>
+</svelte:head>
+
+<main class="doc">
+    <a class="back" href="/">← Practical Data</a>
 <h1>Privacy policy</h1>
 <p><em>Practical Data, a Chrome extension. Last updated October 12, 2026.</em></p>
 <p>Practical Data shades the comparable columns of tables on web pages. To decide what each column means, it asks a decision model. From version 1.1.0, that goes by default through the free endpoint at <code>api.practicaldata.dev</code>, run by the extension's author; you can instead use your own key with a provider you pay for directly. Version 1.0.0 has no free endpoint and always uses your own key. This page says exactly what each involves.</p>
@@ -70,5 +52,13 @@ Nothing is logged, and nothing is used for analytics or shared with anyone but T
 <h2>Changes</h2>
 <p>Changes to this policy will be noted here with a new date.</p>
   </main>
-</body>
-</html>
+
+<style>
+    .doc { max-width: 720px; margin: 0 auto; padding: 56px 16px 80px; }
+    .doc h1 { font-size: clamp(36px, 6vw, 56px); margin-bottom: 8px; }
+    .doc h2 { font-size: 24px; margin: 36px 0 10px; letter-spacing: -0.01em; }
+    .doc p, .doc li { font-size: 17px; color: var(--ink); }
+    .doc li + li { margin-top: 6px; }
+    .doc a { color: var(--accent); }
+    .back { font: 500 14px "IBM Plex Mono", monospace; color: var(--muted); }
+  </style>
