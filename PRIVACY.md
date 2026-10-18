@@ -3,10 +3,11 @@
 _Practical Data, a Chrome extension. Last updated October 12, 2026._
 
 Practical Data shades the comparable columns of tables on web pages. To decide
-what each column means, it asks a decision model. By default that goes through
-the free endpoint at `api.practicaldata.dev`, run by the extension's author;
-you can instead use your own key with a provider you pay for directly. This
-page says exactly what each involves.
+what each column means, it asks a decision model. From version 1.1.0, that goes
+by default through the free endpoint at `api.practicaldata.dev`, run by the
+extension's author; you can instead use your own key with a provider you pay
+for directly. Version 1.0.0 has no free endpoint and always uses your own key.
+This page says exactly what each involves.
 
 ## What leaves your browser
 
@@ -26,7 +27,7 @@ tables, or anything from tables you never scroll near.
 
 Only the provider set in the extension's options:
 
-- **Free** (the default), at `api.practicaldata.dev`: a Cloudflare Worker run
+- **Free** (the default from version 1.1.0), at `api.practicaldata.dev`: a Cloudflare Worker run
   by the extension's author. It forwards the table text to TypeSafe (below)
   with the author's key and returns the answers. It receives, along with the
   table text, a random id the extension makes when installed (not derived from
