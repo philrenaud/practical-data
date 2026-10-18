@@ -7,6 +7,8 @@
  * so the shading follows the data as it is edited. Ordered labels get one
  * "text is exactly" rule per level. Columns whose numbers are stored as text
  * ("1,200 GB") can't drive a color scale and are filled cell by cell instead.
+ * The judge reads displayed text, so a rule's points are converted to the
+ * stored values' units ("46%" is stored as 0.46).
  */
 import { rgb } from "d3-color";
 import { legendStops, positions, schemeColor, type Palette } from "../core/scale.ts";
@@ -95,6 +97,29 @@ const blocksOf = (cells: readonly { row: number; col: number }[]): Block[] => {
   return blocks;
 };
 
+/**
+ * How the column's stored numbers relate to the text the judge read: 1 when
+ * they match, 0.01 when "46%" is stored as 0.46. Null when no single factor
+ * fits, so a color scale on the stored values would misplace them.
+ */
+const storedScale = (
+  e: Extract<ColumnEncoding, { kind: "quantitative" }>,
+  indexes: readonly number[],
+  cells: readonly { row: number; col: number }[],
+  raw: readonly (readonly unknown[])[],
+): number | null => {
+  let factor: number | null = null;
+  for (let k = 0; k < indexes.length; k++) {
+    const stored = raw[cells[k]!.row]?.[cells[k]!.col];
+    const read = e.values[indexes[k]!];
+    if (typeof stored !== "number" || read === null || read === undefined || read === 0) continue;
+    const f = stored / read;
+    if (factor === null) factor = f;
+    else if (Math.abs(f - factor) > 1e-6 * Math.abs(factor)) return null;
+  }
+  return factor ?? 1;
+};
+
 /** A scheme color as it reads on the sheet (tinted over white, text kept legible), as hex: Apps Script takes no rgb(). */
 const onSheet = (color: string, weight = 1) => rgb(cellFill(color, weight, SHEET_BACKGROUND, SHEET_TEXT).fill).formatHex();
 
@@ -121,7 +146,8 @@ export const planFormatting = (judgment: TableJudgment, raw: readonly (readonly 
     }
 
     const numeric = cells.filter((c) => typeof raw[c.row]?.[c.col] === "number").length;
-    if (cells.length === 0 || numeric / cells.length < NUMERIC_SHARE) {
+    const scale = numeric / Math.max(1, cells.length) >= NUMERIC_SHARE ? storedScale(e, indexes, cells, raw) : null;
+    if (cells.length === 0 || scale === null) {
       const pos = positions(e, excluded);
       return {
         kind: "fill",
@@ -134,7 +160,8 @@ export const planFormatting = (judgment: TableJudgment, raw: readonly (readonly 
     }
 
     // Stops run low value → high value, already flipped when lower is better.
-    const [lo, hi] = e.domain;
+    // The rule compares stored values, so the judged domain is put in their units.
+    const [lo, hi] = [e.domain[0] * scale, e.domain[1] * scale];
     const [low, middle, high] = legendStops(e, palette, false, SHEET_BACKGROUND, 3).map((c) => onSheet(c));
     const mid = e.transform === "log" && lo > 0 ? Math.sqrt(lo * hi) : (lo + hi) / 2;
     return {

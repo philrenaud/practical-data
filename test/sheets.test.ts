@@ -66,6 +66,21 @@ test("a total row in the middle splits the scale's range around it", () => {
   ]);
 });
 
+test("percentages: the scale's points are in stored units, as Sheets compares them", () => {
+  // Displayed "39%", "42%", "46%"; stored 0.39, 0.42, 0.46.
+  const share: ColumnEncoding = { ...price, header: "Resistance", polarity: "neutral", unit: "%", domain: [39, 46], values: [39, 42, 46] };
+  const [f] = planFormatting(judgment([share]), [["Ride", "Resistance"], ["a", 0.39], ["b", 0.42], ["c", 0.46]], "calm");
+  assert.equal(f!.kind, "scale");
+  const { min, mid, max } = f as Extract<Formatting, { kind: "scale" }>;
+  assert.deepEqual([min.value, mid.value, max.value].map((v) => Math.round(v * 1000) / 1000), [0.39, 0.425, 0.46]);
+});
+
+test("stored values with no single relation to the text are filled instead", () => {
+  const odd: ColumnEncoding = { ...price, domain: [1, 3], values: [1, 2, 3] };
+  const [f] = planFormatting(judgment([odd]), [["A", "B"], ["a", 1], ["b", 20], ["c", 3]], "calm");
+  assert.equal(f!.kind, "fill");
+});
+
 test("numbers stored as text are filled cell by cell", () => {
   const asText = raw.map((r) => r.map(String));
   const [f] = planFormatting(judgment([price], { aggregateRows: [3] }), asText, "calm");
