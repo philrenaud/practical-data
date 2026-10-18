@@ -11,3 +11,6 @@ release/
 
 # SvelteKit
 web/.svelte-kit/
+
+# Tests site data (scripts/tests-data.ts)
+demo/tests/
