@@ -135,8 +135,8 @@ const ask = async (
         429,
         reservation.status,
         reservation.status === "install_limit"
-          ? "You've used today's free allowance. It resets at midnight UTC; add your own key for unlimited use."
-          : "Today's free allowance is used up for everyone. It resets at midnight UTC; add your own key for unlimited use.",
+          ? "You've used today's free allowance. It resets at midnight UTC."
+          : "Today's free allowance is used up for everyone. It resets at midnight UTC.",
         { ...allowance, "Retry-After": String(secondsToMidnightUtc()), "X-Practical-Data-Quota": reservation.status },
       ),
     };
