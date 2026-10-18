@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>Palette study · Practical Data</title>
+  <title>Palette study</title>
 </svelte:head>
 
 <header>

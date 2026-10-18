@@ -2,7 +2,8 @@
  * Shades a rendered table with the extension's own extractor and painter, so
  * the site shows exactly what the extension does. Repaints when any parameter
  * changes; `theme` is passed only so a page-theme switch repaints too (the
- * painter reads the backgrounds it lands on).
+ * painter reads the backgrounds it lands on). An empty `theme` means the
+ * page's theme isn't applied yet, so nothing is painted.
  */
 import type { Action } from "svelte/action";
 import type { PaletteId } from "../../../src/core/palettes.ts";
@@ -23,7 +24,7 @@ export const shade: Action<HTMLTableElement, ShadeOptions> = (node, options) => 
   const extracted = extractTable(node, options.id, []);
   const paint = (o: ShadeOptions) => {
     unpaint(node);
-    if (extracted === null || o.colored === false) return;
+    if (extracted === null || o.colored === false || o.theme === "") return;
     paintTable(o.judgment.orientation === "rows" ? transposeExtracted(extracted) : extracted, o.judgment, o.palette, o.groupSizes);
   };
   paint(options);

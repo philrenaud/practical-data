@@ -153,10 +153,12 @@ To compare providers, run `node scripts/eval.ts --provider clef` with
 
 ## Demo site
 
-`demo/` holds a static page that shows real tables from the corpus, painted
-by the extension's own extractor and painter. Colors come from judgments the
-pipeline actually produced, never from hand-written styles. `/palettes.html`
-compares every palette on the same tables in light and dark.
+`web/` is the site (SvelteKit, prerendered to `site/`; see
+[web/README.md](web/README.md)). It shows real tables from the corpus,
+painted by the extension's own extractor and painter. Colors come from
+judgments the pipeline actually produced (`demo/data.json`), never from
+hand-written styles. `/palettes` compares every palette on the same tables in
+light and dark.
 
 | Command | What it does |
 | --- | --- |

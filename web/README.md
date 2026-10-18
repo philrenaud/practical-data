@@ -20,6 +20,8 @@ npm run demo         # full build into site/: extension, recorded data, this app
   so links to it reload the page rather than navigating in place.
 - **Privacy policy.** `src/routes/(site)/privacy/+page.svelte` mirrors
   `../PRIVACY.md`; change both together.
+- **`static/icon128.png`** is a copy of the extension's `../static/icon128.png`
+  (the extension's static folder can't double as the site's); keep them in step.
 - **Configuration** is in `vite.config.ts` (SvelteKit 3 takes its options
   through the Vite plugin). `#lib/*` imports resolve through `package.json`
   `imports`.

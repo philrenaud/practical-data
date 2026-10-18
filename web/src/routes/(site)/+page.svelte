@@ -1,11 +1,11 @@
 <!-- practicaldata.dev home: recorded examples shaded by the extension's own painter. -->
 <script lang="ts">
   import { DEFAULT_PALETTE, divergingStops, PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
-  import pkg from "../../../../package.json";
+  import { config } from "../../../../package.json";
   import Example from "#lib/Example.svelte";
   import { sections } from "#lib/demo.ts";
 
-  const storeUrl = pkg.config.storeUrl;
+  const storeUrl = config.storeUrl;
 
   let view = $state<"colored" | "original">("colored");
   let palette = $state<PaletteId>(DEFAULT_PALETTE);
@@ -13,8 +13,9 @@
   let systemDark = $state(false);
   // Swatches show the ramp the page will actually use; recomputed when the theme changes.
   let swatches = $state<Record<string, string>>({});
-  // The theme as applied to the page. Tables repaint when it changes, and only after the
-  // page's colors have switched, since the painter blends over the backgrounds it finds.
+  // The theme as applied to the page ("" until then). Tables paint once it is set and
+  // repaint when it changes, only after the page's colors have switched, since the
+  // painter blends over the backgrounds it finds.
   let applied = $state("");
 
   const palettes = Object.entries(PALETTES) as [PaletteId, (typeof PALETTES)[PaletteId]][];
@@ -33,7 +34,9 @@
     else document.documentElement.dataset["theme"] = theme;
     const mid = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#fff";
     swatches = Object.fromEntries(palettes.map(([id]) => [id, `linear-gradient(90deg, ${divergingStops(id, dark, mid).join(", ")})`]));
-    applied = `${theme}:${systemDark}`;
+    applied = dark ? "dark" : "light";
+    // The page theme is this page's control; other pages open in Auto.
+    return () => delete document.documentElement.dataset["theme"];
   });
 </script>
 
