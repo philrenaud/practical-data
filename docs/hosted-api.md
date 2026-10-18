@@ -39,11 +39,22 @@ columns, 2,000 rows and 300 characters a cell (`readJudgeBody` in
    Cache hits don't count against the daily allowance. Cloudflare's cache is
    per data centre, so readers in different regions fill it separately.
 6. **Daily allowance.** A Durable Object per UTC day (`src/api/quota.ts`)
-   counts model requests per install and input tokens in total. Past
-   `INSTALL_DAILY_REQUESTS` for an install, or `DAILY_TOKEN_BUDGET` overall,
-   the endpoint answers 429 with `X-Practical-Data-Quota`. The extension shows
-   "Today's free allowance is used up. Add your own key in Options", and stops
-   asking for 15 minutes. Each day's object deletes itself two days later.
+   counts model requests per install and input tokens in total. Every response
+   that spent from the allowance carries `X-Practical-Data-Remaining` and
+   `X-Practical-Data-Limit`; cache hits carry neither, since they cost
+   nothing. Past `INSTALL_DAILY_REQUESTS` for an install, or
+   `DAILY_TOKEN_BUDGET` overall, the endpoint answers 429 with
+   `X-Practical-Data-Quota: install_limit` or `budget_spent`. Each day's
+   object deletes itself two days later.
+
+   What the reader sees (`src/ext/allowance.ts`): under a fifth of the day's
+   requests left, the popup says about how many pages remain, at the eval
+   pages' median of 12 requests a page. When it's used up, the toolbar icon
+   shows "!", and the popup says whose allowance ran out (this browser's, or
+   everyone's) and when it resets, in local time. The extension then stops
+   asking for 15 minutes. The install id is self-made, so the per-install
+   limit only stops ordinary heavy use; `DAILY_TOKEN_BUDGET` is the cap that
+   holds against made-up ids.
 7. **Forward.** To `UPSTREAM_URL` with `TYPESAFE_API_KEY`, model `MODEL`.
    Answers are checked against the questions before they are cached or
    returned. Provider errors reach the client only as a status, never the

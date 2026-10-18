@@ -13,7 +13,11 @@ export interface Allowance {
   readonly tokenBudget: number;
 }
 
-export type Reservation = "ok" | "install_limit" | "budget_spent";
+export interface Reservation {
+  readonly status: "ok" | "install_limit" | "budget_spent";
+  /** Requests this install has left today, after this one. */
+  readonly remaining: number;
+}
 
 const KEEP_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -33,15 +37,16 @@ export class Quota extends DurableObject {
     this.#init();
     const sql = this.ctx.storage.sql;
     const spent = sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
-    if (spent >= allowance.tokenBudget) return "budget_spent";
     const used = sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
-    if (used >= allowance.installRequests) return "install_limit";
+    const left = Math.max(0, allowance.installRequests - used);
+    if (spent >= allowance.tokenBudget) return { status: "budget_spent", remaining: left };
+    if (left === 0) return { status: "install_limit", remaining: 0 };
     sql.exec(
       "INSERT INTO installs (id, requests) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET requests = requests + 1",
       install,
     );
     if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + KEEP_MS);
-    return "ok";
+    return { status: "ok", remaining: left - 1 };
   }
 
   /** Adds the input tokens a forwarded request actually used. */

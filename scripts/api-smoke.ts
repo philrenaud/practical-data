@@ -153,16 +153,21 @@ try {
     assert.equal((await post({})).status, 400);
   });
 
-  await check(`after ${INSTALL_LIMIT} model requests, an install gets the quota error`, async () => {
+  await check(`each request reports what's left, and after ${INSTALL_LIMIT} an install gets the quota error`, async () => {
     const id = randomUUID();
     const role = roleQuestion;
     let status = 0;
     let n = 0;
     for (; n <= INSTALL_LIMIT; n++) {
-      const r = await post({ state: { n }, questions: role(`Price ${n}`) }, { "X-Practical-Data-Install": id });
+      // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
+      const r = await post({ state: { n, run: id }, questions: role(`Price ${n}`) }, { "X-Practical-Data-Install": id });
       status = r.status;
+      // Each request that spends from the allowance says what's left.
+      assert.equal(r.headers.get("x-practical-data-limit"), String(INSTALL_LIMIT));
+      assert.equal(r.headers.get("x-practical-data-remaining"), String(Math.max(0, INSTALL_LIMIT - n - 1)));
       if (status !== 200) {
         assert.equal(r.headers.get("x-practical-data-quota"), "install_limit");
+        assert.match(((await r.json()) as { message: string }).message, /^You've used today's free allowance\. It resets at midnight UTC/);
         break;
       }
     }

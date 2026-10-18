@@ -48,3 +48,38 @@ test("a spent hosted allowance fails at once as quota, without waiting or retryi
     globalThis.fetch = realFetch;
   }
 });
+
+test("a spent allowance for everyone is told apart from this install's own", async () => {
+  const { Effect } = await import("effect");
+  const { hosted } = await import("../src/decide/model.ts");
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response('{"error":"budget_spent"}', { status: 429, headers: { "X-Practical-Data-Quota": "budget_spent", "X-Practical-Data-Remaining": "250", "X-Practical-Data-Limit": "400" } });
+  try {
+    const error = await Effect.runPromise(hosted("id").evaluate({ state: {}, questions: { q: questions["log"]! } }).pipe(Effect.flip));
+    assert.equal(error.reason, "quota_everyone");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("hosted responses report what's left of the allowance; cache hits report nothing", async () => {
+  const { Effect } = await import("effect");
+  const { hosted } = await import("../src/decide/model.ts");
+  const heard: unknown[] = [];
+  const realFetch = globalThis.fetch;
+  let hit = false;
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify(ok), {
+      headers: hit ? { "X-Cache": "hit" } : { "X-Practical-Data-Remaining": "73", "X-Practical-Data-Limit": "400" },
+    });
+  try {
+    const model = hosted("id", (a) => heard.push(a));
+    await Effect.runPromise(model.evaluate({ state: { n: 1 }, questions }));
+    hit = true;
+    await Effect.runPromise(model.evaluate({ state: { n: 2 }, questions }));
+    assert.deepEqual(heard, [{ remaining: 73, limit: 400 }]);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

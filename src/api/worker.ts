@@ -87,7 +87,18 @@ const admit = async (request: Request, env: Env): Promise<Caller | Response> => 
   return { install };
 };
 
-type Asked = { readonly response: DecisionResponse; readonly cached: boolean } | { readonly refusal: Response };
+/** `remaining` is the caller's requests left today; unknown (null) on a cache hit, which doesn't spend any. */
+type Asked = { readonly response: DecisionResponse; readonly remaining: number | null } | { readonly refusal: Response };
+
+/**
+ * What's left of the caller's daily allowance, on every response that spent
+ * from it. Cache hits carry none: they cost nothing, so the client's last
+ * count still holds.
+ */
+const allowanceHeaders = (env: Env, remaining: number): Record<string, string> => ({
+  "X-Practical-Data-Remaining": String(remaining),
+  "X-Practical-Data-Limit": env.INSTALL_DAILY_REQUESTS,
+});
 
 /**
  * One System One request: from the shared cache when anyone has asked it
@@ -109,7 +120,7 @@ const ask = async (
   const hit = await caches.default.match(cacheKey);
   if (hit !== undefined) {
     const decoded = Schema.decodeUnknownOption(DecisionResponse)(await hit.json().catch(() => null));
-    if (decoded._tag === "Some") return { response: decoded.value, cached: true };
+    if (decoded._tag === "Some") return { response: decoded.value, remaining: null };
   }
 
   const quota = env.QUOTA.get(env.QUOTA.idFromName(today()));
@@ -117,15 +128,16 @@ const ask = async (
     installRequests: Number(env.INSTALL_DAILY_REQUESTS),
     tokenBudget: Number(env.DAILY_TOKEN_BUDGET),
   });
-  if (reservation !== "ok") {
+  const allowance = allowanceHeaders(env, reservation.remaining);
+  if (reservation.status !== "ok") {
     return {
       refusal: refuse(
         429,
-        reservation,
-        reservation === "install_limit"
-          ? "Today's free allowance for this browser is used up. Add your own key in the extension's options for unlimited use."
-          : "Today's free allowance for everyone is used up. Add your own key in the extension's options, or try again tomorrow.",
-        { "Retry-After": String(secondsToMidnightUtc()), "X-Practical-Data-Quota": reservation },
+        reservation.status,
+        reservation.status === "install_limit"
+          ? "You've used today's free allowance. It resets at midnight UTC; add your own key for unlimited use."
+          : "Today's free allowance is used up for everyone. It resets at midnight UTC; add your own key for unlimited use.",
+        { ...allowance, "Retry-After": String(secondsToMidnightUtc()), "X-Practical-Data-Quota": reservation.status },
       ),
     };
   }
@@ -160,7 +172,7 @@ const ask = async (
       ),
     ]),
   );
-  return { response: decoded.value, cached: false };
+  return { response: decoded.value, remaining: reservation.remaining };
 };
 
 /** POST /v1/systemone: the extension's own requests, checked against the allowlist. */
@@ -179,7 +191,11 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   const asked = await ask(env, ctx, caller, state, questions as Record<string, Question>);
   if ("refusal" in asked) return asked.refusal;
   return new Response(JSON.stringify(asked.response), {
-    headers: { "Content-Type": "application/json", "X-Cache": asked.cached ? "hit" : "miss" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Cache": asked.remaining === null ? "hit" : "miss",
+      ...(asked.remaining === null ? {} : allowanceHeaders(env, asked.remaining)),
+    },
   });
 };
 
@@ -204,6 +220,7 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
 
   // The first refusal (a spent allowance, an upstream failure) is what the caller sees.
   let refusal: Response | null = null;
+  let remaining: number | null = null;
   const model = DecisionModel.of({
     name: env.MODEL,
     evaluate: (req) =>
@@ -212,7 +229,10 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
         (entries) =>
           Effect.promise(() => ask(env, ctx, caller, req.state, Object.fromEntries(entries))).pipe(
             Effect.flatMap((asked) => {
-              if ("response" in asked) return Effect.succeed(asked.response);
+              if ("response" in asked) {
+                if (asked.remaining !== null) remaining = Math.min(remaining ?? Infinity, asked.remaining);
+                return Effect.succeed(asked.response);
+              }
               refusal ??= asked.refusal;
               const quota = asked.refusal.headers.get("x-practical-data-quota") !== null;
               return Effect.fail(new DecisionError({ reason: quota ? "quota" : "network", message: "refused" }));
@@ -230,7 +250,11 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
   const result = await Effect.runPromise(Effect.result(judgePage(page).pipe(Effect.provideService(DecisionModel, model))));
   if (result._tag === "Failure") return refusal ?? refuse(502, "upstream", "The table couldn't be judged.");
   if (result.success.failed.length > 0 && refusal !== null) return refusal;
-  return json(200, { table: result.success.tables[0] ?? null, usage: result.success.usage });
+  return json(
+    200,
+    { table: result.success.tables[0] ?? null, usage: result.success.usage },
+    remaining === null ? {} : allowanceHeaders(env, remaining),
+  );
 };
 
 const chunk = <A>(xs: readonly A[], size: number): A[][] => {
