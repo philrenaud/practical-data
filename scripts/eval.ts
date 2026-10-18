@@ -39,9 +39,14 @@ const config = (): ProviderConfig => {
   };
 };
 
+/** Requests with no recording. The judge absorbs a failed table or share request, so count them here. */
+let unrecorded = 0;
 if (args.offline) {
   // A 401 is not retried, so a cache miss fails immediately and loudly.
-  globalThis.fetch = async () => new Response("offline: no recording for this request", { status: 401 });
+  globalThis.fetch = async () => {
+    unrecorded++;
+    return new Response("offline: no recording for this request", { status: 401 });
+  };
 }
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
@@ -111,5 +116,10 @@ const unexpected = [...falsePositive, ...falseNegative, ...misses].filter(
 );
 if (args.strict && unexpected.length > 0) {
   console.log(`\n${unexpected.length} unexpected mismatch(es); see above.`);
+  process.exitCode = 1;
+}
+// Offline, a request with no recording is a failure even when no labeled column depends on it.
+if (unrecorded > 0) {
+  console.log(`\n${unrecorded} request(s) had no recording; rerun online to record them.`);
   process.exitCode = 1;
 }
