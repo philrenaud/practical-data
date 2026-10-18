@@ -25,6 +25,9 @@ const dirty = git("status", "--porcelain", "--", "src", "static") === "" ? "" : 
 const manifest = JSON.parse(await readFile("dist/manifest.json", "utf8")) as Record<string, unknown>;
 const built = new Date().toISOString().slice(0, 16).replace("T", " ");
 manifest["version_name"] = `${String(manifest["version"])} (${sha}${dirty}, ${built})`;
+// A local endpoint needs its own host permission, as api.practicaldata.dev has in the manifest.
+const apiOrigin = process.env["PD_API_ORIGIN"];
+if (apiOrigin !== undefined) (manifest["host_permissions"] as string[]).push(`${apiOrigin}/*`);
 await writeFile("dist/manifest.json", JSON.stringify(manifest, null, 2));
 
 const common = {
@@ -35,6 +38,8 @@ const common = {
   // Unminified: Web Store reviewers (and anyone auditing a key-handling extension) can read it.
   minify: false,
   sourcemap: watch ? "inline" : false,
+  // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
+  define: process.env["PD_API_ORIGIN"] === undefined ? {} : { PD_API_ORIGIN: JSON.stringify(process.env["PD_API_ORIGIN"]) },
 } as const satisfies esbuild.BuildOptions;
 
 const builds: esbuild.BuildOptions[] = [

@@ -67,6 +67,7 @@ h2 { margin: 0 0 14px; font-size: 13px; font-weight: 650; letter-spacing: 0.08em
 
 .fields { display: grid; gap: 12px; margin-top: 16px; }
 .fields[hidden] { display: none; }
+.explain { margin: 0; max-width: 60ch; font-size: 14px; line-height: 1.5; }
 .field { display: grid; gap: 5px; }
 .field > span { font-size: 13px; font-weight: 560; }
 input[type="text"], input[type="password"], select {

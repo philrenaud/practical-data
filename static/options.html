@@ -19,10 +19,14 @@
     <section>
       <h2>Decision model</h2>
       <div class="segmented" role="radiogroup" aria-label="Provider">
+        <label><input type="radio" name="provider" value="hosted"><span>Free <small>no key</small></span></label>
         <label><input type="radio" name="provider" value="jev"><span>Jev <small>TypeSafe</small></span></label>
         <label><input type="radio" name="provider" value="clef"><span>Clef <small>Cloudflare</small></span></label>
       </div>
 
+      <div class="fields" data-for="hosted">
+        <p class="explain">Tables are judged by Jev through <b>practicaldata.dev</b>, with a daily allowance per browser of roughly 30 pages (more for simple pages, fewer for table-heavy ones). Tables someone has already read come back instantly and don't count. The allowance resets at midnight UTC; for unlimited use, add your own TypeSafe key.</p>
+      </div>
       <div class="fields" data-for="jev">
         <label class="field">
           <span>TypeSafe API key</span>
@@ -46,7 +50,7 @@
           </select>
         </label>
       </div>
-      <p class="note">Keys stay in this browser's extension storage and are only sent to the provider you pick.</p>
+      <p class="note" id="key-note">Keys stay in this browser's extension storage and are only sent to the provider you pick.</p>
     </section>
 
     <section>
@@ -72,7 +76,7 @@
 
     <section>
       <h2>What leaves your browser</h2>
-      <p class="disclosure">To judge a table, the extension sends the page title, the table's caption and headers, a few sample values from each column, the distinct labels in label columns, and the first and last two rows to the provider you picked above. Nothing is sent for tables you never scroll near, for sites you turn off, or for pages that opt out. Answers are cached in this browser, so an unchanged table is not sent twice. Your API key stays in this browser's extension storage. It is read by the extension's own pages (this one, the popup) and its background worker, and sent only to the provider you picked; web pages and the scripts that run on them can't read it. <a href="https://practicaldata.dev/privacy" target="_blank" rel="noopener">Privacy policy</a></p>
+      <p class="disclosure">To judge a table, the extension sends the page title, the table's caption and headers, a few sample values from each column, the distinct labels in label columns, and the first and last two rows to the provider you picked above. With <b>Free</b>, that goes to practicaldata.dev, which forwards it to TypeSafe and keeps only the answers (not your tables), plus a random id for this browser so it can count the daily allowance; the page URL is never sent. Nothing is sent for tables you never scroll near, for sites you turn off, or for pages that opt out. Answers are cached in this browser, so an unchanged table is not sent twice. Your API key stays in this browser's extension storage. It is read by the extension's own pages (this one, the popup) and its background worker, and sent only to the provider you picked; web pages and the scripts that run on them can't read it. <a href="https://practicaldata.dev/privacy" target="_blank" rel="noopener">Privacy policy</a></p>
     </section>
 
     <footer>

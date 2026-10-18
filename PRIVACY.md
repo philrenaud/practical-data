@@ -1,16 +1,17 @@
 # Privacy policy
 
-_Practical Data, a Chrome extension. Last updated October 5, 2026._
+_Practical Data, a Chrome extension. Last updated October 12, 2026._
 
 Practical Data shades the comparable columns of tables on web pages. To decide
-what each column means, it asks a decision model run by a third-party
-provider that you choose and pay for directly. This page says exactly what
-that involves.
+what each column means, it asks a decision model. By default that goes through
+the free endpoint at `api.practicaldata.dev`, run by the extension's author;
+you can instead use your own key with a provider you pay for directly. This
+page says exactly what each involves.
 
 ## What leaves your browser
 
 When a table comes within about a screen of the viewport on a site where the
-extension is on, the extension sends this to your chosen provider:
+extension is on, the extension sends this to the provider set in its options:
 
 - The page title.
 - The table's caption or nearest heading, and its column headers.
@@ -23,21 +24,38 @@ tables, or anything from tables you never scroll near.
 
 ## Who receives it
 
-Only the provider you configure in the extension's options:
+Only the provider set in the extension's options:
 
-- **TypeSafe** (Jev), at `api.typesafe.ai`, under
+- **Free** (the default), at `api.practicaldata.dev`: a Cloudflare Worker run
+  by the extension's author. It forwards the table text to TypeSafe (below)
+  with the author's key and returns the answers. It receives, along with the
+  table text, a random id the extension makes when installed (not derived from
+  you or your browser) and, like any web server, your IP address. It keeps:
+  - **The answers**, in Cloudflare's cache for up to 30 days, keyed by a
+    one-way hash of the request, so a table another reader already asked about
+    is answered without asking again. The table text itself is not stored.
+  - **Today's request count for each install id** and the day's total, to
+    enforce the daily allowance. Each day's counts are deleted two days later.
+  - Your IP address is used only by Cloudflare's rate limiter, for about a
+    minute, and is not stored by the Worker.
+
+  Nothing is logged, and nothing is used for analytics or shared with anyone
+  but TypeSafe.
+- **TypeSafe** (Jev, with your own key), at `api.typesafe.ai`, under
   [TypeSafe's terms and privacy policy](https://typesafe.ai).
-- **Cloudflare** (Clef, on Workers AI), at `api.cloudflare.com`, under
+- **Cloudflare** (Clef on Workers AI, with your own token), at
+  `api.cloudflare.com`, under
   [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/).
 
-The extension's author does not run a server and receives nothing: no
-analytics, no telemetry, no crash reports.
+With your own key or token, the extension's author receives nothing. The
+extension has no analytics, telemetry or crash reports with any provider.
 
 ## What is stored, and where
 
 All in your browser's extension storage, on your device:
 
-- **Your API key or token**, entered in the options. It is read only by the
+- **A random install id**, sent only to the free endpoint.
+- **Your API key or token**, if you entered one in the options. It is read only by the
   extension's own pages and background worker and sent only to the provider
   you chose. Web pages and the scripts that run on them can't read it.
 - **Cached model answers**, so an unchanged table is not sent twice. The
@@ -49,6 +67,8 @@ All in your browser's extension storage, on your device:
 
 ## Your controls
 
+- **Use your own key** instead of the free endpoint, so table text goes
+  straight to the provider you pay.
 - **Turn a site off**, or switch to **Only sites I turn on** so nothing is
   sent unless you enable a site. Do this for pages with private data.
 - **Pause a page** from the toolbar popup or with <kbd>⌥⇧H</kbd>.

@@ -12,11 +12,14 @@ table, so the better and worse rows show without reading every cell.
   <img src="docs/media/hero-light.png" alt="The same pricing table before and after: cheap prices shaded green, expensive ones red, model tiers shaded by rank, model names left plain">
 </picture>
 
-> **Needs an API key.** Shading is judged by a small decision model:
-> [TypeSafe's Jev](https://typesafe.ai) by default, or Cloudflare's Clef. A
-> page costs 0.06–0.2¢ on the test corpus (15k–40k input tokens at Jev's
-> $0.042 per million); unchanged tables aren't judged twice. **Table text leaves your browser:** headers, sample values and a few
-> rows of each table you scroll near go to the provider you choose. Turn sites
+> **Free, no key.** Shading is judged by a small decision model,
+> [TypeSafe's Jev](https://typesafe.ai), through a free endpoint at
+> `api.practicaldata.dev` with a daily allowance per browser. For unlimited
+> use, add your own TypeSafe key (or Cloudflare's Clef): a page costs
+> 0.06–0.2¢ on the test corpus (15k–40k input tokens at Jev's $0.042 per
+> million), and unchanged tables aren't judged twice. **Table text leaves your
+> browser:** headers, sample values and a few rows of each table you scroll
+> near go to the endpoint or the provider you choose. Turn sites
 > off, or switch to "only sites I turn on", for pages with private data.
 > See the [privacy policy](PRIVACY.md).
 
@@ -86,8 +89,8 @@ Sites that color their own tables can opt out with
 
 ## Install
 
-**From the Chrome Web Store**: coming soon. Once installed, paste a TypeSafe
-API key on the options page and select **Test**.
+**From the Chrome Web Store**: coming soon. It works as soon as it's
+installed; a key is optional.
 
 **Unpacked**, from source:
 
@@ -98,7 +101,8 @@ npm run build
 
 1. Open `chrome://extensions` and turn on **Developer mode**.
 2. Select **Load unpacked** and choose `dist/`.
-3. On the options page, paste a TypeSafe API key. Select **Test** to check it.
+3. Optionally, on the options page, choose **Jev** or **Clef** and paste your
+   own key. Select **Test** to check it.
 
 ## Verify
 
@@ -109,6 +113,7 @@ npm run build
 | `npm run eval -- --offline --strict` | The same, replayed from `fixtures/recordings/`; fails on any undocumented mismatch | None |
 | `npm run e2e -- --offline` | The built extension in Chromium: every page finishes, tables below the fold wait until scrolled near, every column paints, text keeps 5:1 contrast, the better end is greener, header underlines render without changing column widths, collapsed tables get judged once opened, shading follows cells rewritten in place, hidden-table choices survive tables being inserted above, the page's own style changes survive turning shading off, `oklch()` dark backgrounds are read as dark, in-app navigation starts fresh, the per-table controls and popup work, and turning shading off restores the original markup | None (API calls are replayed) |
 | `npm run e2e -- --live` | The same against the real sites in `fixtures/live/sources.json`, with live Jev calls | Yes |
+| `npm run api:smoke` | The free endpoint under `wrangler dev`, against a stand-in for TypeSafe: a page judged through it matches Jev's own judgment, repeats come from the shared cache, foreign questions, web-page origins and missing install ids are refused, a spent allowance surfaces as "quota", and a fresh install with no settings shades a page | None (local only) |
 | `npm run check` | All offline gates in sequence | None |
 
 Screenshots from each e2e run go to `artifacts/screens/`.
@@ -182,6 +187,7 @@ src/core/      Pure: cell parsing, column profiling, pairwise ordering, color sc
 src/decide/    Effect: DecisionModel service (Jev, Clef), question builders, the judgePage program
 src/dom/       Table extraction (span-aware grid) and D3 painting
 src/ext/       Content script, service worker, options page, settings
+src/api/       The free endpoint: a Cloudflare Worker with a question allowlist, shared answer cache, daily quotas
 scripts/       build, snapshot, eval, e2e, screenshot helpers, question-design probes
 ```
 
@@ -197,6 +203,7 @@ send it text snapshots of nearby tables, and receive judgments. Answers are
 cached in `chrome.storage.local` (capped, oldest evicted). Only the
 extension's own pages and content scripts can message the worker.
 
+The free endpoint is described in [docs/hosted-api.md](docs/hosted-api.md).
 See [docs/decisions.md](docs/decisions.md) for how the questions are designed
 and why.
 
