@@ -1,0 +1,40 @@
+# The site at practicaldata.dev. Pull requests build it; pushes to main build
+# and deploy it. The API Worker (api/wrangler.jsonc) is deployed by hand, since
+# a deploy there changes behavior and spending for every reader.
+name: Site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; a newer push to main replaces a queued one.
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      # Builds the extension, then the site from recorded judgments: no model key needed.
+      - run: npm run demo
+      - name: Deploy
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: npx wrangler@4.147.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 487d9e8878e5651c3e6a8210c91b33f4

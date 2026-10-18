@@ -161,7 +161,7 @@ compares every palette on the same tables in light and dark.
 | Command | What it does |
 | --- | --- |
 | `npm run demo` | Builds the extension, regenerates `demo/data.json` (replaying recorded answers), and writes `site/` with a downloadable zip of the extension |
-| `npm run deploy` | Builds the demo and deploys `site/` to Cloudflare Workers static assets (`wrangler.jsonc`) |
+| `npm run deploy` | Builds the demo and deploys `site/` to Cloudflare Workers static assets (`wrangler.jsonc`). Runs automatically on every push to `main` (`.github/workflows/site.yml`) |
 | `node scripts/readme-media.ts` | Regenerates the README images in `docs/media/` (light and dark) from `docs/media-src/cards.html` |
 | `node scripts/shoot-demo.ts [url]` | Screenshots the demo in light, dark, desktop, and phone, and reports page errors |
 | `npm run package` | Builds `release/practical-data-<version>.zip` for the Chrome Web Store |
