@@ -28,7 +28,9 @@
     "package": "node scripts/package.ts",
     "api:dev": "npx wrangler@4.147.0 dev -c api/wrangler.jsonc",
     "api:smoke": "node scripts/api-smoke.ts",
-    "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc"
+    "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc",
+    "sheets:build": "node scripts/build-sheets.ts",
+    "sheets:preview": "node scripts/sheets-preview.ts"
   },
   "dependencies": {
     "d3-color": "3.1.0",

@@ -188,6 +188,7 @@ src/decide/    Effect: DecisionModel service (Jev, Clef), question builders, the
 src/dom/       Table extraction (span-aware grid) and D3 painting
 src/ext/       Content script, service worker, options page, settings
 src/api/       The free endpoint: a Cloudflare Worker with a question allowlist, shared answer cache, daily quotas
+src/sheets/    Google Sheets add-on (prototype): selection → /v1/judge → native conditional formatting
 scripts/       build, snapshot, eval, e2e, screenshot helpers, question-design probes
 ```
 
@@ -203,7 +204,8 @@ send it text snapshots of nearby tables, and receive judgments. Answers are
 cached in `chrome.storage.local` (capped, oldest evicted). Only the
 extension's own pages and content scripts can message the worker.
 
-The free endpoint is described in [docs/hosted-api.md](docs/hosted-api.md).
+The free endpoint is described in [docs/hosted-api.md](docs/hosted-api.md), and
+the Google Sheets add-on prototype in [docs/sheets-addon.md](docs/sheets-addon.md).
 See [docs/decisions.md](docs/decisions.md) for how the questions are designed
 and why.
 
