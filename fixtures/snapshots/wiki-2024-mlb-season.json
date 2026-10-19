@@ -4,7 +4,7 @@
  "tables": [
   {
    "id": "t0",
-   "title": "v t e AL East",
+   "title": "AL East",
    "headers": [
     "Team",
     "W",
@@ -64,7 +64,7 @@
   },
   {
    "id": "t1",
-   "title": "v t e AL Central",
+   "title": "AL Central",
    "headers": [
     "Team",
     "W",
@@ -124,7 +124,7 @@
   },
   {
    "id": "t2",
-   "title": "v t e AL West",
+   "title": "AL West",
    "headers": [
     "Team",
     "W",
@@ -184,7 +184,7 @@
   },
   {
    "id": "t3",
-   "title": "v t e NL East",
+   "title": "NL East",
    "headers": [
     "Team",
     "W",
@@ -244,7 +244,7 @@
   },
   {
    "id": "t4",
-   "title": "v t e NL Central",
+   "title": "NL Central",
    "headers": [
     "Team",
     "W",
@@ -304,7 +304,7 @@
   },
   {
    "id": "t5",
-   "title": "v t e NL West",
+   "title": "NL West",
    "headers": [
     "Team",
     "W",

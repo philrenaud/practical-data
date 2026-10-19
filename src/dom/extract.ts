@@ -20,8 +20,11 @@ export interface ExtractedTable {
 
 const MAX_SPAN = 64;
 
-/** Controls inside cells ("show", sort buttons) are not part of the data. */
-const CONTROLS = "button, [role=button], .mw-collapsible-toggle, select, input";
+/**
+ * Controls inside cells and captions ("show", sort buttons, Wikipedia's
+ * "v t e" template links) are not part of the data.
+ */
+const CONTROLS = "button, [role=button], .mw-collapsible-toggle, .navbar.plainlinks, select, input";
 
 const textOf = (el: HTMLElement): string =>
   // innerText honors display:none, which hides Wikipedia's sort keys.
