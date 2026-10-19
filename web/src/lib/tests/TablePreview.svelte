@@ -27,6 +27,12 @@
 </script>
 
 <figure class="preview">
+  <p class="lead">
+    For example,
+    {#if col !== null}the column <span class="name">"{t.snapshot.headers[col]}"</span> in {t.title}:
+    {:else if row !== null}the row <span class="name">"{t.snapshot.rows[row]?.[0] ?? row + 1}"</span> in {t.title}:
+    {:else}the table {t.title}:{/if}
+  </p>
   <div class="frame" use:focus={{ col, row }}>
     <table use:shade={{ id: `preview-${t.slug}-${t.id}`, judgment: t.judgment, palette: DEFAULT_PALETTE, groupSizes: t.groupSizes }}>
       <thead><tr>{#each t.snapshot.headers as h, i (i)}<th scope="col" class:on={i === col}>{h}</th>{/each}</tr></thead>
@@ -37,12 +43,7 @@
       </tbody>
     </table>
   </div>
-  <figcaption>
-    {#if col !== null}<strong>The question below asks about the outlined column, "{t.snapshot.headers[col]}".</strong>
-    {:else if row !== null}<strong>The question below asks about the outlined row, "{t.snapshot.rows[row]?.[0] ?? row + 1}".</strong>
-    {:else}<strong>The question below asks about this table.</strong>{/if}
-    {t.title} · {#if t.source.url}<a href={t.source.url} rel="noopener">{t.source.label}</a>{:else}{t.source.label}{/if}
-  </figcaption>
+  <figcaption>{t.title} · {#if t.source.url}<a href={t.source.url} rel="noopener">{t.source.label}</a>{:else}{t.source.label}{/if}</figcaption>
 </figure>
 
 <style>
@@ -56,5 +57,6 @@
   tr.on td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
   figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
   figcaption a { color: inherit; }
-  figcaption strong { display: block; margin-bottom: 2px; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .lead { margin: 0 0 8px; font-size: 16px; }
+  .lead .name { font-weight: 650; box-shadow: inset 0 -2px 0 var(--accent); }
 </style>
