@@ -1,6 +1,7 @@
 {
   "$known": {
-    "scryfall-blb-checklist t0 \"R\" order": "The column has one-letter rarity codes (C, U, R, M). The model puts M (mythic) below U and R. On MTGGoldfish, the full rarity names get the correct order."
+    "scryfall-blb-checklist t0 \"R\" order": "The column has one-letter rarity codes (C, U, R, M). The model puts M (mythic) below U and R. On MTGGoldfish, the full rarity names get the correct order.",
+    "bkref-thunder-2025 t0 \"Ht\" expected quantitative": "Heights such as 6-7 (feet and inches) have the same form as a range or a win-loss record. Thus the parser does not read them as numbers, and the column gets ordered labels. The order is correct."
   },
   "$comment": "Hand labels. Per page → table id → column header (as extracted). A spec is \"none\" (must not be colored) or an object; `polarity` lists every acceptable answer; omitted fields are not scored. Columns not listed are ambiguous and unscored. `aggregateRows` lists data-row indexes that are totals. `shared` lists table:header pairs that must end up on one scale.",
   "cloudflare-clef": {
@@ -360,7 +361,7 @@
       "Year": "none",
       "Total population (census; thousands)": { "kind": "quantitative", "polarity": ["neutral"] },
       "Population by age (%): 0–14": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Population by age (%): 15–64": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Population by age (%): 15–64": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
       "Population by age (%): 65+": { "kind": "quantitative", "polarity": ["neutral"] }
     },
     "t2": {
