@@ -81,6 +81,10 @@ export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw)
  */
 const DURATION_RE = /^(\d{1,3}):([0-5]\d)(?::([0-5]\d))?$/;
 
+/** Unicode fractions, as in games behind ("6½"). */
+const VULGAR: Readonly<Record<string, number>> = { "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 0.125, "⅜": 0.375, "⅝": 0.625, "⅞": 0.875 };
+const VULGAR_RE = /^(\d*)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/;
+
 /** One number, no ranges. */
 const parseSingle = (input: string): ParsedNumber | null => {
   let text = input;
@@ -96,6 +100,11 @@ const parseSingle = (input: string): ParsedNumber | null => {
   if (paren?.[1] !== undefined) {
     text = paren[1].trim();
     negative = true;
+  }
+  const half = VULGAR_RE.exec(text);
+  if (half !== null) {
+    const value = Number(half[1] || 0) + VULGAR[half[2]!]!;
+    return { value: negative ? -value : value, unit: null, bound: false, range: null };
   }
   const feet = FEET_INCHES_RE.exec(text);
   if (feet !== null) {
