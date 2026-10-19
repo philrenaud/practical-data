@@ -837,5 +837,35 @@
         ]
       }
     ]
+  },
+  {
+    "slug": "wiki-2022-winter-olympics-medal-table",
+    "url": "https://en.wikipedia.org/wiki/2022_Winter_Olympics_medal_table",
+    "title": "2022 Winter Olympics medal table - Wikipedia",
+    "notes": "Medal table: Rank, NOC, Gold, Silver, Bronze, Total; the last row is 'Totals (29 entries)'. Only the medal table is kept."
+  },
+  {
+    "slug": "wiki-2024-mlb-season",
+    "url": "https://en.wikipedia.org/wiki/2024_Major_League_Baseball_season",
+    "title": "2024 Major League Baseball season - Wikipedia",
+    "notes": "Six division standings tables with the same columns (Team, W, L, Pct., GB, Home, Road). Home and Road are win-loss records such as '44\u201337'. Only the standings tables are kept."
+  },
+  {
+    "slug": "wiki-demographics-of-japan",
+    "url": "https://en.wikipedia.org/wiki/Demographics_of_Japan",
+    "title": "Demographics of Japan - Wikipedia",
+    "notes": "Historical population with a signed '\u00b1% p.a.' column, age distribution by census year, and the 2020 population by five-year age group with a Total row first. The age-group table's trailing summary block (a repeated header row and 0\u201314 / 15\u201364 / 65+ subtotals) is cut. Other tables are not kept."
+  },
+  {
+    "slug": "wiki-earthquakes-2023",
+    "url": "https://en.wikipedia.org/wiki/List_of_earthquakes_in_2023",
+    "title": "List of earthquakes in 2023 - Wikipedia",
+    "notes": "'By death toll' and 'By magnitude' tables with the same columns. MMI is a Roman-numeral intensity with its label, e.g. 'VIII (Severe)'. One death toll is a range, '59,488\u201362,013'. The monthly lists are not kept."
+  },
+  {
+    "slug": "bkref-thunder-2025",
+    "url": "https://www.basketball-reference.com/teams/OKC/2025.html",
+    "title": "2024-25 Oklahoma City Thunder Roster and Stats | Basketball-Reference.com",
+    "notes": "Roster (jersey No., height in feet-inches such as '6-7', weight, birth date, Exp with 'R' for rookies) and regular-season per-game stats. Other tables are not kept."
   }
 ]
