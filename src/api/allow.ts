@@ -79,8 +79,23 @@ const compile = (ref: unknown): Matcher => {
 
 const numeric = { kind: "numeric", col: 0, header: HOLE, decades: 3 } as unknown as NumericProfile;
 const categorical = { kind: "categorical", col: 0, header: HOLE, levels: [], display: {} } as unknown as CategoricalProfile;
-const numericRefs = numericQuestions(INDEX, numeric).questions;
-const categoricalRefs = categoricalQuestions(categorical).questions;
+/**
+ * Each column question in every wording the extension can send: by header
+ * (the usual case), by path with the header (a repeated header, and every
+ * question from extensions before 1.2), and by path alone (a blank header).
+ */
+const numericForms = [
+  numericQuestions(INDEX, numeric).questions,
+  numericQuestions(INDEX, numeric, false).questions,
+  numericQuestions(INDEX, { ...numeric, header: "" }).questions,
+];
+const categoricalForms = [
+  categoricalQuestions(categorical).questions,
+  categoricalQuestions(categorical, false).questions,
+  categoricalQuestions({ ...categorical, header: "" }).questions,
+];
+const forms = (refs: readonly Readonly<Record<string, Question>>[], id: string): Matcher[] =>
+  refs.flatMap((r) => (r[id] === undefined ? [] : [compile(r[id])]));
 const pairRef = pairQuestions("p", HOLE, [HOLE, HOLE]).questions["p.lt0_1"]!;
 const aggregateRef = aggregateQuestions(["h"], Array.from({ length: 5 }, () => ["v"])).questions["row0.aggregate"]!;
 const orientationRef = orientationQuestion({ header: HOLE, examples: [] }).questions["table.orientation"]!;
@@ -93,11 +108,11 @@ const withData = (q: Question, fields: readonly string[]): Question => ({
 
 /** Question id pattern → the references a question with that id may match. */
 const RULES: readonly (readonly [RegExp, readonly Matcher[]])[] = [
-  [/^n\d{1,4}\.role$/, [compile(numericRefs["n0.role"])]],
-  [/^n\d{1,4}\.polarity$/, [compile(numericRefs["n0.polarity"])]],
-  [/^n\d{1,4}\.log$/, [compile(numericRefs["n0.log"])]],
-  [/^c\d{1,4}\.relation$/, [compile(categoricalRefs["c0.relation"])]],
-  [/^c\d{1,4}\.polarity$/, [compile(categoricalRefs["c0.polarity"])]],
+  [/^n\d{1,4}\.role$/, forms(numericForms, "n0.role")],
+  [/^n\d{1,4}\.polarity$/, forms(numericForms, "n0.polarity")],
+  [/^n\d{1,4}\.log$/, forms(numericForms, "n0.log")],
+  [/^c\d{1,4}\.relation$/, forms(categoricalForms, "c0.relation")],
+  [/^c\d{1,4}\.polarity$/, forms(categoricalForms, "c0.polarity")],
   [/^[cg]\d{1,4}\.lt\d{1,3}_\d{1,3}$/, [compile(pairRef)]],
   [/^row\d{1,5}\.aggregate$/, [compile(withData(aggregateRef, ["row"]))]],
   [/^table\.orientation$/, [compile(withData(orientationRef, ["first_column"]))]],

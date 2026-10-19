@@ -32,7 +32,7 @@ export interface TableContext {
   readonly table: string | null;
 }
 
-/** The JSON a column is described as. `columns[k]` in prose points into this. */
+/** The JSON a column is described as. Questions name it by header, or by `columns[k]` when the header is blank or repeated. */
 const describeColumn = (p: NumericProfile | CategoricalProfile) => {
   if (p.kind === "numeric") {
     const notes: string[] = [];
@@ -138,8 +138,16 @@ export interface NumericReading {
 /** Only ask about log scales when the data could plausibly use one. */
 export const logEligible = (p: NumericProfile): boolean => p.decades !== null && p.decades >= 1;
 
-export const numericQuestions = (k: number, p: NumericProfile) => {
-  const ref = `the column \`columns[${k}]\` ("${p.header}")`;
+/**
+ * How a question names its column: by header, so the question reads as a
+ * reader would ask it. A blank or repeated header is ambiguous, so it falls
+ * back to the column's path in the state sent with the question.
+ */
+const columnRef = (header: string, path: string, unique: boolean): string =>
+  header.trim() !== "" && unique ? `the column "${header}"` : `the column \`${path}\`${header.trim() === "" ? "" : ` ("${header}")`}`;
+
+export const numericQuestions = (k: number, p: NumericProfile, unique = true) => {
+  const ref = columnRef(p.header, `columns[${k}]`, unique);
   const id = (q: string) => `n${p.col}.${q}`;
   const questions: Record<string, Question> = {
     [id("role")]: {
@@ -247,8 +255,10 @@ export const categoricalState = (ctx: TableContext, p: CategoricalProfile, sibli
   other_columns: siblings,
 });
 
-export const categoricalQuestions = (p: CategoricalProfile) => {
-  const ref = `the column \`column\` ("${p.header}")`;
+export const categoricalQuestions = (p: CategoricalProfile, unique = true) => {
+  // The state describes this one column, so its header is never ambiguous unless blank.
+  // `unique = false` builds the path form, which extensions before 1.2 send; the endpoint still accepts it.
+  const ref = columnRef(p.header, "column", unique);
   const id = (q: string) => `c${p.col}.${q}`;
   const labels = p.levels.map((l) => p.display[l] ?? l);
   const pairs = pairQuestions(`c${p.col}`, ref, labels);
