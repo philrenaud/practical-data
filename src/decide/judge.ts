@@ -128,8 +128,7 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
     const ctx = { page: page.title, table: table.title };
     const numeric = candidates.filter((p) => p.kind === "numeric");
     const categorical = candidates.filter((p) => p.kind === "categorical");
-    const repeated = (h: string) => numeric.filter((x) => x.header === h).length > 1;
-    const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p, !repeated(p.header)) }));
+    const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p) }));
     const aggregates = aggregateQuestions(table.headers, table.rows);
     // Orientation only matters when several numeric columns could be read either way.
     const orientation =

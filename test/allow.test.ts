@@ -50,10 +50,9 @@ test("accepts every request the extension sends on the eval pages", async () => 
   }
 });
 
-/** The role question as extensions before 1.2 send it: the column named by path, with its header. */
-const role = (header: string, instructions = `What kind of numbers are in the column \`columns[0]\` ("${header}")?`): Question => ({
+const role = (header: string): Question => ({
   type: "choice",
-  instructions,
+  instructions: `What kind of numbers are in the column \`columns[0]\` ("${header}")?`,
   criteria: {
     measure:
       "An amount that differs between rows and is meaningful to compare: a price, count, statistic, rate, percentage, size, rating, score, or a duration such as a game length of 2:59.",
@@ -68,12 +67,6 @@ const role = (header: string, instructions = `What kind of numbers are in the co
 });
 
 test("accepts the extension's wording with any header", () => {
-  assert.equal(checkQuestions({ "n3.role": role("Launch price (USD)", 'What kind of numbers are in the column "Launch price (USD)"?') }), null);
-  // A blank header is named by path alone.
-  assert.equal(checkQuestions({ "n3.role": role("", "What kind of numbers are in the column `columns[2]`?") }), null);
-});
-
-test("still accepts the wording of extensions before 1.2", () => {
   assert.equal(checkQuestions({ "n3.role": role("Launch price (USD)") }), null);
 });
 
