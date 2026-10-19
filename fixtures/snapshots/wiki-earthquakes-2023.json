@@ -1,0 +1,328 @@
+{
+ "url": "fixture://live/wiki-earthquakes-2023.html",
+ "title": "List of earthquakes in 2023 - Wikipedia",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "By death toll",
+   "headers": [
+    "Rank",
+    "Death toll",
+    "Magnitude",
+    "Location",
+    "MMI",
+    "Depth (km)",
+    "Date",
+    "Event"
+   ],
+   "rows": [
+    [
+     "1",
+     "59,488–62,013",
+     "7.8",
+     "Turkey, Kahramanmaraş",
+     "XII (Extreme)",
+     "10.0",
+     "February 6",
+     "2023 Turkey–Syria earthquakes"
+    ],
+    [
+     "1",
+     "59,488–62,013",
+     "7.5",
+     "Turkey, Kahramanmaraş",
+     "XI (Extreme)",
+     "7.4",
+     "February 6",
+     "2023 Turkey–Syria earthquakes"
+    ],
+    [
+     "2",
+     "2,960",
+     "6.8",
+     "Morocco, Al Haouz",
+     "IX (Violent)",
+     "19.0",
+     "September 8",
+     "2023 Al Haouz earthquake"
+    ],
+    [
+     "3",
+     "1,482",
+     "6.3",
+     "Afghanistan, Herat",
+     "VIII (Severe)",
+     "14.0",
+     "October 7",
+     "2023 Herat earthquakes"
+    ],
+    [
+     "4",
+     "153",
+     "5.7",
+     "Nepal, Karnali",
+     "VIII (Severe)",
+     "16.5",
+     "November 3",
+     "2023 Nepal earthquake"
+    ],
+    [
+     "5",
+     "151",
+     "5.9",
+     "China, Gansu",
+     "IX (Violent)",
+     "10.0",
+     "December 18",
+     "2023 Jishishan earthquake"
+    ],
+    [
+     "6",
+     "21",
+     "6.5",
+     "Afghanistan, Badakhshan",
+     "V (Moderate)",
+     "187.6",
+     "March 21",
+     "2023 Badakhshan earthquake"
+    ],
+    [
+     "7",
+     "18",
+     "6.8",
+     "Ecuador, Guayas offshore",
+     "VII (Very strong)",
+     "65.8",
+     "March 18",
+     "2023 Guayas earthquake"
+    ],
+    [
+     "8",
+     "11",
+     "6.3",
+     "Turkey, Hatay",
+     "IX (Violent)",
+     "16.0",
+     "February 20",
+     "2023 Turkey–Syria earthquakes"
+    ],
+    [
+     "9",
+     "11",
+     "6.7",
+     "Philippines, Soccsksargen offshore",
+     "VIII (Severe)",
+     "52.0",
+     "November 17",
+     "November 2023 Mindanao earthquake"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "By magnitude",
+   "headers": [
+    "Rank",
+    "Magnitude",
+    "Death toll",
+    "Location",
+    "MMI",
+    "Depth (km)",
+    "Date",
+    "Event"
+   ],
+   "rows": [
+    [
+     "1",
+     "7.8",
+     "59,488–62,013",
+     "Turkey, Kahramanmaraş",
+     "XII (Extreme)",
+     "10.0",
+     "February 6",
+     "2023 Turkey–Syria earthquakes"
+    ],
+    [
+     "2",
+     "7.7",
+     "0",
+     "New Caledonia, Loyalty Islands offshore",
+     "IV (Light)",
+     "18.0",
+     "May 19",
+     "-"
+    ],
+    [
+     "3",
+     "7.6",
+     "3",
+     "Philippines, Caraga offshore",
+     "VII (Very strong)",
+     "40.0",
+     "December 2",
+     "December 2023 Mindanao earthquake"
+    ],
+    [
+     "3",
+     "7.6",
+     "0",
+     "Indonesia, Maluku offshore",
+     "VI (Strong)",
+     "105.2",
+     "January 9",
+     "-"
+    ],
+    [
+     "3",
+     "7.6",
+     "0",
+     "Tonga, Niuatoputapu offshore",
+     "VI (Strong)",
+     "210.1",
+     "May 10",
+     "-"
+    ],
+    [
+     "6",
+     "7.5",
+     "-",
+     "Turkey, Kahramanmaraş",
+     "XI (Extreme)",
+     "7.4",
+     "February 6",
+     "2023 Turkey–Syria earthquakes"
+    ],
+    [
+     "7",
+     "7.2",
+     "0",
+     "Tonga, Tongatapu offshore",
+     "VI (Strong)",
+     "167.4",
+     "June 15",
+     "-"
+    ],
+    [
+     "7",
+     "7.2",
+     "0",
+     "United States, Alaska offshore",
+     "VII (Very strong)",
+     "25.0",
+     "July 16",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "Indonesia, North Sumatra offshore",
+     "VIII (Severe)",
+     "34.0",
+     "April 24",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "New Zealand, Kermadec Islands offshore",
+     "VII (Very strong)",
+     "46.8",
+     "April 24",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "Indonesia, Banda Sea offshore",
+     "VI (Strong)",
+     "10.0",
+     "November 8",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "Vanuatu, Tafea offshore",
+     "VI (Strong)",
+     "48.4",
+     "December 7",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "New Caledonia, Loyalty Islands offshore",
+     "IV (Light)",
+     "36.0",
+     "May 20",
+     "-"
+    ],
+    [
+     "9",
+     "7.1",
+     "0",
+     "Indonesia, East Java offshore",
+     "IV (Light)",
+     "513.5",
+     "August 28",
+     "-"
+    ],
+    [
+     "15",
+     "7.0",
+     "0",
+     "Vanuatu, Sanma offshore",
+     "VII (Very strong)",
+     "29.0",
+     "January 8",
+     "-"
+    ],
+    [
+     "15",
+     "7.0",
+     "8",
+     "Papua New Guinea, East Sepik",
+     "VII (Very strong)",
+     "70.0",
+     "April 2",
+     "2023 Papua New Guinea earthquake"
+    ],
+    [
+     "15",
+     "7.0",
+     "0",
+     "Indonesia, North Maluku offshore",
+     "V (Moderate)",
+     "28.6",
+     "January 18",
+     "-"
+    ],
+    [
+     "15",
+     "7.0",
+     "1",
+     "Indonesia, East Java offshore",
+     "V (Moderate)",
+     "597.0",
+     "April 14",
+     "-"
+    ],
+    [
+     "15",
+     "7.0",
+     "0",
+     "New Zealand, Kermadec Islands offshore",
+     "IV (Light)",
+     "10.0",
+     "March 16",
+     "-"
+    ]
+   ]
+  }
+ ]
+}

@@ -31,6 +31,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run web:check
       - run: npm test
+      # The hand-labeled eval, replayed from recordings; fails on any undocumented mismatch.
+      - run: npm run eval -- --offline --strict
       # Builds the extension, then the SvelteKit site (web/) from recorded judgments: no model key needed.
       - run: npm run demo
       - name: Deploy

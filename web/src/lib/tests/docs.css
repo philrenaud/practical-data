@@ -1,0 +1,81 @@
+/* The tests site: a docs shell on the site's own tokens (app.css). Everything is under .docs. */
+.docs {
+  --pass: #2a7d57;
+  --known: #9a5f0c;
+  --fail: #b8323f;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  min-height: 100vh;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .docs { --pass: #4cc38a; --known: #e0a43c; --fail: #f0697a; }
+}
+:root[data-theme="dark"] .docs { --pass: #4cc38a; --known: #e0a43c; --fail: #f0697a; }
+.docs ::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.docs :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+/* ── Top bar ── */
+.docs-bar { background: var(--hero); color: var(--hero-ink); border-bottom: 1px solid #2c2a31; }
+.docs-bar-inner { max-width: 1280px; margin: 0 auto; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.docs-brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 650; }
+.docs-brand img { border-radius: 5px; }
+.docs-brand .crumb { color: #a7a196; font-weight: 500; }
+.docs-run { margin: 0 0 0 auto; font-size: 13.5px; color: #a7a196; }
+.docs-run b { color: var(--hero-ink); font-weight: 500; font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+
+/* ── Layout ── */
+.docs-body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 244px minmax(0, 1fr); gap: 40px; padding: 0 16px; }
+.docs-nav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow: hidden auto; padding: 32px 0 40px; font-size: 14.5px; }
+/* Groups are told apart by space, not labels. */
+.docs-nav ul { list-style: none; margin: 0; padding: 0; }
+.docs-nav ul + ul { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.docs-nav a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
+.docs-nav a:hover { color: var(--ink); background: var(--paper); }
+.docs-nav a[aria-current="page"] { color: var(--ink); background: var(--paper); font-weight: 600; }
+.docs-nav .count { font: 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--faint); white-space: nowrap; }
+.docs-nav .count.bad { color: var(--known); }
+/* app.css styles the home page's <main>; the docs column undoes it. */
+.docs .docs-main { min-width: 0; max-width: none; margin: 0; padding: 40px 0 96px; }
+
+/* ── Type ── */
+.docs-main h1 { margin: 0; font-size: clamp(32px, 4.4vw, 48px); line-height: 1.1; font-weight: 720; letter-spacing: -0.03em; text-wrap: balance; }
+.docs-main h2 { margin: 64px 0 16px; font-size: 26px; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; }
+.docs-main p { max-width: 70ch; }
+.lede-docs { margin: 16px 0 0; font-size: 19px; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.mono { font-family: var(--mono); font-size: 0.92em; }
+.muted { color: var(--muted); }
+.docs-main a { color: var(--accent); text-underline-offset: 3px; }
+.docs-main code { background: none; padding: 0; }
+
+/* ── Status ── */
+.verdict { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.verdict::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.verdict.pass { color: var(--pass); }
+.verdict.known { color: var(--known); }
+.verdict.fail { color: var(--fail); }
+
+/* ── Data tables (check lists, inventories) ── */
+.list { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.list th { text-align: left; font-size: 13px; font-weight: 600; color: var(--faint); padding: 0 16px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.list tbody th { color: var(--ink); font-size: 14.5px; white-space: normal; }
+.list td, .list tbody th { padding: 10px 16px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.list tr:last-child td, .list tr:last-child th { border-bottom: 0; }
+.list .num { text-align: right; font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.list code { font: 13px var(--mono); }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Code ── */
+.code { margin: 0; padding: 14px 16px; border-radius: 10px; background: #0d0c10; color: #e8e4dc; font: 13px/1.6 var(--mono); overflow-x: auto; white-space: pre; -webkit-overflow-scrolling: touch; }
+details.raw { margin-top: 14px; }
+details.raw > summary { cursor: pointer; font-size: 14.5px; font-weight: 600; color: var(--accent); padding: 4px 0; width: fit-content; }
+details.raw[open] > summary { margin-bottom: 8px; }
+
+@media (max-width: 900px) {
+  .docs-body { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .docs-nav { position: static; max-height: none; padding: 12px 0 0; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid var(--line); }
+  .docs-nav ul { display: flex; flex: none; gap: 4px; padding-bottom: 10px; }
+  .docs-nav ul + ul { margin: 0; padding-top: 0; border-top: 0; }
+  .docs-nav li { flex: none; }
+  .docs-nav a { margin: 0; white-space: nowrap; }
+  .docs-run { margin-left: 0; flex-basis: 100%; }
+}

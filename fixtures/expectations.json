@@ -1,7 +1,11 @@
 {
   "$known": {
-    "scryfall-blb-checklist t0 \"R\" order": "Single-letter rarity codes (C/U/R/M): Jev places M (mythic) below U/R. Spelled-out rarities on MTGGoldfish order correctly."
+    "scryfall-blb-checklist t0 \"R\" order": "One-letter grade codes can get the wrong order. For card rarity (C, U, R, M), the model puts M (mythic) below U and R. Full names, such as Mythic Rare, get the correct order.",
+    "bkref-thunder-2025 t0 \"Ht\" expected quantitative": "Heights written as 6-7 (feet and inches) are not read as numbers. They have the same form as a range (20-25) or a win-loss record (12-4). The column gets ordered labels: the order is correct, but the steps between heights are not to scale.",
+    "wiki-demographics-of-japan t0 \"±% p.a.\" polarity": "A close decision can change from one run to the next. The model's answers are not fully repeatable near a threshold. For a population growth rate, two runs gave \"higher is better\" 55% and less than 50%.",
+    "wiki-earthquakes-2023 not shared: t0:Death toll + t1:Death toll": "A close decision can change from one run to the next. The model's answers are not fully repeatable near a threshold. Two runs of the same question about death tolls in two earthquake tables gave a shared scale once and separate scales once."
   },
+
   "$comment": "Hand labels. Per page → table id → column header (as extracted). A spec is \"none\" (must not be colored) or an object; `polarity` lists every acceptable answer; omitted fields are not scored. Columns not listed are ambiguous and unscored. `aggregateRows` lists data-row indexes that are totals. `shared` lists table:header pairs that must end up on one scale.",
   "cloudflare-clef": {
     "t0": { "@orientation": "rows" }
@@ -242,7 +246,7 @@
   },
   "ranges": {
     "t0": {
-      "Age bracket": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Age bracket": "none",
       "Typical salary": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
       "Respondents": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] }
     },
@@ -275,6 +279,162 @@
       "Power draw": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
       "Launch price": { "kind": "quantitative", "polarity": ["lower_is_better"] },
       "Release year": "none"
+    }
+  },
+  "wiki-2022-winter-olympics-medal-table": {
+    "t0": {
+      "Rank": "none",
+      "NOC": "none",
+      "Gold": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Silver": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Bronze": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Total": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "aggregateRows": [29]
+    }
+  },
+  "wiki-2024-mlb-season": {
+    "t0": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "t1": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "t2": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "t3": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "t4": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "t5": {
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Home": "none",
+      "Road": "none"
+    },
+    "shared": [
+      ["t0:W", "t1:W", "t2:W", "t3:W", "t4:W", "t5:W"],
+      ["t0:L", "t1:L", "t2:L", "t3:L", "t4:L", "t5:L"],
+      ["t0:Pct.", "t1:Pct.", "t2:Pct.", "t3:Pct.", "t4:Pct.", "t5:Pct."],
+      ["t0:GB", "t1:GB", "t2:GB", "t3:GB", "t4:GB", "t5:GB"]
+    ]
+  },
+  "wiki-demographics-of-japan": {
+    "t0": {
+      "Year": "none",
+      "Pop.": { "kind": "quantitative", "polarity": ["neutral"] },
+      "±% p.a.": { "kind": "quantitative", "polarity": ["neutral"] }
+    },
+    "t1": {
+      "Year": "none",
+      "Total population (census; thousands)": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Population by age (%): 0–14": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Population by age (%): 15–64": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Population by age (%): 65+": { "kind": "quantitative", "polarity": ["neutral"] }
+    },
+    "t2": {
+      "Age group": "none",
+      "Male": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Female": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Total": { "kind": "quantitative", "polarity": ["neutral"] },
+      "%": { "kind": "quantitative", "polarity": ["neutral"] },
+      "aggregateRows": [0]
+    }
+  },
+  "wiki-earthquakes-2023": {
+    "t0": {
+      "Rank": "none",
+      "Death toll": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
+      "Magnitude": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] },
+      "Location": "none",
+      "MMI": {
+        "kind": "ordinal",
+        "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
+      },
+      "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Date": "none",
+      "Event": "none"
+    },
+    "t1": {
+      "Rank": "none",
+      "Magnitude": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] },
+      "Death toll": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
+      "Location": "none",
+      "MMI": {
+        "kind": "ordinal",
+        "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
+      },
+      "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Date": "none",
+      "Event": "none"
+    },
+    "shared": [
+      ["t0:Death toll", "t1:Death toll"],
+      ["t0:Magnitude", "t1:Magnitude"],
+      ["t0:MMI", "t1:MMI"],
+      ["t0:Depth (km)", "t1:Depth (km)"]
+    ]
+  },
+  "bkref-thunder-2025": {
+    "t0": {
+      "No.": "none",
+      "Player": "none",
+      "Ht": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Wt": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Birth Date": "none",
+      "Birth": "none",
+      "College": "none"
+    },
+    "t1": {
+      "Rk": "none",
+      "Player": "none",
+      "Age": "none",
+      "G": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "MP": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "FG%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "3P%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "FT%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "TRB": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "AST": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "TOV": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "PF": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "PTS": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Awards": "none"
     }
   }
 }

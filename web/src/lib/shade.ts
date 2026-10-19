@@ -21,9 +21,16 @@ export interface ShadeOptions {
 }
 
 export const shade: Action<HTMLTableElement, ShadeOptions> = (node, options) => {
-  const extracted = extractTable(node, options.id, []);
+  let id = options.id;
+  let extracted = extractTable(node, id, []);
   const paint = (o: ShadeOptions) => {
     unpaint(node);
+    // Svelte can reuse this element for a different table (client-side navigation between
+    // pages whose tables share ids); a new id means its cells were re-rendered, so read them again.
+    if (o.id !== id) {
+      id = o.id;
+      extracted = extractTable(node, id, []);
+    }
     if (extracted === null || o.colored === false || o.theme === "") return;
     paintTable(o.judgment.orientation === "rows" ? transposeExtracted(extracted) : extracted, o.judgment, o.palette, o.groupSizes);
   };

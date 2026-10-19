@@ -23,15 +23,16 @@
     "eval": "node scripts/eval.ts",
     "e2e": "node scripts/e2e.ts",
     "check": "npm run typecheck && npm test && npm run build && npm run eval -- --offline --strict && npm run e2e -- --offline",
-    "demo": "npm run build && npm run demo:data && node scripts/build-demo.ts",
-    "web:dev": "npm run demo:data && npm run dev -w web",
+    "demo": "npm run build && npm run demo:data && npm run tests:data && node scripts/build-demo.ts",
+    "web:dev": "npm run demo:data && npm run tests:data && npm run dev -w web",
     "web:check": "npm run check -w web",
     "deploy": "npm run demo && npx wrangler@4.147.0 deploy",
     "package": "node scripts/package.ts",
     "api:dev": "npx wrangler@4.147.0 dev -c api/wrangler.jsonc",
     "api:smoke": "node scripts/api-smoke.ts",
     "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc",
-    "demo:data": "node scripts/demo-data.ts"
+    "demo:data": "node scripts/demo-data.ts",
+    "tests:data": "node scripts/tests-data.ts"
   },
   "dependencies": {
     "d3-color": "3.1.0",

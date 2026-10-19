@@ -6,11 +6,16 @@
    "id": "t0",
    "title": "East Division",
    "headers": [
-    "Atlanta Braves",
-    "(94-68)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Atlanta Braves",
+     "(94-68)",
+     "F"
+    ],
     [
      "Philadelphia Phillies",
      "(88-74)",
@@ -37,11 +42,16 @@
    "id": "t1",
    "title": "Central Division",
    "headers": [
-    "Milwaukee Brewers",
-    "(103-59)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Milwaukee Brewers",
+     "(103-59)",
+     "F"
+    ],
     [
      "Chicago Cubs",
      "(89-73)",
@@ -68,11 +78,16 @@
    "id": "t2",
    "title": "West Division",
    "headers": [
-    "Los Angeles Dodgers",
-    "(100-62)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Los Angeles Dodgers",
+     "(100-62)",
+     "F"
+    ],
     [
      "San Diego Padres",
      "(91-71)",
@@ -99,11 +114,16 @@
    "id": "t3",
    "title": "East Division",
    "headers": [
-    "Tampa Bay Rays",
-    "(98-64)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Tampa Bay Rays",
+     "(98-64)",
+     "F"
+    ],
     [
      "New York Yankees",
      "(93-68)",
@@ -130,11 +150,16 @@
    "id": "t4",
    "title": "Central Division",
    "headers": [
-    "Cleveland Guardians",
-    "(85-77)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Cleveland Guardians",
+     "(85-77)",
+     "F"
+    ],
     [
      "Chicago White Sox",
      "(84-78)",
@@ -161,11 +186,16 @@
    "id": "t5",
    "title": "West Division",
    "headers": [
-    "Houston Astros",
-    "(81-81)",
-    "F"
+    "",
+    "",
+    ""
    ],
    "rows": [
+    [
+     "Houston Astros",
+     "(81-81)",
+     "F"
+    ],
     [
      "Texas Rangers",
      "(80-82)",

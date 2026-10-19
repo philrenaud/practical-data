@@ -4,6 +4,10 @@ import { isMissing, parseNumber } from "../src/core/parse.ts";
 
 const cases: ReadonlyArray<readonly [string, number | null, string | null, (readonly [number, number])?]> = [
   ["$0.25", 0.25, "$"],
+  // Games behind and other halves: "6½", "½".
+  ["6½", 6.5, null],
+  ["½", 0.5, null],
+  ["51½", 51.5, null],
   ["$14.00", 14, "$"],
   ["€1,200.50", 1200.5, "€"],
   ["-$3", -3, "$"],

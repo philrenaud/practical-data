@@ -177,3 +177,64 @@ test("unordered label columns never send pairwise order questions", async () => 
   await Effect.runPromise(judgePage({ ...page, tables: [page.tables[0]!] }).pipe(Effect.provide(unordered)));
   assert.equal(asked.filter((id) => /\.lt\d+_\d+$/.test(id)).length, 0);
 });
+
+test("never offers a share for same-named columns of different magnitude", async () => {
+  // Home runs in the last five games (0 to 1) and per season (4 to 62): one header, not one scale.
+  const games = pricing("t0", ["Date", "HR"], [["Sep 12", "0"], ["Sep 13", "1"], ["Sep 14", "0"], ["Sep 15", "1"]]);
+  const seasons = pricing("t1", ["Season", "HR"], [["2017", "52"], ["2022", "62"], ["2023", "37"], ["2016", "4"]]);
+  const asked: string[] = [];
+  const spy = scripted((id, req) => {
+    if (id.endsWith(".share")) asked.push(JSON.stringify(req.questions[id]!.instructions));
+    if (id.endsWith(".role")) return choice({ measure: 0.9, identifier: 0.05, time: 0.03, rank: 0.02 });
+    if (id.endsWith(".polarity")) return choice({ higher_is_better: 0.9, lower_is_better: 0.05, neutral: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [games, seasons] }).pipe(Effect.provide(spy)));
+  const hr = j.tables.map((t) => t.encodings.find((e) => e.header === "HR"));
+  assert.ok(hr[0]?.kind === "quantitative" && hr[1]?.kind === "quantitative");
+  assert.equal(hr[0].group, null);
+  assert.equal(hr[1].group, null);
+  assert.deepEqual(hr[0].domain, [0, 1]);
+  assert.equal(asked.length, 0);
+});
+
+test("columns on one shared scale share one direction", async () => {
+  // Two stores' prices; the model is sure about one table and unsure about the other.
+  const a = pricing("t0", ["Item", "Price"], [["Kettle", "$39"], ["Toaster", "$54"], ["Blender", "$89"]]);
+  const b = pricing("t1", ["Item", "Price"], [["Kettle", "$35"], ["Toaster", "$59"], ["Blender", "$95"]]);
+  const split = scripted((id, req) => {
+    const table = (req.state as { table_title?: string }).table_title;
+    if (id.endsWith(".role")) return choice({ measure: 0.95, identifier: 0.02, time: 0.02, rank: 0.01 });
+    if (id.endsWith(".polarity"))
+      return table === "t0" ? choice({ lower_is_better: 0.9, higher_is_better: 0.05, neutral: 0.05 }) : choice({ lower_is_better: 0.5, neutral: 0.45, higher_is_better: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [a, b] }).pipe(Effect.provide(split)));
+  const [p0, p1] = j.tables.map((t) => t.encodings.find((e) => e.header === "Price"));
+  assert.ok(p0?.kind === "quantitative" && p1?.kind === "quantitative");
+  assert.equal(p0.group, p1.group);
+  assert.equal(p0.polarity, "lower_is_better");
+  assert.equal(p1.polarity, "lower_is_better");
+});
+
+test("brackets that name the rows are ignored; brackets that are values are shaded", async () => {
+  // Age brackets name each row, like years; a median-age bracket is a value of the row.
+  const ages = pricing("t0", ["Age group", "Median age", "Population"], [
+    ["0–14", "5–9", "14,000"],
+    ["15–64", "35–39", "72,000"],
+    ["65+", "70–74", "36,000"],
+    ["15–24", "20–24", "11,000"],
+  ]);
+  const bins = scripted((id) => {
+    if (id.endsWith(".role")) return id.startsWith("n2.") ? choice({ measure: 0.95, bins: 0.05 }) : choice({ bins: 0.95, measure: 0.05 });
+    if (id.endsWith(".polarity")) return choice({ neutral: 0.9, higher_is_better: 0.05, lower_is_better: 0.05 });
+    return { type: "noul", noul: 0 };
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [ages] }).pipe(Effect.provide(bins)));
+  const shaded = j.tables[0]!.encodings.map((e) => e.header);
+  assert.ok(!shaded.includes("Age group"), "row-naming brackets are ignored");
+  assert.ok(shaded.includes("Median age"), "bracket values are shaded");
+  assert.ok(shaded.includes("Population"));
+});

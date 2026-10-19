@@ -20,8 +20,11 @@ export interface ExtractedTable {
 
 const MAX_SPAN = 64;
 
-/** Controls inside cells ("show", sort buttons) are not part of the data. */
-const CONTROLS = "button, [role=button], .mw-collapsible-toggle, select, input";
+/**
+ * Controls inside cells and captions ("show", sort buttons, Wikipedia's
+ * "v t e" template links) are not part of the data.
+ */
+const CONTROLS = "button, [role=button], .mw-collapsible-toggle, .navbar.plainlinks, select, input";
 
 const textOf = (el: HTMLElement): string =>
   // innerText honors display:none, which hides Wikipedia's sort keys.
@@ -116,6 +119,33 @@ const repeatsHeader = (cell: string, header: string): boolean => {
   return c === h || h.split(": ").some((part) => withoutFootnotes(part) === c);
 };
 
+/** A cell's shape: runs of letters as "a", runs of digits as "9" ("(94-68)" → "(9-9)"). */
+const shapeOf = (text: string): string => text.replace(/\p{L}+/gu, "a").replace(/\d+/g, "9").replace(/\s+/g, " ").trim();
+
+const isBold = (cell: HTMLTableCellElement): boolean => {
+  if (!cell.isConnected) return cell.querySelector("b, strong") !== null;
+  return Number.parseInt(getComputedStyle(cell).fontWeight, 10) >= 600 || cell.querySelector("b, strong") !== null;
+};
+
+/**
+ * True when a table without <th> or <thead> starts with a data row: each cell
+ * of the first row has the shape of some cell below it, and none is bold.
+ * "Atlanta Braves | (94-68)" over "Miami Marlins | (80-82)" is data; "Team |
+ * W-L" over the same rows is a header.
+ */
+const looksLikeData = (grid: readonly (readonly HTMLTableCellElement[])[], width: number): boolean => {
+  const first = grid[0];
+  const body = grid.slice(1).filter((g) => g.length >= width);
+  if (first === undefined || first.length < width || body.length === 0) return false;
+  for (let c = 0; c < width; c++) {
+    const cell = first[c]!;
+    if (isBold(cell)) return false;
+    const shape = shapeOf(cellText(cell));
+    if (!body.some((g) => shapeOf(cellText(g[c]!)) === shape)) return false;
+  }
+  return true;
+};
+
 const isHeaderRow = (row: HTMLTableRowElement): boolean =>
   row.parentElement?.tagName === "THEAD" ||
   (row.cells.length > 0 && Array.from(row.cells).every((c) => c.tagName === "TH"));
@@ -148,14 +178,15 @@ export const extractTable = (
   const width = modalWidth(grid);
   if (width < 2) return null;
 
-  // Header rows: the leading run of thead / all-<th> rows; else the first row.
+  // Header rows: the leading run of thead / all-<th> rows; else the first row,
+  // unless it reads like one more data row (a standings table with no header).
   let headerCount = 0;
   while (headerCount < rows.length - 1 && isHeaderRow(rows[headerCount]!)) headerCount++;
-  if (headerCount === 0) headerCount = 1;
+  if (headerCount === 0 && !looksLikeData(grid, width)) headerCount = 1;
   // Units rows written as <td> ("Percent", "Index") under the real header:
   // leading rows with no numbers, directly above rows that have them.
   const hasNumber = (r: number) => (grid[r] ?? []).some((cell) => parseNumber(cellText(cell)) !== null);
-  for (let extra = 0; extra < 2 && headerCount < rows.length - 2; extra++) {
+  for (let extra = 0; extra < 2 && headerCount > 0 && headerCount < rows.length - 2; extra++) {
     const r = headerCount;
     const row = grid[r] ?? [];
     const texts = row.map((cell) => cellText(cell));
@@ -175,7 +206,7 @@ export const extractTable = (
     }
     return parts.join(": ");
   });
-  const headerCells = Array.from({ length: width }, (_, c) => grid[headerCount - 1]![c] ?? null);
+  const headerCells = Array.from({ length: width }, (_, c) => (headerCount === 0 ? null : (grid[headerCount - 1]![c] ?? null)));
 
   const dataRows: HTMLTableCellElement[][] = [];
   const texts: string[][] = [];

@@ -135,6 +135,13 @@ export interface NumericReading {
   readonly log: number | null;
 }
 
+/**
+ * Brackets in a table's first column, each one different (0–4, 5–9, 10–14),
+ * name the rows the way years do: in order down the table, so shading them
+ * says nothing. Brackets elsewhere ("Median age: 35–39") are values.
+ */
+export const namesRows = (p: NumericProfile): boolean => p.col === 0 && p.distinct === p.values.filter((v) => v !== null).length;
+
 /** Only ask about log scales when the data could plausibly use one. */
 export const logEligible = (p: NumericProfile): boolean => p.decades !== null && p.decades >= 1;
 
@@ -175,8 +182,8 @@ export const numericQuestions = (k: number, p: NumericProfile) => {
     const role = probabilities(answers, id("role"));
     const roleAnswer = answers[id("role")];
     return {
-      // Brackets are shaded like amounts, by their midpoints.
-      measure: (role["measure"] ?? 0) + (role["bins"] ?? 0),
+      // Brackets are shaded like amounts, by their midpoints, unless they name the rows.
+      measure: (role["measure"] ?? 0) + (namesRows(p) ? 0 : (role["bins"] ?? 0)),
       role: roleAnswer?.type === "choice" ? roleAnswer.choice : "unknown",
       polarity: readPolarity(answers, id("polarity")),
       log: logEligible(p) ? noul(answers, id("log")) : null,

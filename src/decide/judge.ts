@@ -282,9 +282,37 @@ const groupKey = (planned: Planned, e: ColumnEncoding): string =>
     planned.units.get(e.col) ?? ""
   }`;
 
-/** Same header (normalized), same kind, same unit, in two or more tables. */
+/**
+ * Largest magnitude ratio between columns that may share a scale. The same
+ * header can name a total at different spans (home runs in the last five
+ * games, 0 to 1, and in a season, 0 to 62); on one scale the smaller column
+ * would show as one color, so such columns are never offered to the model.
+ */
+export const MAX_SHARE_RATIO = 10;
+
+type Member = GroupCandidate["members"][number];
+
+const magnitude = (e: ColumnEncoding): number =>
+  e.kind === "quantitative" ? Math.max(Math.abs(e.domain[0]), Math.abs(e.domain[1])) : 0;
+
+/** Splits numeric members into runs whose largest values are within MAX_SHARE_RATIO of each other. */
+const byMagnitude = (members: readonly Member[]): Member[][] => {
+  if (members[0]?.encoding.kind !== "quantitative") return [[...members]];
+  const sorted = [...members].sort((a, b) => magnitude(a.encoding) - magnitude(b.encoding));
+  const runs: Member[][] = [];
+  for (const m of sorted) {
+    const run = runs.at(-1);
+    const floor = run === undefined ? 0 : magnitude(run[0]!.encoding);
+    if (run !== undefined && magnitude(m.encoding) <= Math.max(floor, Number.MIN_VALUE) * MAX_SHARE_RATIO) run.push(m);
+    else runs.push([m]);
+  }
+  // Page order within a run, so a group the split leaves whole asks the same question as before.
+  return runs.map((run) => members.filter((m) => run.includes(m)));
+};
+
+/** Same header (normalized), same kind, same unit and similar magnitude, in two or more tables. */
 const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
-  const byKey = new Map<string, { planned: Planned; encoding: ColumnEncoding }[]>();
+  const byKey = new Map<string, Member[]>();
   for (const p of planned) {
     for (const e of p.judgment.encodings) {
       const key = groupKey(p, e);
@@ -292,8 +320,19 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
     }
   }
   return [...byKey.entries()]
-    .filter(([, members]) => new Set(members.map((m) => m.planned.table.id)).size >= 2)
-    .map(([key, members]) => ({ key, kind: members[0]!.encoding.kind, members }));
+    .flatMap(([key, members]) => byMagnitude(members).map((run, i) => ({ key: i === 0 ? key : `${key}#${i}`, members: run })))
+    .filter(({ members }) => new Set(members.map((m) => m.planned.table.id)).size >= 2)
+    .map(({ key, members }) => ({ key, kind: members[0]!.encoding.kind, members }));
+};
+
+/**
+ * One direction for a shared scale: the members' direction probabilities,
+ * averaged, through the usual rule. Otherwise one table could read a value as
+ * good and the other as neutral, and the same value would get two colors.
+ */
+const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Polarity => {
+  const mean = (k: Polarity) => members.reduce((n, e) => n + e.evidence.polarity[k], 0) / members.length;
+  return pickPolarity({ higher_is_better: mean("higher_is_better"), lower_is_better: mean("lower_is_better"), neutral: mean("neutral") }, policy.polarity);
 };
 
 const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], policy: Policy) =>
@@ -340,7 +379,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
         // One transform for the whole group, by majority; mixed scales would defeat the comparison.
         const logVotes = qs.filter((e) => e.transform === "log").length;
         const transform = logVotes * 2 >= qs.length && domain[0] > 0 ? "log" : "linear";
-        for (const e of qs) replacements.set(e, { ...e, domain, transform, group: id });
+        const polarity = sharedPolarity(qs, policy);
+        for (const e of qs) replacements.set(e, { ...e, domain, transform, polarity, group: id });
       } else {
         const union = unions.get(g.key);
         const os = g.members.map((m) => m.encoding).filter((e) => e.kind === "ordinal");
@@ -351,7 +391,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
             : largest.order;
         const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
         const labels = order.map((l) => display.get(l) ?? l);
-        for (const e of os) replacements.set(e, { ...e, order, labels, group: id });
+        const polarity = sharedPolarity(os, policy);
+        for (const e of os) replacements.set(e, { ...e, order, labels, polarity, group: id });
       }
     });
 
