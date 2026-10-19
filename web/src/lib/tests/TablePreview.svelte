@@ -38,6 +38,9 @@
     </table>
   </div>
   <figcaption>
+    {#if col !== null}<strong>The question below asks about the outlined column, "{t.snapshot.headers[col]}".</strong>
+    {:else if row !== null}<strong>The question below asks about the outlined row, "{t.snapshot.rows[row]?.[0] ?? row + 1}".</strong>
+    {:else}<strong>The question below asks about this table.</strong>{/if}
     {t.title} · {#if t.source.url}<a href={t.source.url} rel="noopener">{t.source.label}</a>{:else}{t.source.label}{/if}
   </figcaption>
 </figure>
@@ -53,4 +56,5 @@
   tr.on td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
   figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
   figcaption a { color: inherit; }
+  figcaption strong { display: block; margin-bottom: 2px; font-size: 14px; font-weight: 600; color: var(--ink); }
 </style>
