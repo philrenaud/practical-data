@@ -9,6 +9,8 @@ export type { Check, CheckKind };
 export interface ScoredCheck extends Check {
   /** Why a documented failure is accepted (expectations.$known), or null. */
   readonly known: string | null;
+  /** On a check page, a shared-scale check's full column list ("t0:Input + t1:Input"); `column` is then one member. */
+  readonly group?: string;
 }
 
 export interface PageSummary {
@@ -93,7 +95,7 @@ export interface TestPage extends Omit<PageSummary, "tables"> {
 
 /** Where a test table comes from, for its caption. */
 export interface CaseSource {
-  /** "baseball-reference.com · Aaron Judge: batting", or "Synthetic test page". */
+  /** "baseball-reference.com · Aaron Judge: batting". */
   readonly label: string;
   readonly url: string | null;
 }
@@ -103,6 +105,8 @@ export interface CaseTable {
   readonly slug: string;
   readonly id: string;
   readonly title: string;
+  /** 1-based position among the page's tables. */
+  readonly position: number;
   readonly source: CaseSource;
   readonly snapshot: TableSnapshot;
   readonly judgment: TableJudgment;
@@ -111,4 +115,19 @@ export interface CaseTable {
   /** `column` is this table's header for column checks (shared checks included). */
   readonly checks: readonly ScoredCheck[];
   readonly requests: number;
+}
+
+/** One shared-scale check: the columns it names, their own ranges, and the scale each was painted on. */
+export interface ShareGroup {
+  readonly check: ScoredCheck;
+  readonly members: readonly {
+    /** `${slug}:${table id}`, to find the member's CaseTable. */
+    readonly key: string;
+    readonly title: string;
+    readonly header: string;
+    readonly range: readonly [number, number] | null;
+    readonly domain: readonly [number, number] | null;
+    /** One cell as written, so the scale can be labeled in the column's own format ("$39.00"). */
+    readonly format: string;
+  }[];
 }

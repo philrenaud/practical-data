@@ -44,7 +44,10 @@
 </script>
 
 <figure class="question">
-  {#if ask !== null}<blockquote class="ask">{ask}</blockquote>{/if}
+  {#if ask !== null}
+    <!-- Backticks mark paths into the context sent with the question, as the TypeSafe docs recommend. -->
+    <blockquote class="ask">{#each ask.split("`") as part, i (i)}{#if i % 2 === 1}<code class="path">{part}</code>{:else}{part}{/if}{/each}</blockquote>
+  {/if}
   {#if context !== null && Object.keys(context).length > 0}
     <div class="context"><Value value={context} /></div>
   {/if}
@@ -77,6 +80,7 @@
 <style>
   .question { margin: 0; min-width: 0; }
   .ask { margin: 0 0 12px; font-size: 17px; line-height: 1.5; max-width: 68ch; }
+  .path { font: 0.86em var(--mono); padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--ink); }
   .context { margin: 0 0 12px; }
   .state { margin: 0 0 12px; }
   .state summary { cursor: pointer; width: fit-content; font-size: 14px; color: var(--muted); }

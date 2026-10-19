@@ -18,29 +18,22 @@
   </header>
   <div class="docs-body">
     <nav class="docs-nav" aria-label="Tests">
-      <section>
-        <p class="nav-label">Overview</p>
-        <ul><li><a href="/tests" aria-current={here("/tests")}>How we test</a></li></ul>
-      </section>
-      <section>
-        <p class="nav-label">Checks</p>
-        <ul>
-          {#each KINDS as k (k.kind)}
-            {@const t = data.totals[k.kind]}
-            <li>
-              <a href="/tests/checks/{k.slug}" aria-current={here(`/tests/checks/${k.slug}`)}>
-                <span>{k.title}</span><span class="count" class:bad={t.ok < t.total}>{t.ok}/{t.total}</span>
-              </a>
-            </li>
-          {/each}
-        </ul>
-      </section>
-      <section>
-        <p class="nav-label">Code</p>
-        <ul>
-          <li><a href="/tests/units" aria-current={here("/tests/units")}><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a></li>
-        </ul>
-      </section>
+      <ul>
+        <li><a href="/tests" aria-current={here("/tests")}>How we test</a></li>
+      </ul>
+      <ul>
+        {#each KINDS as k (k.kind)}
+          {@const t = data.totals[k.kind]}
+          <li>
+            <a href="/tests/checks/{k.slug}" aria-current={here(`/tests/checks/${k.slug}`)}>
+              <span>{k.title}</span><span class="count" class:bad={t.ok < t.total}>{t.ok}/{t.total}</span>
+            </a>
+          </li>
+        {/each}
+      </ul>
+      <ul>
+        <li><a href="/tests/units" aria-current={here("/tests/units")}><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a></li>
+      </ul>
     </nav>
     <main class="docs-main">
       {@render children()}

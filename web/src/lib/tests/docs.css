@@ -24,12 +24,12 @@
 .docs-run b { color: var(--hero-ink); font-weight: 500; font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
 
 /* ── Layout ── */
-.docs-body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 48px; padding: 0 16px; }
-.docs-nav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 32px 0 40px; font-size: 14.5px; }
-.docs-nav .nav-label { margin: 24px 0 6px; font-size: 13px; font-weight: 600; color: var(--faint); }
-.docs-nav section:first-child .nav-label { margin-top: 0; }
+.docs-body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 244px minmax(0, 1fr); gap: 40px; padding: 0 16px; }
+.docs-nav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow: hidden auto; padding: 32px 0 40px; font-size: 14.5px; }
+/* Groups are told apart by space, not labels. */
 .docs-nav ul { list-style: none; margin: 0; padding: 0; }
-.docs-nav a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 10px; margin: 0 -10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
+.docs-nav ul + ul { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.docs-nav a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
 .docs-nav a:hover { color: var(--ink); background: var(--paper); }
 .docs-nav a[aria-current="page"] { color: var(--ink); background: var(--paper); font-weight: 600; }
 .docs-nav .count { font: 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--faint); white-space: nowrap; }
@@ -72,10 +72,9 @@ details.raw[open] > summary { margin-bottom: 8px; }
 
 @media (max-width: 900px) {
   .docs-body { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .docs-nav { position: static; max-height: none; overflow: visible; padding: 12px 0 0; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid var(--line); }
-  .docs-nav section { flex: none; }
-  .docs-nav .nav-label { display: none; }
-  .docs-nav ul { display: flex; gap: 4px; padding-bottom: 10px; }
+  .docs-nav { position: static; max-height: none; padding: 12px 0 0; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid var(--line); }
+  .docs-nav ul { display: flex; flex: none; gap: 4px; padding-bottom: 10px; }
+  .docs-nav ul + ul { margin: 0; padding-top: 0; border-top: 0; }
   .docs-nav li { flex: none; }
   .docs-nav a { margin: 0; white-space: nowrap; }
   .docs-run { margin-left: 0; flex-basis: 100%; }

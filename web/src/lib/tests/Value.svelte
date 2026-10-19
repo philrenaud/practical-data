@@ -34,6 +34,14 @@
       </tbody>
     </table>
   </div>
+{:else if isObj(value) && Object.keys(value).length > 4 && Object.values(value).every(isScalar)}
+  <!-- A flat record (one table row): read across, like the row it is. -->
+  <div class="grid-wrap">
+    <table class="rows">
+      <thead><tr>{#each Object.keys(value) as k (k)}<th>{k}</th>{/each}</tr></thead>
+      <tbody><tr>{#each Object.values(value) as v, i (i)}<td><span class="s short">{String(v)}</span></td>{/each}</tr></tbody>
+    </table>
+  </div>
 {:else if isObj(value)}
   <dl class="fields">
     {#each Object.entries(value) as [k, v] (k)}

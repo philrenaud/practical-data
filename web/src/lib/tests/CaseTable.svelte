@@ -1,9 +1,12 @@
 <!--
-  One test table on a check page: the table as the extension shades it, and the
-  checks made on it. Pointing at a check outlines its column in the table.
+  One test table on a check page: the table as the extension shades it, a
+  strip under each column with every judgment made on it, and the checks of
+  this page's kind. Pointing at a check outlines its column.
 -->
 <script lang="ts">
   import { DEFAULT_PALETTE } from "../../../../src/core/palettes.ts";
+  import type { ColumnEncoding, SkippedColumn } from "../../../../src/core/types.ts";
+  import { plainReason } from "../demo.ts";
   import { shade } from "../shade.ts";
   import { describeValue, evidenceFor } from "./names.ts";
   import Requests from "./Requests.svelte";
@@ -14,25 +17,51 @@
 
   const byRows = $derived(t.judgment.orientation === "rows");
   let pointed = $state<string | null>(null);
-  const failedOn = (header: string) => t.checks.filter((c) => c.column === header && !c.ok);
-  // Columns can only be outlined when the table is read by columns; a row-based table's "columns" are its rows.
-  const cols = $derived(
+
+  // Outlines are inset shadows on the cells, so drawing one never moves text.
+  const outline = $derived(
     t.snapshot.headers.map((h) => {
-      const failed = byRows ? [] : failedOn(h);
-      return {
-        fail: failed.some((c) => c.known === null),
-        known: failed.length > 0 && failed.every((c) => c.known !== null),
-        pointed: !byRows && pointed !== null && pointed === h,
-      };
+      if (byRows) return "";
+      const failed = t.checks.filter((c) => c.column === h && !c.ok);
+      if (pointed !== null && pointed === h) return "o-pointed";
+      if (failed.some((c) => c.known === null)) return "o-fail";
+      return failed.length > 0 ? "o-known" : "";
     }),
   );
-  const firstFailed = $derived(byRows ? -1 : cols.findIndex((c) => c.fail || c.known));
+  const firstFailed = $derived(outline.findIndex((o) => o === "o-fail" || o === "o-known"));
   /** Scrolls a wide table sideways so the first failing column is in view. */
   const reveal = (frame: HTMLElement, col: number) => {
     if (col < 0) return;
     const th = frame.querySelectorAll("thead th")[col] as HTMLElement | undefined;
     if (th !== undefined && th.offsetLeft + th.offsetWidth > frame.clientWidth) frame.scrollLeft = th.offsetLeft - 48;
   };
+
+  const DIRECTION: Readonly<Record<string, string>> = { higher_is_better: "higher is better", lower_is_better: "lower is better", neutral: "no direction" };
+  /** Every judgment on one column, in two short lines. */
+  const summary = (e: ColumnEncoding | undefined, s: SkippedColumn | undefined): { kind: string; detail: string; on: boolean } => {
+    if (e?.kind === "quantitative") {
+      const parts = [DIRECTION[e.polarity]!, e.transform === "log" ? "log scale" : "linear", ...(e.group === null ? [] : ["shared scale"])];
+      return { kind: "Amount", detail: parts.join(" · "), on: true };
+    }
+    if (e?.kind === "ordinal") return { kind: "Ordered labels", detail: [`${e.order.length} levels`, ...(e.group === null ? [] : ["shared scale"])].join(" · "), on: true };
+    return { kind: "Plain", detail: s === undefined ? "" : plainReason(s.reason), on: false };
+  };
+  const strip = $derived(
+    t.snapshot.headers.map((_, c) =>
+      summary(
+        t.judgment.encodings.find((e) => e.col === c),
+        t.judgment.skipped.find((s) => s.col === c),
+      ),
+    ),
+  );
+  // A row-based table's columns are its rows, so its strip is a list of row labels.
+  const rowStrip = $derived(
+    byRows
+      ? [...t.judgment.encodings.map((e) => ({ col: e.col, header: e.header, ...summary(e, undefined) })), ...t.judgment.skipped.map((s) => ({ col: s.col, header: s.header, ...summary(undefined, s) }))].sort((a, b) => a.col - b.col)
+      : [],
+  );
+  const totals = $derived(new Set(t.judgment.aggregateRows));
+
   const where = (c: ScoredCheck) => (c.column === null ? "Whole table" : c.column || "(no header)");
   const ok = $derived(t.checks.filter((c) => c.ok).length);
   const evidence = $derived(t.checks.map((c) => evidenceFor(c, t.judgment)));
@@ -50,38 +79,56 @@
 
   <div class="frame" use:reveal={firstFailed}>
     <table use:shade={{ id: `${t.slug}-${t.id}`, judgment: t.judgment, palette: DEFAULT_PALETTE, groupSizes: t.groupSizes }}>
-      <colgroup>{#each cols as c, i (i)}<col class:fail={c.fail} class:known={c.known} class:pointed={c.pointed}>{/each}</colgroup>
-      <thead><tr>{#each t.snapshot.headers as h, i (i)}<th scope="col">{h}</th>{/each}</tr></thead>
+      <thead><tr>{#each t.snapshot.headers as h, i (i)}<th scope="col" class={outline[i]}>{h}</th>{/each}</tr></thead>
       <tbody>
-        {#each t.snapshot.rows as row, ri (ri)}<tr>{#each row as cell, ci (ci)}<td>{cell}</td>{/each}</tr>{/each}
-      </tbody>
-    </table>
-  </div>
-
-  <div>
-    <table class="list results">
-      <caption class="sr">Checks on {t.title}: {ok} of {t.checks.length} pass</caption>
-      <thead><tr><th scope="col">Column</th><th scope="col">Hand label</th><th scope="col">Judgment</th>{#if hasEvidence}<th scope="col">Model</th>{/if}<th scope="col">Result</th></tr></thead>
-      <tbody>
-        {#each t.checks as c, i (i)}
-          <tr
-            class:failed={!c.ok}
-            onpointerenter={() => (pointed = c.column)}
-            onpointerleave={() => (pointed = null)}
-          >
-            <th scope="row">{where(c)}</th>
-            <td data-label="Hand label">{describeValue(c.kind, c.expected)}</td>
-            <td data-label="Judgment">{describeValue(c.kind, c.actual)}</td>
-            {#if hasEvidence}<td class="evidence" data-label="Model">{evidence[i]}</td>{/if}
-            <td class="result"><Verdict ok={c.ok} known={c.known} /></td>
-          </tr>
-          {#if c.known}
-            <tr class="why"><td colspan={hasEvidence ? 5 : 4}>Known issue: {c.known}</td></tr>
-          {/if}
+        {#each t.snapshot.rows as row, ri (ri)}
+          <tr class:total={totals.has(ri)}>{#each row as cell, ci (ci)}<td class={outline[ci]}>{cell}</td>{/each}</tr>
         {/each}
       </tbody>
+      {#if !byRows}
+        <!-- The extractor skips <tfoot>, so the strip is never read as data. -->
+        <tfoot>
+          <tr>
+            {#each strip as s, i (i)}
+              <td class={outline[i]} class:off={!s.on}><span class="k">{s.kind}</span><span class="d">{s.detail}</span></td>
+            {/each}
+          </tr>
+        </tfoot>
+      {/if}
     </table>
   </div>
+  {#if totals.size > 0}
+    <p class="note">
+      {totals.size === 1 ? "Row" : "Rows"} {[...totals].map((r) => `${r + 1} (${t.snapshot.rows[r]?.[0] || "no label"})`).join(", ")}
+      {totals.size === 1 ? "is a total. It is" : "are totals. They are"} not on the scale and not shaded.
+    </p>
+  {/if}
+  {#if byRows}
+    <dl class="rowstrip">
+      {#each rowStrip as s (s.col)}
+        <div class:off={!s.on}><dt>{s.header || "(no label)"}</dt><dd><span class="k">{s.kind}</span> {s.detail}</dd></div>
+      {/each}
+    </dl>
+  {/if}
+
+  <table class="list results">
+    <caption class="sr">Checks on {t.title}: {ok} of {t.checks.length} pass</caption>
+    <thead><tr><th scope="col">Column</th><th scope="col">Hand label</th><th scope="col">Judgment</th>{#if hasEvidence}<th scope="col">Model</th>{/if}<th scope="col">Result</th></tr></thead>
+    <tbody>
+      {#each t.checks as c, i (i)}
+        <tr class:failed={!c.ok} onpointerenter={() => (pointed = c.column)} onpointerleave={() => (pointed = null)}>
+          <th scope="row">{where(c)}</th>
+          <td data-label="Hand label">{describeValue(c.kind, c.expected)}</td>
+          <td data-label="Judgment">{describeValue(c.kind, c.actual)}</td>
+          {#if hasEvidence}<td class="evidence" data-label="Model">{evidence[i]}</td>{/if}
+          <td class="result"><Verdict ok={c.ok} known={c.known} /></td>
+        </tr>
+        {#if c.known}
+          <tr class="why"><td colspan={hasEvidence ? 5 : 4}>Known issue: {c.known}</td></tr>
+        {/if}
+      {/each}
+    </tbody>
+  </table>
 
   {#if t.requests > 0}
     <Requests slug={t.slug} table={t.id} count={t.requests} />
@@ -94,15 +141,31 @@
   h3 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: -0.01em; }
   .origin { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
   .origin a { color: inherit; }
-  .frame { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); -webkit-overflow-scrolling: touch; }
+  .frame { max-height: 460px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); -webkit-overflow-scrolling: touch; }
   .frame table { border-collapse: collapse; min-width: 100%; font: 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
   .frame th { position: sticky; top: 0; z-index: 1; background: var(--paper); text-align: left; font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--muted); }
   .frame th, .frame td { padding: 6px 10px; white-space: nowrap; border-bottom: 1px solid var(--line); }
   .frame tbody tr:last-child td { border-bottom: 0; }
-  /* Collapsed borders on <col> frame a whole column without touching the cells the painter colors. */
-  col.known { border: 2px solid var(--known); }
-  col.fail { border: 2px solid var(--fail); }
-  col.pointed { border: 2px solid var(--accent); }
+  tr.total td { font-weight: 600; box-shadow: inset 0 1px 0 var(--muted); }
+
+  tfoot td { position: sticky; bottom: 0; z-index: 1; background: var(--paper); border-top: 1px solid var(--line); vertical-align: top; font-family: var(--sans); padding-top: 8px; padding-bottom: 8px; }
+  tfoot .k, .rowstrip .k { display: block; font-size: 12.5px; font-weight: 650; color: var(--accent); }
+  tfoot .d { display: block; font-size: 12px; color: var(--muted); }
+  tfoot td.off .k, .rowstrip .off .k { color: var(--faint); font-weight: 500; }
+  .rowstrip { margin: 12px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 20px; font-size: 13px; }
+  .rowstrip div { display: grid; gap: 1px; }
+  .rowstrip dt { font-weight: 600; overflow-wrap: anywhere; }
+  .rowstrip dd { margin: 0; color: var(--muted); }
+  .rowstrip .k { display: inline; }
+
+  .o-fail { --o: var(--fail); }
+  .o-known { --o: var(--known); }
+  .o-pointed { --o: var(--accent); }
+  td.o-fail, td.o-known, td.o-pointed { box-shadow: inset 2px 0 0 var(--o), inset -2px 0 0 var(--o); }
+  th.o-fail, th.o-known, th.o-pointed { box-shadow: inset 2px 0 0 var(--o), inset -2px 0 0 var(--o), inset 0 2px 0 var(--o); }
+  tfoot td.o-fail, tfoot td.o-known, tfoot td.o-pointed { box-shadow: inset 2px 0 0 var(--o), inset -2px 0 0 var(--o), inset 0 -2px 0 var(--o); }
+
+  .note { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
   .results { margin-top: 14px; }
   .results th[scope="row"] { font-weight: 600; text-align: left; overflow-wrap: anywhere; }
   .results tbody tr:not(.why):hover > * { background: color-mix(in srgb, var(--accent) 6%, transparent); }

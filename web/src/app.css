@@ -78,6 +78,11 @@ h1 { margin: 0; font-size: clamp(42px, 7.4vw, 88px); line-height: 0.98; font-wei
 .button.primary:hover { background: #ffffff; }
 .button:focus-visible { outline: 2px solid #9a8ef2; outline-offset: 3px; }
 .button .gh { margin-right: 9px; }
+.proof { display: inline-block; margin-top: 22px; font-size: 15px; color: #cfc9be; text-decoration: none; }
+.proof strong { color: var(--hero-ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+.proof span { color: #b9b0f5; text-decoration: underline; text-underline-offset: 3px; margin-left: 4px; }
+.proof:hover span { color: #ffffff; }
+.proof:focus-visible { outline: 2px solid #9a8ef2; outline-offset: 3px; border-radius: 3px; }
 
 /* ── Controls ── */
 .controls {

@@ -4,8 +4,6 @@
   const { data } = $props();
   const failing = $derived(data.checkCount - data.passCount);
   const knownFailing = $derived(Object.values(data.totals).reduce((n, t) => n + t.known, 0));
-  const live = $derived(data.pages.filter((p) => p.source !== null));
-  const synthetic = $derived(data.pages.length - live.length);
 </script>
 
 <svelte:head>
@@ -18,7 +16,7 @@
   The extension asks a decision model short questions about each table. The answers tell the extension which columns to shade and which direction is better.
 </p>
 <p>
-  We gave hand labels to the columns of {data.pages.length} test pages. Each check compares one decision with its hand label.
+  We copied the tables of {data.pages.length} public pages and gave hand labels to their columns. Each check compares one decision with its hand label.
   The checks use recorded answers, thus you can run them again without a model key.
 </p>
 
@@ -80,14 +78,14 @@ $ npm run e2e -- --offline                # each test page in a real browser, wi
 
 <h2>Sources</h2>
 <p class="muted">
-  {live.length} test pages are copies of public pages, with the tables only. {synthetic} test pages are synthetic: we made them to test difficult cases.
+  These are the public pages. CI also runs {data.hidden} checks on {data.synthetic} synthetic pages. Those pages test layouts and difficult cases, such as dark pages and tables that change after load. This site does not show them.
   {data.requests} recorded requests ({data.inputTokens.toLocaleString("en-US")} input tokens) answer all the questions.
 </p>
 <div class="scroll-x">
   <table class="list">
     <thead><tr><th scope="col">Page</th><th scope="col">Rights</th></tr></thead>
     <tbody>
-      {#each live as p (p.slug)}
+      {#each data.pages as p (p.slug)}
         <tr>
           <th scope="row"><a href={p.source?.url} rel="noopener">{p.source?.title}</a></th>
           <td class="muted">{p.source?.rights}</td>

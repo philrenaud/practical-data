@@ -2,6 +2,7 @@
   import CaseTable from "#lib/tests/CaseTable.svelte";
   import { kindBySlug } from "#lib/tests/kinds.ts";
   import Question from "#lib/tests/Question.svelte";
+  import ShareGroup from "#lib/tests/ShareGroup.svelte";
 
   const { data } = $props();
   const info = $derived(kindBySlug(data.slug)!);
@@ -43,10 +44,19 @@
   <strong>{data.passed} of {data.total}</strong> checks pass, on {data.cases.length} {data.cases.length === 1 ? "table" : "tables"}.
   {#if failing > 0}{failing === data.known ? `The ${failing === 1 ? "failure is a known issue" : `${failing} failures are known issues`}.` : `${failing - data.known} ${failing - data.known === 1 ? "failure is" : "failures are"} not known issues.`} Tables with a failure come first.{/if}
 </p>
-<p class="muted">Each table shows the shading that the extension applies. Put the pointer on a result to outline its column. A red outline shows a failure.</p>
+<p class="muted">
+  Each table shows the shading that the extension applies. The strip under the table shows all judgments on each column.
+  Put the pointer on a result to outline its column. A red outline shows a failure.
+</p>
+
+{#each data.groups as g, i (i)}
+  <ShareGroup {g} />
+{/each}
 
 {#each data.cases as t (`${t.slug}:${t.id}`)}
   <CaseTable {t} />
+{:else}
+  <p class="muted">No real test table has a check of this kind yet.</p>
 {/each}
 
 <style>

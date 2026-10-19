@@ -103,6 +103,17 @@ await mkdir(`${OUT}/requests`, { recursive: true });
 const checks: (Check & { known: string | null })[] = [];
 const pages = [];
 const samples: Record<string, { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }> = {};
+/**
+ * Keeps the first question of each kind as its example, except that a yes
+ * answer replaces a no: a row judged to be a total shows what the question is for.
+ */
+const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null) => {
+  const kind = id.replace(/\d+/g, "#");
+  const answer = x.answers[id];
+  const held = samples[kind]?.answer as DecisionResponse["answers"][string] | undefined;
+  const yes = (a: typeof held) => a?.type === "noul" && a.noul >= 0.5;
+  if (samples[kind] === undefined || (!yes(held) && yes(answer))) samples[kind] = { id, question, answer, state: x.state, page, table };
+};
 let requests = 0;
 let inputTokens = 0;
 let model = "";
@@ -123,13 +134,12 @@ for (const slug of slugs) {
     const judgment = full.judgment.tables.find((x) => x.id === t.id);
     if (judgment === undefined) continue;
     const alone = await judgeRecorded({ ...page, tables: [t] });
-    // Example questions come from hand-labeled tables, which the site shows.
-    const labeled = (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
+    // Example questions come from hand-labeled tables on real pages, which the site shows.
+    const labeled = sources.has(slug) && (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
+    // A totals example needs a table with hand-labeled totals, so the site shows it.
+    const totalsLabeled = ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
     for (const x of labeled ? alone.exchanges : []) {
-      for (const [id, question] of Object.entries(x.questions)) {
-        const kind = id.replace(/\d+/g, "#");
-        samples[kind] ??= { id, question, answer: x.answers[id], state: x.state, page: slug, table: t.id };
-      }
+      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id);
     }
     tables.push({
       snapshot: t satisfies TableSnapshot,
@@ -143,8 +153,9 @@ for (const slug of slugs) {
   }
   // The page-level request: do same-named columns across tables share a scale?
   const shared = full.exchanges.filter((x) => Object.keys(x.questions).some((id) => id.endsWith(".share")));
-  for (const x of shared) {
-    for (const [id, question] of Object.entries(x.questions)) samples[id.replace(/\d+/g, "#")] ??= { id, question, answer: x.answers[id], state: x.state, page: slug, table: null };
+  // Shared-scale examples come from pages with hand-labeled shared scales.
+  for (const x of sources.has(slug) && expectations[slug]!.shared !== undefined ? shared : []) {
+    for (const [id, question] of Object.entries(x.questions)) offerSample(id, question, x, slug, null);
   }
   const live = sources.get(slug);
   const attribution = rights.get(slug);
