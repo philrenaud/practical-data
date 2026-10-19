@@ -5,49 +5,49 @@
 
   /** What each test file covers, by the module it tests. */
   const ABOUT: Readonly<Record<string, string>> = {
-    "allow.test.ts": "The free endpoint's allowlist: every request the extension sends on the test pages is accepted, and anything else is refused.",
-    "allowance.test.ts": "The free allowance as the reader sees it: what's left, when it resets, and the wording.",
-    "judge.test.ts": "The judging program with answers supplied in code: identifiers declined, two-level labels dropped, shared scales, and one failure leaving the rest of the page judged.",
-    "legend.test.ts": "The hover card: extents and units for shared, log-scaled, ranked and duration columns, and excluded totals.",
-    "model.test.ts": "Answer validation, and the free endpoint's quota and allowance reporting.",
-    "order.test.ts": "Recovering a label order from pairwise answers, including contradictory ones.",
-    "orient.test.ts": "Transposing row-oriented tables.",
-    "parse.test.ts": "Cell text to numbers: currencies, percentages, suffixes, durations, ranges, bounds, and what must not parse.",
-    "profile.test.ts": "Column profiling: kinds, spread, units, rank and year hints, label order, and dates kept out.",
-    "scale.test.ts": "Values to positions to colors, for every palette.",
-    "tint.test.ts": "Blending colors over the page: for every palette, step and page, text stays at 5:1 contrast or the cell is left plain.",
+    "allow.test.ts": "The free endpoint accepts each request that the extension sends on the test pages. It refuses all other requests.",
+    "allowance.test.ts": "The free daily allowance as the reader sees it: the requests that remain, the reset time, and the text.",
+    "judge.test.ts": "The judge, with answers supplied by code. Identifiers stay plain. Two-level labels stay plain. Shared scales. One failed table does not stop the other tables.",
+    "legend.test.ts": "The card that shows when you put the pointer on a header: ranges and units for shared, log, ranked, and duration columns, and the totals that are not on the scale.",
+    "model.test.ts": "Validation of answers, and the quota and allowance values from the free endpoint.",
+    "order.test.ts": "The label order from pair answers, also when some answers disagree.",
+    "orient.test.ts": "Row-based tables, read one row at a time.",
+    "parse.test.ts": "Cell text to numbers: currencies, percentages, suffixes, durations, ranges, and bounds. Also the text that must not become a number.",
+    "profile.test.ts": "Column profiles: kind, spread, unit, ranks, years, and label order. Dates stay out.",
+    "scale.test.ts": "Values to positions to colors, for each palette.",
+    "tint.test.ts": "Colors on the page background. For each palette, step, and page, the text contrast stays at 5:1 or more. If not, the cell stays plain.",
   };
   const total = $derived(data.units.reduce((n, u) => n + u.tests.length, 0));
   const failed = $derived(data.units.reduce((n, u) => n + u.tests.filter((t) => !t.ok).length, 0));
-  const fmt = (n: number | null | undefined) => (n === null || n === undefined ? "—" : String(Math.round(n * 1000) / 1000));
+  const fmt = (n: number | null | undefined) => (n === null || n === undefined ? "" : String(Math.round(n * 1000) / 1000));
 </script>
 
 <svelte:head>
   <title>Unit tests · Tests · Practical Data</title>
 </svelte:head>
 
-<p class="eyebrow-mono">Code · {total - failed}/{total} pass</p>
 <h1>Unit tests and parsing</h1>
-<p class="lede-docs">The deterministic half: everything code decides before and after the model. Results below are from running the suite when this site was built.</p>
+<p class="lede-docs">Code makes many decisions before and after the model. These tests check that code. The results are from the build of this site.</p>
+<p class="score"><strong>{total - failed} of {total}</strong> unit tests pass.</p>
 
-<h2>Parsing, live</h2>
-<p class="muted">Cell text as the parser reads it. Each row was computed by <code class="code-inline">parseNumber</code> when the site was built. Anything ambiguous parses to nothing, so it never pollutes a scale.</p>
+<h2>Parsing</h2>
+<p>The parser changes cell text into numbers. Each row below is the output of <code>parseNumber</code> during the build. Text that is not clear becomes no number, thus it cannot change a scale.</p>
 <div class="scroll-x">
   <table class="list parse">
-    <thead><tr><th>Cell</th><th class="num">Value</th><th>Unit</th><th>Read as</th></tr></thead>
+    <thead><tr><th scope="col">Cell text</th><th scope="col" class="num">Value</th><th scope="col">Unit</th><th scope="col">Result</th></tr></thead>
     <tbody>
       {#each data.parsing as x (x.input)}
         <tr>
-          <td><code class="code-inline cell">{x.input}</code></td>
-          <td class="num">{x.parsed === null ? "—" : fmt(x.parsed.value)}</td>
+          <th scope="row"><code>{x.input}</code></th>
+          <td class="num">{x.parsed === null ? "" : fmt(x.parsed.value)}</td>
           <td class="mono">{x.parsed?.unit === ":" ? "m:ss" : (x.parsed?.unit ?? "")}</td>
           <td class="muted">
-            {#if x.missing}missing value
-            {:else if x.parsed === null}{x.date ? "a date: not an amount" : "not a number"}
-            {:else if x.parsed.range}range {fmt(x.parsed.range[0])} to {fmt(x.parsed.range[1])}, midpoint
-            {:else if x.parsed.unit === ":"}a clock reading: a duration or a time of day, the model decides
-            {:else if x.parsed.bound}a bound, not an exact amount
-            {:else}amount{/if}
+            {#if x.missing}No value
+            {:else if x.parsed === null}{x.date ? "A date, not an amount" : "Not a number"}
+            {:else if x.parsed.range}Range from {fmt(x.parsed.range[0])} to {fmt(x.parsed.range[1])}; the value is the midpoint
+            {:else if x.parsed.unit === ":"}A clock value. The model decides if it is a duration or a time of day
+            {:else if x.parsed.bound}A limit, not an exact amount
+            {:else}Amount{/if}
           </td>
         </tr>
       {/each}
@@ -55,32 +55,34 @@
   </table>
 </div>
 
-<h2>The suite</h2>
-<div class="files">
-  {#each data.units as u (u.file)}
-    <section class="card file">
-      <header>
-        <h3 class="mono">{u.file}</h3>
-        <span class="mono muted">{u.tests.filter((t) => t.ok).length}/{u.tests.length}</span>
-      </header>
-      {#if ABOUT[u.file]}<p class="muted about">{ABOUT[u.file]}</p>{/if}
-      <ul>
+<h2>Test files</h2>
+{#each data.units as u (u.file)}
+  <section class="file">
+    <h3><code>{u.file}</code> <span class="muted">{u.tests.filter((t) => t.ok).length} of {u.tests.length}</span></h3>
+    {#if ABOUT[u.file]}<p class="about">{ABOUT[u.file]}</p>{/if}
+    <table class="list tests">
+      <tbody>
         {#each u.tests as t, i (i)}
-          <li>{#if t.skipped}<span class="verdict known">skipped</span>{:else}<Verdict ok={t.ok} />{/if}<span>{t.name}</span><span class="ms">{t.ms < 1 ? "<1" : Math.round(t.ms)} ms</span></li>
+          <tr>
+            <td class="v">{#if t.skipped}<span class="verdict known">Skipped</span>{:else}<Verdict ok={t.ok} />{/if}</td>
+            <td>{t.name}</td>
+            <td class="num">{t.ms < 1 ? "<1" : Math.round(t.ms)} ms</td>
+          </tr>
         {/each}
-      </ul>
-    </section>
-  {/each}
-</div>
+      </tbody>
+    </table>
+  </section>
+{/each}
 
 <style>
-  .parse .cell { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
-  .files { display: grid; gap: 12px; }
-  .file header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .file h3 { font-size: 14px; font-weight: 500; }
-  .about { margin: 6px 0 10px; font-size: 14px; }
-  .file ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-  .file li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 10px; font-size: 14px; }
-  .file li span:nth-child(2) { overflow-wrap: anywhere; }
-  .ms { font: 12px var(--mono); color: var(--faint); }
+  .score { margin: 24px 0 0; font-size: 18px; }
+  .parse th[scope="row"] code { font: 13.5px var(--mono); }
+  .file { margin-top: 40px; }
+  .file h3 { margin: 0; font-size: 17px; font-weight: 650; }
+  .file h3 code { font: 600 15px var(--mono); }
+  .file h3 .muted { font-weight: 400; font-size: 14px; margin-left: 8px; }
+  .about { margin: 6px 0 10px; color: var(--muted); }
+  .tests td { padding-top: 7px; padding-bottom: 7px; overflow-wrap: anywhere; }
+  .tests .v { width: 7em; }
+  .tests .num { color: var(--faint); }
 </style>

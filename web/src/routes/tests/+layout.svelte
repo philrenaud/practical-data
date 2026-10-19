@@ -1,4 +1,4 @@
-<!-- The tests site: every check the eval makes, and how each answer was reached. -->
+<!-- The tests site: each check the eval makes, on the tables it is made on. -->
 <script lang="ts">
   import "../../app.css";
   import "#lib/tests/docs.css";
@@ -13,14 +13,14 @@
   <header class="docs-bar">
     <div class="docs-bar-inner">
       <a class="docs-brand" href="/"><img src="/icon128.png" alt="" width="20" height="20"> Practical Data <span class="crumb">/ tests</span></a>
-      <p class="docs-run">replayed offline · <b>{data.run.requests}</b> recorded requests · <b>{data.run.model}</b></p>
+      <p class="docs-run">Recorded answers from <b>{data.run.model}</b></p>
     </div>
   </header>
   <div class="docs-body">
     <nav class="docs-nav" aria-label="Tests">
       <section>
         <p class="nav-label">Overview</p>
-        <ul><li><a href="/tests" aria-current={here("/tests")}>How it's tested</a></li></ul>
+        <ul><li><a href="/tests" aria-current={here("/tests")}>How we test</a></li></ul>
       </section>
       <section>
         <p class="nav-label">Checks</p>
@@ -39,18 +39,6 @@
         <p class="nav-label">Code</p>
         <ul>
           <li><a href="/tests/units" aria-current={here("/tests/units")}><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a></li>
-        </ul>
-      </section>
-      <section class="pages">
-        <p class="nav-label">Test pages</p>
-        <ul>
-          {#each data.pages as p (p.slug)}
-            <li>
-              <a href="/tests/pages/{p.slug}" aria-current={here(`/tests/pages/${p.slug}`)}>
-                <span>{p.name}</span><span class="count" class:bad={p.score[0] < p.score[1]}>{p.score[0]}/{p.score[1]}</span>
-              </a>
-            </li>
-          {/each}
         </ul>
       </section>
     </nav>

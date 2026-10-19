@@ -23,8 +23,9 @@ npm run demo         # full build into site/: extension, recorded data, this app
   `npm run demo` and `npm run web:dev` regenerate it). Pages read it at build
   time through `src/lib/server/tests.ts`. Check categories and their decision
   rules are in `src/lib/tests/kinds.ts`; scoring is `../scripts/lib/score.ts`,
-  the same module the eval uses. Each test page's raw requests are a separate
-  static `requests.json`, fetched only when opened.
+  the same module the eval uses. Each check page shows the tables its checks
+  are made on (`readCases`). A test page's raw requests are a separate static
+  `/tests/requests/<slug>.json`, fetched only when opened.
 - **Privacy policy.** `src/routes/(site)/privacy/+page.svelte` mirrors
   `../PRIVACY.md`; change both together.
 - **`static/icon128.png`** is a copy of the extension's `../static/icon128.png`

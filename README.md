@@ -159,13 +159,13 @@ painted by the extension's own extractor and painter. Colors come from
 judgments the pipeline actually produced (`demo/data.json`), never from
 hand-written styles. `/palettes` compares every palette on the same tables in
 light and dark. `/tests` is the public test suite: every hand-labeled check by
-category, and a trace of each test page down to the questions sent and the
-probabilities returned.
+category, shown on the shaded table it is made on, with the questions sent
+and the probabilities returned.
 
 | Command | What it does |
 | --- | --- |
 | `npm run demo` | Builds the extension, regenerates `demo/data.json` (replaying recorded answers), and writes `site/` (the SvelteKit app in `web/`, prerendered) with a downloadable zip of the extension |
-| `npm run tests:data` | Writes the tests site's data (`demo/tests/`) from an offline replay: every eval check, a per-column trace of each test page, and the unit tests as run |
+| `npm run tests:data` | Writes the tests site's data (`demo/tests/`) from an offline replay: every eval check, the tables they are made on, and the unit tests as run |
 | `npm run web:dev` | The site with live reload at `localhost:5173`: edits to `web/` and the extension's own code show as you save |
 | `npm run web:check` | Type-checks the site (`svelte-check`) |
 | `npm run deploy` | Builds the demo and deploys `site/` to Cloudflare Workers static assets (`wrangler.jsonc`). Runs automatically on every push to `main` (`.github/workflows/site.yml`) |

@@ -1,11 +1,11 @@
 /**
  * Builds the tests site's data in demo/tests/ (git-ignored): every eval check,
- * a per-column trace of each test page, and the unit tests as run. Everything
+ * the tables they are made on, and the unit tests as run. Everything
  * comes from an offline replay of fixtures/recordings, so it is exactly what
  * `npm run eval -- --offline` and `npm test` see.
  *
  *   demo/tests/index.json           totals, checks, pages, unit tests, parsing examples
- *   demo/tests/pages/<slug>.json    tables, judgments, profiles and checks
+ *   demo/tests/pages/<slug>.json    tables, judgments and checks
  *   demo/tests/requests/<slug>.json each table's requests and answers, fetched on demand by the site
  *
  *   node scripts/tests-data.ts
@@ -14,7 +14,6 @@ import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { Effect, Layer } from "effect";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
-import { describeSpread, profileTable, type ColumnProfile } from "../src/core/profile.ts";
 import type { PageJudgment, PageSnapshot, TableSnapshot } from "../src/core/types.ts";
 import { DEFAULT_POLICY, judgePage, MAX_TRANSPOSE_ROWS } from "../src/decide/judge.ts";
 import { DecisionModel, jev, type DecisionRequest, type DecisionResponse } from "../src/decide/model.ts";
@@ -59,7 +58,7 @@ const judgeRecorded = async (page: PageSnapshot) => {
 };
 
 const sources = new Map(
-  (JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string; notes?: string }[]).map((s) => [s.slug, s]),
+  (JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string }[]).map((s) => [s.slug, s]),
 );
 /** Short, distinct names for navigation (page titles run long, and two pages share one). */
 const NAMES: Readonly<Record<string, string>> = {
@@ -85,18 +84,6 @@ const NAMES: Readonly<Record<string, string>> = {
   "wiki-tallest-buildings": "Tallest buildings",
 };
 
-/** What each synthetic page is for; live pages carry notes in fixtures/live/sources.json. */
-const SYNTHETIC: Readonly<Record<string, string>> = {
-  "edge-cases":
-    "Columns that look numeric but aren't amounts (SKUs, jersey numbers, zip codes, birth years), ordered labels (sizes, priorities, sweetness), a free-text glossary, two stores' prices that should share a scale, and signed changes with no better direction.",
-  ranges:
-    "Values written as ranges and records: age brackets (20-25, 65+), placed on the scale by their midpoints, and win-loss records (12-4) and game scores (35-10), which are two counts and must not be read as one amount.",
-  "dark-theme": "A dark page: shading picks the dark ramps and keeps text contrast from the page's own colors.",
-  lifecycle: "Tables that change after load: cells edited in place, tables inserted later, page styles changing, and client-side navigation.",
-  collapsed: "Like Wikipedia's [show] tables: the header row is visible and the body hidden until expanded.",
-  "opted-out": "A page that opts out with <meta name=\"practical-data\" content=\"off\">: nothing is judged or painted.",
-  "readme-cards": "The pricing tables behind the README images.",
-};
 const notice = await readFile("fixtures/NOTICE.md", "utf8");
 /** Attribution per live fixture, from the NOTICE table: | `slug` | [title](url) | rights |. */
 const rights = new Map(
@@ -115,18 +102,10 @@ await mkdir(`${OUT}/requests`, { recursive: true });
 
 const checks: (Check & { known: string | null })[] = [];
 const pages = [];
-const samples: Record<string, { id: string; question: unknown; answer: unknown; page: string }> = {};
+const samples: Record<string, { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }> = {};
 let requests = 0;
 let inputTokens = 0;
 let model = "";
-
-/** The column profile as plain facts, without the parser's internals. */
-const profileFacts = (p: ColumnProfile) =>
-  p.kind === "numeric"
-    ? { kind: p.kind, col: p.col, header: p.header, unit: p.unit, samples: p.samples, spread: describeSpread(p) }
-    : p.kind === "categorical"
-      ? { kind: p.kind, col: p.col, header: p.header, levels: p.levels.map((l) => p.display[l] ?? l) }
-      : { kind: p.kind, col: p.col, header: p.header, reason: p.reason };
 
 for (const slug of slugs) {
   const page = JSON.parse(await readFile(`fixtures/snapshots/${slug}.json`, "utf8")) as PageSnapshot;
@@ -144,16 +123,16 @@ for (const slug of slugs) {
     const judgment = full.judgment.tables.find((x) => x.id === t.id);
     if (judgment === undefined) continue;
     const alone = await judgeRecorded({ ...page, tables: [t] });
-    for (const x of alone.exchanges) {
+    // Example questions come from hand-labeled tables, which the site shows.
+    const labeled = (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
+    for (const x of labeled ? alone.exchanges : []) {
       for (const [id, question] of Object.entries(x.questions)) {
         const kind = id.replace(/\d+/g, "#");
-        samples[kind] ??= { id, question, answer: x.answers[id], page: slug };
+        samples[kind] ??= { id, question, answer: x.answers[id], state: x.state, page: slug, table: t.id };
       }
     }
     tables.push({
       snapshot: t satisfies TableSnapshot,
-      profiles: profileTable(t).map(profileFacts),
-      expected: (expectations[slug] as Record<string, unknown>)[t.id] ?? null,
       exchanges: alone.exchanges,
       requests: {
         count: alone.exchanges.length,
@@ -165,7 +144,7 @@ for (const slug of slugs) {
   // The page-level request: do same-named columns across tables share a scale?
   const shared = full.exchanges.filter((x) => Object.keys(x.questions).some((id) => id.endsWith(".share")));
   for (const x of shared) {
-    for (const [id, question] of Object.entries(x.questions)) samples[id.replace(/\d+/g, "#")] ??= { id, question, answer: x.answers[id], page: slug };
+    for (const [id, question] of Object.entries(x.questions)) samples[id.replace(/\d+/g, "#")] ??= { id, question, answer: x.answers[id], state: x.state, page: slug, table: null };
   }
   const live = sources.get(slug);
   const attribution = rights.get(slug);
@@ -175,7 +154,6 @@ for (const slug of slugs) {
     title: page.title,
     origin: live === undefined ? "synthetic" : "live",
     source: live === undefined ? null : { title: attribution?.title ?? live.title, url: live.url, rights: attribution?.rights ?? "" },
-    notes: live?.notes ?? SYNTHETIC[slug] ?? null,
     tables: tables.length,
     columns: full.judgment.tables.reduce((n, t) => n + t.encodings.length, 0),
     score: [pageChecks.filter((c) => c.ok).length, pageChecks.length] as const,

@@ -1,6 +1,6 @@
 {
   "$known": {
-    "scryfall-blb-checklist t0 \"R\" order": "Single-letter rarity codes (C/U/R/M): Jev places M (mythic) below U/R. Spelled-out rarities on MTGGoldfish order correctly."
+    "scryfall-blb-checklist t0 \"R\" order": "The column has one-letter rarity codes (C, U, R, M). The model puts M (mythic) below U and R. On MTGGoldfish, the full rarity names get the correct order."
   },
   "$comment": "Hand labels. Per page → table id → column header (as extracted). A spec is \"none\" (must not be colored) or an object; `polarity` lists every acceptable answer; omitted fields are not scored. Columns not listed are ambiguous and unscored. `aggregateRows` lists data-row indexes that are totals. `shared` lists table:header pairs that must end up on one scale.",
   "cloudflare-clef": {

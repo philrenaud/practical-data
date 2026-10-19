@@ -1,7 +1,7 @@
 /** Shapes of demo/tests/*.json (written by scripts/tests-data.ts). */
 import type { Policy } from "../../../../src/decide/judge.ts";
 import type { Answer, Question } from "../../../../src/decide/model.ts";
-import type { PageJudgment, TableSnapshot } from "../../../../src/core/types.ts";
+import type { PageJudgment, TableJudgment, TableSnapshot } from "../../../../src/core/types.ts";
 import type { Check, CheckKind } from "../../../../scripts/lib/score.ts";
 
 export type { Check, CheckKind };
@@ -18,7 +18,6 @@ export interface PageSummary {
   readonly title: string;
   readonly origin: "live" | "synthetic";
   readonly source: { readonly title: string; readonly url: string; readonly rights: string } | null;
-  readonly notes: string | null;
   readonly tables: number;
   readonly columns: number;
   /** Checks passing, of all checks on the page. */
@@ -52,8 +51,8 @@ export interface TestsIndex {
   readonly pages: readonly PageSummary[];
   readonly units: readonly UnitFile[];
   readonly parsing: readonly ParseExample[];
-  /** One real question per question kind ("n#.polarity"), with the page it came from. */
-  readonly samples: Readonly<Record<string, { readonly id: string; readonly question: Question; readonly answer?: Answer; readonly page: string }>>;
+  /** One real question per question kind ("n#.polarity"), with the request state sent with it. */
+  readonly samples: Readonly<Record<string, Sample>>;
   readonly known: Readonly<Record<string, string>>;
 }
 
@@ -65,16 +64,19 @@ export interface Exchange {
   readonly inputTokens: number;
 }
 
-export type Profile =
-  | { readonly kind: "numeric"; readonly col: number; readonly header: string; readonly unit: string | null; readonly samples: readonly string[]; readonly spread: string }
-  | { readonly kind: "categorical"; readonly col: number; readonly header: string; readonly levels: readonly string[] }
-  | { readonly kind: "text"; readonly col: number; readonly header: string; readonly reason: string };
+export interface Sample {
+  readonly id: string;
+  readonly question: Question;
+  readonly answer?: Answer;
+  readonly state: unknown;
+  readonly page: string;
+  /** Null for a page-level question (shared scales). */
+  readonly table: string | null;
+}
 
 /** A test table; its judgment is the matching entry in the page's judgment. */
 export interface TraceTable {
   readonly snapshot: TableSnapshot;
-  readonly profiles: readonly Profile[];
-  readonly expected: Readonly<Record<string, unknown>> | null;
   /** The requests themselves are in requests/<slug>.json, by table id. */
   readonly requests: { readonly count: number; readonly questions: number; readonly inputTokens: number };
 }
@@ -87,4 +89,26 @@ export interface TestPage extends Omit<PageSummary, "tables"> {
   readonly tables: readonly TraceTable[];
   readonly shared: readonly Exchange[];
   readonly checks: readonly ScoredCheck[];
+}
+
+/** Where a test table comes from, for its caption. */
+export interface CaseSource {
+  /** "baseball-reference.com · Aaron Judge: batting", or "Synthetic test page". */
+  readonly label: string;
+  readonly url: string | null;
+}
+
+/** One table on a check page: the table as shaded, and the checks of that kind made on it. */
+export interface CaseTable {
+  readonly slug: string;
+  readonly id: string;
+  readonly title: string;
+  readonly source: CaseSource;
+  readonly snapshot: TableSnapshot;
+  readonly judgment: TableJudgment;
+  /** Shared-scale group sizes for the whole page, which the painter needs. */
+  readonly groupSizes: ReadonlyMap<string, number>;
+  /** `column` is this table's header for column checks (shared checks included). */
+  readonly checks: readonly ScoredCheck[];
+  readonly requests: number;
 }

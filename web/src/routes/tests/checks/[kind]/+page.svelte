@@ -1,85 +1,60 @@
 <script lang="ts">
+  import CaseTable from "#lib/tests/CaseTable.svelte";
   import { kindBySlug } from "#lib/tests/kinds.ts";
-  import { describeValue } from "#lib/tests/names.ts";
-  import QuestionCard from "#lib/tests/QuestionCard.svelte";
-  import Verdict from "#lib/tests/Verdict.svelte";
-  import type { ScoredCheck } from "#lib/tests/types.ts";
+  import Question from "#lib/tests/Question.svelte";
 
   const { data } = $props();
   const info = $derived(kindBySlug(data.slug)!);
-  const ok = $derived(data.checks.filter((c) => c.ok).length);
-  // Failures first, then by page.
-  const byPage = $derived.by(() => {
-    const groups = new Map<string, ScoredCheck[]>();
-    for (const c of data.checks) groups.set(c.page, [...(groups.get(c.page) ?? []), c]);
-    return [...groups].sort(([, a], [, b]) => Number(a.every((c) => c.ok)) - Number(b.every((c) => c.ok)));
-  });
-  const where = (c: ScoredCheck) => c.column ?? (c.table === null ? "page" : `table ${c.table}`);
+  const failing = $derived(data.total - data.passed);
+  const tableTitle = (slug: string, id: string | null) => data.cases.find((c) => c.slug === slug && c.id === id)?.title;
 </script>
 
 <svelte:head>
   <title>{info.title} · Tests · Practical Data</title>
+  <meta name="description" content="{info.short} {data.passed} of {data.total} checks pass.">
 </svelte:head>
 
-<p class="eyebrow-mono">Check · {ok}/{data.checks.length} pass</p>
 <h1>{info.title}</h1>
 <p class="lede-docs">{info.short}</p>
-<p>{info.about}</p>
-<p class="rule"><span class="label">Decision rule</span>{data.rule}</p>
+{#each info.about as para, i (i)}<p>{para}</p>{/each}
+
+<dl class="rule">
+  <dt>Decision rule</dt>
+  <dd>{data.rule}</dd>
+</dl>
 
 {#if data.samples.length > 0}
-  <h2>The question, as sent</h2>
-  <p class="muted">Real questions from the test pages, verbatim, with the probabilities Jev returned. The id is the key code reads the answer back by; <code class="code-inline">columns[k]</code> points into the table description sent with the questions.</p>
-  <div class="grid samples">
-    {#each data.samples as s (s.id)}
-      <div>
-        <QuestionCard id={s.id} question={s.question} answer={s.answer} />
-        <p class="from">from <a href="/tests/pages/{s.page}">{data.names[s.page] ?? s.page}</a></p>
-      </div>
-    {/each}
-  </div>
+  <h2>{data.samples.length === 1 ? "The question" : "The questions"}</h2>
+  <p class="muted">
+    The model gets the question text and a short description of the table. It gives a probability for each possible answer.
+    {data.samples.length === 1 ? "This is a real question" : "These are real questions"} from the test pages, with the recorded answers.
+  </p>
+  {#each data.samples as s (s.id)}
+    {@const title = tableTitle(s.page, s.table)}
+    <div class="sample">
+      <Question id={s.id} question={s.question} answer={s.answer} state={s.state} />
+      {#if title}<p class="from">Asked about <a href="#{s.page}-{s.table}">{title}</a>.</p>{/if}
+    </div>
+  {/each}
 {/if}
 
-<h2>Every case</h2>
-{#each byPage as [slug, cases] (slug)}
-  <section class="page-cases">
-    <h3><a href="/tests/pages/{slug}">{data.names[slug] ?? slug}</a> <span class="muted mono">{cases.filter((c) => c.ok).length}/{cases.length}</span></h3>
-    <div class="scroll-x">
-      <table class="list cases">
-        <colgroup><col class="c-verdict"><col class="c-column"><col class="c-table"><col><col></colgroup>
-        <thead><tr><th></th><th>Column</th><th>Table</th><th>Expected</th><th>Judged</th></tr></thead>
-        <tbody>
-          {#each cases as c, i (i)}
-            <tr class:failed={!c.ok}>
-              <td><Verdict ok={c.ok} known={c.known} /></td>
-              <td>{where(c)}</td>
-              <td class="mono muted">{c.table ?? "—"}</td>
-              <td>{describeValue(c.kind, c.expected)}</td>
-              <td>{describeValue(c.kind, c.actual)}</td>
-            </tr>
-            {#if !c.ok}
-              <tr class="detail"><td></td><td colspan="4"><code class="code-inline">{c.message}</code>{#if c.known}<p class="why">{c.known}</p>{/if}</td></tr>
-            {/if}
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </section>
+<h2>Results</h2>
+<p class="summary">
+  <strong>{data.passed} of {data.total}</strong> checks pass, on {data.cases.length} {data.cases.length === 1 ? "table" : "tables"}.
+  {#if failing > 0}{failing === data.known ? `The ${failing === 1 ? "failure is a known issue" : `${failing} failures are known issues`}.` : `${failing - data.known} ${failing - data.known === 1 ? "failure is" : "failures are"} not known issues.`} Tables with a failure come first.{/if}
+</p>
+<p class="muted">Each table shows the shading that the extension applies. Put the pointer on a result to outline its column. A red outline shows a failure.</p>
+
+{#each data.cases as t (`${t.slug}:${t.id}`)}
+  <CaseTable {t} />
 {/each}
 
 <style>
-  .samples { grid-template-columns: minmax(0, 1fr); }
-  .from { margin: 6px 0 0; font-size: 13px; color: var(--faint); }
-  .page-cases { margin-top: 28px; }
-  .page-cases h3 { margin-bottom: 8px; }
-  .page-cases h3 a { color: var(--ink); text-decoration: none; }
-  .page-cases h3 a:hover { text-decoration: underline; }
-  .cases { table-layout: fixed; min-width: 640px; }
-  .cases .c-verdict { width: 140px; }
-  .cases .c-column { width: 26%; }
-  .cases .c-table { width: 64px; }
-  .cases td { overflow-wrap: anywhere; }
-  tr.failed td { background: var(--known-bg); }
-  tr.detail td { padding-top: 0; }
-  .why { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+  .rule { margin: 24px 0 0; max-width: 70ch; padding: 14px 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+  .rule dt { font-size: 13px; font-weight: 600; color: var(--faint); }
+  .rule dd { margin: 4px 0 0; font-size: 15.5px; }
+  .sample { margin: 28px 0 0; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  .sample:last-of-type { border-bottom: 0; }
+  .from { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .summary { font-size: 17px; }
 </style>
