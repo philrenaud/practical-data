@@ -11,3 +11,9 @@ release/
 
 # SvelteKit
 web/.svelte-kit/
+
+# Local only: trial fonts, the built Sheets add-on, generated test data, agent worktrees.
+demo/fonts/
+dist-sheets/
+demo/tests/
+.claude/
