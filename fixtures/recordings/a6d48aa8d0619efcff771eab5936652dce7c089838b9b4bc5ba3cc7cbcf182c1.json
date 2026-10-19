@@ -1,1 +1,1 @@
-{"model":"jev-1.13.0","answers":{"g0.share":{"type":"noul","noul":0.9},"g1.share":{"type":"noul","noul":0.86},"g2.share":{"type":"noul","noul":0.87},"g3.share":{"type":"noul","noul":0.8}},"usage":{"input_tokens":1777}}
+{"model":"jev-1.13.0","answers":{"g0.share":{"type":"noul","noul":0.9},"g1.share":{"type":"noul","noul":0.86},"g2.share":{"type":"noul","noul":0.87},"g3.share":{"type":"noul","noul":0.76}},"usage":{"input_tokens":1777,"output_tokens":76}}
