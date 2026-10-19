@@ -18,13 +18,19 @@
 
   // Structured instructions carry the question in `question` and context in the other fields.
   const instructions = $derived(question.instructions);
-  const ask = $derived(
+  /**
+   * The question text, with the column named by its header: "the column `columns[2]` ("AB")"
+   * reads as "the column "AB"". The extension sends the path; readers need the name.
+   */
+  const readable = (text: string) => text.replace(/`columns?(?:\[\d+\])?` \(("[^"]*")\)/g, "$1");
+  const raw = $derived(
     typeof instructions === "string"
       ? instructions
       : typeof (instructions as Record<string, unknown>)["question"] === "string"
         ? ((instructions as Record<string, unknown>)["question"] as string)
         : null,
   );
+  const ask = $derived(raw === null ? null : readable(raw));
   const context = $derived(
     typeof instructions === "string" ? null : Object.fromEntries(Object.entries(instructions as Record<string, unknown>).filter(([k]) => k !== "question")),
   );
@@ -60,6 +66,7 @@
         Practical Data makes this description from the cells of the table and sends it with the question.
         <code>examples</code> are values from the column. <code>spread</code> tells how wide the range of values is.
         <code>notes</code> give hints, such as values that look like years.
+        <a href="/tests/glossary#description">All fields and their possible values</a>.
       </p>
       <Value value={state} />
     </details>

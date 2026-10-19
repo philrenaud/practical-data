@@ -85,6 +85,7 @@ export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
         groupSizes: sizes,
         checks: own,
         requests: t.requests.count,
+        questions: t.requests.questions,
       });
     });
     // Two shown tables with one title (a season table and a postseason table) are told apart by position on the page.

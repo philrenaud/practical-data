@@ -115,6 +115,8 @@ export interface CaseTable {
   /** `column` is this table's header for column checks (shared checks included). */
   readonly checks: readonly ScoredCheck[];
   readonly requests: number;
+  /** Questions across those requests. */
+  readonly questions: number;
 }
 
 /** One shared-scale check: the columns it names, their own ranges, and the scale each was painted on. */

@@ -32,8 +32,11 @@
   /** Scrolls a wide table sideways so the first failing column is in view. */
   const reveal = (frame: HTMLElement, col: number) => {
     if (col < 0) return;
-    const th = frame.querySelectorAll("thead th")[col] as HTMLElement | undefined;
-    if (th !== undefined && th.offsetLeft + th.offsetWidth > frame.clientWidth) frame.scrollLeft = th.offsetLeft - 48;
+    const th = frame.querySelectorAll("thead th")[col];
+    if (th === undefined) return;
+    // Measured against the frame: offsetLeft would be relative to the page.
+    const right = th.getBoundingClientRect().right - frame.getBoundingClientRect().left;
+    if (right > frame.clientWidth) frame.scrollLeft = th.getBoundingClientRect().left - frame.getBoundingClientRect().left - 48;
   };
 
   const DIRECTION: Readonly<Record<string, string>> = { higher_is_better: "higher is better", lower_is_better: "lower is better", neutral: "no direction" };
@@ -62,13 +65,46 @@
   );
   const totals = $derived(new Set(t.judgment.aggregateRows));
 
-  // Results follow the table: whole-table checks first, then columns left to right.
-  const ordered = $derived(
-    [...t.checks].sort((a, b) => (a.column === null ? -1 : t.snapshot.headers.indexOf(a.column)) - (b.column === null ? -1 : t.snapshot.headers.indexOf(b.column))),
-  );
-  const where = (c: ScoredCheck) => (c.column === null ? "Whole table" : c.column || "(no header)");
+  /** One line under the table: a check, or a column with no hand label of this kind (judged, not scored). */
+  interface Line {
+    readonly kind: ScoredCheck["kind"];
+    readonly column: string | null;
+    readonly expected: string | null;
+    readonly actual: string;
+    readonly ok: boolean | null;
+    readonly known: string | null;
+  }
+  const kind = $derived(t.checks[0]?.kind);
+  /** What the judgment says about a column, in the form a check of this kind records it; null if the kind doesn't apply. */
+  const judged = (k: ScoredCheck["kind"], header: string): string | null => {
+    const e = t.judgment.encodings.find((x) => x.header === header);
+    if (k === "detect") return e === undefined ? "none" : e.kind;
+    if (k === "polarity") return e === undefined ? null : e.polarity;
+    if (k === "transform") return e?.kind === "quantitative" ? e.transform : null;
+    if (k === "order") return e?.kind === "ordinal" ? e.order.join(" < ") : null;
+    return null;
+  };
+  // Lines follow the table: whole-table checks first, then every column left to right
+  // (for shade-or-ignore, all of them; for the other column checks, those the check applies to).
+  const lines = $derived.by((): Line[] => {
+    const tableLevel = t.checks.filter((c) => c.column === null);
+    const perColumn = kind === "detect" || kind === "polarity" || kind === "transform" || kind === "order";
+    if (!perColumn || byRows || kind === undefined) {
+      return [...tableLevel, ...t.checks.filter((c) => c.column !== null).sort((a, b) => t.snapshot.headers.indexOf(a.column!) - t.snapshot.headers.indexOf(b.column!))];
+    }
+    return [
+      ...tableLevel,
+      ...t.snapshot.headers.flatMap((h): Line[] => {
+        const c = t.checks.find((x) => x.column === h);
+        if (c !== undefined) return [c];
+        const actual = judged(kind, h);
+        return actual === null ? [] : [{ kind, column: h, expected: null, actual, ok: null, known: null }];
+      }),
+    ];
+  });
+  const where = (c: Line) => (c.column === null ? "Whole table" : c.column || "(no header)");
   const ok = $derived(t.checks.filter((c) => c.ok).length);
-  const evidence = $derived(ordered.map((c) => evidenceFor(c, t.judgment)));
+  const evidence = $derived(lines.map((c) => (c.kind === "shared" || c.kind === "aggregates" ? "" : evidenceFor(c as ScoredCheck, t.judgment))));
   const hasEvidence = $derived(evidence.some((e) => e !== ""));
 </script>
 
@@ -119,13 +155,13 @@
     <caption class="sr">Checks on {t.title}: {ok} of {t.checks.length} pass</caption>
     <thead><tr><th scope="col">Column</th><th scope="col">Hand label</th><th scope="col">Judgment</th>{#if hasEvidence}<th scope="col">Model</th>{/if}<th scope="col">Result</th></tr></thead>
     <tbody>
-      {#each ordered as c, i (i)}
-        <tr class:failed={!c.ok} onpointerenter={() => (pointed = c.column)} onpointerleave={() => (pointed = null)}>
+      {#each lines as c, i (i)}
+        <tr class:failed={c.ok === false} class:unscored={c.ok === null} onpointerenter={() => (pointed = c.column)} onpointerleave={() => (pointed = null)}>
           <th scope="row">{where(c)}</th>
-          <td data-label="Hand label">{describeValue(c.kind, c.expected)}</td>
+          <td data-label="Hand label">{c.expected === null ? "no label" : describeValue(c.kind, c.expected)}</td>
           <td data-label="Judgment">{describeValue(c.kind, c.actual)}</td>
           {#if hasEvidence}<td class="evidence" data-label="Model">{evidence[i]}</td>{/if}
-          <td class="result"><Verdict ok={c.ok} known={c.known} /></td>
+          <td class="result">{#if c.ok === null}<span class="unscored-mark">Not scored</span>{:else}<Verdict ok={c.ok} known={c.known} />{/if}</td>
         </tr>
         {#if c.known}
           <tr class="why"><td colspan={hasEvidence ? 5 : 4}><a href="/tests/limitations">Known limitation</a>: {c.known}</td></tr>
@@ -135,7 +171,7 @@
   </table>
 
   {#if t.requests > 0}
-    <Requests slug={t.slug} table={t.id} count={t.requests} />
+    <Requests slug={t.slug} table={t.id} count={t.requests} questions={t.questions} />
   {/if}
 </section>
 
@@ -177,6 +213,9 @@
   .evidence { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; }
   tr.why td { padding-top: 0; color: var(--muted); font-size: 14px; }
   tr.why a { color: var(--known); font-weight: 600; }
+  tr.unscored > * { color: var(--faint); }
+  tr.unscored th[scope="row"] { font-weight: 500; }
+  .unscored-mark { font-size: 13.5px; color: var(--faint); white-space: nowrap; }
   @media (max-width: 640px) {
     .results thead { display: none; }
     .results tbody tr:not(.why) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }

@@ -3,11 +3,17 @@
   import { kindBySlug } from "#lib/tests/kinds.ts";
   import Question from "#lib/tests/Question.svelte";
   import ShareGroup from "#lib/tests/ShareGroup.svelte";
+  import TablePreview from "#lib/tests/TablePreview.svelte";
 
   const { data } = $props();
   const info = $derived(kindBySlug(data.slug)!);
   const failing = $derived(data.total - data.passed);
-  const tableTitle = (slug: string, id: string | null) => data.cases.find((c) => c.slug === slug && c.id === id)?.title;
+  const caseOf = (slug: string, id: string | null) => data.cases.find((c) => c.slug === slug && c.id === id);
+  /** The column or row a question is about, from its id: "n4.role" is column 4, "row9.aggregate" is row 9. */
+  const targetOf = (id: string) => ({
+    col: /^[nc](\d+)\./.exec(id)?.[1] === undefined ? null : Number(/^[nc](\d+)\./.exec(id)![1]),
+    row: /^row(\d+)\./.exec(id)?.[1] === undefined ? null : Number(/^row(\d+)\./.exec(id)![1]),
+  });
 </script>
 
 <svelte:head>
@@ -29,12 +35,14 @@
   <p class="muted">
     The model gets the question text and a short description of the table. It gives a probability for each possible answer.
     {data.samples.length === 1 ? "This is a real question" : "These are real questions"} from the test pages, with the recorded answers.
+    Here, the question names the column by its header. The question that the extension sends points to the column in the table description.
   </p>
   {#each data.samples as s (s.id)}
-    {@const title = tableTitle(s.page, s.table)}
+    {@const t = caseOf(s.page, s.table)}
+    {@const target = targetOf(s.id)}
     <div class="sample">
+      {#if t}<TablePreview {t} col={target.col} row={target.row} />{/if}
       <Question id={s.id} question={s.question} answer={s.answer} state={s.state} />
-      {#if title}<p class="from">Asked about <a href="#{s.page}-{s.table}">{title}</a>.</p>{/if}
     </div>
   {/each}
 {/if}
@@ -65,6 +73,5 @@
   .rule dd { margin: 4px 0 0; font-size: 15.5px; }
   .sample { margin: 28px 0 0; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
   .sample:last-of-type { border-bottom: 0; }
-  .from { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
   .summary { font-size: 17px; }
 </style>
