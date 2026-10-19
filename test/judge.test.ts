@@ -198,3 +198,23 @@ test("never offers a share for same-named columns of different magnitude", async
   assert.deepEqual(hr[0].domain, [0, 1]);
   assert.equal(asked.length, 0);
 });
+
+test("columns on one shared scale share one direction", async () => {
+  // Two stores' prices; the model is sure about one table and unsure about the other.
+  const a = pricing("t0", ["Item", "Price"], [["Kettle", "$39"], ["Toaster", "$54"], ["Blender", "$89"]]);
+  const b = pricing("t1", ["Item", "Price"], [["Kettle", "$35"], ["Toaster", "$59"], ["Blender", "$95"]]);
+  const split = scripted((id, req) => {
+    const table = (req.state as { table_title?: string }).table_title;
+    if (id.endsWith(".role")) return choice({ measure: 0.95, identifier: 0.02, time: 0.02, rank: 0.01 });
+    if (id.endsWith(".polarity"))
+      return table === "t0" ? choice({ lower_is_better: 0.9, higher_is_better: 0.05, neutral: 0.05 }) : choice({ lower_is_better: 0.5, neutral: 0.45, higher_is_better: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [a, b] }).pipe(Effect.provide(split)));
+  const [p0, p1] = j.tables.map((t) => t.encodings.find((e) => e.header === "Price"));
+  assert.ok(p0?.kind === "quantitative" && p1?.kind === "quantitative");
+  assert.equal(p0.group, p1.group);
+  assert.equal(p0.polarity, "lower_is_better");
+  assert.equal(p1.polarity, "lower_is_better");
+});

@@ -325,6 +325,16 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
     .map(({ key, members }) => ({ key, kind: members[0]!.encoding.kind, members }));
 };
 
+/**
+ * One direction for a shared scale: the members' direction probabilities,
+ * averaged, through the usual rule. Otherwise one table could read a value as
+ * good and the other as neutral, and the same value would get two colors.
+ */
+const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Polarity => {
+  const mean = (k: Polarity) => members.reduce((n, e) => n + e.evidence.polarity[k], 0) / members.length;
+  return pickPolarity({ higher_is_better: mean("higher_is_better"), lower_is_better: mean("lower_is_better"), neutral: mean("neutral") }, policy.polarity);
+};
+
 const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], policy: Policy) =>
   Effect.gen(function* () {
     const groups = findGroups(planned);
@@ -369,7 +379,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
         // One transform for the whole group, by majority; mixed scales would defeat the comparison.
         const logVotes = qs.filter((e) => e.transform === "log").length;
         const transform = logVotes * 2 >= qs.length && domain[0] > 0 ? "log" : "linear";
-        for (const e of qs) replacements.set(e, { ...e, domain, transform, group: id });
+        const polarity = sharedPolarity(qs, policy);
+        for (const e of qs) replacements.set(e, { ...e, domain, transform, polarity, group: id });
       } else {
         const union = unions.get(g.key);
         const os = g.members.map((m) => m.encoding).filter((e) => e.kind === "ordinal");
@@ -380,7 +391,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
             : largest.order;
         const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
         const labels = order.map((l) => display.get(l) ?? l);
-        for (const e of os) replacements.set(e, { ...e, order, labels, group: id });
+        const polarity = sharedPolarity(os, policy);
+        for (const e of os) replacements.set(e, { ...e, order, labels, polarity, group: id });
       }
     });
 
