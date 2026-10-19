@@ -218,3 +218,23 @@ test("columns on one shared scale share one direction", async () => {
   assert.equal(p0.polarity, "lower_is_better");
   assert.equal(p1.polarity, "lower_is_better");
 });
+
+test("brackets that name the rows are ignored; brackets that are values are shaded", async () => {
+  // Age brackets name each row, like years; a median-age bracket is a value of the row.
+  const ages = pricing("t0", ["Age group", "Median age", "Population"], [
+    ["0–14", "5–9", "14,000"],
+    ["15–64", "35–39", "72,000"],
+    ["65+", "70–74", "36,000"],
+    ["15–24", "20–24", "11,000"],
+  ]);
+  const bins = scripted((id) => {
+    if (id.endsWith(".role")) return id.startsWith("n2.") ? choice({ measure: 0.95, bins: 0.05 }) : choice({ bins: 0.95, measure: 0.05 });
+    if (id.endsWith(".polarity")) return choice({ neutral: 0.9, higher_is_better: 0.05, lower_is_better: 0.05 });
+    return { type: "noul", noul: 0 };
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [ages] }).pipe(Effect.provide(bins)));
+  const shaded = j.tables[0]!.encodings.map((e) => e.header);
+  assert.ok(!shaded.includes("Age group"), "row-naming brackets are ignored");
+  assert.ok(shaded.includes("Median age"), "bracket values are shaded");
+  assert.ok(shaded.includes("Population"));
+});
