@@ -28,3 +28,8 @@ only) so the test suite can run offline.
 | `statcan-urban-greenness` | [Urban greenness and NDVI by 2021 population centre](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3810015801) | Statistics Canada, Open Government Licence – Canada |
 | `cloudflare-clef` | [Introducing Clef (Cloudflare blog)](https://blog.cloudflare.com/clef-decision-models/) | Cloudflare, Inc. blog; excerpted for testing |
 | `bbref-rules-changes` | [2023 MLB rules changes effect on stats and pace of play](https://www.baseball-reference.com/friv/rules-changes-stats.shtml) | Sports Reference LLC (Baseball-Reference.com); facts excerpted for testing |
+| `wiki-2022-winter-olympics-medal-table` | [2022 Winter Olympics medal table - Wikipedia](https://en.wikipedia.org/wiki/2022_Winter_Olympics_medal_table) | Wikipedia contributors, CC BY-SA 4.0 |
+| `wiki-2024-mlb-season` | [2024 Major League Baseball season - Wikipedia](https://en.wikipedia.org/wiki/2024_Major_League_Baseball_season) | Wikipedia contributors, CC BY-SA 4.0 |
+| `wiki-demographics-of-japan` | [Demographics of Japan - Wikipedia](https://en.wikipedia.org/wiki/Demographics_of_Japan) | Wikipedia contributors, CC BY-SA 4.0 |
+| `wiki-earthquakes-2023` | [List of earthquakes in 2023 - Wikipedia](https://en.wikipedia.org/wiki/List_of_earthquakes_in_2023) | Wikipedia contributors, CC BY-SA 4.0 |
+| `bkref-thunder-2025` | [2024-25 Oklahoma City Thunder Roster and Stats - Basketball-Reference.com](https://www.basketball-reference.com/teams/OKC/2025.html) | Sports Reference LLC (Basketball-Reference.com); facts excerpted for testing |
