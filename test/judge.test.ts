@@ -177,3 +177,24 @@ test("unordered label columns never send pairwise order questions", async () => 
   await Effect.runPromise(judgePage({ ...page, tables: [page.tables[0]!] }).pipe(Effect.provide(unordered)));
   assert.equal(asked.filter((id) => /\.lt\d+_\d+$/.test(id)).length, 0);
 });
+
+test("never offers a share for same-named columns of different magnitude", async () => {
+  // Home runs in the last five games (0 to 1) and per season (4 to 62): one header, not one scale.
+  const games = pricing("t0", ["Date", "HR"], [["Sep 12", "0"], ["Sep 13", "1"], ["Sep 14", "0"], ["Sep 15", "1"]]);
+  const seasons = pricing("t1", ["Season", "HR"], [["2017", "52"], ["2022", "62"], ["2023", "37"], ["2016", "4"]]);
+  const asked: string[] = [];
+  const spy = scripted((id, req) => {
+    if (id.endsWith(".share")) asked.push(JSON.stringify(req.questions[id]!.instructions));
+    if (id.endsWith(".role")) return choice({ measure: 0.9, identifier: 0.05, time: 0.03, rank: 0.02 });
+    if (id.endsWith(".polarity")) return choice({ higher_is_better: 0.9, lower_is_better: 0.05, neutral: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [games, seasons] }).pipe(Effect.provide(spy)));
+  const hr = j.tables.map((t) => t.encodings.find((e) => e.header === "HR"));
+  assert.ok(hr[0]?.kind === "quantitative" && hr[1]?.kind === "quantitative");
+  assert.equal(hr[0].group, null);
+  assert.equal(hr[1].group, null);
+  assert.deepEqual(hr[0].domain, [0, 1]);
+  assert.equal(asked.length, 0);
+});
