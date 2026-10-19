@@ -246,7 +246,7 @@
   },
   "ranges": {
     "t0": {
-      "Age bracket": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Age bracket": "none",
       "Typical salary": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
       "Respondents": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] }
     },
@@ -368,7 +368,7 @@
       "Population by age (%): 65+": { "kind": "quantitative", "polarity": ["neutral"] }
     },
     "t2": {
-      "Age group": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Age group": "none",
       "Male": { "kind": "quantitative", "polarity": ["neutral"] },
       "Female": { "kind": "quantitative", "polarity": ["neutral"] },
       "Total": { "kind": "quantitative", "polarity": ["neutral"] },

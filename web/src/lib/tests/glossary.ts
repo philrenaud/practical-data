@@ -20,7 +20,7 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
       identifier: "A number that is a name: an ID, a code, a version, or a jersey number.",
       time: "A year, a season, a date, an age, or a time of day.",
       rank: "A position in a list: 1st, 2nd, 3rd.",
-      bins: "A bracket of values, such as ages 20–25 or 65+.",
+      bins: "A bracket of values, such as ages 20–25 or 65+. Shaded at its midpoint, except in a first column that names the rows.",
       record: "Two counts together, such as a win-loss record (12-4) or a score (35-10).",
       threshold: "A limit that tells which rule or price applies, such as ≤ 272K tokens.",
     },

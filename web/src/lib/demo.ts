@@ -28,6 +28,7 @@ const REASONS: Readonly<Record<string, string>> = {
   "looks like identifier": "an identifier, not an amount",
   "looks like rank": "a rank, not an amount",
   "looks like threshold": "a cutoff, not an amount",
+  "looks like bins": "brackets that name the rows",
   "labels look like unordered kinds": "labels with no natural order",
   "labels look like names or versions": "names or versions",
   "labels look like workflow states": "stages of a process",

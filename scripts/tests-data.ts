@@ -123,15 +123,16 @@ const sampleScore = (id: string, answer: DecisionResponse["answers"][string] | u
   if (/^n\d+\.polarity$/.test(id)) return (e?.kind === "quantitative" ? 2 : 0) + (choice === "lower_is_better" ? 1 : 0);
   if (/^c\d+\.polarity$/.test(id)) return e?.kind === "ordinal" ? 2 : 0;
   if (/^c\d+\.relation$/.test(id)) return (e?.kind === "ordinal" ? 2 : 0) + (choice === "ordered_levels" ? 1 : 0);
-  if (/^n\d+\.role$/.test(id)) return choice !== null && choice !== "measure" ? 1 : 0;
+  // Numbers that are names (jersey numbers, records) show the question best; years and ranks next.
+  if (/^n\d+\.role$/.test(id)) return choice === "identifier" || choice === "record" ? 2 : choice !== null && choice !== "measure" ? 1 : 0;
   return yes ? 1 : 0;
 };
 const sampleScores: Record<string, number> = {};
-const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null, judgment?: TableJudgment, failing: ReadonlySet<string> = new Set(), passing: ReadonlySet<string> = new Set()) => {
+const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null, judgment?: TableJudgment, failing: ReadonlySet<string> = new Set(), passing: ReadonlySet<string> = new Set(), headers: readonly string[] = []) => {
   const kind = id.replace(/\d+/g, "#");
   const answer = x.answers[id];
   // A column with a failing check makes a misleading example; it is a limitation, shown elsewhere.
-  const header = judgment?.encodings.find((e) => e.col === Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1))?.header;
+  const header = headers[Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1)];
   // A hand-labeled column that passes is the clearest example: the reader can check it.
   const score = header !== undefined && failing.has(header) ? -1 : sampleScore(id, answer, judgment) + (header !== undefined && passing.has(header) ? 2 : 0);
   if (samples[kind] === undefined || score > (sampleScores[kind] ?? 0)) {
@@ -166,7 +167,7 @@ for (const slug of slugs) {
     // A totals example needs a table with hand-labeled totals, so the site shows it.
     const totalsLabeled = ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
     for (const x of labeled ? alone.exchanges : []) {
-      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id, judgment, failingColumns, passingColumns);
+      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id, judgment, failingColumns, passingColumns, t.headers);
     }
     tables.push({
       snapshot: t satisfies TableSnapshot,
