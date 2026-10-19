@@ -14,3 +14,8 @@ web/.svelte-kit/
 
 # Tests site data (scripts/tests-data.ts)
 demo/tests/
+
+# Local only: trial fonts, the built Sheets add-on, agent worktrees.
+demo/fonts/
+dist-sheets/
+.claude/
