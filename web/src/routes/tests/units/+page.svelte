@@ -7,7 +7,7 @@
   const ABOUT: Readonly<Record<string, string>> = {
     "allow.test.ts": "The free endpoint accepts each request that the extension sends on the test pages. It refuses all other requests.",
     "allowance.test.ts": "The free daily allowance as the reader sees it: the requests that remain, the reset time, and the text.",
-    "judge.test.ts": "The judge, with answers supplied by code. Identifiers stay plain. Two-level labels stay plain. Shared scales. One failed table does not stop the other tables.",
+    "judge.test.ts": "The judge, with answers supplied by code. Code ignores identifiers and two-level labels. Shared scales. One failed table does not stop the other tables.",
     "legend.test.ts": "The card that shows when you put the pointer on a header: ranges and units for shared, log, ranked, and duration columns, and the totals that are not on the scale.",
     "model.test.ts": "Validation of answers, and the quota and allowance values from the free endpoint.",
     "order.test.ts": "The label order from pair answers, also when some answers disagree.",
@@ -15,7 +15,7 @@
     "parse.test.ts": "Cell text to numbers: currencies, percentages, suffixes, durations, ranges, and bounds. Also the text that must not become a number.",
     "profile.test.ts": "Column profiles: kind, spread, unit, ranks, years, and label order. Dates stay out.",
     "scale.test.ts": "Values to positions to colors, for each palette.",
-    "tint.test.ts": "Colors on the page background. For each palette, step, and page, the text contrast stays at 5:1 or more. If not, the cell stays plain.",
+    "tint.test.ts": "Colors on the page background. For each palette, step, and page, the text contrast stays at 5:1 or more. If not, the cell is not shaded.",
   };
   const total = $derived(data.units.reduce((n, u) => n + u.tests.length, 0));
   const failed = $derived(data.units.reduce((n, u) => n + u.tests.filter((t) => !t.ok).length, 0));

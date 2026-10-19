@@ -10,11 +10,11 @@ const POLARITY: Readonly<Record<string, string>> = {
   neutral: "no better direction",
 };
 
-/** A check's expected or actual value, in words: "none" → "left plain", "lower_is_better/log" → "lower is better · log". */
+/** A check's expected or actual value, in words: "none" → "ignored", "lower_is_better/log" → "lower is better · log". */
 export const plain = (value: string): string => {
-  if (value === "none") return "left plain";
-  if (value === "quantitative") return "shaded, as amounts";
-  if (value === "ordinal") return "shaded, as ordered labels";
+  if (value === "none") return "ignored";
+  if (value === "quantitative") return "amounts";
+  if (value === "ordinal") return "ordered labels";
   if (value.startsWith("ordinal[")) return `ordered labels: ${value.slice(8, -1)}`;
   const [polarity, transform] = value.split("/");
   if (polarity !== undefined && polarity in POLARITY) return `${POLARITY[polarity]}${transform === undefined ? "" : ` · ${transform}`}`;
@@ -37,7 +37,7 @@ export const describeValue = (kind: string, value: string): string => {
   }
   if (kind === "orientation") return value === "rows" ? "compared across rows" : "compared down columns";
   // A shade-or-not check is about the kind alone; direction and scale have their own checks.
-  if (kind === "detect") return value === "none" ? "left plain" : value.startsWith("ordinal") ? plain("ordinal") : plain(value.includes("/") ? "quantitative" : value);
+  if (kind === "detect") return value === "none" ? "ignored" : value.startsWith("ordinal") ? plain("ordinal") : plain(value.includes("/") ? "quantitative" : value);
   return plain(value);
 };
 

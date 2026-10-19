@@ -23,12 +23,12 @@ export const KINDS: readonly KindInfo[] = [
   {
     kind: "detect",
     slug: "shade-or-not",
-    title: "Shade or leave plain",
+    title: "Shade or ignore",
     short: "Is it useful to compare the values in this column?",
     about: [
       "Code sorts each column into numbers, labels, or text. Code does not send text columns to the model.",
-      "For a number column, the model tells what the numbers are. Only amounts get shading. Identifiers, years, ranks, cutoffs, and records such as 12-4 stay plain. A bracket such as 20–25 or 65+ is an amount. Code puts it on the scale at its midpoint.",
-      "For a label column, the model tells if the labels are grades in a fixed order. Only ordered labels get shading. A column with only two labels stays plain, unless it shares a scale with a column that has more labels.",
+      "For a number column, the model tells what the numbers are. Only amounts get shading. Code ignores identifiers, years, ranks, cutoffs, and records such as 12-4. A bracket such as 20–25 or 65+ is an amount. Code puts it on the scale at its midpoint.",
+      "For a label column, the model tells if the labels are grades in a fixed order. Only ordered labels get shading. Code ignores a column with only two labels, unless it shares a scale with a column that has more labels.",
     ],
     questions: ["n#.role", "c#.relation"],
     rule: (p) =>
@@ -78,7 +78,7 @@ export const KINDS: readonly KindInfo[] = [
     short: "Is this row a total?",
     about: [
       "A Total row or an Average row can make the scale too wide. Then all other rows look small.",
-      "Code finds the rows that can be totals and asks the model about them. Code removes total rows from the scale and does not shade them.",
+      "Code finds the rows that can be totals and asks the model about them. Code ignores total rows: they are not on the scale and not shaded.",
     ],
     questions: ["row#.aggregate"],
     rule: (p) => `Remove a row from the scale when P(total) is ${p.aggregate} or more.`,

@@ -3,7 +3,8 @@
   with it, and each possible answer with the probability the model gave it.
 -->
 <script lang="ts">
-  import type { Answer, Prose, Question } from "../../../../src/decide/model.ts";
+  import type { Answer, Question } from "../../../../src/decide/model.ts";
+  import { answerAnchor, answerName, glossaryFor } from "./glossary.ts";
   import Value from "./Value.svelte";
 
   interface Props {
@@ -27,18 +28,19 @@
   const context = $derived(
     typeof instructions === "string" ? null : Object.fromEntries(Object.entries(instructions as Record<string, unknown>).filter(([k]) => k !== "question")),
   );
-  const prose = (p: Prose | null): string => (p === null ? "" : typeof p === "string" ? p : JSON.stringify(p));
+  const entry = $derived(glossaryFor(id));
+  // Answers are shown by name; what each means is on the glossary page, not repeated under every question.
   const options = $derived.by(() => {
     if (question.type === "noul") {
       const p = answer?.type === "noul" ? answer.noul : null;
       return [
-        { key: "yes", prose: "", p },
-        { key: "no", prose: "", p: p === null ? null : 1 - p },
+        { key: "yes", p },
+        { key: "no", p: p === null ? null : 1 - p },
       ];
     }
     const probs = answer !== undefined && answer.type !== "noul" ? answer.probabilities : {};
-    const entries = question.type === "choice" ? Object.entries(question.criteria) : question.criteria.map((c, i) => [String(i), c] as const);
-    return entries.map(([key, c]) => ({ key, prose: prose(c), p: answer === undefined ? null : (probs[key] ?? 0) }));
+    const keys = question.type === "choice" ? Object.keys(question.criteria) : question.criteria.map((_, i) => String(i));
+    return keys.map((key) => ({ key, p: answer === undefined ? null : (probs[key] ?? 0) }));
   });
   const top = $derived(Math.max(...options.map((o) => o.p ?? 0)));
 </script>
@@ -54,6 +56,11 @@
   {#if state !== undefined}
     <details class="state">
       <summary>Table description sent with this question</summary>
+      <p class="about-state">
+        Practical Data makes this description from the cells of the table and sends it with the question.
+        <code>examples</code> are values from the column. <code>spread</code> tells how wide the range of values is.
+        <code>notes</code> give hints, such as values that look like years.
+      </p>
       <Value value={state} />
     </details>
   {/if}
@@ -63,8 +70,7 @@
       {#each options as o (o.key)}
         <tr class:top={o.p !== null && o.p === top}>
           <td>
-            <code>{o.key}</code>
-            {#if o.prose !== ""}<span class="prose">{o.prose}</span>{/if}
+            {#if entry?.answers[o.key]}<a href="/tests/glossary#{answerAnchor(entry, o.key)}" title={entry.answers[o.key]}>{answerName(o.key)}</a>{:else}{answerName(o.key)}{/if}
           </td>
           <td class="p">
             <span class="bar" aria-hidden="true"><span style:width="{(o.p ?? 0) * 100}%"></span></span>
@@ -89,10 +95,11 @@
   .answers th { text-align: left; font-size: 12.5px; font-weight: 600; color: var(--faint); padding: 0 0 6px; border-bottom: 1px solid var(--line); }
   .answers td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
   .answers td:first-child { padding-right: 20px; }
-  .answers code { font: 500 13px var(--mono); color: var(--muted); }
-  .answers .top code { color: var(--ink); }
-  .prose { display: block; margin-top: 2px; color: var(--faint); line-height: 1.45; max-width: 70ch; }
-  .top .prose { color: var(--muted); }
+  .answers td:first-child { color: var(--muted); }
+  .answers td:first-child a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; }
+  .answers .top td:first-child { color: var(--ink); font-weight: 600; }
+  .about-state { margin: 0 0 10px; font-size: 14px; color: var(--muted); max-width: 70ch; }
+  .about-state code { font: 12.5px var(--mono); color: var(--ink); }
   .p { width: 168px; }
   td.p { white-space: nowrap; }
   .bar { display: inline-block; width: 96px; height: 6px; margin-right: 10px; vertical-align: middle; background: color-mix(in srgb, var(--line) 70%, transparent); border-radius: 3px; overflow: hidden; }

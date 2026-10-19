@@ -44,7 +44,7 @@
       return { kind: "Amount", detail: parts.join(" · "), on: true };
     }
     if (e?.kind === "ordinal") return { kind: "Ordered labels", detail: [`${e.order.length} levels`, ...(e.group === null ? [] : ["shared scale"])].join(" · "), on: true };
-    return { kind: "Plain", detail: s === undefined ? "" : plainReason(s.reason), on: false };
+    return { kind: "Ignored", detail: s === undefined ? "" : plainReason(s.reason), on: false };
   };
   const strip = $derived(
     t.snapshot.headers.map((_, c) =>
@@ -62,9 +62,13 @@
   );
   const totals = $derived(new Set(t.judgment.aggregateRows));
 
+  // Results follow the table: whole-table checks first, then columns left to right.
+  const ordered = $derived(
+    [...t.checks].sort((a, b) => (a.column === null ? -1 : t.snapshot.headers.indexOf(a.column)) - (b.column === null ? -1 : t.snapshot.headers.indexOf(b.column))),
+  );
   const where = (c: ScoredCheck) => (c.column === null ? "Whole table" : c.column || "(no header)");
   const ok = $derived(t.checks.filter((c) => c.ok).length);
-  const evidence = $derived(t.checks.map((c) => evidenceFor(c, t.judgment)));
+  const evidence = $derived(ordered.map((c) => evidenceFor(c, t.judgment)));
   const hasEvidence = $derived(evidence.some((e) => e !== ""));
 </script>
 
@@ -115,7 +119,7 @@
     <caption class="sr">Checks on {t.title}: {ok} of {t.checks.length} pass</caption>
     <thead><tr><th scope="col">Column</th><th scope="col">Hand label</th><th scope="col">Judgment</th>{#if hasEvidence}<th scope="col">Model</th>{/if}<th scope="col">Result</th></tr></thead>
     <tbody>
-      {#each t.checks as c, i (i)}
+      {#each ordered as c, i (i)}
         <tr class:failed={!c.ok} onpointerenter={() => (pointed = c.column)} onpointerleave={() => (pointed = null)}>
           <th scope="row">{where(c)}</th>
           <td data-label="Hand label">{describeValue(c.kind, c.expected)}</td>
@@ -124,7 +128,7 @@
           <td class="result"><Verdict ok={c.ok} known={c.known} /></td>
         </tr>
         {#if c.known}
-          <tr class="why"><td colspan={hasEvidence ? 5 : 4}>Known issue: {c.known}</td></tr>
+          <tr class="why"><td colspan={hasEvidence ? 5 : 4}><a href="/tests/limitations">Known limitation</a>: {c.known}</td></tr>
         {/if}
       {/each}
     </tbody>
@@ -148,7 +152,7 @@
   .frame tbody tr:last-child td { border-bottom: 0; }
   tr.total td { font-weight: 600; box-shadow: inset 0 1px 0 var(--muted); }
 
-  tfoot td { position: sticky; bottom: 0; z-index: 1; background: var(--paper); border-top: 1px solid var(--line); vertical-align: top; font-family: var(--sans); padding-top: 8px; padding-bottom: 8px; }
+  tfoot td { position: sticky; bottom: 0; z-index: 1; background: color-mix(in srgb, var(--accent) 7%, var(--paper)); border-top: 2px solid color-mix(in srgb, var(--accent) 40%, var(--line)); vertical-align: top; font-family: var(--sans); padding-top: 8px; padding-bottom: 8px; }
   tfoot .k, .rowstrip .k { display: block; font-size: 12.5px; font-weight: 650; color: var(--accent); }
   tfoot .d { display: block; font-size: 12px; color: var(--muted); }
   tfoot td.off .k, .rowstrip .off .k { color: var(--faint); font-weight: 500; }
@@ -172,6 +176,7 @@
   .results tr.failed > * { background: color-mix(in srgb, var(--fail) 6%, transparent); }
   .evidence { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; }
   tr.why td { padding-top: 0; color: var(--muted); font-size: 14px; }
+  tr.why a { color: var(--known); font-weight: 600; }
   @media (max-width: 640px) {
     .results thead { display: none; }
     .results tbody tr:not(.why) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
