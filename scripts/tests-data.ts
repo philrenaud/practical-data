@@ -14,7 +14,7 @@ import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { Effect, Layer } from "effect";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
-import type { PageJudgment, PageSnapshot, TableSnapshot } from "../src/core/types.ts";
+import type { PageJudgment, PageSnapshot, TableJudgment, TableSnapshot } from "../src/core/types.ts";
 import { DEFAULT_POLICY, judgePage, MAX_TRANSPOSE_ROWS } from "../src/decide/judge.ts";
 import { DecisionModel, jev, type DecisionRequest, type DecisionResponse } from "../src/decide/model.ts";
 import { fileCache } from "./lib/cache.ts";
@@ -109,15 +109,35 @@ const checks: (Check & { known: string | null })[] = [];
 const pages = [];
 const samples: Record<string, { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }> = {};
 /**
- * Keeps the first question of each kind as its example, except that a yes
- * answer replaces a no: a row judged to be a total shows what the question is for.
+ * How well a question shows what its check is about; the best one of each
+ * kind becomes the example. A question about a column that was shaded beats
+ * one about an ignored column, and an answer that shows the point of the
+ * question (lower is better, ordered labels, a total, a log scale) beats a
+ * routine one. Ties keep the first seen.
  */
-const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null) => {
+const sampleScore = (id: string, answer: DecisionResponse["answers"][string] | undefined, table: TableJudgment | undefined): number => {
+  const col = Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1);
+  const e = table?.encodings.find((x) => x.col === col);
+  const choice = answer?.type === "choice" ? answer.choice : null;
+  const yes = answer?.type === "noul" && answer.noul >= 0.5;
+  if (/^n\d+\.polarity$/.test(id)) return (e?.kind === "quantitative" ? 2 : 0) + (choice === "lower_is_better" ? 1 : 0);
+  if (/^c\d+\.polarity$/.test(id)) return e?.kind === "ordinal" ? 2 : 0;
+  if (/^c\d+\.relation$/.test(id)) return (e?.kind === "ordinal" ? 2 : 0) + (choice === "ordered_levels" ? 1 : 0);
+  if (/^n\d+\.role$/.test(id)) return choice !== null && choice !== "measure" ? 1 : 0;
+  return yes ? 1 : 0;
+};
+const sampleScores: Record<string, number> = {};
+const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null, judgment?: TableJudgment, failing: ReadonlySet<string> = new Set(), passing: ReadonlySet<string> = new Set()) => {
   const kind = id.replace(/\d+/g, "#");
   const answer = x.answers[id];
-  const held = samples[kind]?.answer as DecisionResponse["answers"][string] | undefined;
-  const yes = (a: typeof held) => a?.type === "noul" && a.noul >= 0.5;
-  if (samples[kind] === undefined || (!yes(held) && yes(answer))) samples[kind] = { id, question, answer, state: x.state, page, table };
+  // A column with a failing check makes a misleading example; it is a limitation, shown elsewhere.
+  const header = judgment?.encodings.find((e) => e.col === Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1))?.header;
+  // A hand-labeled column that passes is the clearest example: the reader can check it.
+  const score = header !== undefined && failing.has(header) ? -1 : sampleScore(id, answer, judgment) + (header !== undefined && passing.has(header) ? 2 : 0);
+  if (samples[kind] === undefined || score > (sampleScores[kind] ?? 0)) {
+    samples[kind] = { id, question, answer, state: x.state, page, table };
+    sampleScores[kind] = score;
+  }
 };
 let requests = 0;
 let inputTokens = 0;
@@ -141,10 +161,12 @@ for (const slug of slugs) {
     const alone = await judgeRecorded({ ...page, tables: [t] });
     // Example questions come from hand-labeled tables on real pages, which the site shows.
     const labeled = sources.has(slug) && (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
+    const passingColumns = new Set(pageChecks.filter((c) => c.ok && c.table === t.id && c.column !== null).map((c) => c.column!));
+    const failingColumns = new Set(pageChecks.filter((c) => !c.ok && c.table === t.id && c.column !== null).map((c) => c.column!));
     // A totals example needs a table with hand-labeled totals, so the site shows it.
     const totalsLabeled = ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
     for (const x of labeled ? alone.exchanges : []) {
-      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id);
+      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id, judgment, failingColumns, passingColumns);
     }
     tables.push({
       snapshot: t satisfies TableSnapshot,

@@ -8,6 +8,7 @@ export const load = async () => {
     sites: index.pages
       .filter((p) => p.source !== null)
       .map((p) => ({
+        slug: p.slug,
         name: p.name,
         title: p.source!.title,
         url: p.source!.url,

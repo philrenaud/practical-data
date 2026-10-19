@@ -103,6 +103,12 @@ const rangeOf = (rows: readonly (readonly string[])[], col: number): [number, nu
   return values.length === 0 ? null : [Math.min(...values), Math.max(...values)];
 };
 
+/** The column that says what each row is: the first one whose cells are mostly not numbers. */
+const labelColumn = (t: CaseTable): number => {
+  const i = t.snapshot.headers.findIndex((_, c) => t.snapshot.rows.filter((r) => parseNumber(r[c] ?? "") === null).length > t.snapshot.rows.length / 2);
+  return i < 0 ? 0 : i;
+};
+
 /**
  * One shared-scale check: the columns it names, each with its own range of
  * values, and the scale each was painted on (one domain when shared).
@@ -121,7 +127,13 @@ export const sharedGroups = (cases: readonly CaseTable[]): ShareGroup[] => {
         header: c.column,
         range: col < 0 ? null : rangeOf(t.snapshot.rows, col),
         domain: e?.kind === "quantitative" ? e.domain : null,
-        format: col < 0 ? "" : (t.snapshot.rows.find((r) => parseNumber(r[col] ?? "") !== null)?.[col] ?? ""),
+        // A single number, not a range: "59,488–62,013" would make every label a range.
+        format: col < 0 ? "" : (t.snapshot.rows.find((r) => { const n = parseNumber(r[col] ?? ""); return n !== null && n.range === null; })?.[col] ?? ""),
+        encoding: e ?? null,
+        labelHeader: t.snapshot.headers[labelColumn(t)] ?? "",
+        // Each row as the reader sees it: what the row is, and its cell in the shared column.
+        rows: col < 0 ? [] : t.snapshot.rows.map((r) => ({ label: r[labelColumn(t)] ?? "", cell: r[col] ?? "", value: parseNumber(r[col] ?? "")?.value ?? null })),
+        groupSizes: t.groupSizes,
       };
       const g = groups.get(key);
       if (g === undefined) groups.set(key, { check: c, members: [member] });

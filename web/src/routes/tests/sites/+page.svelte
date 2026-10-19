@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SITE_NOTES } from "#lib/tests/limitations.ts";
+
   const { data } = $props();
 </script>
 
@@ -16,6 +18,7 @@
       <a class="name" href={s.url} rel="noopener">{s.title}</a>
       <span class="host">{s.host}</span>
       <p class="checks">Checks: {#each s.kinds as k, i (k.slug)}{i > 0 ? ", " : ""}<a href="/tests/checks/{k.slug}">{k.title.toLowerCase()}</a>{/each}</p>
+      {#if SITE_NOTES[s.slug]}<p class="note">{SITE_NOTES[s.slug]} <a href="/tests/limitations">Known limitations</a></p>{/if}
       {#if s.rights}<p class="rights">{s.rights}</p>{/if}
     </li>
   {/each}
@@ -28,5 +31,7 @@
   .host { margin-left: 8px; font-size: 13.5px; color: var(--faint); }
   .checks { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); }
   .checks a { color: inherit; }
+  .note { margin: 6px 0 0; font-size: 14px; color: var(--known); }
+  .note a { color: inherit; font-weight: 600; }
   .rights { margin: 2px 0 0; font-size: 13px; color: var(--faint); }
 </style>

@@ -1,7 +1,7 @@
 /** Shapes of demo/tests/*.json (written by scripts/tests-data.ts). */
 import type { Policy } from "../../../../src/decide/judge.ts";
 import type { Answer, Question } from "../../../../src/decide/model.ts";
-import type { PageJudgment, TableJudgment, TableSnapshot } from "../../../../src/core/types.ts";
+import type { ColumnEncoding, PageJudgment, TableJudgment, TableSnapshot } from "../../../../src/core/types.ts";
 import type { Check, CheckKind } from "../../../../scripts/lib/score.ts";
 
 export type { Check, CheckKind };
@@ -131,5 +131,11 @@ export interface ShareGroup {
     readonly domain: readonly [number, number] | null;
     /** One cell as written, so the scale can be labeled in the column's own format ("$39.00"). */
     readonly format: string;
+    /** The column's judgment (with the shared domain or order), for painting its values. */
+    readonly encoding: ColumnEncoding | null;
+    /** Header of the column that names each row (Team, Model, Location). */
+    readonly labelHeader: string;
+    readonly rows: readonly { readonly label: string; readonly cell: string; readonly value: number | null }[];
+    readonly groupSizes: ReadonlyMap<string, number>;
   }[];
 }

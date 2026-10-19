@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SITE_LIMITATIONS } from "#lib/tests/limitations.ts";
+
   const { data } = $props();
 </script>
 
@@ -7,7 +9,8 @@
 </svelte:head>
 
 <h1>Known limitations</h1>
-<p class="lede-docs">These are mistakes that the tool makes on real tables. Each one causes a check to fail. CI accepts these failures, but no other failures.</p>
+<p class="lede-docs">These are mistakes that the tool makes on real pages.</p>
+<p>The first ones cause a check to fail. CI accepts these failures, but no other failures. The last ones show only on live pages.</p>
 
 {#each data.limitations as l, i (i)}
   <section class="limit">
@@ -18,8 +21,14 @@
       {#each l.examples as e, j (j)}{j > 0 ? "; " : ""}<a href="/tests/checks/{e.slug}#{e.anchor}">{e.column ?? "whole table"}</a> in {e.page} ({e.kind.toLowerCase()}){/each}.
     </p>
   </section>
-{:else}
-  <p>No check fails at this time.</p>
+{/each}
+
+{#each SITE_LIMITATIONS as l (l.title)}
+  <section class="limit">
+    <h2>{l.title}</h2>
+    <p>{l.body}</p>
+    <p class="seen">Example{l.examples.length === 1 ? "" : "s"}: {#each l.examples as e, j (e.url)}{j > 0 ? "; " : ""}<a href={e.url} rel="noopener">{e.label}</a>{/each}.</p>
+  </section>
 {/each}
 
 <style>
