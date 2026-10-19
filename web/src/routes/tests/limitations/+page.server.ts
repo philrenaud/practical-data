@@ -10,7 +10,7 @@ export const load = async () => {
     if (c.ok || c.known === null) continue;
     const kind = KINDS.find((k) => k.kind === c.kind)!;
     // A shared-scale check names "t0:Death toll + t1:Death toll"; readers need the header once.
-    const example = { kind: kind.title, slug: kind.slug, page: names.get(c.page) ?? c.page, column: c.kind === "shared" && c.column !== null ? [...new Set(c.column.split(" + ").map((m) => m.replace(/^t\d+:/, "")))].join(", ") : c.column, anchor: `${c.page}-${c.table}` };
+    const example = { kind: kind.title, slug: kind.slug, page: names.get(c.page) ?? c.page, column: c.kind === "shared" && c.column !== null ? [...new Set(c.column.split(" + ").map((m) => m.replace(/^t\d+:/, "")))].join(", ") : c.column, anchor: `${c.page}-${c.table ?? c.column?.split(":")[0]}` };
     byReason.set(c.known, [...(byReason.get(c.known) ?? []), example]);
   }
   return {
