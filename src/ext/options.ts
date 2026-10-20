@@ -7,7 +7,15 @@ import { cellFill, isDark } from "../core/tint.ts";
 import type { ColumnEncoding, PageSnapshot, TableJudgment } from "../core/types.ts";
 import { judgePage } from "../decide/judge.ts";
 import { layerFromConfig } from "../decide/model.ts";
-import { DEFAULT_SETTINGS, getInstallId, loadSettings, providerConfig, saveSettings, setSiteEnabledIn, type Settings } from "./settings.ts";
+import {
+  DEFAULT_SETTINGS,
+  getInstallId,
+  loadSettings,
+  providerConfig,
+  saveSettings,
+  setSiteEnabledIn,
+  type Settings,
+} from "./settings.ts";
 
 const SAMPLE: PageSnapshot = {
   url: "chrome-extension://options",
@@ -28,7 +36,12 @@ const SAMPLE: PageSnapshot = {
   ],
 };
 
-const evidence = { comparable: 1, polarity: { higher_is_better: 0, lower_is_better: 1, neutral: 0 }, log: 1, orderConfidence: 1 };
+const evidence = {
+  comparable: 1,
+  polarity: { higher_is_better: 0, lower_is_better: 1, neutral: 0 },
+  log: 1,
+  orderConfidence: 1,
+};
 
 /** What a typical judgment of SAMPLE looks like, so the preview renders before any key exists. */
 const EXAMPLE: TableJudgment = {
@@ -38,10 +51,53 @@ const EXAMPLE: TableJudgment = {
   aggregateRows: [],
   skipped: [],
   encodings: [
-    { kind: "ordinal", col: 1, header: "Category", polarity: "neutral", order: ["lightweight", "versatile", "powerful"], labels: ["Lightweight", "Versatile", "Powerful"], values: ["lightweight", "versatile", "powerful", "lightweight", "versatile"], group: null, evidence },
-    { kind: "quantitative", col: 2, header: "Input", polarity: "lower_is_better", transform: "log", unit: "$", domain: [0.08, 15], values: [0.15, 2.5, 15, 0.08, 1.25], group: null, evidence },
-    { kind: "quantitative", col: 3, header: "Output", polarity: "lower_is_better", transform: "log", unit: "$", domain: [0.3, 60], values: [0.6, 10, 60, 0.3, 5], group: null, evidence },
-    { kind: "quantitative", col: 4, header: "Context window", polarity: "higher_is_better", transform: "log", unit: null, domain: [128e3, 2e6], values: [128e3, 256e3, 1e6, 1e6, 2e6], group: null, evidence },
+    {
+      kind: "ordinal",
+      col: 1,
+      header: "Category",
+      polarity: "neutral",
+      order: ["lightweight", "versatile", "powerful"],
+      labels: ["Lightweight", "Versatile", "Powerful"],
+      values: ["lightweight", "versatile", "powerful", "lightweight", "versatile"],
+      group: null,
+      evidence,
+    },
+    {
+      kind: "quantitative",
+      col: 2,
+      header: "Input",
+      polarity: "lower_is_better",
+      transform: "log",
+      unit: "$",
+      domain: [0.08, 15],
+      values: [0.15, 2.5, 15, 0.08, 1.25],
+      group: null,
+      evidence,
+    },
+    {
+      kind: "quantitative",
+      col: 3,
+      header: "Output",
+      polarity: "lower_is_better",
+      transform: "log",
+      unit: "$",
+      domain: [0.3, 60],
+      values: [0.6, 10, 60, 0.3, 5],
+      group: null,
+      evidence,
+    },
+    {
+      kind: "quantitative",
+      col: 4,
+      header: "Context window",
+      polarity: "higher_is_better",
+      transform: "log",
+      unit: null,
+      domain: [128e3, 2e6],
+      values: [128e3, 256e3, 1e6, 1e6, 2e6],
+      group: null,
+      evidence,
+    },
   ],
 };
 
@@ -103,11 +159,19 @@ const renderPalettes = () => {
     .data(Object.entries(PALETTES))
     .join((enter) => {
       const label = enter.append("label").attr("class", "palette");
-      label.append("input").attr("type", "radio").attr("name", "palette").attr("value", ([id]) => id);
+      label
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "palette")
+        .attr("value", ([id]) => id);
       label.append("b").text(([, p]) => p.label);
       const sw = label.append("div").attr("class", "swatches");
-      sw.append("span").attr("title", "Light pages").style("background", ([id]) => gradient(divergingStops(id as Palette, false, "#ece8e1")));
-      sw.append("span").attr("title", "Dark pages").style("background", ([id]) => gradient(divergingStops(id as Palette, true, "#26252b")));
+      sw.append("span")
+        .attr("title", "Light pages")
+        .style("background", ([id]) => gradient(divergingStops(id as Palette, false, "#ece8e1")));
+      sw.append("span")
+        .attr("title", "Dark pages")
+        .style("background", ([id]) => gradient(divergingStops(id as Palette, true, "#26252b")));
       label.append("small").text(([, p]) => p.note);
       return label;
     });
@@ -125,7 +189,12 @@ const renderPreview = () => {
 
   const t = select("#preview");
   t.selectAll("*").remove();
-  t.append("thead").append("tr").selectAll("th").data(table.headers).join("th").text((d) => d);
+  t.append("thead")
+    .append("tr")
+    .selectAll("th")
+    .data(table.headers)
+    .join("th")
+    .text((d) => d);
   t.append("tbody")
     .selectAll("tr")
     .data(table.rows)
@@ -194,7 +263,9 @@ const test = async () => {
   judgment = result.success.tables[0]!;
   renderPreview();
   const ms = Math.round(performance.now() - started);
-  setStatus(`${result.success.model} judged ${judgment.encodings.length} of 5 columns in ${ms} ms (${result.success.usage.inputTokens} tokens).`);
+  setStatus(
+    `${result.success.model} judged ${judgment.encodings.length} of 5 columns in ${ms} ms (${result.success.usage.inputTokens} tokens).`,
+  );
   document.querySelector("#preview-note")!.textContent = "Preview shows the model's live judgment.";
 };
 
@@ -214,7 +285,8 @@ document.querySelector("#clear")!.addEventListener("click", async () => {
   setStatus(`Cleared ${keys.length} cached answer${keys.length === 1 ? "" : "s"}.`);
 });
 
-document.querySelector("#build")!.textContent = `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
+document.querySelector("#build")!.textContent =
+  `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
 renderPalettes();
 write(await loadSettings().catch(() => DEFAULT_SETTINGS));
 renderPreview();

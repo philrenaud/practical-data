@@ -1,0 +1,8 @@
+# Data, not source: recorded model answers, page snapshots, generated demo data.
+fixtures/
+demo/
+package-lock.json
+web/.svelte-kit/
+web/dev-fonts/
+# Prose: hand-wrapped; Prettier pads tables to the widest cell.
+*.md

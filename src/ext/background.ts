@@ -93,7 +93,10 @@ const judge = async (msg: Extract<ToWorker, { type: "judge" }>): Promise<JudgeRe
       ? { ok: false, reason: coolReason, message: "Today's free allowance is used up." }
       : { ok: false, reason: "rate_limited", message: "Cooling down after rate limiting; try again shortly." };
   }
-  const page = { ...msg.page, tables: msg.page.tables.slice(0, MAX_TABLES).map((t) => ({ ...t, rows: t.rows.slice(0, MAX_ROWS) })) };
+  const page = {
+    ...msg.page,
+    tables: msg.page.tables.slice(0, MAX_TABLES).map((t) => ({ ...t, rows: t.rows.slice(0, MAX_ROWS) })),
+  };
   const program = judgePage(page, DEFAULT_POLICY, msg.orientations).pipe(
     Effect.provide(Layer.merge(layerFromConfig(config), ChromeAnswerCache)),
     Effect.map((judgment): JudgeReply => ({ ok: true, judgment, palette: settings.palette })),

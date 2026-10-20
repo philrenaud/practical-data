@@ -26,7 +26,9 @@
     const decimals = m?.[3]?.length ?? 0;
     return `${m?.[1] ?? ""}${v.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${m?.[4] ?? ""}`;
   };
-  const shared = $derived(g.members.every((m) => m.encoding?.group != null && m.encoding.group === g.members[0]!.encoding?.group));
+  const shared = $derived(
+    g.members.every((m) => m.encoding?.group != null && m.encoding.group === g.members[0]!.encoding?.group),
+  );
 
   /** A two-column judgment for a member's excerpt: the row label, then the shared column, painted as judged. */
   const excerptJudgment = (m: Member): TableJudgment => ({
@@ -52,9 +54,18 @@
       <figure class="excerpt">
         <figcaption><a href="#{m.key.replace(':', '-')}">{m.title}</a></figcaption>
         <div class="frame">
-          <table use:shade={{ id: `share-${m.key}-${first.header}`, judgment: excerptJudgment(m), palette: DEFAULT_PALETTE, groupSizes: m.groupSizes }}>
+          <table
+            use:shade={{
+              id: `share-${m.key}-${first.header}`,
+              judgment: excerptJudgment(m),
+              palette: DEFAULT_PALETTE,
+              groupSizes: m.groupSizes,
+            }}
+          >
             <thead><tr><th scope="col">{m.labelHeader}</th><th scope="col">{m.header}</th></tr></thead>
-            <tbody>{#each m.rows as r, i (i)}<tr><td>{r.label}</td><td>{r.cell}</td></tr>{/each}</tbody>
+            <tbody
+              >{#each m.rows as r, i (i)}<tr><td>{r.label}</td><td>{r.cell}</td></tr>{/each}</tbody
+            >
           </table>
         </div>
       </figure>
@@ -68,44 +79,175 @@
         <div class="row">
           <span class="t">{m.title}</span>
           <div class="track">
-            {#if m.domain}<span class="domain" style:left="{at(m.domain[0])}%" style:width="{at(m.domain[1]) - at(m.domain[0])}%"></span>{/if}
-            {#each m.rows as r, i (i)}{#if r.value !== null}<span class="dot" style:left="{at(r.value)}%" title="{r.label}: {r.cell}"></span>{/if}{/each}
+            {#if m.domain}<span
+                class="domain"
+                style:left="{at(m.domain[0])}%"
+                style:width="{at(m.domain[1]) - at(m.domain[0])}%"
+              ></span>{/if}
+            {#each m.rows as r, i (i)}{#if r.value !== null}<span
+                  class="dot"
+                  style:left="{at(r.value)}%"
+                  title="{r.label}: {r.cell}"
+                ></span>{/if}{/each}
           </div>
           <span class="v">{m.range ? `${fmt(m.range[0], m.format)} to ${fmt(m.range[1], m.format)}` : ""}</span>
         </div>
       {/each}
-      <p class="key">Each dot is one row. The band is the scale that the table is shaded on{shared ? ": the same for each table" : ""}.</p>
+      <p class="key">
+        Each dot is one row. The band is the scale that the table is shaded on{shared
+          ? ": the same for each table"
+          : ""}.
+      </p>
     </div>
   {/if}
 </section>
 
 <style>
-  .share { margin: 40px 0 0; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
-  h3 { margin: 0 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; font-size: 19px; font-weight: 650; }
-  .h { font-weight: 700; }
-  .excerpts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-  .excerpt { margin: 0; min-width: 0; }
-  .excerpt figcaption { margin-bottom: 6px; font-size: 14px; font-weight: 600; }
-  .excerpt figcaption a { color: var(--ink); text-decoration: none; }
-  .excerpt figcaption a:hover { text-decoration: underline; }
-  .frame { max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); -webkit-overflow-scrolling: touch; }
-  table { border-collapse: collapse; width: 100%; font: 12.5px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
-  th { position: sticky; top: 0; z-index: 1; background: var(--paper); text-align: left; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--muted); }
-  th, td { padding: 5px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  td:first-child { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .share {
+    margin: 40px 0 0;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 {
+    margin: 0 0 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 10px;
+    font-size: 19px;
+    font-weight: 650;
+  }
+  .h {
+    font-weight: 700;
+  }
+  .excerpts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+  }
+  .excerpt {
+    margin: 0;
+    min-width: 0;
+  }
+  .excerpt figcaption {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .excerpt figcaption a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .excerpt figcaption a:hover {
+    text-decoration: underline;
+  }
+  .frame {
+    max-height: 240px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font: 12.5px/1.4 var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--paper);
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  th,
+  td {
+    padding: 5px 9px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  td:first-child {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-  .ranges { margin-top: 18px; display: grid; gap: 8px; }
-  .axis { display: flex; justify-content: space-between; margin-left: calc(min(200px, 30%) + 14px); margin-right: calc(150px + 14px); font: 12px var(--mono); color: var(--faint); }
-  .row { display: grid; grid-template-columns: minmax(0, min(200px, 30%)) minmax(0, 1fr) 150px; align-items: center; gap: 14px; font-size: 14px; }
-  .t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .track { position: relative; height: 16px; border-radius: 8px; background: color-mix(in srgb, var(--line) 50%, transparent); }
-  .domain { position: absolute; top: 0; bottom: 0; border-radius: 8px; background: color-mix(in srgb, var(--accent) 20%, transparent); }
-  .dot { position: absolute; top: 4px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--accent); opacity: 0.75; }
-  .v { font: 12.5px var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
-  .key { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .ranges {
+    margin-top: 18px;
+    display: grid;
+    gap: 8px;
+  }
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-left: calc(min(200px, 30%) + 14px);
+    margin-right: calc(150px + 14px);
+    font: 12px var(--mono);
+    color: var(--faint);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, min(200px, 30%)) minmax(0, 1fr) 150px;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+  }
+  .t {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .track {
+    position: relative;
+    height: 16px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--line) 50%, transparent);
+  }
+  .domain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .dot {
+    position: absolute;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.75;
+  }
+  .v {
+    font: 12.5px var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .key {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
   @media (max-width: 640px) {
-    .axis { margin: 0; }
-    .row { grid-template-columns: minmax(0, 1fr) auto; }
-    .track { grid-column: 1 / -1; grid-row: 2; }
+    .axis {
+      margin: 0;
+    }
+    .row {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .track {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
   }
 </style>

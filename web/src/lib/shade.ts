@@ -32,7 +32,12 @@ export const shade: Action<HTMLTableElement, ShadeOptions> = (node, options) => 
       extracted = extractTable(node, id, []);
     }
     if (extracted === null || o.colored === false || o.theme === "") return;
-    paintTable(o.judgment.orientation === "rows" ? transposeExtracted(extracted) : extracted, o.judgment, o.palette, o.groupSizes);
+    paintTable(
+      o.judgment.orientation === "rows" ? transposeExtracted(extracted) : extracted,
+      o.judgment,
+      o.palette,
+      o.groupSizes,
+    );
   };
   paint(options);
   return { update: paint, destroy: () => unpaint(node) };

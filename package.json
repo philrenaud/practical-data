@@ -22,7 +22,7 @@
     "snapshot": "node scripts/snapshot.ts",
     "eval": "node scripts/eval.ts",
     "e2e": "node scripts/e2e.ts",
-    "check": "npm run typecheck && npm test && npm run build && npm run eval -- --offline --strict && npm run e2e -- --offline",
+    "check": "npm run format:check && npm run typecheck && npm test && npm run build && npm run eval -- --offline --strict && npm run e2e -- --offline",
     "demo": "npm run build && npm run demo:data && npm run tests:data && node scripts/build-demo.ts",
     "web:dev": "npm run demo:data && npm run tests:data && npm run dev -w web",
     "web:check": "npm run check -w web",
@@ -32,7 +32,9 @@
     "api:smoke": "node scripts/api-smoke.ts",
     "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc",
     "demo:data": "node scripts/demo-data.ts",
-    "tests:data": "node scripts/tests-data.ts"
+    "tests:data": "node scripts/tests-data.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "d3-color": "3.1.0",
@@ -52,6 +54,8 @@
     "@types/node": "26.6.4",
     "esbuild": "0.28.2",
     "playwright": "1.63.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
     "typescript": "7.0.2"
   },
   "workspaces": [

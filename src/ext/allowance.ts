@@ -30,7 +30,11 @@ export const resetTime = (now: Date, locale?: string): string => {
  * Keeps the lowest count reported today. Responses to one page's requests
  * arrive out of order, so a later, higher count is stale; a new day starts over.
  */
-export const mergeAllowance = (stored: StoredAllowance | undefined, reported: Allowance, now: Date): StoredAllowance => {
+export const mergeAllowance = (
+  stored: StoredAllowance | undefined,
+  reported: Allowance,
+  now: Date,
+): StoredAllowance => {
   const day = utcDay(now);
   if (stored === undefined || stored.day !== day || stored.limit !== reported.limit) return { ...reported, day };
   return { ...reported, remaining: Math.min(stored.remaining, reported.remaining), day };

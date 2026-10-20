@@ -83,7 +83,8 @@ for (const slug of slugs) {
   console.log(`${slug.padEnd(36)} ${String(colored).padStart(3)} columns  ${Math.round(performance.now() - t0)} ms`);
   if (args.verbose) {
     for (const t of judgment.tables) {
-      for (const e of t.encodings) console.log(`    ${t.id} ${e.header.padEnd(28)} ${describeEncoding(e)}${e.group ? `  ⇄ ${e.group}` : ""}`);
+      for (const e of t.encodings)
+        console.log(`    ${t.id} ${e.header.padEnd(28)} ${describeEncoding(e)}${e.group ? `  ⇄ ${e.group}` : ""}`);
     }
   }
 }
@@ -91,7 +92,8 @@ for (const slug of slugs) {
 await mkdir("artifacts", { recursive: true });
 await writeFile(`artifacts/eval-${args.provider}.json`, JSON.stringify(out, null, 1));
 
-const pct = ([a, b]: [number, number]) => (b === 0 ? "  n/a" : `${((100 * a) / b).toFixed(0).padStart(4)}%  (${a}/${b})`);
+const pct = ([a, b]: [number, number]) =>
+  b === 0 ? "  n/a" : `${((100 * a) / b).toFixed(0).padStart(4)}%  (${a}/${b})`;
 console.log(`
 model ${args.provider}${args.offline ? " (offline replay)" : ""} · ${requests} requests · ${tokens.toLocaleString()} input tokens · ${Math.round(performance.now() - started)} ms
   color / don't color  ${pct(tallyOf("detect"))}
@@ -101,7 +103,8 @@ model ${args.provider}${args.offline ? " (offline replay)" : ""} · ${requests} 
   aggregate rows       ${pct(tallyOf("aggregates"))}
   shared scales        ${pct(tallyOf("shared"))}
   rows vs columns      ${pct(tallyOf("orientation"))}`);
-const list = (title: string, xs: string[]) => xs.length > 0 && console.log(`\n${title}\n${xs.map((x) => `  - ${x}`).join("\n")}`);
+const list = (title: string, xs: string[]) =>
+  xs.length > 0 && console.log(`\n${title}\n${xs.map((x) => `  - ${x}`).join("\n")}`);
 const falsePositive = failures((c) => c.kind === "detect" && c.side === "colored");
 const falseNegative = failures((c) => c.kind === "detect" && c.side === "missed");
 const misses = failures((c) => c.kind !== "detect");
@@ -111,9 +114,7 @@ list("Wrong details:", misses);
 
 // --strict: fail on any regression not documented in expectations.$known.
 const known = Object.keys((expectations["$known"] ?? {}) as Record<string, unknown>);
-const unexpected = [...falsePositive, ...falseNegative, ...misses].filter(
-  (m) => !known.some((k) => m.startsWith(k)),
-);
+const unexpected = [...falsePositive, ...falseNegative, ...misses].filter((m) => !known.some((k) => m.startsWith(k)));
 if (args.strict && unexpected.length > 0) {
   console.log(`\n${unexpected.length} unexpected mismatch(es); see above.`);
   process.exitCode = 1;

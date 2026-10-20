@@ -75,11 +75,7 @@ const mode = <A>(xs: readonly A[]): A | undefined => {
   return best;
 };
 
-const profileNumeric = (
-  col: number,
-  header: string,
-  cells: readonly string[],
-): NumericProfile | null => {
+const profileNumeric = (col: number, header: string, cells: readonly string[]): NumericProfile | null => {
   const filled = cells.filter((c) => !isMissing(c));
   const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c)));
   const numeric = parsed.filter((p) => p !== null);
@@ -120,11 +116,7 @@ const profileNumeric = (
   };
 };
 
-const profileCategorical = (
-  col: number,
-  header: string,
-  cells: readonly string[],
-): CategoricalProfile | string => {
+const profileCategorical = (col: number, header: string, cells: readonly string[]): CategoricalProfile | string => {
   const values = cells.map((c) => (isMissing(c) ? null : normalizeLabel(c)));
   const filled = values.filter((v) => v !== null);
   const display: Record<string, string> = {};

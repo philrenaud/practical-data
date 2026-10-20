@@ -20,9 +20,11 @@
   const focus = (frame: HTMLElement, target: { col: number | null; row: number | null }) => {
     const box = frame.getBoundingClientRect();
     const th = target.col === null ? undefined : frame.querySelectorAll("thead th")[target.col];
-    if (th !== undefined) frame.scrollLeft = Math.max(0, th.getBoundingClientRect().left - box.left + frame.scrollLeft - 64);
+    if (th !== undefined)
+      frame.scrollLeft = Math.max(0, th.getBoundingClientRect().left - box.left + frame.scrollLeft - 64);
     const tr = target.row === null ? undefined : frame.querySelectorAll("tbody tr")[target.row];
-    if (tr !== undefined) frame.scrollTop = Math.max(0, tr.getBoundingClientRect().top - box.top + frame.scrollTop - 64);
+    if (tr !== undefined)
+      frame.scrollTop = Math.max(0, tr.getBoundingClientRect().top - box.top + frame.scrollTop - 64);
   };
 </script>
 
@@ -34,29 +36,99 @@
     {:else}the table {t.title}:{/if}
   </p>
   <div class="frame" use:focus={{ col, row }}>
-    <table use:shade={{ id: `preview-${t.slug}-${t.id}`, judgment: t.judgment, palette: DEFAULT_PALETTE, groupSizes: t.groupSizes }}>
-      <thead><tr>{#each t.snapshot.headers as h, i (i)}<th scope="col" class:on={i === col}>{h}</th>{/each}</tr></thead>
+    <table
+      use:shade={{
+        id: `preview-${t.slug}-${t.id}`,
+        judgment: t.judgment,
+        palette: DEFAULT_PALETTE,
+        groupSizes: t.groupSizes,
+      }}
+    >
+      <thead
+        ><tr
+          >{#each t.snapshot.headers as h, i (i)}<th scope="col" class:on={i === col}>{h}</th>{/each}</tr
+        ></thead
+      >
       <tbody>
         {#each t.snapshot.rows as r, ri (ri)}
-          <tr class:on={ri === row}>{#each r as cell, ci (ci)}<td class:on={ci === col}>{cell}</td>{/each}</tr>
+          <tr class:on={ri === row}
+            >{#each r as cell, ci (ci)}<td class:on={ci === col}>{cell}</td>{/each}</tr
+          >
         {/each}
       </tbody>
     </table>
   </div>
-  <figcaption>{t.title} · {#if t.source.url}<a href={t.source.url} rel="noopener">{t.source.label}</a>{:else}{t.source.label}{/if}</figcaption>
+  <figcaption>
+    {t.title} · {#if t.source.url}<a href={t.source.url} rel="noopener">{t.source.label}</a>{:else}{t.source.label}{/if}
+  </figcaption>
 </figure>
 
 <style>
-  .preview { margin: 0 0 16px; }
-  .frame { max-height: 236px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); -webkit-overflow-scrolling: touch; }
-  table { border-collapse: collapse; min-width: 100%; font: 12.5px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
-  th { position: sticky; top: 0; z-index: 1; background: var(--paper); text-align: left; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--muted); }
-  th, td { padding: 5px 9px; white-space: nowrap; border-bottom: 1px solid var(--line); }
-  td.on { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
-  th.on { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent), inset 0 2px 0 var(--accent); color: var(--ink); }
-  tr.on td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
-  figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
-  figcaption a { color: inherit; }
-  .lead { margin: 0 0 8px; font-size: 16px; }
-  .lead .name { font-weight: 650; box-shadow: inset 0 -2px 0 var(--accent); }
+  .preview {
+    margin: 0 0 16px;
+  }
+  .frame {
+    max-height: 236px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font: 12.5px/1.4 var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--paper);
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  th,
+  td {
+    padding: 5px 9px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+  }
+  td.on {
+    box-shadow:
+      inset 2px 0 0 var(--accent),
+      inset -2px 0 0 var(--accent);
+  }
+  th.on {
+    box-shadow:
+      inset 2px 0 0 var(--accent),
+      inset -2px 0 0 var(--accent),
+      inset 0 2px 0 var(--accent);
+    color: var(--ink);
+  }
+  tr.on td {
+    box-shadow:
+      inset 0 2px 0 var(--accent),
+      inset 0 -2px 0 var(--accent);
+  }
+  figcaption {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  figcaption a {
+    color: inherit;
+  }
+  .lead {
+    margin: 0 0 8px;
+    font-size: 16px;
+  }
+  .lead .name {
+    font-weight: 650;
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
 </style>

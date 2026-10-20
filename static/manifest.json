@@ -4,28 +4,16 @@
   "version": "1.0.0",
   "description": "Conditional formatting for every web table: shades comparable columns, with the better direction figured out for you.",
   "homepage_url": "https://practicaldata.dev",
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "https://api.practicaldata.dev/*",
-    "https://api.typesafe.ai/*",
-    "https://api.cloudflare.com/*"
-  ],
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://api.practicaldata.dev/*", "https://api.typesafe.ai/*", "https://api.cloudflare.com/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
       "run_at": "document_idle"
     }
   ],

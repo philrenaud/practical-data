@@ -49,7 +49,12 @@ const judgeRecorded = async (page: PageSnapshot) => {
       recorded.evaluate(req).pipe(
         Effect.tap((res) =>
           Effect.sync(() =>
-            exchanges.push({ state: req.state, questions: req.questions, answers: res.answers, inputTokens: res.usage.input_tokens }),
+            exchanges.push({
+              state: req.state,
+              questions: req.questions,
+              answers: res.answers,
+              inputTokens: res.usage.input_tokens,
+            }),
           ),
         ),
       ),
@@ -59,7 +64,9 @@ const judgeRecorded = async (page: PageSnapshot) => {
 };
 
 const sources = new Map(
-  (JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string }[]).map((s) => [s.slug, s]),
+  (
+    JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string }[]
+  ).map((s) => [s.slug, s]),
 );
 /** Short, distinct names for navigation (page titles run long, and two pages share one). */
 const NAMES: Readonly<Record<string, string>> = {
@@ -93,14 +100,20 @@ const NAMES: Readonly<Record<string, string>> = {
 const notice = await readFile("fixtures/NOTICE.md", "utf8");
 /** Attribution per live fixture, from the NOTICE table: | `slug` | [title](url) | rights |. */
 const rights = new Map(
-  [...notice.matchAll(/^\| `([^`]+)` \| \[([^\]]+)\]\(([^)]+)\) \| ([^|]+) \|$/gm)].map((m) => [m[1]!, { title: m[2]!, url: m[3]!, rights: m[4]!.trim() }]),
+  [...notice.matchAll(/^\| `([^`]+)` \| \[([^\]]+)\]\(([^)]+)\) \| ([^|]+) \|$/gm)].map((m) => [
+    m[1]!,
+    { title: m[2]!, url: m[3]!, rights: m[4]!.trim() },
+  ]),
 );
 
 const expectations = JSON.parse(await readFile("fixtures/expectations.json", "utf8")) as Record<string, PageExpect> & {
   $known?: Record<string, string>;
 };
 const known = expectations.$known ?? {};
-const slugs = (await readdir("fixtures/snapshots")).map((f) => f.replace(/\.json$/, "")).filter((s) => s in expectations).sort();
+const slugs = (await readdir("fixtures/snapshots"))
+  .map((f) => f.replace(/\.json$/, ""))
+  .filter((s) => s in expectations)
+  .sort();
 
 await rm(OUT, { recursive: true, force: true });
 await mkdir(`${OUT}/pages`, { recursive: true });
@@ -108,7 +121,10 @@ await mkdir(`${OUT}/requests`, { recursive: true });
 
 const checks: (Check & { known: string | null })[] = [];
 const pages = [];
-const samples: Record<string, { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }> = {};
+const samples: Record<
+  string,
+  { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }
+> = {};
 /**
  * How well a question shows what its check is about; the best one of each
  * kind becomes the example. A question about a column that was shaded beats
@@ -116,7 +132,11 @@ const samples: Record<string, { id: string; question: unknown; answer: unknown; 
  * question (lower is better, ordered labels, a total, a log scale) beats a
  * routine one. Ties keep the first seen.
  */
-const sampleScore = (id: string, answer: DecisionResponse["answers"][string] | undefined, table: TableJudgment | undefined): number => {
+const sampleScore = (
+  id: string,
+  answer: DecisionResponse["answers"][string] | undefined,
+  table: TableJudgment | undefined,
+): number => {
   const col = Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1);
   const e = table?.encodings.find((x) => x.col === col);
   const choice = answer?.type === "choice" ? answer.choice : null;
@@ -125,17 +145,31 @@ const sampleScore = (id: string, answer: DecisionResponse["answers"][string] | u
   if (/^c\d+\.polarity$/.test(id)) return e?.kind === "ordinal" ? 2 : 0;
   if (/^c\d+\.relation$/.test(id)) return (e?.kind === "ordinal" ? 2 : 0) + (choice === "ordered_levels" ? 1 : 0);
   // Numbers that are names (jersey numbers, records) show the question best; years and ranks next.
-  if (/^n\d+\.role$/.test(id)) return choice === "identifier" || choice === "record" ? 2 : choice !== null && choice !== "measure" ? 1 : 0;
+  if (/^n\d+\.role$/.test(id))
+    return choice === "identifier" || choice === "record" ? 2 : choice !== null && choice !== "measure" ? 1 : 0;
   return yes ? 1 : 0;
 };
 const sampleScores: Record<string, number> = {};
-const offerSample = (id: string, question: unknown, x: Exchange, page: string, table: string | null, judgment?: TableJudgment, failing: ReadonlySet<string> = new Set(), passing: ReadonlySet<string> = new Set(), headers: readonly string[] = []) => {
+const offerSample = (
+  id: string,
+  question: unknown,
+  x: Exchange,
+  page: string,
+  table: string | null,
+  judgment?: TableJudgment,
+  failing: ReadonlySet<string> = new Set(),
+  passing: ReadonlySet<string> = new Set(),
+  headers: readonly string[] = [],
+) => {
   const kind = id.replace(/\d+/g, "#");
   const answer = x.answers[id];
   // A column with a failing check makes a misleading example; it is a limitation, shown elsewhere.
   const header = headers[Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1)];
   // A hand-labeled column that passes is the clearest example: the reader can check it.
-  const score = header !== undefined && failing.has(header) ? -1 : sampleScore(id, answer, judgment) + (header !== undefined && passing.has(header) ? 2 : 0);
+  const score =
+    header !== undefined && failing.has(header)
+      ? -1
+      : sampleScore(id, answer, judgment) + (header !== undefined && passing.has(header) ? 2 : 0);
   if (samples[kind] === undefined || score > (sampleScores[kind] ?? 0)) {
     samples[kind] = { id, question, answer, state: x.state, page, table };
     sampleScores[kind] = score;
@@ -151,7 +185,10 @@ for (const slug of slugs) {
   requests += full.judgment.usage.requests;
   model ||= full.judgment.model;
   inputTokens += full.judgment.usage.inputTokens;
-  const pageChecks = scorePage(slug, full.judgment, expectations[slug]!).map((c) => ({ ...c, known: knownReason(c, known) }));
+  const pageChecks = scorePage(slug, full.judgment, expectations[slug]!).map((c) => ({
+    ...c,
+    known: knownReason(c, known),
+  }));
   checks.push(...pageChecks);
 
   // Each table alone, for its own trace: its requests are the same ones the full page sent
@@ -163,12 +200,19 @@ for (const slug of slugs) {
     const alone = await judgeRecorded({ ...page, tables: [t] });
     // Example questions come from hand-labeled tables on real pages, which the site shows.
     const labeled = sources.has(slug) && (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
-    const passingColumns = new Set(pageChecks.filter((c) => c.ok && c.table === t.id && c.column !== null).map((c) => c.column!));
-    const failingColumns = new Set(pageChecks.filter((c) => !c.ok && c.table === t.id && c.column !== null).map((c) => c.column!));
+    const passingColumns = new Set(
+      pageChecks.filter((c) => c.ok && c.table === t.id && c.column !== null).map((c) => c.column!),
+    );
+    const failingColumns = new Set(
+      pageChecks.filter((c) => !c.ok && c.table === t.id && c.column !== null).map((c) => c.column!),
+    );
     // A totals example needs a table with hand-labeled totals, so the site shows it.
-    const totalsLabeled = ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
+    const totalsLabeled =
+      ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
     for (const x of labeled ? alone.exchanges : []) {
-      for (const [id, question] of Object.entries(x.questions)) if (totalsLabeled || !id.endsWith(".aggregate")) offerSample(id, question, x, slug, t.id, judgment, failingColumns, passingColumns, t.headers);
+      for (const [id, question] of Object.entries(x.questions))
+        if (totalsLabeled || !id.endsWith(".aggregate"))
+          offerSample(id, question, x, slug, t.id, judgment, failingColumns, passingColumns, t.headers);
     }
     tables.push({
       snapshot: t satisfies TableSnapshot,
@@ -193,7 +237,10 @@ for (const slug of slugs) {
     name: NAMES[slug] ?? page.title,
     title: page.title,
     origin: live === undefined ? "synthetic" : "live",
-    source: live === undefined ? null : { title: attribution?.title ?? live.title, url: live.url, rights: attribution?.rights ?? "" },
+    source:
+      live === undefined
+        ? null
+        : { title: attribution?.title ?? live.title, url: live.url, rights: attribution?.rights ?? "" },
     tables: tables.length,
     columns: full.judgment.tables.reduce((n, t) => n + t.encodings.length, 0),
     score: [pageChecks.filter((c) => c.ok).length, pageChecks.length] as const,
@@ -205,10 +252,20 @@ for (const slug of slugs) {
   // Requests and answers are most of the bytes; the site fetches them only when a reader opens them.
   await writeFile(
     `${OUT}/pages/${slug}.json`,
-    JSON.stringify({ ...summary, judgment: full.judgment satisfies PageJudgment, tables: tables.map(({ exchanges: _, ...t }) => t), shared, checks: pageChecks }),
+    JSON.stringify({
+      ...summary,
+      judgment: full.judgment satisfies PageJudgment,
+      tables: tables.map(({ exchanges: _, ...t }) => t),
+      shared,
+      checks: pageChecks,
+    }),
   );
-  await writeFile(`${OUT}/requests/${slug}.json`, JSON.stringify(Object.fromEntries(tables.map((t) => [t.snapshot.id, t.exchanges]))));
-  if (unrecorded > 0) throw new Error(`${slug}: ${unrecorded} request(s) have no recording; run \`npm run eval\` online to record them.`);
+  await writeFile(
+    `${OUT}/requests/${slug}.json`,
+    JSON.stringify(Object.fromEntries(tables.map((t) => [t.snapshot.id, t.exchanges]))),
+  );
+  if (unrecorded > 0)
+    throw new Error(`${slug}: ${unrecorded} request(s) have no recording; run \`npm run eval\` online to record them.`);
   console.log(`${slug.padEnd(36)} ${summary.score[0]}/${summary.score[1]} checks  ${tables.length} tables`);
 }
 
@@ -218,12 +275,17 @@ const units = [];
 for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts")).sort()) {
   let tap: string;
   try {
-    tap = execFileSync("node", ["--test", "--test-reporter=tap", `test/${file}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    tap = execFileSync("node", ["--test", "--test-reporter=tap", `test/${file}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
   } catch (e) {
     tap = (e as { stdout?: string }).stdout ?? "";
   }
   // Top-level tests only (the suite has no describe blocks); a TAP "#" in a name is escaped as "\#".
-  const tests = [...tap.matchAll(/^(ok|not ok) \d+ - (.+?)(?: # (SKIP|TODO)\b.*)?\n {2}---\n {2}duration_ms: ([\d.]+)/gm)].map((m) => ({
+  const tests = [
+    ...tap.matchAll(/^(ok|not ok) \d+ - (.+?)(?: # (SKIP|TODO)\b.*)?\n {2}---\n {2}duration_ms: ([\d.]+)/gm),
+  ].map((m) => ({
     name: m[2]!.replaceAll("\\#", "#"),
     ok: m[1] === "ok" && m[3] === undefined,
     skipped: m[3] !== undefined,
@@ -236,11 +298,43 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
 // ── Parsing, live ───────────────────────────────────────────────────────────
 
 const PARSE_EXAMPLES = [
-  "$0.025", "€1,200.50", "($3.00)", "-$3", "45%", ".312", "1.5B", "272K", "6' 6\"", "2:59", "20–25", "65+",
-  "≤ 272K", "> 200K", "12-4", "35-10", "1,066", "3.2 GB", "829.8 m", "2,722 ft", "N/A", "—", "2023-01-01", "July 17, 2009",
-  "December 1993", "3 days ago", "February 6", "July 16–22, 2021", "Jan 15, 1967 (1966)", "7:05 PM",
+  "$0.025",
+  "€1,200.50",
+  "($3.00)",
+  "-$3",
+  "45%",
+  ".312",
+  "1.5B",
+  "272K",
+  "6' 6\"",
+  "2:59",
+  "20–25",
+  "65+",
+  "≤ 272K",
+  "> 200K",
+  "12-4",
+  "35-10",
+  "1,066",
+  "3.2 GB",
+  "829.8 m",
+  "2,722 ft",
+  "N/A",
+  "—",
+  "2023-01-01",
+  "July 17, 2009",
+  "December 1993",
+  "3 days ago",
+  "February 6",
+  "July 16–22, 2021",
+  "Jan 15, 1967 (1966)",
+  "7:05 PM",
 ];
-const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = { month: "month", day: "date", minute: "datetime", relative: "ago" };
+const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = {
+  month: "month",
+  day: "date",
+  minute: "datetime",
+  relative: "ago",
+};
 const now = Date.now();
 const parsing = PARSE_EXAMPLES.map((input) => {
   // A date without a year gets one from its column; any year shows the form.
@@ -259,13 +353,33 @@ const kinds = ["detect", "polarity", "transform", "order", "aggregates", "shared
 const totals = Object.fromEntries(
   kinds.map((k) => {
     const of = checks.filter((c) => c.kind === k);
-    return [k, { ok: of.filter((c) => c.ok).length, total: of.length, known: of.filter((c) => !c.ok && c.known !== null).length }];
+    return [
+      k,
+      {
+        ok: of.filter((c) => c.ok).length,
+        total: of.length,
+        known: of.filter((c) => !c.ok && c.known !== null).length,
+      },
+    ];
   }),
 );
 
 await writeFile(
   `${OUT}/index.json`,
-  JSON.stringify({ model, requests, inputTokens, policy: DEFAULT_POLICY, maxTransposeRows: MAX_TRANSPOSE_ROWS, totals, checks, pages, units, parsing, samples, known }),
+  JSON.stringify({
+    model,
+    requests,
+    inputTokens,
+    policy: DEFAULT_POLICY,
+    maxTransposeRows: MAX_TRANSPOSE_ROWS,
+    totals,
+    checks,
+    pages,
+    units,
+    parsing,
+    samples,
+    known,
+  }),
 );
 console.log(
   `\n${checks.filter((c) => c.ok).length}/${checks.length} checks · ${units.reduce((n, u) => n + u.tests.length, 0)} unit tests · ${requests} requests replayed`,

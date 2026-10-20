@@ -39,12 +39,18 @@ const common = {
   minify: false,
   sourcemap: watch ? "inline" : false,
   // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
-  define: process.env["PD_API_ORIGIN"] === undefined ? {} : { PD_API_ORIGIN: JSON.stringify(process.env["PD_API_ORIGIN"]) },
+  define:
+    process.env["PD_API_ORIGIN"] === undefined ? {} : { PD_API_ORIGIN: JSON.stringify(process.env["PD_API_ORIGIN"]) },
 } as const satisfies esbuild.BuildOptions;
 
 const builds: esbuild.BuildOptions[] = [
   { ...common, entryPoints: { content: "src/ext/content.ts" }, outdir: "dist", format: "iife" },
-  { ...common, entryPoints: { background: "src/ext/background.ts", options: "src/ext/options.ts", popup: "src/ext/popup.ts" }, outdir: "dist", format: "esm" },
+  {
+    ...common,
+    entryPoints: { background: "src/ext/background.ts", options: "src/ext/options.ts", popup: "src/ext/popup.ts" },
+    outdir: "dist",
+    format: "esm",
+  },
   {
     ...common,
     entryPoints: { probe: "src/dom/probe.ts" },

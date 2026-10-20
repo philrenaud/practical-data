@@ -15,7 +15,10 @@ const TYPES: Record<string, string> = {
 export const serve = (root: string): Promise<{ url: string; server: Server }> =>
   new Promise((resolve) => {
     const server = createServer(async (req, res) => {
-      const raw = normalize(decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");
+      const raw = normalize(decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname)).replace(
+        /^(\.\.[/\\])+/,
+        "",
+      );
       const path = raw.endsWith("/") ? `${raw}index.html` : raw;
       try {
         const body = await readFile(join(root, path));

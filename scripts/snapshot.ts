@@ -10,9 +10,7 @@ import { fixturePages, serve } from "./serve.ts";
 const { url, server } = await serve("fixtures");
 const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-await context.route("**/*", (route) =>
-  route.request().url().startsWith(url) ? route.continue() : route.abort(),
-);
+await context.route("**/*", (route) => (route.request().url().startsWith(url) ? route.continue() : route.abort()));
 await mkdir("fixtures/snapshots", { recursive: true });
 
 for (const { slug, path } of await fixturePages()) {

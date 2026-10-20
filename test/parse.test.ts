@@ -55,7 +55,8 @@ for (const [input, value, unit, range] of cases) {
   test(`parseNumber(${JSON.stringify(input)})`, () => {
     const got = parseNumber(input);
     if (value === null) assert.equal(got, null);
-    else assert.deepEqual(got, { value, unit, bound: input.startsWith("≤") || input.endsWith("+"), range: range ?? null });
+    else
+      assert.deepEqual(got, { value, unit, bound: input.startsWith("≤") || input.endsWith("+"), range: range ?? null });
   });
 }
 

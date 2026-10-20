@@ -28,7 +28,10 @@ for (const [slug, tableId, header] of cases) {
   const counts = p.levels.map((l) => p.values.filter((v) => v === l).length);
   const variants: Record<string, unknown> = {
     base,
-    counts: { ...base, column: { ...base.column, rows_per_value: Object.fromEntries(p.levels.map((l, i) => [p.display[l], counts[i]])) } },
+    counts: {
+      ...base,
+      column: { ...base.column, rows_per_value: Object.fromEntries(p.levels.map((l, i) => [p.display[l], counts[i]])) },
+    },
     headers: { ...base, other_columns: table.headers.filter((h) => h !== header && h !== "") },
   };
   const out: string[] = [];

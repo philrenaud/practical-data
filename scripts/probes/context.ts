@@ -25,7 +25,11 @@ for (const [slug, id, header] of cases) {
   const variants = {
     base,
     siblings: { ...base, other_columns: table.headers.filter((h) => h !== header) },
-    siblings_rows: { ...base, other_columns: table.headers.filter((h) => h !== header), rows_are: table.rows.slice(0, 4).map((r) => r[0]) },
+    siblings_rows: {
+      ...base,
+      other_columns: table.headers.filter((h) => h !== header),
+      rows_are: table.rows.slice(0, 4).map((r) => r[0]),
+    },
   };
   const out: string[] = [];
   for (const [name, state] of Object.entries(variants)) {

@@ -51,7 +51,9 @@ const SECTIONS: readonly Section[] = [
     source: "https://www.baseball-reference.com/players/s/skubata01.shtml",
     caption:
       "ERA, WHIP and FIP are lower-is-better; strikeouts per nine are higher-is-better. Season and age are numbers, but they place a row in time, so they stay plain.",
-    picks: [{ table: "t1", columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"] }],
+    picks: [
+      { table: "t1", columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"] },
+    ],
   },
   {
     id: "pace",
@@ -115,7 +117,8 @@ const SECTIONS: readonly Section[] = [
     slug: "wiki-countries-by-population",
     heading: "Populations",
     source: "https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population",
-    caption: "The first row is the World total. The model flags it as an aggregate, so it is left out of the scale instead of washing out every country.",
+    caption:
+      "The first row is the World total. The model flags it as an aggregate, so it is left out of the scale instead of washing out every country.",
     picks: [{ table: "t0", columns: ["Location", "Population", "% of world", "Date"], rows: 12 }],
   },
   {
@@ -123,7 +126,8 @@ const SECTIONS: readonly Section[] = [
     slug: "edge-cases",
     heading: "Numbers that aren't amounts",
     source: "",
-    caption: "Jersey numbers, birth years and zip codes are numeric but not comparable, so they stay plain. Height and scoring are measures.",
+    caption:
+      "Jersey numbers, birth years and zip codes are numeric but not comparable, so they stay plain. Height and scoring are measures.",
     picks: [{ table: "t1", columns: ["Player", "Jersey #", "Born", "Zip code", "Height (in)", "Points per game"] }],
   },
 ];

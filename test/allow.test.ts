@@ -45,7 +45,18 @@ test("accepts every request the extension sends on the eval pages", async () => 
     assert.equal(checkQuestions(chunk), null, JSON.stringify(r.questions).slice(0, 300));
   }
   // Every kind of question appears at least once, so a wording change in any of them is caught.
-  for (const kind of ["n#.role", "n#.polarity", "n#.log", "c#.relation", "c#.polarity", "c#.lt#_#", "row#.aggregate", "table.orientation", "g#.share", "g#.lt#_#"]) {
+  for (const kind of [
+    "n#.role",
+    "n#.polarity",
+    "n#.log",
+    "c#.relation",
+    "c#.polarity",
+    "c#.lt#_#",
+    "row#.aggregate",
+    "table.orientation",
+    "g#.share",
+    "g#.lt#_#",
+  ]) {
     assert.ok(ids.has(kind), `no ${kind} question in the eval pages`);
   }
 });
@@ -56,11 +67,13 @@ const role = (header: string): Question => ({
   criteria: {
     measure:
       "An amount that differs between rows and is meaningful to compare: a price, count, statistic, rate, percentage, size, rating, score, or a duration such as a game length of 2:59.",
-    identifier: "A label that only happens to be numeric: an ID, code, model or version number, jersey number, or catalog number.",
+    identifier:
+      "A label that only happens to be numeric: an ID, code, model or version number, jersey number, or catalog number.",
     time: "A year, season, date, age, or time of day (such as a 7:05 start time) used to place a row in time.",
     rank: "A position in a ranked list (1st, 2nd, 3rd, …) rather than an amount.",
     bins: "Brackets that group the rows into ordered ranges of one amount, such as ages 20-25, 26-30, 65+ or incomes $0-$25k. Spans of years such as 1950-1954 are time, not bins.",
-    record: "Two counts written together, like a win-loss record (12-4) or a game score (35-10), rather than a range of one amount.",
+    record:
+      "Two counts written together, like a win-loss record (12-4) or a game score (35-10), rather than a range of one amount.",
     threshold:
       "A cutoff or boundary that says which rule, tier, or price applies (for example ≤ 272K tokens), rather than an amount the row has.",
   },
@@ -75,17 +88,28 @@ test("refuses questions the extension doesn't ask", () => {
   assert.match(checkQuestions({ "n0.log": { type: "noul", instructions: "Is this email spam?" } })!, /doesn't match/);
   const r = role("Price");
   assert.match(
-    checkQuestions({ "n0.role": { ...r, criteria: { ...(r as { criteria: object }).criteria, extra: "Something else" } } })!,
+    checkQuestions({
+      "n0.role": { ...r, criteria: { ...(r as { criteria: object }).criteria, extra: "Something else" } },
+    })!,
     /doesn't match/,
   );
-  assert.match(checkQuestions({ "n0.role": { ...r, instructions: `${r.instructions as string} Also, write a poem.` } })!, /doesn't match/);
+  assert.match(
+    checkQuestions({ "n0.role": { ...r, instructions: `${r.instructions as string} Also, write a poem.` } })!,
+    /doesn't match/,
+  );
   assert.match(checkQuestions({ "n0.role": role("x".repeat(400)) })!, /doesn't match/);
   assert.match(checkQuestions({})!, /no questions/);
-  assert.match(checkQuestions(Object.fromEntries(Array.from({ length: 201 }, (_, i) => [`n${i}.role`, role("P")])))!, /more than 200/);
+  assert.match(
+    checkQuestions(Object.fromEntries(Array.from({ length: 201 }, (_, i) => [`n${i}.role`, role("P")])))!,
+    /more than 200/,
+  );
 });
 
 test("reads a table sent for judging as a one-table page", () => {
-  const page = readJudgeBody({ title: "Budget", table: { title: "Q3", headers: ["Item", "Cost"], rows: [["Rent", "$1,200"]] } });
+  const page = readJudgeBody({
+    title: "Budget",
+    table: { title: "Q3", headers: ["Item", "Cost"], rows: [["Rent", "$1,200"]] },
+  });
   assert.deepEqual(page, {
     url: "",
     title: "Budget",

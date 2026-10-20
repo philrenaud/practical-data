@@ -31,7 +31,12 @@ export interface PageSummary {
 
 export interface UnitFile {
   readonly file: string;
-  readonly tests: readonly { readonly name: string; readonly ok: boolean; readonly skipped: boolean; readonly ms: number }[];
+  readonly tests: readonly {
+    readonly name: string;
+    readonly ok: boolean;
+    readonly skipped: boolean;
+    readonly ms: number;
+  }[];
 }
 
 export interface ParseExample {
@@ -40,7 +45,12 @@ export interface ParseExample {
   readonly date: boolean;
   /** The date that the cell names, for dates that are shaded: "Dec 1993", "3 days ago". */
   readonly when: string | null;
-  readonly parsed: { readonly value: number; readonly unit: string | null; readonly bound: boolean; readonly range: readonly [number, number] | null } | null;
+  readonly parsed: {
+    readonly value: number;
+    readonly unit: string | null;
+    readonly bound: boolean;
+    readonly range: readonly [number, number] | null;
+  } | null;
 }
 
 export interface TestsIndex {

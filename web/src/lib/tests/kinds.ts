@@ -44,7 +44,8 @@ export const KINDS: readonly KindInfo[] = [
       "The direction sets which end of the scale gets the good color. When no direction is better, the scale uses one hue. Thus the color does not show a judgment that the data does not have.",
     ],
     questions: ["n#.polarity", "c#.polarity"],
-    rule: (p) => `Higher is better when P(higher) is ${p.polarity} or more. If not, lower is better when P(lower) is ${p.polarity} or more. If not, the scale is neutral.`,
+    rule: (p) =>
+      `Higher is better when P(higher) is ${p.polarity} or more. If not, lower is better when P(lower) is ${p.polarity} or more. If not, the scale is neutral.`,
   },
   {
     kind: "transform",
@@ -105,7 +106,8 @@ export const KINDS: readonly KindInfo[] = [
       "When a table has two or more number columns, the model tells which direction to compare. Code reads a row-based table one row at a time, as if each row is a column.",
     ],
     questions: ["table.orientation"],
-    rule: (p, rows) => `Read the table by rows when P(rows) is ${p.rows} or more and the table has ${rows} rows or fewer.`,
+    rule: (p, rows) =>
+      `Read the table by rows when P(rows) is ${p.rows} or more and the table has ${rows} rows or fewer.`,
   },
 ];
 

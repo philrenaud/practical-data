@@ -10,14 +10,16 @@ const site = document.querySelector<HTMLInputElement>("#site")!;
 
 // `?tab=<id>` targets a specific tab; the e2e harness opens the popup as a page.
 const forced = Number(new URLSearchParams(location.search).get("tab"));
-const [tab] = Number.isInteger(forced) && forced > 0
-  ? [await chrome.tabs.get(forced)]
-  : await chrome.tabs.query({ active: true, currentWindow: true });
+const [tab] =
+  Number.isInteger(forced) && forced > 0
+    ? [await chrome.tabs.get(forced)]
+    : await chrome.tabs.query({ active: true, currentWindow: true });
 
 const query = async (): Promise<PageState | undefined> =>
   tab?.id === undefined
     ? undefined
-    : ((await chrome.tabs.sendMessage(tab.id, { type: "state" } satisfies ToContent).catch(() => undefined)) as PageState | undefined);
+    : ((await chrome.tabs.sendMessage(tab.id, { type: "state" } satisfies ToContent).catch(() => undefined)) as
+        PageState | undefined);
 
 const first = await query();
 const url = first?.url ?? tab?.url ?? "";
@@ -48,11 +50,15 @@ const refresh = async () => {
   page.checked = !paused && !siteOff;
   page.disabled = siteOff || state === undefined;
   site.disabled = host === "";
-  document.querySelector("#site-label")!.textContent = host === "" ? "Shade tables on this site" : `Shade tables on ${host}`;
+  document.querySelector("#site-label")!.textContent =
+    host === "" ? "Shade tables on this site" : `Shade tables on ${host}`;
   summary.textContent = describe(state, paused, siteOff);
   // With the free provider, say when little of today's allowance is left (but not on top of "used up").
   const { allowance } = (await chrome.storage.local.get("allowance")) as { allowance?: StoredAllowance };
-  const note = settings.provider === "hosted" && !state?.status.startsWith("error:quota") ? lowAllowanceNote(allowance, new Date()) : null;
+  const note =
+    settings.provider === "hosted" && !state?.status.startsWith("error:quota")
+      ? lowAllowanceNote(allowance, new Date())
+      : null;
   allowanceNote.textContent = note ?? "";
   allowanceNote.hidden = note === null;
 };
@@ -79,7 +85,8 @@ const commands = await chrome.commands.getAll();
 const shortcut = commands.find((c) => c.name === "toggle-page")?.shortcut;
 document.querySelector("#shortcut")!.textContent = shortcut ? `${shortcut} toggles this page` : "";
 
-document.querySelector("#build")!.textContent = `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
+document.querySelector("#build")!.textContent =
+  `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
 await refresh();
 // Flush styles so the initial state is applied without animating, then enable transitions.
 void document.body.offsetHeight;

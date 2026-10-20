@@ -4,6 +4,6 @@
   "assets": { "directory": "./site" },
   "routes": [
     { "pattern": "practicaldata.dev", "custom_domain": true },
-    { "pattern": "www.practicaldata.dev", "custom_domain": true }
-  ]
+    { "pattern": "www.practicaldata.dev", "custom_domain": true },
+  ],
 }

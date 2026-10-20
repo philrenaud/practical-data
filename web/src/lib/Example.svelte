@@ -44,11 +44,15 @@
       <table use:shade={{ id: t.id, judgment: j, palette, groupSizes: groups, colored, theme }}>
         {#if t.title !== null}<caption>{t.title}</caption>{/if}
         <thead>
-          <tr>{#each t.headers as h, hi (hi)}<th scope="col">{h}</th>{/each}</tr>
+          <tr
+            >{#each t.headers as h, hi (hi)}<th scope="col">{h}</th>{/each}</tr
+          >
         </thead>
         <tbody>
           {#each t.rows as row, ri (ri)}
-            <tr>{#each row as cell, ci (ci)}<td>{cell}</td>{/each}</tr>
+            <tr
+              >{#each row as cell, ci (ci)}<td>{cell}</td>{/each}</tr
+            >
           {/each}
         </tbody>
       </table>
@@ -59,14 +63,18 @@
         {#each rowsOf(ti) as r, ri (ri)}
           <li class:plain={r.e === undefined}>
             <span class="col">{r.header || "(blank)"}</span>
-            <span class="verdict">{r.e !== undefined ? describeEncoding(r.e) : `left plain: ${plainReason(r.skipped?.reason)}`}</span>
+            <span class="verdict"
+              >{r.e !== undefined ? describeEncoding(r.e) : `left plain: ${plainReason(r.skipped?.reason)}`}</span
+            >
             <span class="conf">{r.e !== undefined ? confidenceOf(r.e) : ""}</span>
           </li>
         {/each}
       </ul>
       {#if j.aggregateRows.length > 0}
         <p class="agg">
-          Rows judged to be totals and kept out of the scale: {j.aggregateRows.map((r) => `"${t.rows[r]?.[0] ?? r}"`).join(", ")}.
+          Rows judged to be totals and kept out of the scale: {j.aggregateRows
+            .map((r) => `"${t.rows[r]?.[0] ?? r}"`)
+            .join(", ")}.
         </p>
       {/if}
     </details>

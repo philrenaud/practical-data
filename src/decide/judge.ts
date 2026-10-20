@@ -111,23 +111,33 @@ const CODE_EVIDENCE: ColumnEncoding["evidence"] = {
 };
 
 /** Date columns, shaded from earliest to latest without asking the model. */
-const dateEncodings = (table: TableSnapshot, profiles: readonly ColumnProfile[], excluded: ReadonlySet<number>, now: number): ColumnEncoding[] =>
+const dateEncodings = (
+  table: TableSnapshot,
+  profiles: readonly ColumnProfile[],
+  excluded: ReadonlySet<number>,
+  now: number,
+): ColumnEncoding[] =>
   profiles.flatMap((p) => {
     if (p.kind !== "text" || p.reason !== "dates or times") return [];
-    const dates = parseDateColumn(table.rows.map((r) => r[p.col] ?? ""), now);
+    const dates = parseDateColumn(
+      table.rows.map((r) => r[p.col] ?? ""),
+      now,
+    );
     if (dates === null) return [];
-    return [{
-      kind: "quantitative" as const,
-      col: p.col,
-      header: p.header,
-      polarity: "neutral" as const,
-      transform: "linear" as const,
-      unit: dates.unit,
-      domain: extent(dates.values, excluded),
-      values: dates.values,
-      group: null,
-      evidence: CODE_EVIDENCE,
-    }];
+    return [
+      {
+        kind: "quantitative" as const,
+        col: p.col,
+        header: p.header,
+        polarity: "neutral" as const,
+        transform: "linear" as const,
+        unit: dates.unit,
+        domain: extent(dates.values, excluded),
+        values: dates.values,
+        group: null,
+        evidence: CODE_EVIDENCE,
+      },
+    ];
   });
 
 interface Planned {
@@ -163,7 +173,8 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
       units: new Map(),
     });
     if (table.rows.length < MIN_ROWS) return { planned: unasked([]), rowsScore: null };
-    if (candidates.length === 0) return { planned: unasked(dateEncodings(table, profiles, new Set(), now)), rowsScore: null };
+    if (candidates.length === 0)
+      return { planned: unasked(dateEncodings(table, profiles, new Set(), now)), rowsScore: null };
 
     const ctx = { page: page.title, table: table.title };
     const numeric = candidates.filter((p) => p.kind === "numeric");
@@ -173,7 +184,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
     // Orientation only matters when several numeric columns could be read either way.
     const orientation =
       askOrientation && numeric.length >= 2
-        ? orientationQuestion({ header: table.headers[0] ?? "", examples: table.rows.slice(0, 5).map((r) => r[0] ?? "") })
+        ? orientationQuestion({
+            header: table.headers[0] ?? "",
+            examples: table.rows.slice(0, 5).map((r) => r[0] ?? ""),
+          })
         : null;
 
     // One request for the numeric columns and aggregate rows, plus one focused
@@ -192,7 +206,11 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
         ...categorical.map((p) =>
           Effect.gen(function* () {
             const q = categoricalQuestions(p);
-            const state = categoricalState(ctx, p, table.headers.filter((h, i) => i !== p.col && h !== ""));
+            const state = categoricalState(
+              ctx,
+              p,
+              table.headers.filter((h, i) => i !== p.col && h !== ""),
+            );
             const first = yield* model.evaluate({ state, questions: q.questions });
             // Pairwise order questions only when the labels might be ordered (a 12-team
             // column would otherwise send 132 of them).
@@ -254,7 +272,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
           skipped.push({
             col: p.col,
             header: p.header,
-            reason: r.ordinal < policy.ordinalWithStrongOrder ? `labels look like ${r.relation.replaceAll("_", " ")}` : "order is uncertain",
+            reason:
+              r.ordinal < policy.ordinalWithStrongOrder
+                ? `labels look like ${r.relation.replaceAll("_", " ")}`
+                : "order is uncertain",
             comparable: r.ordinal,
           });
           continue;
@@ -270,7 +291,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
           group: null,
           evidence: { comparable: r.ordinal, polarity: r.polarity, log: null, orderConfidence: confidence },
         });
-        samples.set(p.col, order.map((l) => p.display[l] ?? l));
+        samples.set(
+          p.col,
+          order.map((l) => p.display[l] ?? l),
+        );
       }
     }
     const dates = dateEncodings(table, profiles, excluded, now);
@@ -306,7 +330,10 @@ const judgeTable = (page: PageSnapshot, table: TableSnapshot, policy: Policy, no
     const { planned, rowsScore } = yield* judgeColumns(page, table, policy, forced === undefined, now);
     if (rowsScore !== null && rowsScore >= policy.rows && table.rows.length <= MAX_TRANSPOSE_ROWS) {
       const rows = yield* judgeColumns(page, transposeSnapshot(table), policy, false, now);
-      return { ...rows.planned, judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore } } satisfies Planned;
+      return {
+        ...rows.planned,
+        judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore },
+      } satisfies Planned;
     }
     return { ...planned, judgment: { ...planned.judgment, rowsScore } } satisfies Planned;
   });
@@ -320,9 +347,9 @@ interface GroupCandidate {
 }
 
 const groupKey = (planned: Planned, e: ColumnEncoding): string =>
-  `${e.kind}|${normalizeLabel(e.header).replace(/[^a-z0-9%$]+/g, " ").trim()}|${
-    planned.units.get(e.col) ?? ""
-  }`;
+  `${e.kind}|${normalizeLabel(e.header)
+    .replace(/[^a-z0-9%$]+/g, " ")
+    .trim()}|${planned.units.get(e.col) ?? ""}`;
 
 /**
  * Largest magnitude ratio between columns that may share a scale. The same
@@ -364,7 +391,9 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
     }
   }
   return [...byKey.entries()]
-    .flatMap(([key, members]) => byMagnitude(members).map((run, i) => ({ key: i === 0 ? key : `${key}#${i}`, members: run })))
+    .flatMap(([key, members]) =>
+      byMagnitude(members).map((run, i) => ({ key: i === 0 ? key : `${key}#${i}`, members: run })),
+    )
     .filter(({ members }) => new Set(members.map((m) => m.planned.table.id)).size >= 2)
     .map(({ key, members }) => ({ key, kind: members[0]!.encoding.kind, members }));
 };
@@ -376,7 +405,10 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
  */
 const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Polarity => {
   const mean = (k: Polarity) => members.reduce((n, e) => n + e.evidence.polarity[k], 0) / members.length;
-  return pickPolarity({ higher_is_better: mean("higher_is_better"), lower_is_better: mean("lower_is_better"), neutral: mean("neutral") }, policy.polarity);
+  return pickPolarity(
+    { higher_is_better: mean("higher_is_better"), lower_is_better: mean("lower_is_better"), neutral: mean("neutral") },
+    policy.polarity,
+  );
 };
 
 const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], policy: Policy) =>
@@ -399,9 +431,7 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
       );
       if (g.kind === "ordinal") {
         // Speculative: only consumed if the group is shared and tables disagree on levels.
-        const labels = [
-          ...new Set(g.members.flatMap((m) => (m.encoding.kind === "ordinal" ? m.encoding.order : []))),
-        ];
+        const labels = [...new Set(g.members.flatMap((m) => (m.encoding.kind === "ordinal" ? m.encoding.order : [])))];
         if (labels.length > MAX_UNION_LEVELS) return;
         const pq = pairQuestions(`g${gi}`, `the column "${g.members[0]!.encoding.header}"`, labels);
         Object.assign(questions, pq.questions);
@@ -462,7 +492,12 @@ const dropBinaryOrdinals = (j: TableJudgment): TableJudgment => {
     encodings: j.encodings.filter((e) => !binary.includes(e)),
     skipped: [
       ...j.skipped,
-      ...binary.map((e) => ({ col: e.col, header: e.header, reason: "only two levels", comparable: e.evidence.comparable })),
+      ...binary.map((e) => ({
+        col: e.col,
+        header: e.header,
+        reason: "only two levels",
+        comparable: e.evidence.comparable,
+      })),
     ].sort((a, b) => a.col - b.col),
   };
 };
@@ -497,9 +532,13 @@ export const judgePage = (
     });
     // Each table succeeds or fails on its own; one failed request must not discard
     // every other table's results (including cache hits).
-    const results = yield* Effect.forEach(tables, (t) => Effect.result(judgeTable(page, t, policy, now, orientations[t.id])), {
-      concurrency: 6,
-    }).pipe(Effect.provideService(DecisionModel, counted));
+    const results = yield* Effect.forEach(
+      tables,
+      (t) => Effect.result(judgeTable(page, t, policy, now, orientations[t.id])),
+      {
+        concurrency: 6,
+      },
+    ).pipe(Effect.provideService(DecisionModel, counted));
     const planned = results.flatMap((r) => (r._tag === "Success" ? [r.success] : []));
     const failed = results.flatMap((r, i) =>
       r._tag === "Failure" ? [{ id: tables[i]!.id, reason: r.failure.reason, message: r.failure.message }] : [],

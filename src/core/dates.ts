@@ -48,7 +48,20 @@ const DAY = 24 * HOUR;
 const YEAR = 365.2425 * DAY;
 const MONTH_SPAN = YEAR / 12;
 
-const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+const MONTHS = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
+];
 
 /** "Sept", "Feb.", "february" → 1-based month; null for anything else ("Mayday"). */
 const monthOf = (word: string): number | null => {
@@ -98,7 +111,8 @@ const YMD = /^(\d{4})[/.](\d{1,2})[/.](\d{1,2})$/;
 /** Day and month in either order: slashes or dots with any year, dashes only with a four-digit year. */
 const NUMERIC = /^(\d{1,2})([/.])(\d{1,2})\2(\d{2}|\d{4})$|^(\d{1,2})-(\d{1,2})-(\d{4})$/;
 /** A trailing clock time: ", 3:04 PM", " at 19:07:16 -0400". */
-const TIME = /(?:,\s*|\s+at\s+|\s+)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?:\s*(z|utc|gmt|[+-]\d{2}:?\d{2}))?$/;
+const TIME =
+  /(?:,\s*|\s+at\s+|\s+)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?:\s*(z|utc|gmt|[+-]\d{2}:?\d{2}))?$/;
 const WEEKDAY = /^(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\.?,?\s+/;
 
 const UNIT_SPAN: readonly (readonly [RegExp, number])[] = [
@@ -114,8 +128,16 @@ const spanOf = (unit: string): number | null => UNIT_SPAN.find(([re]) => re.test
 const countOf = (raw: string): number => (/^(an?|one)$/.test(raw) ? 1 : /^(a\s+)?few$/.test(raw) ? 3 : Number(raw));
 
 const RELATIVE_WORDS: Readonly<Record<string, number>> = {
-  now: 0, "just now": 0, "right now": 0, "a moment ago": 0, "moments ago": 0, "seconds ago": 0, "a few seconds ago": 0,
-  today: 0, yesterday: -DAY, tomorrow: DAY,
+  now: 0,
+  "just now": 0,
+  "right now": 0,
+  "a moment ago": 0,
+  "moments ago": 0,
+  "seconds ago": 0,
+  "a few seconds ago": 0,
+  today: 0,
+  yesterday: -DAY,
+  tomorrow: DAY,
 };
 const AGO = /^(?:about|around|almost|over|nearly|~)?\s*(\d+|an?|one|(?:a\s+)?few)\s*([a-z]+?)\s+ago$/;
 const IN = /^in\s+(?:about\s+)?(\d+|an?|one|(?:a\s+)?few)\s*([a-z]+)$/;
@@ -152,14 +174,23 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
     const right = t.slice(m.index + m[0].length).trim();
     if (left === "" || right === "") continue;
     const leftMonth = [...left.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
-    const end = parseOne(right, options) ?? (leftMonth === undefined ? null : parseOne(`${leftMonth} ${right}`, options));
+    const end =
+      parseOne(right, options) ?? (leftMonth === undefined ? null : parseOne(`${leftMonth} ${right}`, options));
     if (end === null || end.precision === "relative") continue;
     const rightMonth = [...right.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
     // The end's year first: in a column, "July 16" alone would take the column's placeholder year.
-    const candidates = [...(year === undefined ? [] : [`${left}, ${year}`, ...(rightMonth === undefined ? [] : [`${left} ${rightMonth} ${year}`])]), left];
+    const candidates = [
+      ...(year === undefined
+        ? []
+        : [`${left}, ${year}`, ...(rightMonth === undefined ? [] : [`${left} ${rightMonth} ${year}`])]),
+      left,
+    ];
     const start = candidates.map((c) => parseOne(c, options)).find((d) => d !== null && d.precision !== "relative");
     if (start === undefined || start === null || start.time > end.time) continue;
-    return { time: (start.time + end.time) / 2, precision: start.precision === "month" && end.precision === "month" ? "month" : "day" };
+    return {
+      time: (start.time + end.time) / 2,
+      precision: start.precision === "month" && end.precision === "month" ? "month" : "day",
+    };
   }
   return null;
 };
@@ -207,7 +238,9 @@ const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
       const m = monthOf(g.month!);
       if (m === null) return null;
       if (g.year === undefined) {
-        return options.year === undefined ? null : { y: options.year, m, d: Number(g.day), precision: "day", yearless: true };
+        return options.year === undefined
+          ? null
+          : { y: options.year, m, d: Number(g.day), precision: "day", yearless: true };
       }
       return g.day === undefined
         ? { y: fullYear(g.year!), m, d: 1, precision: "month" }
@@ -230,7 +263,9 @@ const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
   const base = utc(day.y, day.m, day.d, clock?.h ?? 0, clock?.min ?? 0, clock?.s ?? 0);
   if (base === null) return null;
   const parsed: ParsedDate =
-    clock === null ? { time: base, precision: day.precision } : { time: base - offsetMinutes(clock.zone) * MINUTE, precision: "minute" };
+    clock === null
+      ? { time: base, precision: day.precision }
+      : { time: base - offsetMinutes(clock.zone) * MINUTE, precision: "minute" };
   return day.yearless ? { ...parsed, yearless: true } : parsed;
 };
 
@@ -261,7 +296,9 @@ const unwrapYear = (
   const backward = up.length === 1 && crossesNewYear(up[0]!.to.t, up[0]!.from.t) ? up[0]!.to.i : null;
   if (forward === null && backward === null) return [...parsed];
   const [first, next] = [parseIn(LEAP_YEAR - 1), parseIn(LEAP_YEAR)];
-  const shifted = cells.map((c, i) => (forward !== null ? (i >= forward ? next(c) : first(c)) : i < backward! ? next(c) : first(c)));
+  const shifted = cells.map((c, i) =>
+    forward !== null ? (i >= forward ? next(c) : first(c)) : i < backward! ? next(c) : first(c),
+  );
   // A season is under a year long. A wider span means the column was not sorted after all.
   const times = shifted.flatMap((p) => (p === null ? [] : [p.time]));
   return Math.max(...times) - Math.min(...times) < 365 * DAY ? shifted : [...parsed];
@@ -297,9 +334,13 @@ const columnOrder = (cells: readonly string[]): DayOrder | null => {
  * missing cells) and the unit its legend uses. Null when too few cells parse,
  * or every date is the same.
  */
-export const parseDateColumn = (cells: readonly string[], now: number): { values: (number | null)[]; unit: DateUnit } | null => {
+export const parseDateColumn = (
+  cells: readonly string[],
+  now: number,
+): { values: (number | null)[]; unit: DateUnit } | null => {
   const order = columnOrder(cells) ?? undefined;
-  const parseIn = (year: number) => (c: string) => (isMissing(c) ? null : parseDate(c, { now, year, ...(order === undefined ? {} : { order }) }));
+  const parseIn = (year: number) => (c: string) =>
+    isMissing(c) ? null : parseDate(c, { now, year, ...(order === undefined ? {} : { order }) });
   let parsed = cells.map(parseIn(LEAP_YEAR));
   const filled = cells.filter((c) => !isMissing(c)).length;
   let dates = parsed.filter((p) => p !== null);
@@ -331,7 +372,12 @@ const FORMATS: Readonly<Record<Exclude<DateUnit, "ago">, Intl.DateTimeFormatOpti
 };
 
 const RELATIVE_STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
-  ["year", YEAR], ["month", MONTH_SPAN], ["week", 7 * DAY], ["day", DAY], ["hour", HOUR], ["minute", MINUTE],
+  ["year", YEAR],
+  ["month", MONTH_SPAN],
+  ["week", 7 * DAY],
+  ["day", DAY],
+  ["hour", HOUR],
+  ["minute", MINUTE],
 ];
 
 /** A date for a legend: "Feb 6, 2023", "Dec 1993", or "3 days ago" against `now`. */

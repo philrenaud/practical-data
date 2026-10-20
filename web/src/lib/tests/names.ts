@@ -18,7 +18,8 @@ export const plain = (value: string): string => {
   if (value === "ordinal") return "ordered labels";
   if (value.startsWith("ordinal[")) return `ordered labels: ${value.slice(8, -1)}`;
   const [polarity, transform] = value.split("/");
-  if (polarity !== undefined && polarity in POLARITY) return `${POLARITY[polarity]}${transform === undefined ? "" : ` · ${transform}`}`;
+  if (polarity !== undefined && polarity in POLARITY)
+    return `${POLARITY[polarity]}${transform === undefined ? "" : ` · ${transform}`}`;
   return value
     .split("|")
     .map((v) => POLARITY[v] ?? v)
@@ -29,7 +30,9 @@ export const plain = (value: string): string => {
 export const describeValue = (kind: string, value: string): string => {
   if (kind === "aggregates") {
     const rows = JSON.parse(value) as number[];
-    return rows.length === 0 ? "no totals rows" : `${rows.length === 1 ? "row" : "rows"} ${rows.map((r) => r + 1).join(", ")} as totals`;
+    return rows.length === 0
+      ? "no totals rows"
+      : `${rows.length === 1 ? "row" : "rows"} ${rows.map((r) => r + 1).join(", ")} as totals`;
   }
   if (kind === "shared") {
     if (value === "one scale") return value;
@@ -38,7 +41,12 @@ export const describeValue = (kind: string, value: string): string => {
   }
   if (kind === "orientation") return value === "rows" ? "compared across rows" : "compared down columns";
   // A shade-or-not check is about the kind alone; direction and scale have their own checks.
-  if (kind === "detect") return value === "none" ? "ignored" : value.startsWith("ordinal") ? plain("ordinal") : plain(value.includes("/") ? "quantitative" : value);
+  if (kind === "detect")
+    return value === "none"
+      ? "ignored"
+      : value.startsWith("ordinal")
+        ? plain("ordinal")
+        : plain(value.includes("/") ? "quantitative" : value);
   return plain(value);
 };
 
@@ -57,7 +65,9 @@ export const evidenceFor = (check: Check, table: TableJudgment): string => {
   if (check.kind === "detect") {
     if (e !== undefined) return `${e.kind === "ordinal" ? "P(ordered)" : "P(amount)"} ${p2(e.evidence.comparable)}`;
     if (s === undefined) return "";
-    return s.comparable === null ? `not asked: ${plainReason(s.reason)}` : `${p2(s.comparable)}: ${plainReason(s.reason)}`;
+    return s.comparable === null
+      ? `not asked: ${plainReason(s.reason)}`
+      : `${p2(s.comparable)}: ${plainReason(s.reason)}`;
   }
   if (e === undefined) return "";
   if (check.kind === "polarity") {
@@ -65,6 +75,7 @@ export const evidenceFor = (check: Check, table: TableJudgment): string => {
     return `higher ${p2(p.higher_is_better)} · lower ${p2(p.lower_is_better)} · neither ${p2(p.neutral)}`;
   }
   if (check.kind === "transform") return e.evidence.log === null ? "not asked" : `P(log) ${p2(e.evidence.log)}`;
-  if (check.kind === "order") return e.evidence.orderConfidence === null ? "" : `order confidence ${p2(e.evidence.orderConfidence)}`;
+  if (check.kind === "order")
+    return e.evidence.orderConfidence === null ? "" : `order confidence ${p2(e.evidence.orderConfidence)}`;
   return "";
 };

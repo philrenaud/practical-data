@@ -44,7 +44,8 @@ const describeColumn = (p: NumericProfile | CategoricalProfile) => {
           : "every value is a whole number between 1800 and 2100",
       );
     }
-    if (p.boundShare >= 0.5) notes.push("most values are written as bounds with ≤, <, ≥, >, or + rather than exact amounts");
+    if (p.boundShare >= 0.5)
+      notes.push("most values are written as bounds with ≤, <, ≥, >, or + rather than exact amounts");
     if (p.rangeShare >= 0.5) notes.push("most values are written as two numbers joined by a dash, such as 20-25");
     if (p.durationShare >= 0.5) {
       notes.push("values are written like clock readings (such as 2:41); they could be durations or times of day");
@@ -140,7 +141,8 @@ export interface NumericReading {
  * name the rows the way years do: in order down the table, so shading them
  * says nothing. Brackets elsewhere ("Median age: 35–39") are values.
  */
-export const namesRows = (p: NumericProfile): boolean => p.col === 0 && p.distinct === p.values.filter((v) => v !== null).length;
+export const namesRows = (p: NumericProfile): boolean =>
+  p.col === 0 && p.distinct === p.values.filter((v) => v !== null).length;
 
 /** Only ask about log scales when the data could plausibly use one. */
 export const logEligible = (p: NumericProfile): boolean => p.decades !== null && p.decades >= 1;
@@ -272,8 +274,7 @@ export const categoricalQuestions = (p: CategoricalProfile) => {
           "They are names, kinds, places, or groups with no inherent order (teams, regions, colors, weather types, leagues).",
         workflow_states: "They are stages or statuses of a process (open, in progress, done; preview, released).",
         options: "They are alternative options or modes where neither is more of anything (default vs custom).",
-        scores_or_records:
-          "They are game scores or win-loss records written as two numbers (35-10, 12-4).",
+        scores_or_records: "They are game scores or win-loss records written as two numbers (35-10, 12-4).",
         names_or_versions:
           "They are names or versions of specific products, models, or items (Grok 4.5, Grok 4.6; iPhone 14, iPhone 15), even if the names contain numbers.",
       },
@@ -297,7 +298,12 @@ export const categoricalQuestions = (p: CategoricalProfile) => {
    * Relation and polarity first; the pairwise questions (n² for n levels) go
    * in a second request, only when the labels might be ordered.
    */
-  return { questions, pairQuestions: pairs.questions, ordinalOf: (a: Answers) => probabilities(a, id("relation"))["ordered_levels"] ?? 0, read };
+  return {
+    questions,
+    pairQuestions: pairs.questions,
+    ordinalOf: (a: Answers) => probabilities(a, id("relation"))["ordered_levels"] ?? 0,
+    read,
+  };
 };
 
 // ── Aggregate rows ──────────────────────────────────────────────────────────

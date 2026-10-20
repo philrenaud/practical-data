@@ -12,7 +12,13 @@ import { judgePage } from "../src/decide/judge.ts";
 import { recordedJev } from "./lib/cache.ts";
 import { serve } from "./serve.ts";
 
-await esbuild.build({ entryPoints: { media: "src/demo/media.ts" }, outdir: "dist-probe", bundle: true, format: "iife", logLevel: "warning" });
+await esbuild.build({
+  entryPoints: { media: "src/demo/media.ts" },
+  outdir: "dist-probe",
+  bundle: true,
+  format: "iife",
+  logLevel: "warning",
+});
 
 const layer = recordedJev();
 
@@ -21,12 +27,21 @@ const browser = await chromium.launch();
 type Media = { snapshot: () => PageSnapshot; paint: (j: unknown, p: string) => void };
 
 for (const theme of ["light", "dark"] as const) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2, colorScheme: theme });
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 900 },
+    deviceScaleFactor: 2,
+    colorScheme: theme,
+  });
   await page.goto(`${url}/cards.html`);
   await page.addScriptTag({ path: "dist-probe/media.js" });
   const snapshot = await page.evaluate(() => (globalThis as unknown as { __media: Media }).__media.snapshot());
-  const judgment = await Effect.runPromise(judgePage({ ...snapshot, title: "Table examples" }).pipe(Effect.provide(layer)));
-  await page.evaluate(([j, p]) => (globalThis as unknown as { __media: Media }).__media.paint(j, p), [judgment, DEFAULT_PALETTE] as const);
+  const judgment = await Effect.runPromise(
+    judgePage({ ...snapshot, title: "Table examples" }).pipe(Effect.provide(layer)),
+  );
+  await page.evaluate(([j, p]) => (globalThis as unknown as { __media: Media }).__media.paint(j, p), [
+    judgment,
+    DEFAULT_PALETTE,
+  ] as const);
   await page.waitForTimeout(400);
   for (const card of await page.locator("[data-card]").all()) {
     const name = await card.getAttribute("data-card");

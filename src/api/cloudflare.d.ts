@@ -18,7 +18,9 @@ interface SqlCursor<T> {
 
 interface DurableObjectState {
   readonly storage: {
-    readonly sql: { exec<T = Record<string, number | string | null>>(query: string, ...bindings: unknown[]): SqlCursor<T> };
+    readonly sql: {
+      exec<T = Record<string, number | string | null>>(query: string, ...bindings: unknown[]): SqlCursor<T>;
+    };
     getAlarm(): Promise<number | null>;
     setAlarm(at: number): Promise<void>;
     deleteAll(): Promise<void>;

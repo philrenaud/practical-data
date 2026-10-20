@@ -3,38 +3,75 @@ import assert from "node:assert/strict";
 import { describeColumn } from "../src/core/legend.ts";
 import type { ColumnEncoding } from "../src/core/types.ts";
 
-const evidence = { comparable: 0.98, polarity: { higher_is_better: 0, lower_is_better: 0.98, neutral: 0 }, log: 1, orderConfidence: 0.98 };
+const evidence = {
+  comparable: 0.98,
+  polarity: { higher_is_better: 0, lower_is_better: 0.98, neutral: 0 },
+  log: 1,
+  orderConfidence: 0.98,
+};
 
 test("a shared, log-scaled price column", () => {
   const e: ColumnEncoding = {
-    kind: "quantitative", col: 2, header: "Cached input", polarity: "lower_is_better", transform: "log", unit: "$",
-    domain: [0.01, 2], values: [], group: "shared:1", evidence,
+    kind: "quantitative",
+    col: 2,
+    header: "Cached input",
+    polarity: "lower_is_better",
+    transform: "log",
+    unit: "$",
+    domain: [0.01, 2],
+    values: [],
+    group: "shared:1",
+    evidence,
   };
   const { status, lo, hi, facts } = describeColumn(e, "calm", false, { sharedWith: 3, aggregates: [] });
-  assert.deepEqual({ status, lo, hi, facts }, {
-    status: "Lower is better · Log scale",
-    lo: "$0.01",
-    hi: "$2",
-    facts: ["200× range", "Found in 3 tables"],
-  });
+  assert.deepEqual(
+    { status, lo, hi, facts },
+    {
+      status: "Lower is better · Log scale",
+      lo: "$0.01",
+      hi: "$2",
+      facts: ["200× range", "Found in 3 tables"],
+    },
+  );
 });
 
 test("a linear column that excludes a totals row", () => {
   const e: ColumnEncoding = {
-    kind: "quantitative", col: 1, header: "Population", polarity: "neutral", transform: "linear", unit: null,
-    domain: [35, 1.4e9], values: [], group: null, evidence,
+    kind: "quantitative",
+    col: 1,
+    header: "Population",
+    polarity: "neutral",
+    transform: "linear",
+    unit: null,
+    domain: [35, 1.4e9],
+    values: [],
+    group: null,
+    evidence,
   };
   const { status, facts } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: ["World"] });
-  assert.deepEqual({ status, facts }, { status: "No better direction · Linear scale", facts: ["Excludes total: World"] });
+  assert.deepEqual(
+    { status, facts },
+    { status: "No better direction · Linear scale", facts: ["Excludes total: World"] },
+  );
 });
 
 test("ranked categories show their first and last level as extents", () => {
   const e: ColumnEncoding = {
-    kind: "ordinal", col: 1, header: "Category", polarity: "neutral", order: ["lightweight", "versatile", "powerful"],
-    labels: ["Lightweight", "Versatile", "Powerful"], values: [], group: null, evidence,
+    kind: "ordinal",
+    col: 1,
+    header: "Category",
+    polarity: "neutral",
+    order: ["lightweight", "versatile", "powerful"],
+    labels: ["Lightweight", "Versatile", "Powerful"],
+    values: [],
+    group: null,
+    evidence,
   };
   const { status, lo, hi, facts } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
-  assert.deepEqual({ status, lo, hi, facts }, { status: "Ranked categories · 3 levels", lo: "Lightweight", hi: "Powerful", facts: [] });
+  assert.deepEqual(
+    { status, lo, hi, facts },
+    { status: "Ranked categories · 3 levels", lo: "Lightweight", hi: "Powerful", facts: [] },
+  );
 });
 
 test("duration extents read back as clock values", async () => {
@@ -46,9 +83,21 @@ test("duration extents read back as clock values", async () => {
 
 test("a date column reads as dates, earliest to latest", () => {
   const e: ColumnEncoding = {
-    kind: "quantitative", col: 0, header: "Released", polarity: "neutral", transform: "linear", unit: "month",
-    domain: [Date.UTC(1993, 11, 1), Date.UTC(2001, 5, 1)], values: [], group: null,
-    evidence: { comparable: 1, polarity: { higher_is_better: 0, lower_is_better: 0, neutral: 1 }, log: null, orderConfidence: null },
+    kind: "quantitative",
+    col: 0,
+    header: "Released",
+    polarity: "neutral",
+    transform: "linear",
+    unit: "month",
+    domain: [Date.UTC(1993, 11, 1), Date.UTC(2001, 5, 1)],
+    values: [],
+    group: null,
+    evidence: {
+      comparable: 1,
+      polarity: { higher_is_better: 0, lower_is_better: 0, neutral: 1 },
+      log: null,
+      orderConfidence: null,
+    },
   };
   const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
   assert.deepEqual({ status, lo, hi }, { status: "Dates · Earliest to latest", lo: "Dec 1993", hi: "Jun 2001" });
