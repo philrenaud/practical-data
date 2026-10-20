@@ -43,3 +43,13 @@ test("duration extents read back as clock values", async () => {
   assert.equal(withUnit(185, ":"), "3:05");
   assert.equal(withUnit(3723, ":"), "1:02:03");
 });
+
+test("a date column reads as dates, earliest to latest", () => {
+  const e: ColumnEncoding = {
+    kind: "quantitative", col: 0, header: "Released", polarity: "neutral", transform: "linear", unit: "month",
+    domain: [Date.UTC(1993, 11, 1), Date.UTC(2001, 5, 1)], values: [], group: null,
+    evidence: { comparable: 1, polarity: { higher_is_better: 0, lower_is_better: 0, neutral: 1 }, log: null, orderConfidence: null },
+  };
+  const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
+  assert.deepEqual({ status, lo, hi }, { status: "Dates · Earliest to latest", lo: "Dec 1993", hi: "Jun 2001" });
+});

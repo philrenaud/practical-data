@@ -3,6 +3,7 @@
  * scale's extents, and a few facts. Pure: the painter supplies the encoding
  * and page context.
  */
+import { formatDate, isDateUnit } from "./dates.ts";
 import { legendStops, type Palette } from "./scale.ts";
 import type { ColumnEncoding } from "./types.ts";
 
@@ -40,8 +41,9 @@ const clock = (v: number): string =>
     ? `${Math.floor(v / 3600)}:${pad(Math.floor((v % 3600) / 60))}:${pad(v % 60)}`
     : `${Math.floor(v / 60)}:${pad(v % 60)}`;
 
-export const withUnit = (v: number, unit: string | null): string => {
+export const withUnit = (v: number, unit: string | null, now: number = Date.now()): string => {
   if (unit === ":") return clock(v);
+  if (isDateUnit(unit)) return formatDate(v, unit, now);
   const n = formatNumber(v);
   if (unit === null) return n;
   if (CURRENCY.test(unit)) return v < 0 ? `-${unit}${n.slice(1)}` : `${unit}${n}`;
@@ -64,7 +66,7 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
   if (e.kind === "quantitative") {
     const [lo, hi] = e.domain;
     const log = e.transform === "log" && lo > 0;
-    status = `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
+    status = isDateUnit(e.unit) ? "Dates · Earliest to latest" : `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
   } else {
     status = `Ranked categories · ${e.order.length} levels`;

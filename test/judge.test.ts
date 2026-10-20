@@ -238,3 +238,28 @@ test("brackets that name the rows are ignored; brackets that are values are shad
   assert.ok(shaded.includes("Median age"), "bracket values are shaded");
   assert.ok(shaded.includes("Population"));
 });
+
+test("date columns are shaded by code, never asked about, and never shared", async () => {
+  const now = Date.UTC(2026, 9, 20);
+  const asked: string[] = [];
+  const model = scripted((id) => {
+    asked.push(id);
+    return { type: "noul", noul: 0 };
+  });
+  // Nine unique names: free text, so the only candidate column is the dates.
+  const releases = (id: string) =>
+    pricing(id, ["Set", "Released"], [
+      ["Alpha", "August 5, 1993"], ["Beta", "October 4, 1993"], ["Unlimited", "December 1, 1993"], ["Arabian Nights", "December 17, 1993"],
+      ["Antiquities", "March 4, 1994"], ["Legends", "June 1, 1994"], ["The Dark", "August 1, 1994"], ["Ice Age", "June 1995"], ["Mirage", "3 days ago"],
+    ]);
+  const j = await Effect.runPromise(
+    judgePage({ url: "https://example.test", title: "Sets", tables: [releases("t0"), releases("t1")] }, undefined, {}, now).pipe(Effect.provide(model)),
+  );
+  assert.deepEqual(asked, []);
+  assert.equal(j.usage.requests, 0);
+  const e = j.tables[0]!.encodings[0]!;
+  assert.equal(e.kind === "quantitative" && e.unit, "ago");
+  assert.deepEqual(e.kind === "quantitative" && [e.polarity, e.transform, e.group], ["neutral", "linear", null]);
+  assert.deepEqual(e.kind === "quantitative" && e.domain, [Date.UTC(1993, 7, 5), now - 3 * 86_400_000]);
+  assert.deepEqual(j.tables[0]!.skipped.map((s) => s.header), ["Set"]);
+});

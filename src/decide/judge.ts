@@ -9,8 +9,9 @@
  */
 import { Effect } from "effect";
 import { orderFromPairs } from "../core/order.ts";
+import { isDateUnit, parseDateColumn } from "../core/dates.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
-import type { CategoricalProfile, NumericProfile } from "../core/profile.ts";
+import type { CategoricalProfile, ColumnProfile, NumericProfile } from "../core/profile.ts";
 import { profileTable } from "../core/profile.ts";
 import { normalizeLabel } from "../core/parse.ts";
 import type {
@@ -98,6 +99,37 @@ const extent = (values: readonly (number | null)[], exclude: ReadonlySet<number>
   return [lo, hi];
 };
 
+/**
+ * Evidence for a column code decided alone. A date column is always comparable
+ * and has no better direction: earlier and later are not good and bad.
+ */
+const CODE_EVIDENCE: ColumnEncoding["evidence"] = {
+  comparable: 1,
+  polarity: { higher_is_better: 0, lower_is_better: 0, neutral: 1 },
+  log: null,
+  orderConfidence: null,
+};
+
+/** Date columns, shaded from earliest to latest without asking the model. */
+const dateEncodings = (table: TableSnapshot, profiles: readonly ColumnProfile[], excluded: ReadonlySet<number>, now: number): ColumnEncoding[] =>
+  profiles.flatMap((p) => {
+    if (p.kind !== "text" || p.reason !== "dates or times") return [];
+    const dates = parseDateColumn(table.rows.map((r) => r[p.col] ?? ""), now);
+    if (dates === null) return [];
+    return [{
+      kind: "quantitative" as const,
+      col: p.col,
+      header: p.header,
+      polarity: "neutral" as const,
+      transform: "linear" as const,
+      unit: dates.unit,
+      domain: extent(dates.values, excluded),
+      values: dates.values,
+      group: null,
+      evidence: CODE_EVIDENCE,
+    }];
+  });
+
 interface Planned {
   readonly table: TableSnapshot;
   readonly judgment: TableJudgment;
@@ -107,7 +139,7 @@ interface Planned {
 }
 
 /** One table, judged column by column. Optionally asks the orientation question too. */
-const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, askOrientation: boolean) =>
+const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, askOrientation: boolean, now: number) =>
   Effect.gen(function* () {
     const model = yield* DecisionModel;
     const profiles = profileTable(table);
@@ -117,13 +149,21 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
     const skipped: SkippedColumn[] = profiles.flatMap((p) =>
       p.kind === "text" ? [{ col: p.col, header: p.header, reason: p.reason, comparable: null }] : [],
     );
-    const empty: Planned = {
+    const unasked = (dates: readonly ColumnEncoding[]): Planned => ({
       table,
-      judgment: { id: table.id, orientation: "columns", rowsScore: null, encodings: [], skipped, aggregateRows: [] },
+      judgment: {
+        id: table.id,
+        orientation: "columns",
+        rowsScore: null,
+        encodings: dates,
+        skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)),
+        aggregateRows: [],
+      },
       samples: new Map(),
       units: new Map(),
-    };
-    if (candidates.length === 0 || table.rows.length < MIN_ROWS) return { planned: empty, rowsScore: null };
+    });
+    if (table.rows.length < MIN_ROWS) return { planned: unasked([]), rowsScore: null };
+    if (candidates.length === 0) return { planned: unasked(dateEncodings(table, profiles, new Set(), now)), rowsScore: null };
 
     const ctx = { page: page.title, table: table.title };
     const numeric = candidates.filter((p) => p.kind === "numeric");
@@ -233,6 +273,8 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
         samples.set(p.col, order.map((l) => p.display[l] ?? l));
       }
     }
+    const dates = dateEncodings(table, profiles, excluded, now);
+    encodings.push(...dates);
     encodings.sort((a, b) => a.col - b.col);
     const planned: Planned = {
       table,
@@ -241,7 +283,7 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
         orientation: "columns",
         rowsScore: null,
         encodings,
-        skipped: skipped.sort((a, b) => a.col - b.col),
+        skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)).sort((a, b) => a.col - b.col),
         aggregateRows,
       },
       samples,
@@ -255,15 +297,15 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
  * question rides along in the column pass; if the model says rows, the table
  * is judged again transposed.
  */
-const judgeTable = (page: PageSnapshot, table: TableSnapshot, policy: Policy, forced?: Orientation) =>
+const judgeTable = (page: PageSnapshot, table: TableSnapshot, policy: Policy, now: number, forced?: Orientation) =>
   Effect.gen(function* () {
     if (forced === "rows" && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-      const { planned } = yield* judgeColumns(page, transposeSnapshot(table), policy, false);
+      const { planned } = yield* judgeColumns(page, transposeSnapshot(table), policy, false, now);
       return { ...planned, judgment: { ...planned.judgment, orientation: "rows" as const } } satisfies Planned;
     }
-    const { planned, rowsScore } = yield* judgeColumns(page, table, policy, forced === undefined);
+    const { planned, rowsScore } = yield* judgeColumns(page, table, policy, forced === undefined, now);
     if (rowsScore !== null && rowsScore >= policy.rows && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-      const rows = yield* judgeColumns(page, transposeSnapshot(table), policy, false);
+      const rows = yield* judgeColumns(page, transposeSnapshot(table), policy, false, now);
       return { ...rows.planned, judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore } } satisfies Planned;
     }
     return { ...planned, judgment: { ...planned.judgment, rowsScore } } satisfies Planned;
@@ -315,6 +357,8 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
   const byKey = new Map<string, Member[]>();
   for (const p of planned) {
     for (const e of p.judgment.encodings) {
+      // Dates are never offered: the question is about measures, and code decided them alone.
+      if (e.kind === "quantitative" && isDateUnit(e.unit)) continue;
       const key = groupKey(p, e);
       byKey.set(key, [...(byKey.get(key) ?? []), { planned: p, encoding: e }]);
     }
@@ -430,6 +474,8 @@ export const judgePage = (
   policy: Policy = DEFAULT_POLICY,
   /** Per-table orientation chosen by the reader; skips the orientation question. */
   orientations: Readonly<Record<string, Orientation>> = {},
+  /** The instant relative dates ("3 days ago") count back from. */
+  now: number = Date.now(),
 ) =>
   Effect.gen(function* () {
     const model = yield* DecisionModel;
@@ -451,7 +497,7 @@ export const judgePage = (
     });
     // Each table succeeds or fails on its own; one failed request must not discard
     // every other table's results (including cache hits).
-    const results = yield* Effect.forEach(tables, (t) => Effect.result(judgeTable(page, t, policy, orientations[t.id])), {
+    const results = yield* Effect.forEach(tables, (t) => Effect.result(judgeTable(page, t, policy, now, orientations[t.id])), {
       concurrency: 6,
     }).pipe(Effect.provideService(DecisionModel, counted));
     const planned = results.flatMap((r) => (r._tag === "Success" ? [r.success] : []));

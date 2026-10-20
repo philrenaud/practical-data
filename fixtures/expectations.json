@@ -118,7 +118,8 @@
     "t1": {
       "Set": "none",
       "Expansion code": "none",
-      "Size: Total Cards": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] }
+      "Size: Total Cards": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Release date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" }
     }
   },
   "wiki-countries-by-population": {
@@ -126,6 +127,7 @@
       "Location": "none",
       "Population": { "kind": "quantitative", "polarity": ["neutral"], "transform": "log" },
       "% of world": { "kind": "quantitative", "polarity": ["neutral"] },
+      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
       "aggregateRows": [0]
     }
   },
@@ -416,7 +418,7 @@
       "Player": "none",
       "Ht": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
       "Wt": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Birth Date": "none",
+      "Birth Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
       "Birth": "none",
       "College": "none"
     },
