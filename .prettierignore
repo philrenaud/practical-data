@@ -4,3 +4,5 @@ demo/
 package-lock.json
 web/.svelte-kit/
 web/dev-fonts/
+# Prose: hand-wrapped; Prettier pads tables to the widest cell.
+*.md
