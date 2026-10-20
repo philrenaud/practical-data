@@ -80,3 +80,30 @@ test("legend text in the column's own precision", () => {
   assert.equal(formatDate(NOW - 125_000, "ago", NOW), "2 minutes ago");
   assert.equal(formatDate(NOW - 400 * DAY, "ago", NOW), "last year");
 });
+
+test("dates without a year take one from their column", () => {
+  assert.deepEqual(parseDate("Feb 6", { now: NOW, year: 2000 }), { time: Date.UTC(2000, 1, 6), precision: "day", yearless: true });
+  assert.equal(parseDate("6 February", { now: NOW, year: 2000 })?.time, Date.UTC(2000, 1, 6));
+
+  // Unsorted: one year, a leap year.
+  const quakes = parseDateColumn(["February 6", "February 6", "September 8", "May 19", "December 2", "February 29"], NOW);
+  assert.equal(quakes?.unit, "monthday");
+  assert.deepEqual(quakes?.values, [6, 6, 8, 19, 2, 29].map((d, i) => Date.UTC(2000, [1, 1, 8, 4, 11, 1][i]!, d)));
+  assert.equal(formatDate(Date.UTC(2000, 1, 6), "monthday", NOW), "Feb 6");
+
+  // Beside dates with years, a date without one is this year.
+  assert.equal(parseDateColumn(["Mar 3", "Jan 2, 2024", "Feb 5, 2023"], NOW)?.values[0], Date.UTC(2026, 2, 3));
+});
+
+test("a sorted column of dates without years crosses New Year once", () => {
+  const season = parseDateColumn(["Sep 8", "Oct 12", "Dec 30", "Jan 5", "Feb 2"], NOW)!.values;
+  assert.ok(season[3]! > season[2]!, "Jan 5 is after Dec 30");
+  assert.ok(season.every((v, i) => i === 0 || v! > season[i - 1]!));
+
+  const newestFirst = parseDateColumn(["Feb 2", "Jan 5", "Dec 30", "Oct 12"], NOW)!.values;
+  assert.ok(newestFirst.every((v, i) => i === 0 || v! < newestFirst[i - 1]!));
+
+  // One step down, but not across New Year (May to February): one year.
+  const unsorted = parseDateColumn(["Mar 3", "May 1", "Feb 2"], NOW)!.values;
+  assert.ok(unsorted[2]! < unsorted[0]!);
+});

@@ -389,7 +389,7 @@
         "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
       },
       "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Date": "none",
+      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
       "Event": "none"
     },
     "t1": {
@@ -402,7 +402,7 @@
         "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
       },
       "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Date": "none",
+      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
       "Event": "none"
     },
     "shared": [

@@ -3,8 +3,9 @@
  *
  * Calendar dates ("Feb 6, 2023", "2023-02-06", "December 1993") and relative
  * times ("3 days ago", "yesterday") both become instants, so a column shades
- * from earliest to latest. Like parse.ts, this is conservative: a year alone,
- * a month and day without a year, or a season ("2010-11") returns null.
+ * from earliest to latest. Like parse.ts, this is conservative: a year alone
+ * or a season ("2010-11") returns null. A month and day without a year
+ * ("Feb 6") needs a year from its column (parseDateColumn).
  *
  * Times without an offset are read as UTC. Within a column every cell is read
  * the same way, which is all a scale needs.
@@ -17,12 +18,14 @@ export type DatePrecision = "month" | "day" | "minute" | "relative";
 export interface ParsedDate {
   readonly time: number;
   readonly precision: DatePrecision;
+  /** Written without a year ("Feb 6"); `time` is in `DateOptions.year`. */
+  readonly yearless?: true;
 }
 
 /** The legend format of a date column: the coarsest form that shows every value. */
-export type DateUnit = "month" | "date" | "datetime" | "ago";
+export type DateUnit = "month" | "date" | "monthday" | "datetime" | "ago";
 
-export const DATE_UNITS: readonly DateUnit[] = ["month", "date", "datetime", "ago"];
+export const DATE_UNITS: readonly DateUnit[] = ["month", "date", "monthday", "datetime", "ago"];
 export const isDateUnit = (unit: string | null): unit is DateUnit => DATE_UNITS.includes(unit as DateUnit);
 
 /** Day and month order for numeric dates ("9/10/2026"). */
@@ -33,6 +36,8 @@ export interface DateOptions {
   readonly now: number;
   /** Without an order, a numeric date with both parts 12 or under is ambiguous and returns null. */
   readonly order?: DayOrder;
+  /** The year of dates written without one ("Feb 6"). Without it, they return null. */
+  readonly year?: number;
 }
 
 const SECOND = 1000;
@@ -84,6 +89,8 @@ const NAMED: readonly RegExp[] = [
   new RegExp(`^(?<day>\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?<month>${MONTH_WORD}),?\\s+(?<year>${YEAR_WORD})$`), // 6 February 2023
   new RegExp(`^(?<month>${MONTH_WORD}),?[\\s-](?<year>\\d{4})$`), // December 1993, Dec-1993
   new RegExp(`^(?<year>\\d{4})[\\s-](?<month>${MONTH_WORD})$`), // 2026-Mar
+  new RegExp(`^(?<month>${MONTH_WORD})\\s+(?<day>\\d{1,2})(?:st|nd|rd|th)?$`), // Feb 6
+  new RegExp(`^(?<day>\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?<month>${MONTH_WORD})$`), // 6 February
 ];
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})(?:[t\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?\s*(z|[+-]\d{2}:?\d{2})?$/;
@@ -158,12 +165,15 @@ export const parseDate = (raw: string, options: DateOptions): ParsedDate | null 
     rest = rest.slice(0, time.index).trim();
   }
 
-  const day = ((): { y: number; m: number; d: number; precision: DatePrecision } | null => {
+  const day = ((): { y: number; m: number; d: number; precision: DatePrecision; yearless?: true } | null => {
     for (const re of NAMED) {
       const g = re.exec(rest)?.groups;
       if (g === undefined) continue;
       const m = monthOf(g.month!);
       if (m === null) return null;
+      if (g.year === undefined) {
+        return options.year === undefined ? null : { y: options.year, m, d: Number(g.day), precision: "day", yearless: true };
+      }
       return g.day === undefined
         ? { y: fullYear(g.year!), m, d: 1, precision: "month" }
         : { y: fullYear(g.year!), m, d: Number(g.day), precision: "day" };
@@ -184,7 +194,42 @@ export const parseDate = (raw: string, options: DateOptions): ParsedDate | null 
 
   const base = utc(day.y, day.m, day.d, clock?.h ?? 0, clock?.min ?? 0, clock?.s ?? 0);
   if (base === null) return null;
-  return clock === null ? { time: base, precision: day.precision } : { time: base - offsetMinutes(clock.zone) * MINUTE, precision: "minute" };
+  const parsed: ParsedDate =
+    clock === null ? { time: base, precision: day.precision } : { time: base - offsetMinutes(clock.zone) * MINUTE, precision: "minute" };
+  return day.yearless ? { ...parsed, yearless: true } : parsed;
+};
+
+/** The year of a column of dates without years: a leap year, so "Feb 29" is a date. */
+const LEAP_YEAR = 2000;
+
+const monthAt = (t: number) => new Date(t).getUTCMonth() + 1;
+/** A step across New Year: from September or later to April or earlier. */
+const crossesNewYear = (from: number, to: number) => monthAt(from) >= 9 && monthAt(to) <= 4;
+
+/**
+ * Dates without years, in a column sorted by date that crosses New Year once
+ * (Sep 8 … Dec 30, Jan 5): the dates after the step are in the next year. In
+ * a column sorted newest first, the dates before the step are. Any other
+ * column keeps one year, since nothing in it tells where a year ends; so does
+ * one that would then span a year or more.
+ */
+const unwrapYear = (
+  cells: readonly string[],
+  parsed: readonly (ParsedDate | null)[],
+  parseIn: (year: number) => (c: string) => ParsedDate | null,
+): (ParsedDate | null)[] => {
+  const rows = parsed.flatMap((p, i) => (p === null ? [] : [{ i, t: p.time }]));
+  const steps = rows.slice(1).map((r, k) => ({ from: rows[k]!, to: r }));
+  const down = steps.filter((s) => s.to.t < s.from.t);
+  const up = steps.filter((s) => s.to.t > s.from.t);
+  const forward = down.length === 1 && crossesNewYear(down[0]!.from.t, down[0]!.to.t) ? down[0]!.to.i : null;
+  const backward = up.length === 1 && crossesNewYear(up[0]!.to.t, up[0]!.from.t) ? up[0]!.to.i : null;
+  if (forward === null && backward === null) return [...parsed];
+  const [first, next] = [parseIn(LEAP_YEAR - 1), parseIn(LEAP_YEAR)];
+  const shifted = cells.map((c, i) => (forward !== null ? (i >= forward ? next(c) : first(c)) : i < backward! ? next(c) : first(c)));
+  // A season is under a year long. A wider span means the column was not sorted after all.
+  const times = shifted.flatMap((p) => (p === null ? [] : [p.time]));
+  return Math.max(...times) - Math.min(...times) < 365 * DAY ? shifted : [...parsed];
 };
 
 /** Share of filled cells that must parse, as for numbers (profile.ts). */
@@ -219,19 +264,34 @@ const columnOrder = (cells: readonly string[]): DayOrder | null => {
  */
 export const parseDateColumn = (cells: readonly string[], now: number): { values: (number | null)[]; unit: DateUnit } | null => {
   const order = columnOrder(cells) ?? undefined;
-  const parsed = cells.map((c) => (isMissing(c) ? null : parseDate(c, { now, ...(order === undefined ? {} : { order }) })));
+  const parseIn = (year: number) => (c: string) => (isMissing(c) ? null : parseDate(c, { now, year, ...(order === undefined ? {} : { order }) }));
+  let parsed = cells.map(parseIn(LEAP_YEAR));
   const filled = cells.filter((c) => !isMissing(c)).length;
-  const dates = parsed.filter((p) => p !== null);
+  let dates = parsed.filter((p) => p !== null);
   if (dates.length < MIN_DATES || dates.length / filled < DATE_SHARE) return null;
+  const yearless = dates.every((d) => d.yearless);
+  if (yearless) parsed = unwrapYear(cells, parsed, parseIn);
+  // Beside dates with years, "Mar 3" means this year, as on GitHub.
+  else if (dates.some((d) => d.yearless)) parsed = cells.map(parseIn(new Date(now).getUTCFullYear()));
+  dates = parsed.filter((p) => p !== null);
   if (new Set(dates.map((d) => d.time)).size < 2) return null;
   const has = (p: DatePrecision) => dates.some((d) => d.precision === p);
-  const unit: DateUnit = has("relative") ? "ago" : dates.every((d) => d.precision === "month") ? "month" : has("minute") ? "datetime" : "date";
+  const unit: DateUnit = has("relative")
+    ? "ago"
+    : dates.every((d) => d.precision === "month")
+      ? "month"
+      : has("minute")
+        ? "datetime"
+        : yearless
+          ? "monthday"
+          : "date";
   return { values: parsed.map((p) => p?.time ?? null), unit };
 };
 
 const FORMATS: Readonly<Record<Exclude<DateUnit, "ago">, Intl.DateTimeFormatOptions>> = {
   month: { month: "short", year: "numeric", timeZone: "UTC" },
   date: { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" },
+  monthday: { month: "short", day: "numeric", timeZone: "UTC" },
   datetime: { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "UTC" },
 };
 

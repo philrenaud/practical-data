@@ -45,7 +45,7 @@
           <td class="muted">
             {#if x.missing}No value
             {:else if x.when !== null}A date: {x.when}. Code shades dates from earliest to latest
-            {:else if x.parsed === null}{x.date ? "A date with no year, or a time of day. Not shaded" : "Not a number"}
+            {:else if x.parsed === null}{x.date ? "A time of day. Not shaded" : "Not a number"}
             {:else if x.parsed.range}Range from {fmt(x.parsed.range[0])} to {fmt(x.parsed.range[1])}; the value is the midpoint
             {:else if x.parsed.unit === ":"}A clock value. The model decides if it is a duration or a time of day
             {:else if x.parsed.bound}A limit, not an exact amount

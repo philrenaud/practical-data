@@ -243,12 +243,13 @@ const PARSE_EXAMPLES = [
 const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = { month: "month", day: "date", minute: "datetime", relative: "ago" };
 const now = Date.now();
 const parsing = PARSE_EXAMPLES.map((input) => {
-  const date = isMissing(input) ? null : parseDate(input, { now });
+  // A date without a year gets one from its column; any year shows the form.
+  const date = isMissing(input) ? null : parseDate(input, { now, year: 2000 });
   return {
     input,
     missing: isMissing(input),
     date: date !== null || isDateLike(input),
-    when: date === null ? null : formatDate(date.time, DATE_FORM[date.precision], now),
+    when: date === null ? null : formatDate(date.time, date.yearless ? "monthday" : DATE_FORM[date.precision], now),
     // A date is never also a number ("3 days ago" is not 3 days).
     parsed: date === null && !isDateLike(input) ? parseNumber(input) : null,
   };
