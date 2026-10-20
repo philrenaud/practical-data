@@ -16,7 +16,14 @@
  */
 import { Effect, Schema } from "effect";
 import { judgePage } from "../decide/judge.ts";
-import { DecisionError, DecisionModel, DecisionResponse, hashJson, validateAnswers, type Question } from "../decide/model.ts";
+import {
+  DecisionError,
+  DecisionModel,
+  DecisionResponse,
+  hashJson,
+  validateAnswers,
+  type Question,
+} from "../decide/model.ts";
 import { checkQuestions, LIMITS, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
@@ -59,7 +66,9 @@ const secondsToMidnightUtc = () => {
 const originAllowed = (origin: string | null, env: Env): boolean => {
   if (origin === null) return true;
   if (!origin.startsWith("chrome-extension://")) return false;
-  const allowed = env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean);
+  const allowed = env.ALLOWED_ORIGINS.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   return allowed.length === 0 || allowed.includes(origin);
 };
 
@@ -78,17 +87,20 @@ interface Caller {
 
 /** Origin, install id and rate limits: shared by every route that spends the operator's key. */
 const admit = async (request: Request, env: Env): Promise<Caller | Response> => {
-  if (!originAllowed(request.headers.get("origin"), env)) return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
+  if (!originAllowed(request.headers.get("origin"), env))
+    return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
   const install = request.headers.get("x-practical-data-install") ?? "";
   if (!INSTALL_ID.test(install)) return refuse(400, "install", "Missing or malformed install id.");
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   const [byInstall, byIp] = await Promise.all([env.RL_INSTALL.limit({ key: install }), env.RL_IP.limit({ key: ip })]);
-  if (!byInstall.success || !byIp.success) return refuse(429, "rate_limited", "Too many requests; slow down.", { "Retry-After": "10" });
+  if (!byInstall.success || !byIp.success)
+    return refuse(429, "rate_limited", "Too many requests; slow down.", { "Retry-After": "10" });
   return { install };
 };
 
 /** `remaining` is the caller's requests left today; unknown (null) on a cache hit, which doesn't spend any. */
-type Asked = { readonly response: DecisionResponse; readonly remaining: number | null } | { readonly refusal: Response };
+type Asked =
+  { readonly response: DecisionResponse; readonly remaining: number | null } | { readonly refusal: Response };
 
 /**
  * What's left of the caller's daily allowance, on every response that spent
@@ -157,7 +169,14 @@ const ask = async (
     // The operator's key and the provider's messages stay here; the client learns only whether to retry.
     const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
-    return { refusal: refuse(status, "upstream", `The model returned ${upstream.status}.`, retry === null ? {} : { "Retry-After": retry }) };
+    return {
+      refusal: refuse(
+        status,
+        "upstream",
+        `The model returned ${upstream.status}.`,
+        retry === null ? {} : { "Retry-After": retry },
+      ),
+    };
   }
   const decoded = Schema.decodeUnknownOption(DecisionResponse)(await upstream.json().catch(() => null));
   if (decoded._tag === "None" || validateAnswers(questions, decoded.value) !== null) {
@@ -168,7 +187,9 @@ const ask = async (
       quota.charge(decoded.value.usage.input_tokens),
       caches.default.put(
         cacheKey,
-        new Response(JSON.stringify(decoded.value), { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${CACHE_TTL_S}` } }),
+        new Response(JSON.stringify(decoded.value), {
+          headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${CACHE_TTL_S}` },
+        }),
       ),
     ]),
   );
@@ -247,7 +268,9 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
         })),
       ),
   });
-  const result = await Effect.runPromise(Effect.result(judgePage(page).pipe(Effect.provideService(DecisionModel, model))));
+  const result = await Effect.runPromise(
+    Effect.result(judgePage(page).pipe(Effect.provideService(DecisionModel, model))),
+  );
   if (result._tag === "Failure") return refusal ?? refuse(502, "upstream", "The table couldn't be judged.");
   if (result.success.failed.length > 0 && refusal !== null) return refusal;
   return json(
@@ -271,7 +294,8 @@ export default {
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
     if (pathname === "/v1/stats" && request.method === "GET") {
       const token = env.STATS_TOKEN ?? "";
-      if (token === "" || request.headers.get("authorization") !== `Bearer ${token}`) return refuse(401, "auth", "Unauthorized.");
+      if (token === "" || request.headers.get("authorization") !== `Bearer ${token}`)
+        return refuse(401, "auth", "Unauthorized.");
       return json(200, { day: today(), ...(await env.QUOTA.get(env.QUOTA.idFromName(today())).stats()) });
     }
     return refuse(404, "not_found", "Not found.");

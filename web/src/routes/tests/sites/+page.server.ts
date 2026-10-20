@@ -14,7 +14,10 @@ export const load = async () => {
         url: p.source!.url,
         rights: p.source!.rights,
         host: new URL(p.source!.url).hostname.replace(/^www\./, ""),
-        kinds: KINDS.filter((k) => checks.some((c) => c.page === p.slug && c.kind === k.kind)).map((k) => ({ slug: k.slug, title: k.title })),
+        kinds: KINDS.filter((k) => checks.some((c) => c.page === p.slug && c.kind === k.kind)).map((k) => ({
+          slug: k.slug,
+          title: k.title,
+        })),
       })),
   };
 };

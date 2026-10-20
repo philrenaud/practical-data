@@ -12,7 +12,9 @@
 <div class="docs">
   <header class="docs-bar">
     <div class="docs-bar-inner">
-      <a class="docs-brand" href="/"><img src="/icon128.png" alt="" width="20" height="20"> Practical Data <span class="crumb">/ tests</span></a>
+      <a class="docs-brand" href="/"
+        ><img src="/icon128.png" alt="" width="20" height="20" /> Practical Data <span class="crumb">/ tests</span></a
+      >
       <p class="docs-run">Recorded answers from <b>{data.run.model}</b></p>
     </div>
   </header>
@@ -35,7 +37,11 @@
         <li><a href="/tests/limitations" aria-current={here("/tests/limitations")}>Known limitations</a></li>
         <li><a href="/tests/glossary" aria-current={here("/tests/glossary")}>Glossary</a></li>
         <li><a href="/tests/sites" aria-current={here("/tests/sites")}>Sites to test against</a></li>
-        <li><a href="/tests/units" aria-current={here("/tests/units")}><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a></li>
+        <li>
+          <a href="/tests/units" aria-current={here("/tests/units")}
+            ><span>Unit tests & parsing</span><span class="count" class:bad={!data.unitsOk}>{data.unitCount}</span></a
+          >
+        </li>
       </ul>
     </nav>
     <main class="docs-main">

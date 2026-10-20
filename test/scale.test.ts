@@ -4,11 +4,24 @@ import { divergingColor, PALETTES, type PaletteId } from "../src/core/palettes.t
 import { positions, schemeColor } from "../src/core/scale.ts";
 import type { ColumnEncoding } from "../src/core/types.ts";
 
-const evidence = { comparable: 1, polarity: { higher_is_better: 0, lower_is_better: 1, neutral: 0 }, log: null, orderConfidence: null };
+const evidence = {
+  comparable: 1,
+  polarity: { higher_is_better: 0, lower_is_better: 1, neutral: 0 },
+  log: null,
+  orderConfidence: null,
+};
 
 const price = (transform: "linear" | "log"): ColumnEncoding => ({
-  kind: "quantitative", col: 1, header: "Input", polarity: "lower_is_better", transform, unit: "$",
-  domain: [0.1, 10], values: [0.1, 1, 10, null], group: null, evidence,
+  kind: "quantitative",
+  col: 1,
+  header: "Input",
+  polarity: "lower_is_better",
+  transform,
+  unit: "$",
+  domain: [0.1, 10],
+  values: [0.1, 1, 10, null],
+  group: null,
+  evidence,
 });
 
 test("lower-is-better puts the cheapest row at t=1 (the good end)", () => {
@@ -29,9 +42,15 @@ test("excluded aggregate rows get no position", () => {
 
 test("ordinal levels spread evenly from 0 to 1", () => {
   const e: ColumnEncoding = {
-    kind: "ordinal", col: 2, header: "Category", polarity: "neutral",
-    order: ["lightweight", "versatile", "powerful"], labels: ["Lightweight", "Versatile", "Powerful"],
-    values: ["powerful", "lightweight", "versatile", null], group: null, evidence,
+    kind: "ordinal",
+    col: 2,
+    header: "Category",
+    polarity: "neutral",
+    order: ["lightweight", "versatile", "powerful"],
+    labels: ["Lightweight", "Versatile", "Powerful"],
+    values: ["powerful", "lightweight", "versatile", null],
+    group: null,
+    evidence,
   };
   assert.deepEqual(positions(e), [1, 0, 0.5, null]);
 });

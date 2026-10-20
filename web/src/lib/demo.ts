@@ -8,7 +8,12 @@ import type { ColumnEncoding, PageJudgment, PageSnapshot } from "../../../src/co
 import data from "../../../demo/data.json";
 
 export interface DemoSection {
-  readonly section: { readonly id: string; readonly heading: string; readonly source: string; readonly caption: string };
+  readonly section: {
+    readonly id: string;
+    readonly heading: string;
+    readonly source: string;
+    readonly caption: string;
+  };
   readonly page: PageSnapshot;
   readonly judgment: PageJudgment;
 }
@@ -18,7 +23,8 @@ export const sections = data as unknown as readonly DemoSection[];
 /** Same-named columns that share a scale across one page's tables, by group. */
 export const groupSizes = (judgment: PageJudgment): ReadonlyMap<string, number> => {
   const sizes = new Map<string, number>();
-  for (const t of judgment.tables) for (const e of t.encodings) if (e.group !== null) sizes.set(e.group, (sizes.get(e.group) ?? 0) + 1);
+  for (const t of judgment.tables)
+    for (const e of t.encodings) if (e.group !== null) sizes.set(e.group, (sizes.get(e.group) ?? 0) + 1);
   return sizes;
 };
 
@@ -56,12 +62,12 @@ export const describeEncoding = (e: ColumnEncoding): string =>
   e.kind === "quantitative" && isDateUnit(e.unit)
     ? "dates · earliest to latest"
     : e.kind === "quantitative"
-    ? `${POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
-    : `ordered: ${e.order.join(" → ")}`;
+      ? `${POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
+      : `ordered: ${e.order.join(" → ")}`;
 
 export const confidenceOf = (e: ColumnEncoding): string =>
   e.kind === "quantitative" && isDateUnit(e.unit)
     ? "decided by code"
     : e.kind === "quantitative"
-    ? `measure ${pct(e.evidence.comparable)} · direction ${pct(Math.max(...Object.values(e.evidence.polarity)))}`
-    : `ordered ${pct(e.evidence.comparable)} · order ${pct(e.evidence.orderConfidence ?? 0)}`;
+      ? `measure ${pct(e.evidence.comparable)} · direction ${pct(Math.max(...Object.values(e.evidence.polarity)))}`
+      : `ordered ${pct(e.evidence.comparable)} · order ${pct(e.evidence.orderConfidence ?? 0)}`;

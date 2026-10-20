@@ -46,7 +46,10 @@ const upstream = createServer(async (req, res) => {
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
   assert.equal(req.headers.authorization, "Bearer test-key");
-  const recorded = await readFile(`fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`, "utf8").catch(() => null);
+  const recorded = await readFile(
+    `fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`,
+    "utf8",
+  ).catch(() => null);
   if (recorded !== null) return void res.writeHead(200, { "Content-Type": "application/json" }).end(recorded);
   // Unrecorded: a well-formed answer that picks each question's first option.
   const { questions } = JSON.parse(raw) as { questions: Record<string, Question> };
@@ -54,10 +57,20 @@ const upstream = createServer(async (req, res) => {
     Object.entries(questions).map(([id, q]) => {
       if (q.type === "noul") return [id, { type: "noul", noul: 0.5 }];
       const keys = q.type === "choice" ? Object.keys(q.criteria) : q.criteria.map((_, i) => String(i));
-      return [id, { type: q.type, [q.type]: keys[0], probabilities: Object.fromEntries(keys.map((k, i) => [k, i === 0 ? 1 : 0])), confidence: 1 }];
+      return [
+        id,
+        {
+          type: q.type,
+          [q.type]: keys[0],
+          probabilities: Object.fromEntries(keys.map((k, i) => [k, i === 0 ? 1 : 0])),
+          confidence: 1,
+        },
+      ];
     }),
   );
-  res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ model: "jev-latest", answers, usage: { input_tokens: 100 } }));
+  res
+    .writeHead(200, { "Content-Type": "application/json" })
+    .end(JSON.stringify({ model: "jev-latest", answers, usage: { input_tokens: 100 } }));
 });
 await new Promise<void>((r) => upstream.listen(0, "127.0.0.1", r));
 const upstreamPort = (upstream.address() as { port: number }).port;
@@ -67,10 +80,22 @@ const upstreamPort = (upstream.address() as { port: number }).port;
 const wrangler = spawn(
   "npx",
   [
-    "wrangler@4.147.0", "dev", "-c", "api/wrangler.jsonc", "--port", String(PORT), "--ip", "127.0.0.1", "--persist-to", "artifacts/api-dev",
-    "--var", `UPSTREAM_URL:http://127.0.0.1:${upstreamPort}/v1/systemone`,
-    "--var", "TYPESAFE_API_KEY:test-key",
-    "--var", `INSTALL_DAILY_REQUESTS:${INSTALL_LIMIT}`,
+    "wrangler@4.147.0",
+    "dev",
+    "-c",
+    "api/wrangler.jsonc",
+    "--port",
+    String(PORT),
+    "--ip",
+    "127.0.0.1",
+    "--persist-to",
+    "artifacts/api-dev",
+    "--var",
+    `UPSTREAM_URL:http://127.0.0.1:${upstreamPort}/v1/systemone`,
+    "--var",
+    "TYPESAFE_API_KEY:test-key",
+    "--var",
+    `INSTALL_DAILY_REQUESTS:${INSTALL_LIMIT}`,
   ],
   { stdio: ["ignore", "pipe", "pipe"] },
 );
@@ -79,7 +104,11 @@ wrangler.stdout.on("data", (d) => (log += d));
 wrangler.stderr.on("data", (d) => (log += d));
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  fetch(`${ORIGIN}/v1/${body !== null && typeof body === "object" && "table" in body ? "judge" : "systemone"}`, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
+  fetch(`${ORIGIN}/v1/${body !== null && typeof body === "object" && "table" in body ? "judge" : "systemone"}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: JSON.stringify(body),
+  });
 
 let failed = false;
 const check = async (name: string, f: () => Promise<void>) => {
@@ -94,7 +123,13 @@ const check = async (name: string, f: () => Promise<void>) => {
 
 try {
   for (let i = 0; ; i++) {
-    if (await fetch(`${ORIGIN}/v1/health`).then((r) => r.ok, () => false)) break;
+    if (
+      await fetch(`${ORIGIN}/v1/health`).then(
+        (r) => r.ok,
+        () => false,
+      )
+    )
+      break;
     if (i > 120) throw new Error(`wrangler dev didn't start:\n${log}`);
     await new Promise((r) => setTimeout(r, 500));
   }
@@ -102,7 +137,9 @@ try {
   const install = randomUUID();
 
   await check("a page judged through the endpoint matches Jev's own judgment", async () => {
-    const viaEndpoint = await Effect.runPromise(judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(install)))));
+    const viaEndpoint = await Effect.runPromise(
+      judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(install)))),
+    );
     const realFetch = globalThis.fetch;
     globalThis.fetch = async () => new Response("offline", { status: 401 });
     const direct = await Effect.runPromise(
@@ -117,14 +154,19 @@ try {
 
   await check("a repeated request is answered from the shared cache", async () => {
     const calls = upstreamCalls;
-    const again = await Effect.runPromise(judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(randomUUID())))));
+    const again = await Effect.runPromise(
+      judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(randomUUID())))),
+    );
     assert.ok(again.usage.requests > 0);
     assert.equal(upstreamCalls, calls, "upstream was called again");
   });
 
   await check("a table sent whole to /v1/judge is judged as the extension would judge it", async () => {
     const table = page.tables.find((t) => t.rows.length >= 3)!;
-    const r = await post({ title: page.title, table: { title: table.title, headers: table.headers, rows: table.rows } }, { "X-Practical-Data-Install": install });
+    const r = await post(
+      { title: page.title, table: { title: table.title, headers: table.headers, rows: table.rows } },
+      { "X-Practical-Data-Install": install },
+    );
     assert.equal(r.status, 200, await r.clone().text());
     const { table: judged } = (await r.json()) as { table: import("../src/core/types.ts").TableJudgment };
     const realFetch = globalThis.fetch;
@@ -139,7 +181,10 @@ try {
   });
 
   await check("questions the extension doesn't ask are refused", async () => {
-    const r = await post({ state: {}, questions: { q: { type: "noul", instructions: "Is this email spam?" } } }, { "X-Practical-Data-Install": install });
+    const r = await post(
+      { state: {}, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
+      { "X-Practical-Data-Install": install },
+    );
     assert.equal(r.status, 400);
     assert.equal(((await r.json()) as { error: string }).error, "questions");
   });
@@ -153,32 +198,43 @@ try {
     assert.equal((await post({})).status, 400);
   });
 
-  await check(`each request reports what's left, and after ${INSTALL_LIMIT} an install gets the quota error`, async () => {
-    const id = randomUUID();
-    const role = roleQuestion;
-    let status = 0;
-    let n = 0;
-    for (; n <= INSTALL_LIMIT; n++) {
-      // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
-      const r = await post({ state: { n, run: id }, questions: role(`Price ${n}`) }, { "X-Practical-Data-Install": id });
-      status = r.status;
-      // Each request that spends from the allowance says what's left.
-      assert.equal(r.headers.get("x-practical-data-limit"), String(INSTALL_LIMIT));
-      assert.equal(r.headers.get("x-practical-data-remaining"), String(Math.max(0, INSTALL_LIMIT - n - 1)));
-      if (status !== 200) {
-        assert.equal(r.headers.get("x-practical-data-quota"), "install_limit");
-        assert.match(((await r.json()) as { message: string }).message, /^You've used today's free allowance\. It resets at midnight UTC/);
-        break;
+  await check(
+    `each request reports what's left, and after ${INSTALL_LIMIT} an install gets the quota error`,
+    async () => {
+      const id = randomUUID();
+      const role = roleQuestion;
+      let status = 0;
+      let n = 0;
+      for (; n <= INSTALL_LIMIT; n++) {
+        // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
+        const r = await post(
+          { state: { n, run: id }, questions: role(`Price ${n}`) },
+          { "X-Practical-Data-Install": id },
+        );
+        status = r.status;
+        // Each request that spends from the allowance says what's left.
+        assert.equal(r.headers.get("x-practical-data-limit"), String(INSTALL_LIMIT));
+        assert.equal(r.headers.get("x-practical-data-remaining"), String(Math.max(0, INSTALL_LIMIT - n - 1)));
+        if (status !== 200) {
+          assert.equal(r.headers.get("x-practical-data-quota"), "install_limit");
+          assert.match(
+            ((await r.json()) as { message: string }).message,
+            /^You've used today's free allowance\. It resets at midnight UTC/,
+          );
+          break;
+        }
       }
-    }
-    assert.equal(n, INSTALL_LIMIT, `refused after ${n}`);
-    assert.equal(status, 429);
-    const viaClient = await Effect.runPromise(
-      hosted(id).evaluate({ state: { n: 99 }, questions: role("Price 99") }).pipe(Effect.flip),
-    );
-    assert.ok(viaClient instanceof DecisionError);
-    assert.equal(viaClient.reason, "quota");
-  });
+      assert.equal(n, INSTALL_LIMIT, `refused after ${n}`);
+      assert.equal(status, 429);
+      const viaClient = await Effect.runPromise(
+        hosted(id)
+          .evaluate({ state: { n: 99 }, questions: role("Price 99") })
+          .pipe(Effect.flip),
+      );
+      assert.ok(viaClient instanceof DecisionError);
+      assert.equal(viaClient.reason, "quota");
+    },
+  );
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
     execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });
@@ -190,12 +246,17 @@ try {
     });
     try {
       const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-      assert.equal(await worker.evaluate(() => chrome.storage.local.get("settings").then((s) => s["settings"] ?? null)), null);
+      assert.equal(
+        await worker.evaluate(() => chrome.storage.local.get("settings").then((s) => s["settings"] ?? null)),
+        null,
+      );
       const fixture = (await fixturePages()).find((p) => p.slug === "github-copilot-pricing")!;
       const tab = await context.newPage();
       await tab.goto(`${base}/${fixture.path}`);
       await tab.waitForSelector("table[data-pd-encoded]:not([data-pd-encoded=''])", { timeout: 30_000 });
-      const columns = await tab.$$eval("table[data-pd-encoded]", (ts) => ts.reduce((n, t) => n + (t.getAttribute("data-pd-encoded") ?? "").split("|").filter(Boolean).length, 0));
+      const columns = await tab.$$eval("table[data-pd-encoded]", (ts) =>
+        ts.reduce((n, t) => n + (t.getAttribute("data-pd-encoded") ?? "").split("|").filter(Boolean).length, 0),
+      );
       assert.ok(columns > 0, "nothing shaded");
       assert.ok(!context.pages().some((p) => p.url().includes("options.html")), "options opened on install");
     } finally {

@@ -36,8 +36,12 @@ const normalizer = (e: Extract<ColumnEncoding, { kind: "quantitative" }>): ((v: 
   if (lo === hi) return () => 0.5;
   const scale =
     e.transform === "log" && lo > 0
-      ? scaleSequentialLog((t) => t).domain([lo, hi]).clamp(true)
-      : scaleSequential((t) => t).domain([lo, hi]).clamp(true);
+      ? scaleSequentialLog((t) => t)
+          .domain([lo, hi])
+          .clamp(true)
+      : scaleSequential((t) => t)
+          .domain([lo, hi])
+          .clamp(true);
   return (v) => scale(v);
 };
 

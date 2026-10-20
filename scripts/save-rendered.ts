@@ -21,5 +21,7 @@ const html = await page.evaluate(() => {
   return `<!doctype html>\n${document.documentElement.outerHTML}`;
 });
 await writeFile(`fixtures/live/${slug}.html`, html);
-console.log(`fixtures/live/${slug}.html: ${html.length.toLocaleString()} bytes, ${(html.match(/<tr/g) ?? []).length} rows`);
+console.log(
+  `fixtures/live/${slug}.html: ${html.length.toLocaleString()} bytes, ${(html.match(/<tr/g) ?? []).length} rows`,
+);
 await browser.close();

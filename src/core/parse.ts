@@ -15,16 +15,42 @@ export interface ParsedNumber {
 }
 
 const MISSING = new Set([
-  "", "-", "–", "—", "−", "n/a", "na", "n.a.", "none", "null", "nil", "?", "tbd", "tba",
-  "not applicable", "not available", "unknown", "—n/a—", "…", "...",
+  "",
+  "-",
+  "–",
+  "—",
+  "−",
+  "n/a",
+  "na",
+  "n.a.",
+  "none",
+  "null",
+  "nil",
+  "?",
+  "tbd",
+  "tba",
+  "not applicable",
+  "not available",
+  "unknown",
+  "—n/a—",
+  "…",
+  "...",
   "..", // Statistics Canada: not available
 ]);
 
 const MAGNITUDE: Readonly<Record<string, number>> = {
-  k: 1e3, thousand: 1e3,
-  m: 1e6, mm: 1e6, mn: 1e6, million: 1e6,
-  b: 1e9, bn: 1e9, billion: 1e9,
-  t: 1e12, tn: 1e12, trillion: 1e12,
+  k: 1e3,
+  thousand: 1e3,
+  m: 1e6,
+  mm: 1e6,
+  mn: 1e6,
+  million: 1e6,
+  b: 1e9,
+  bn: 1e9,
+  billion: 1e9,
+  t: 1e12,
+  tn: 1e12,
+  trillion: 1e12,
 };
 
 const CURRENCY = "$€£¥₹₩₽₺";
@@ -33,7 +59,9 @@ const NUMBER_RE = new RegExp(
   "^" +
     "([≤≥<>~≈]=?\\s*)?" + // comparator prefix, e.g. "≤ 272K"
     "([+\\-−]?)\\s*" + // sign before currency
-    "(?:(US\\$|A\\$|C\\$|[" + CURRENCY + "])\\s*)?" +
+    "(?:(US\\$|A\\$|C\\$|[" +
+    CURRENCY +
+    "])\\s*)?" +
     "([+\\-−]?)" + // sign after currency
     "(\\d{1,3}(?:[,\\u2009\\u202f ]\\d{3})+(?:\\.\\d+)?|\\d+(?:\\.\\d+)?|\\.\\d+)" +
     "\\s*" +
@@ -42,8 +70,7 @@ const NUMBER_RE = new RegExp(
 );
 
 /** Heights like 6' 6", 5′11″, 6 ft 2 in. Converted to inches. "6-2" stays ambiguous (scores, records). */
-const FEET_INCHES_RE =
-  /^(\d{1,2})\s*(?:'|′|ft\.?|feet)\s*(?:(\d{1,2}(?:\.\d+)?)\s*(?:"|″|''|in\.?|inches)?)?$/i;
+const FEET_INCHES_RE = /^(\d{1,2})\s*(?:'|′|ft\.?|feet)\s*(?:(\d{1,2}(?:\.\d+)?)\s*(?:"|″|''|in\.?|inches)?)?$/i;
 
 /** Strips footnote markers such as "[12]", "[a]", "*", "†", and a trailing lone digit after a letter. */
 export const stripNoise = (text: string): string =>
@@ -82,7 +109,17 @@ export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw)
 const DURATION_RE = /^(\d{1,3}):([0-5]\d)(?::([0-5]\d))?$/;
 
 /** Unicode fractions, as in games behind ("6½"). */
-const VULGAR: Readonly<Record<string, number>> = { "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 0.125, "⅜": 0.375, "⅝": 0.625, "⅞": 0.875 };
+const VULGAR: Readonly<Record<string, number>> = {
+  "½": 0.5,
+  "¼": 0.25,
+  "¾": 0.75,
+  "⅓": 1 / 3,
+  "⅔": 2 / 3,
+  "⅛": 0.125,
+  "⅜": 0.375,
+  "⅝": 0.625,
+  "⅞": 0.875,
+};
 const VULGAR_RE = /^(\d*)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/;
 
 /** One number, no ranges. */
@@ -128,7 +165,7 @@ const parseSingle = (input: string): ParsedNumber | null => {
     if (magnitude !== undefined && (suffix !== "m" || unit !== null)) {
       // Bare lowercase "m" is meters unless a currency precedes it.
       scaled = value * magnitude;
-    } else if (suffix === "%" ) {
+    } else if (suffix === "%") {
       unit = "%";
     } else if (suffix === "x" || suffix === "×") {
       unit = "x";
@@ -178,8 +215,6 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
   }
   return parseSingle(text) ?? parseRange(text);
 };
-
-
 
 /** Normalizes a categorical label for grouping: trims noise, collapses case. */
 export const normalizeLabel = (raw: string): string => stripNoise(raw).toLowerCase();

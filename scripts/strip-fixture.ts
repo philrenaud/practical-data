@@ -11,9 +11,10 @@ import { chromium } from "playwright";
 import { serve } from "./serve.ts";
 
 const sources = JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string }[];
-const slugs = process.argv.slice(2).length > 0
-  ? process.argv.slice(2)
-  : (await readdir("fixtures/live")).filter((f) => f.endsWith(".html")).map((f) => f.replace(/\.html$/, ""));
+const slugs =
+  process.argv.slice(2).length > 0
+    ? process.argv.slice(2)
+    : (await readdir("fixtures/live")).filter((f) => f.endsWith(".html")).map((f) => f.replace(/\.html$/, ""));
 
 const { url, server } = await serve("fixtures");
 const browser = await chromium.launch();
@@ -27,7 +28,8 @@ for (const slug of slugs) {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, {
       acceptNode: (n) => {
         const el = n as Element;
-        if (el.tagName === "TABLE") return el.parentElement?.closest("table") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        if (el.tagName === "TABLE")
+          return el.parentElement?.closest("table") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
         return /^H[1-4]$/.test(el.tagName) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
       },
     });

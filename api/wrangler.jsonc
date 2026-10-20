@@ -13,12 +13,12 @@
     // Set to the Web Store id once published, e.g. "chrome-extension://abcdefghijklmnopabcdefghijklmnop".
     "ALLOWED_ORIGINS": "",
     "INSTALL_DAILY_REQUESTS": "400",
-    "DAILY_TOKEN_BUDGET": "5000000"
+    "DAILY_TOKEN_BUDGET": "5000000",
   },
   "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
   "ratelimits": [
     { "name": "RL_INSTALL", "namespace_id": "4101", "simple": { "limit": 60, "period": 60 } },
-    { "name": "RL_IP", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } }
-  ]
+    { "name": "RL_IP", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } },
+  ],
 }

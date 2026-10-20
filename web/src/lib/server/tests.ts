@@ -7,7 +7,16 @@ import { resolve } from "node:path";
 import { error } from "@sveltejs/kit";
 import { groupSizes } from "../demo.ts";
 import { parseNumber } from "../../../../src/core/parse.ts";
-import type { CaseSource, CaseTable, CheckKind, PageRequests, ScoredCheck, ShareGroup, TestPage, TestsIndex } from "../tests/types.ts";
+import type {
+  CaseSource,
+  CaseTable,
+  CheckKind,
+  PageRequests,
+  ScoredCheck,
+  ShareGroup,
+  TestPage,
+  TestsIndex,
+} from "../tests/types.ts";
 
 // Vite runs from web/, so the repository root is one level up.
 const DATA = resolve(process.cwd(), "..", "demo", "tests");
@@ -22,7 +31,8 @@ const read = async <T>(path: string): Promise<T> => {
 
 // Read once per build; in dev, on every request, so regenerated data shows without a restart.
 let index: Promise<TestsIndex> | undefined;
-export const readIndex = (): Promise<TestsIndex> => (import.meta.env.DEV ? read<TestsIndex>("index.json") : (index ??= read<TestsIndex>("index.json")));
+export const readIndex = (): Promise<TestsIndex> =>
+  import.meta.env.DEV ? read<TestsIndex>("index.json") : (index ??= read<TestsIndex>("index.json"));
 export const readPage = (slug: string): Promise<TestPage> =>
   /^[a-z0-9-]+$/.test(slug) ? read<TestPage>(`pages/${slug}.json`) : error(404, "No such page");
 export const readRequests = (slug: string): Promise<PageRequests> =>
@@ -32,7 +42,8 @@ export const readRequests = (slug: string): Promise<PageRequests> =>
  * The site shows checks on real pages only. Synthetic pages stay in the eval
  * as regression tests (CI runs them), but invented data proves nothing to a reader.
  */
-export const isPublic = (index: TestsIndex, slug: string): boolean => index.pages.find((p) => p.slug === slug)?.origin === "live";
+export const isPublic = (index: TestsIndex, slug: string): boolean =>
+  index.pages.find((p) => p.slug === slug)?.origin === "live";
 
 /** The checks the site shows, and totals over them by kind. */
 export const publicChecks = (index: TestsIndex) => {
@@ -40,7 +51,14 @@ export const publicChecks = (index: TestsIndex) => {
   const totals = Object.fromEntries(
     Object.keys(index.totals).map((k) => {
       const of = checks.filter((c) => c.kind === k);
-      return [k, { ok: of.filter((c) => c.ok).length, total: of.length, known: of.filter((c) => !c.ok && c.known !== null).length }];
+      return [
+        k,
+        {
+          ok: of.filter((c) => c.ok).length,
+          total: of.length,
+          known: of.filter((c) => !c.ok && c.known !== null).length,
+        },
+      ];
     }),
   ) as TestsIndex["totals"];
   return { checks, totals, hidden: index.checks.length - checks.length };
@@ -54,14 +72,18 @@ export const publicChecks = (index: TestsIndex) => {
 export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
   const index = await readIndex();
   const bySlug = new Map<string, ScoredCheck[]>();
-  for (const c of publicChecks(index).checks) if (c.kind === kind) bySlug.set(c.page, [...(bySlug.get(c.page) ?? []), c]);
+  for (const c of publicChecks(index).checks)
+    if (c.kind === kind) bySlug.set(c.page, [...(bySlug.get(c.page) ?? []), c]);
   const cases: CaseTable[] = [];
   for (const summary of index.pages) {
     const checks = bySlug.get(summary.slug);
     if (checks === undefined || summary.source === null) continue;
     const page = await readPage(summary.slug);
     const sizes = groupSizes(page.judgment);
-    const source: CaseSource = { label: `${new URL(summary.source.url).hostname.replace(/^www\./, "")} · ${summary.name}`, url: summary.source.url };
+    const source: CaseSource = {
+      label: `${new URL(summary.source.url).hostname.replace(/^www\./, "")} · ${summary.name}`,
+      url: summary.source.url,
+    };
     const shown: CaseTable[] = [];
     page.tables.forEach((t, i) => {
       const id = t.snapshot.id;
@@ -90,7 +112,8 @@ export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
     });
     // Two shown tables with one title (a season table and a postseason table) are told apart by position on the page.
     for (const c of shown) {
-      if (shown.filter((x) => x.title === c.title).length > 1) cases.push({ ...c, title: `${c.title}, table ${c.position} on the page` });
+      if (shown.filter((x) => x.title === c.title).length > 1)
+        cases.push({ ...c, title: `${c.title}, table ${c.position} on the page` });
       else cases.push(c);
     }
   }
@@ -99,13 +122,17 @@ export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
 
 /** Smallest and largest number in one column, as the parser reads its cells. */
 const rangeOf = (rows: readonly (readonly string[])[], col: number): [number, number] | null => {
-  const values = rows.map((r) => parseNumber(r[col] ?? "")?.value).filter((v): v is number => v !== undefined && Number.isFinite(v));
+  const values = rows
+    .map((r) => parseNumber(r[col] ?? "")?.value)
+    .filter((v): v is number => v !== undefined && Number.isFinite(v));
   return values.length === 0 ? null : [Math.min(...values), Math.max(...values)];
 };
 
 /** The column that says what each row is: the first one whose cells are mostly not numbers. */
 const labelColumn = (t: CaseTable): number => {
-  const i = t.snapshot.headers.findIndex((_, c) => t.snapshot.rows.filter((r) => parseNumber(r[c] ?? "") === null).length > t.snapshot.rows.length / 2);
+  const i = t.snapshot.headers.findIndex(
+    (_, c) => t.snapshot.rows.filter((r) => parseNumber(r[c] ?? "") === null).length > t.snapshot.rows.length / 2,
+  );
   return i < 0 ? 0 : i;
 };
 
@@ -128,11 +155,24 @@ export const sharedGroups = (cases: readonly CaseTable[]): ShareGroup[] => {
         range: col < 0 ? null : rangeOf(t.snapshot.rows, col),
         domain: e?.kind === "quantitative" ? e.domain : null,
         // A single number, not a range: "59,488–62,013" would make every label a range.
-        format: col < 0 ? "" : (t.snapshot.rows.find((r) => { const n = parseNumber(r[col] ?? ""); return n !== null && n.range === null; })?.[col] ?? ""),
+        format:
+          col < 0
+            ? ""
+            : (t.snapshot.rows.find((r) => {
+                const n = parseNumber(r[col] ?? "");
+                return n !== null && n.range === null;
+              })?.[col] ?? ""),
         encoding: e ?? null,
         labelHeader: t.snapshot.headers[labelColumn(t)] ?? "",
         // Each row as the reader sees it: what the row is, and its cell in the shared column.
-        rows: col < 0 ? [] : t.snapshot.rows.map((r) => ({ label: r[labelColumn(t)] ?? "", cell: r[col] ?? "", value: parseNumber(r[col] ?? "")?.value ?? null })),
+        rows:
+          col < 0
+            ? []
+            : t.snapshot.rows.map((r) => ({
+                label: r[labelColumn(t)] ?? "",
+                cell: r[col] ?? "",
+                value: parseNumber(r[col] ?? "")?.value ?? null,
+              })),
         groupSizes: t.groupSizes,
       };
       const g = groups.get(key);

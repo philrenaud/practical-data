@@ -22,9 +22,7 @@ export type JudgeReply =
   | { readonly ok: false; readonly reason: string; readonly message: string };
 
 export type ToContent =
-  | { readonly type: "toggle"; readonly enabled: boolean }
-  | { readonly type: "repaint" }
-  | { readonly type: "state" };
+  { readonly type: "toggle"; readonly enabled: boolean } | { readonly type: "repaint" } | { readonly type: "state" };
 
 /** Reply to `state`: what the popup shows. */
 export interface PageState {

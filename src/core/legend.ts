@@ -66,7 +66,9 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
   if (e.kind === "quantitative") {
     const [lo, hi] = e.domain;
     const log = e.transform === "log" && lo > 0;
-    status = isDateUnit(e.unit) ? "Dates · Earliest to latest" : `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
+    status = isDateUnit(e.unit)
+      ? "Dates · Earliest to latest"
+      : `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
   } else {
     status = `Ranked categories · ${e.order.length} levels`;

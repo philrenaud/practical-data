@@ -14,9 +14,15 @@ const page = JSON.parse(await readFile(`fixtures/snapshots/${slug}.json`, "utf8"
 const table = page.tables.find((t) => t.id === tableId)!;
 const p = profileTable(table).find((c) => c.header === header);
 if (p?.kind !== "categorical") throw new Error(`${header} is ${p?.kind}`);
-const state = categoricalState({ page: page.title, table: table.title }, p, table.headers.filter((h) => h !== header && h !== ""));
+const state = categoricalState(
+  { page: page.title, table: table.title },
+  p,
+  table.headers.filter((h) => h !== header && h !== ""),
+);
 console.log(JSON.stringify(state));
-const r = await Effect.runPromise(jev(process.env["TYPESAFE_API_KEY"]!).evaluate({ state, questions: categoricalQuestions(p).questions }));
+const r = await Effect.runPromise(
+  jev(process.env["TYPESAFE_API_KEY"]!).evaluate({ state, questions: categoricalQuestions(p).questions }),
+);
 for (const [id, a] of Object.entries(r.answers)) {
   console.log(id.padEnd(16), a.type === "choice" ? JSON.stringify(a.probabilities) : JSON.stringify(a));
 }

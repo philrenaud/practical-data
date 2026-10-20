@@ -19,7 +19,10 @@ test("every palette, every step, every page: text stays at 5:1 or the cell is le
         const { color, weight } = divergingColor(id, i / 20, dark);
         const out = cellFill(color, weight, base, text);
         const shown = out.text ?? text;
-        assert.ok(contrast(out.fill, shown) >= 5 || out.fill === base, `${id} ${base} t=${i / 20} → ${out.fill} with ${shown}`);
+        assert.ok(
+          contrast(out.fill, shown) >= 5 || out.fill === base,
+          `${id} ${base} t=${i / 20} → ${out.fill} with ${shown}`,
+        );
       }
     }
   }

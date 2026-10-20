@@ -12,7 +12,12 @@ export const RECORDINGS = "fixtures/recordings";
 export const fileCache = (dir = RECORDINGS) =>
   Layer.succeed(AnswerCache, {
     get: (key) =>
-      Effect.promise(() => readFile(`${dir}/${key}.json`, "utf8").then((s) => JSON.parse(s) as DecisionResponse, () => undefined)),
+      Effect.promise(() =>
+        readFile(`${dir}/${key}.json`, "utf8").then(
+          (s) => JSON.parse(s) as DecisionResponse,
+          () => undefined,
+        ),
+      ),
     set: (key, value) =>
       Effect.promise(async () => {
         await mkdir(dir, { recursive: true });
@@ -25,5 +30,6 @@ export const fileCache = (dir = RECORDINGS) =>
   });
 
 /** Jev with recordings: replays what exists, records what doesn't (needs TYPESAFE_API_KEY). */
-export const recordedJev = (config: ProviderConfig = { provider: "jev", apiKey: process.env["TYPESAFE_API_KEY"] ?? "" }) =>
-  Layer.merge(layerFromConfig(config), fileCache());
+export const recordedJev = (
+  config: ProviderConfig = { provider: "jev", apiKey: process.env["TYPESAFE_API_KEY"] ?? "" },
+) => Layer.merge(layerFromConfig(config), fileCache());

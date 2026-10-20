@@ -45,10 +45,7 @@ const effectiveBackground = (cell: Element, rows?: Map<Element, string>): string
  * only these (rather than the whole style string) keeps whatever the page
  * itself changed after we painted, such as a sticky column's `left`.
  */
-const originals = new WeakMap<
-  HTMLElement,
-  { attr: string | null; props: Map<string, [string, string]> }
->();
+const originals = new WeakMap<HTMLElement, { attr: string | null; props: Map<string, [string, string]> }>();
 const STYLED = "pdStyled";
 
 const setStyle = (el: HTMLElement, prop: string, value: string) => {
@@ -60,7 +57,8 @@ const setStyle = (el: HTMLElement, prop: string, value: string) => {
     originals.set(el, entry);
     el.dataset[STYLED] = "";
   }
-  if (!entry.props.has(prop)) entry.props.set(prop, [el.style.getPropertyValue(prop), el.style.getPropertyPriority(prop)]);
+  if (!entry.props.has(prop))
+    entry.props.set(prop, [el.style.getPropertyValue(prop), el.style.getPropertyPriority(prop)]);
   el.style.setProperty(prop, value, "important");
 };
 
@@ -164,15 +162,24 @@ const underline = (header: HTMLElement, stops: readonly string[], axis: Orientat
   const layers =
     axis === "columns"
       ? [
-          { image: `linear-gradient(${edge}, ${edge})`, size: "100% 1px", position: `0 calc(100% - ${UNDERLINE_PX}px)` },
+          {
+            image: `linear-gradient(${edge}, ${edge})`,
+            size: "100% 1px",
+            position: `0 calc(100% - ${UNDERLINE_PX}px)`,
+          },
           { image: gradient(stops), size: `100% ${UNDERLINE_PX}px`, position: "0 100%" },
         ]
       : [
-          { image: `linear-gradient(${edge}, ${edge})`, size: "1px 100%", position: `calc(100% - ${UNDERLINE_PX}px) 0` },
+          {
+            image: `linear-gradient(${edge}, ${edge})`,
+            size: "1px 100%",
+            position: `calc(100% - ${UNDERLINE_PX}px) 0`,
+          },
           { image: gradient(stops, "180deg"), size: `${UNDERLINE_PX}px 100%`, position: "100% 0" },
         ];
   const keep = cs.backgroundImage !== "none";
-  const set = (prop: string, ours: string, theirs: string) => setStyle(header, prop, keep ? `${ours}, ${theirs}` : ours);
+  const set = (prop: string, ours: string, theirs: string) =>
+    setStyle(header, prop, keep ? `${ours}, ${theirs}` : ours);
   set("background-image", layers.map((l) => l.image).join(", "), cs.backgroundImage);
   set("background-size", layers.map((l) => l.size).join(", "), cs.backgroundSize);
   set("background-position", layers.map((l) => l.position).join(", "), cs.backgroundPosition);
@@ -220,9 +227,18 @@ const showCard = (anchor: Element, legends: readonly Legend[]) => {
   const box = select(el);
   box.selectAll("*").remove();
   const section = box.selectAll(".section").data(legends).join("div").attr("class", "section");
-  section.append("div").attr("class", "title").text((d) => d.title);
-  section.append("div").attr("class", "status").text((d) => d.status);
-  section.append("div").attr("class", "ramp").style("background", (d) => gradient(d.stops));
+  section
+    .append("div")
+    .attr("class", "title")
+    .text((d) => d.title);
+  section
+    .append("div")
+    .attr("class", "status")
+    .text((d) => d.status);
+  section
+    .append("div")
+    .attr("class", "ramp")
+    .style("background", (d) => gradient(d.stops));
   const ends = section.append("div").attr("class", "ends");
   ends.append("span").text((d) => d.lo);
   ends.append("span").text((d) => d.hi);

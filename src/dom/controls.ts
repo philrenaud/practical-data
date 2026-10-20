@@ -55,7 +55,8 @@ const ensureBar = () => {
   el.addEventListener("pointerenter", () => clearTimeout(hideTimer));
   el.addEventListener("pointerleave", scheduleHide);
   bar = { host, el };
-  if (!scrollWatched) addEventListener("scroll", () => bar?.el.classList.remove("open"), { passive: true, capture: true });
+  if (!scrollWatched)
+    addEventListener("scroll", () => bar?.el.classList.remove("open"), { passive: true, capture: true });
   scrollWatched = true;
   return bar;
 };

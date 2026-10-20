@@ -98,17 +98,27 @@ export const glossaryFor = (id: string): GlossaryEntry | undefined => {
 export const answerName = (key: string): string => key.replaceAll("_", " ");
 
 /** The anchor of one answer on the glossary page. */
-export const answerAnchor = (entry: GlossaryEntry, key: string): string => `${entry.kinds[0]!.replace(/[#.]/g, "")}-${key}`;
+export const answerAnchor = (entry: GlossaryEntry, key: string): string =>
+  `${entry.kinds[0]!.replace(/[#.]/g, "")}-${key}`;
 
 /** The table description sent with each request, field by field (src/decide/questions.ts, tableState). */
 export const DESCRIPTION_FIELDS: readonly { readonly field: string; readonly text: string }[] = [
   { field: "page_title", text: "The title of the page." },
   { field: "table_title", text: "The caption of the table, or the nearest heading above it." },
-  { field: "rows_are", text: "The first column where each value is different, with examples. It tells what each row is: a player, a model, a country." },
-  { field: "columns", text: "One entry for each column that the model is asked about. Code does not send text columns." },
+  {
+    field: "rows_are",
+    text: "The first column where each value is different, with examples. It tells what each row is: a player, a model, a country.",
+  },
+  {
+    field: "columns",
+    text: "One entry for each column that the model is asked about. Code does not send text columns.",
+  },
   { field: "header", text: "The column header, as on the page." },
   { field: "kind", text: "number or label. Code decides this from the cells." },
-  { field: "unit", text: "The unit that code found in the cells, such as $, %, or km. Not sent when there is no unit." },
+  {
+    field: "unit",
+    text: "The unit that code found in the cells, such as $, %, or km. Not sent when there is no unit.",
+  },
   { field: "examples", text: "Five values from the column: the smallest, the largest, and three between them." },
   { field: "values", text: "For a label column: each different label, in the order that it first appears." },
   { field: "spread", text: "How wide the range of values is, in words. Code calculates it from the numbers." },
@@ -117,18 +127,39 @@ export const DESCRIPTION_FIELDS: readonly { readonly field: string; readonly tex
 
 /** Every spread code can send, and when. */
 export const SPREADS: readonly { readonly text: string; readonly when: string }[] = [
-  { text: "values are within a factor of 2 of each other", when: "The largest value is less than 2 times the smallest." },
+  {
+    text: "values are within a factor of 2 of each other",
+    when: "The largest value is less than 2 times the smallest.",
+  },
   { text: "largest value is under 10 times the smallest", when: "From 2 times to 10 times." },
-  { text: "values span about N orders of magnitude (largest is ~X times the smallest)", when: "10 times or more. Only then does the model get the log-scale question." },
+  {
+    text: "values span about N orders of magnitude (largest is ~X times the smallest)",
+    when: "10 times or more. Only then does the model get the log-scale question.",
+  },
   { text: "includes zero or negative values", when: "A ratio is not possible, thus code does not calculate one." },
 ];
 
 /** Every note code can send, and when. */
 export const NOTES: readonly { readonly text: string; readonly when: string }[] = [
-  { text: "the values are exactly 1, 2, 3, … in row order", when: "The column counts the rows. It is usually a rank or a row number." },
+  {
+    text: "the values are exactly 1, 2, 3, … in row order",
+    when: "The column counts the rows. It is usually a rank or a row number.",
+  },
   { text: "every value is a whole number between 1800 and 2100", when: "The values can be years." },
-  { text: "the values are spans of calendar years, such as 1950-1954", when: "Most values are two years joined by a dash." },
-  { text: "most values are written as bounds with ≤, <, ≥, >, or + rather than exact amounts", when: "Half of the values or more are limits, not exact amounts." },
-  { text: "most values are written as two numbers joined by a dash, such as 20-25", when: "Half of the values or more are ranges. Code puts a range at its midpoint." },
-  { text: "values are written like clock readings (such as 2:41); they could be durations or times of day", when: "Half of the values or more look like clock times." },
+  {
+    text: "the values are spans of calendar years, such as 1950-1954",
+    when: "Most values are two years joined by a dash.",
+  },
+  {
+    text: "most values are written as bounds with ≤, <, ≥, >, or + rather than exact amounts",
+    when: "Half of the values or more are limits, not exact amounts.",
+  },
+  {
+    text: "most values are written as two numbers joined by a dash, such as 20-25",
+    when: "Half of the values or more are ranges. Code puts a range at its midpoint.",
+  },
+  {
+    text: "values are written like clock readings (such as 2:41); they could be durations or times of day",
+    when: "Half of the values or more look like clock times.",
+  },
 ];

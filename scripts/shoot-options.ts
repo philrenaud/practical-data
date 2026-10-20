@@ -9,10 +9,20 @@ const context = await chromium.launchPersistentContext("", {
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
 const id = new URL(worker.url()).host;
 await worker.evaluate(() =>
-  chrome.storage.local.set({ settings: { provider: "jev", typesafeApiKey: "ts_example", palette: "classic", disabledHosts: ["news.ycombinator.com", "example.org"] } }),
+  chrome.storage.local.set({
+    settings: {
+      provider: "jev",
+      typesafeApiKey: "ts_example",
+      palette: "classic",
+      disabledHosts: ["news.ycombinator.com", "example.org"],
+    },
+  }),
 );
 for (const scheme of ["light", "dark"] as const) {
-  for (const [label, width] of [["desktop", 1100], ["phone", 390]] as const) {
+  for (const [label, width] of [
+    ["desktop", 1100],
+    ["phone", 390],
+  ] as const) {
     const page = await context.newPage();
     await page.emulateMedia({ colorScheme: scheme });
     await page.setViewportSize({ width, height: 1200 });

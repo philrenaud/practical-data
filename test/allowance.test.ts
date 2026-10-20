@@ -17,7 +17,11 @@ test("the lowest count reported today wins; a new day starts over", () => {
   assert.equal(mergeAllowance(today, { remaining: 52, limit: 400 }, now).remaining, 50);
   assert.equal(mergeAllowance(today, { remaining: 48, limit: 400 }, now).remaining, 48);
   const tomorrow = new Date("2026-10-19T01:00:00Z");
-  assert.deepEqual(mergeAllowance(today, { remaining: 399, limit: 400 }, tomorrow), { remaining: 399, limit: 400, day: "2026-10-19" });
+  assert.deepEqual(mergeAllowance(today, { remaining: 399, limit: 400 }, tomorrow), {
+    remaining: 399,
+    limit: 400,
+    day: "2026-10-19",
+  });
 });
 
 test("a note appears only when under a fifth of today's allowance is left", () => {
@@ -36,5 +40,8 @@ test("used-up messages say whose allowance it was and when it resets", () => {
     quotaMessage("quota", now, "en-US"),
     "You've used today's free allowance. It resets at 8:00 PM; add your own key in Options for unlimited use.",
   );
-  assert.match(quotaMessage("quota_everyone", now, "en-US"), /^Today's free allowance is used up for everyone\. It resets at 8:00 PM;/);
+  assert.match(
+    quotaMessage("quota_everyone", now, "en-US"),
+    /^Today's free allowance is used up for everyone\. It resets at 8:00 PM;/,
+  );
 });

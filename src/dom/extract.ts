@@ -69,9 +69,13 @@ const textSkipping = (cell: HTMLElement, skip: ReadonlySet<Element>): string => 
 };
 
 const cellText = (cell: HTMLElement): string => {
-  const noise = cell.firstElementChild === null
-    ? []
-    : [...cell.querySelectorAll<HTMLElement>(CONTROLS), ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation)];
+  const noise =
+    cell.firstElementChild === null
+      ? []
+      : [
+          ...cell.querySelectorAll<HTMLElement>(CONTROLS),
+          ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation),
+        ];
   const text = noise.length === 0 ? textOf(cell) : textSkipping(cell, new Set(noise));
   return text.replace(/\s+/g, " ").trim();
 };
@@ -120,7 +124,12 @@ const repeatsHeader = (cell: string, header: string): boolean => {
 };
 
 /** A cell's shape: runs of letters as "a", runs of digits as "9" ("(94-68)" → "(9-9)"). */
-const shapeOf = (text: string): string => text.replace(/\p{L}+/gu, "a").replace(/\d+/g, "9").replace(/\s+/g, " ").trim();
+const shapeOf = (text: string): string =>
+  text
+    .replace(/\p{L}+/gu, "a")
+    .replace(/\d+/g, "9")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const isBold = (cell: HTMLTableCellElement): boolean => {
   if (!cell.isConnected) return cell.querySelector("b, strong") !== null;
@@ -206,7 +215,9 @@ export const extractTable = (
     }
     return parts.join(": ");
   });
-  const headerCells = Array.from({ length: width }, (_, c) => (headerCount === 0 ? null : (grid[headerCount - 1]![c] ?? null)));
+  const headerCells = Array.from({ length: width }, (_, c) =>
+    headerCount === 0 ? null : (grid[headerCount - 1]![c] ?? null),
+  );
 
   const dataRows: HTMLTableCellElement[][] = [];
   const texts: string[][] = [];

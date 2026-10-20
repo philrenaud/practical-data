@@ -198,7 +198,10 @@ const inUnit = (p: number) => Number.isFinite(p) && p >= 0 && p <= 1;
  * right type, choice keys drawn from the criteria, probabilities in [0, 1].
  * Typed output guarantees a shape, not that the shape matches the request.
  */
-export const validateAnswers = (questions: Readonly<Record<string, Question>>, response: DecisionResponse): string | null => {
+export const validateAnswers = (
+  questions: Readonly<Record<string, Question>>,
+  response: DecisionResponse,
+): string | null => {
   for (const [id, q] of Object.entries(questions)) {
     const a = response.answers[id];
     if (a === undefined) return `missing answer for ${id}`;
@@ -207,7 +210,8 @@ export const validateAnswers = (questions: Readonly<Record<string, Question>>, r
       if (!inUnit(a.noul)) return `${id}: noul ${a.noul} out of range`;
       continue;
     }
-    const allowed = q.type === "choice" ? Object.keys(q.criteria) : q.type === "score" ? q.criteria.map((_, i) => String(i)) : [];
+    const allowed =
+      q.type === "choice" ? Object.keys(q.criteria) : q.type === "score" ? q.criteria.map((_, i) => String(i)) : [];
     for (const [k, p] of Object.entries(a.probabilities)) {
       if (!allowed.includes(k)) return `${id}: unexpected option ${k}`;
       if (!inUnit(p)) return `${id}: probability ${p} out of range`;
@@ -373,8 +377,7 @@ export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-
         body,
         signal,
       ),
-    unwrap: (json) =>
-      typeof json === "object" && json !== null && "result" in json ? json.result : json,
+    unwrap: (json) => (typeof json === "object" && json !== null && "result" in json ? json.result : json),
   });
 };
 

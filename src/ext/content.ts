@@ -50,7 +50,9 @@ let capLogged = false;
 const send = <T>(msg: ToWorker): Promise<T> =>
   Promise.race([
     chrome.runtime.sendMessage(msg) as Promise<T>,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timed out waiting for the worker")), REPLY_TIMEOUT_MS)),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("timed out waiting for the worker")), REPLY_TIMEOUT_MS),
+    ),
   ]);
 
 /** Same table, same choice, wherever it sits on the page: keyed by its content, not its position. */
@@ -207,7 +209,8 @@ const nearby = new IntersectionObserver(
       if (!entry.isIntersecting || seen.has(table)) continue;
       nearby.unobserve(table);
       if (seenCount >= MAX_TABLES) {
-        if (!capLogged) console.info(`[practical-data] judged the first ${MAX_TABLES} tables on this page; skipping the rest.`);
+        if (!capLogged)
+          console.info(`[practical-data] judged the first ${MAX_TABLES} tables on this page; skipping the rest.`);
         capLogged = true;
         continue;
       }
@@ -259,7 +262,8 @@ const touchesTable = (m: MutationRecord): boolean => {
 const mutations = new MutationObserver((records) => {
   if (records.some(touchesTable)) schedule(600);
 });
-const observeMutations = () => mutations.observe(document.body, { childList: true, subtree: true, characterData: true });
+const observeMutations = () =>
+  mutations.observe(document.body, { childList: true, subtree: true, characterData: true });
 
 // ── Messages ────────────────────────────────────────────────────────────────
 

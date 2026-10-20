@@ -10,7 +10,12 @@ const ok = {
   model: "jev",
   usage: { input_tokens: 1 },
   answers: {
-    role: { type: "choice" as const, choice: "measure", probabilities: { measure: 0.9, identifier: 0.1 }, confidence: 0.8 },
+    role: {
+      type: "choice" as const,
+      choice: "measure",
+      probabilities: { measure: 0.9, identifier: 0.1 },
+      confidence: 0.8,
+    },
     log: { type: "noul" as const, noul: 0.3 },
   },
 };
@@ -21,12 +26,21 @@ test("accepts answers that match the questions asked", () => {
 
 test("rejects missing answers, wrong types, unknown options and out-of-range probabilities", () => {
   assert.equal(validateAnswers(questions, { ...ok, answers: { role: ok.answers.role } }), "missing answer for log");
-  assert.equal(validateAnswers(questions, { ...ok, answers: { ...ok.answers, log: ok.answers.role } }), "log: expected noul, got choice");
   assert.equal(
-    validateAnswers(questions, { ...ok, answers: { ...ok.answers, role: { ...ok.answers.role, probabilities: { measure: 0.9, rank: 0.1 } } } }),
+    validateAnswers(questions, { ...ok, answers: { ...ok.answers, log: ok.answers.role } }),
+    "log: expected noul, got choice",
+  );
+  assert.equal(
+    validateAnswers(questions, {
+      ...ok,
+      answers: { ...ok.answers, role: { ...ok.answers.role, probabilities: { measure: 0.9, rank: 0.1 } } },
+    }),
     "role: unexpected option rank",
   );
-  assert.equal(validateAnswers(questions, { ...ok, answers: { ...ok.answers, log: { type: "noul", noul: 2 } } }), "log: noul 2 out of range");
+  assert.equal(
+    validateAnswers(questions, { ...ok, answers: { ...ok.answers, log: { type: "noul", noul: 2 } } }),
+    "log: noul 2 out of range",
+  );
 });
 
 test("a spent hosted allowance fails at once as quota, without waiting or retrying", async () => {
@@ -36,7 +50,10 @@ test("a spent hosted allowance fails at once as quota, without waiting or retryi
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () => {
     calls++;
-    return new Response('{"error":"install_limit"}', { status: 429, headers: { "Retry-After": "40000", "X-Practical-Data-Quota": "install_limit" } });
+    return new Response('{"error":"install_limit"}', {
+      status: 429,
+      headers: { "Retry-After": "40000", "X-Practical-Data-Quota": "install_limit" },
+    });
   };
   try {
     const started = Date.now();
@@ -54,9 +71,20 @@ test("a spent allowance for everyone is told apart from this install's own", asy
   const { hosted } = await import("../src/decide/model.ts");
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () =>
-    new Response('{"error":"budget_spent"}', { status: 429, headers: { "X-Practical-Data-Quota": "budget_spent", "X-Practical-Data-Remaining": "250", "X-Practical-Data-Limit": "400" } });
+    new Response('{"error":"budget_spent"}', {
+      status: 429,
+      headers: {
+        "X-Practical-Data-Quota": "budget_spent",
+        "X-Practical-Data-Remaining": "250",
+        "X-Practical-Data-Limit": "400",
+      },
+    });
   try {
-    const error = await Effect.runPromise(hosted("id").evaluate({ state: {}, questions: { q: questions["log"]! } }).pipe(Effect.flip));
+    const error = await Effect.runPromise(
+      hosted("id")
+        .evaluate({ state: {}, questions: { q: questions["log"]! } })
+        .pipe(Effect.flip),
+    );
     assert.equal(error.reason, "quota_everyone");
   } finally {
     globalThis.fetch = realFetch;

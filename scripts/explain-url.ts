@@ -34,17 +34,17 @@ const snapshot = (await page.evaluate(() =>
 const rawTables = await page.evaluate(() => document.querySelectorAll("table").length);
 await browser.close();
 
-const judgment = await Effect.runPromise(
-  judgePage(snapshot).pipe(
-    Effect.provide(recordedJev()),
-  ),
-);
+const judgment = await Effect.runPromise(judgePage(snapshot).pipe(Effect.provide(recordedJev())));
 
-console.log(`${snapshot.title}\n${rawTables} <table> elements, ${snapshot.tables.length} extracted, ${judgment.usage.requests} requests, ${judgment.usage.inputTokens.toLocaleString()} tokens\n`);
+console.log(
+  `${snapshot.title}\n${rawTables} <table> elements, ${snapshot.tables.length} extracted, ${judgment.usage.requests} requests, ${judgment.usage.inputTokens.toLocaleString()} tokens\n`,
+);
 for (const table of snapshot.tables) {
   if (args.table !== undefined && table.id !== args.table) continue;
   const j = judgment.tables.find((t) => t.id === table.id);
-  console.log(`${table.id} "${table.title ?? ""}" ${table.headers.length} cols × ${table.rows.length} rows${j === undefined ? "  (not judged: under 3 rows or 2 columns)" : ""}`);
+  console.log(
+    `${table.id} "${table.title ?? ""}" ${table.headers.length} cols × ${table.rows.length} rows${j === undefined ? "  (not judged: under 3 rows or 2 columns)" : ""}`,
+  );
   if (j === undefined) continue;
   if (j.aggregateRows.length > 0) console.log(`   aggregate rows: ${j.aggregateRows.join(", ")}`);
   const profiles = profileTable(table);
@@ -55,11 +55,15 @@ for (const table of snapshot.tables) {
     const name = (h || `(col ${col})`).slice(0, 34).padEnd(34);
     if (e?.kind === "quantitative") {
       const p = e.evidence.polarity;
-      console.log(`   ✓ ${name} ${e.polarity} ${e.transform}  measure=${e.evidence.comparable.toFixed(2)} ↑${p.higher_is_better.toFixed(2)} ↓${p.lower_is_better.toFixed(2)}${e.group ? ` shared:${e.group}` : ""}`);
+      console.log(
+        `   ✓ ${name} ${e.polarity} ${e.transform}  measure=${e.evidence.comparable.toFixed(2)} ↑${p.higher_is_better.toFixed(2)} ↓${p.lower_is_better.toFixed(2)}${e.group ? ` shared:${e.group}` : ""}`,
+      );
     } else if (e?.kind === "ordinal") {
       console.log(`   ✓ ${name} ordinal ${e.order.join(" < ").slice(0, 70)}  p=${e.evidence.comparable.toFixed(2)}`);
     } else {
-      console.log(`   · ${name} [${kind}] ${s?.reason ?? "?"}${s?.comparable == null ? "" : ` p=${s.comparable.toFixed(2)}`}`);
+      console.log(
+        `   · ${name} [${kind}] ${s?.reason ?? "?"}${s?.comparable == null ? "" : ` p=${s.comparable.toFixed(2)}`}`,
+      );
     }
   });
 }

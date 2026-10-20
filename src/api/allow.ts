@@ -41,11 +41,7 @@ const DATA = "\u0002";
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const patternOf = (s: string) =>
-  new RegExp(
-    `^${escape(s)
-      .replaceAll(HOLE, `[\\s\\S]{0,${LIMITS.hole}}`)
-      .replaceAll(String(INDEX), "\\d{1,4}")}$`,
-  );
+  new RegExp(`^${escape(s).replaceAll(HOLE, `[\\s\\S]{0,${LIMITS.hole}}`).replaceAll(String(INDEX), "\\d{1,4}")}$`);
 
 type Matcher = (value: unknown) => boolean;
 
@@ -78,11 +74,20 @@ const compile = (ref: unknown): Matcher => {
 // ── References ──────────────────────────────────────────────────────────────
 
 const numeric = { kind: "numeric", col: 0, header: HOLE, decades: 3 } as unknown as NumericProfile;
-const categorical = { kind: "categorical", col: 0, header: HOLE, levels: [], display: {} } as unknown as CategoricalProfile;
+const categorical = {
+  kind: "categorical",
+  col: 0,
+  header: HOLE,
+  levels: [],
+  display: {},
+} as unknown as CategoricalProfile;
 const numericRefs = numericQuestions(INDEX, numeric).questions;
 const categoricalRefs = categoricalQuestions(categorical).questions;
 const pairRef = pairQuestions("p", HOLE, [HOLE, HOLE]).questions["p.lt0_1"]!;
-const aggregateRef = aggregateQuestions(["h"], Array.from({ length: 5 }, () => ["v"])).questions["row0.aggregate"]!;
+const aggregateRef = aggregateQuestions(
+  ["h"],
+  Array.from({ length: 5 }, () => ["v"]),
+).questions["row0.aggregate"]!;
 const orientationRef = orientationQuestion({ header: HOLE, examples: [] }).questions["table.orientation"]!;
 
 /** Replaces the data-carrying parts of a structured instruction with DATA. */
@@ -103,13 +108,17 @@ const RULES: readonly (readonly [RegExp, readonly Matcher[]])[] = [
   [/^table\.orientation$/, [compile(withData(orientationRef, ["first_column"]))]],
   [
     /^g\d{1,3}\.share$/,
-    [compile(withData(shareQuestion("quantitative", []), ["columns"])), compile(withData(shareQuestion("ordinal", []), ["columns"]))],
+    [
+      compile(withData(shareQuestion("quantitative", []), ["columns"])),
+      compile(withData(shareQuestion("ordinal", []), ["columns"])),
+    ],
   ],
 ];
 
 /** Null when every question is one the extension asks; otherwise why not. */
 export const checkQuestions = (questions: unknown): string | null => {
-  if (typeof questions !== "object" || questions === null || Array.isArray(questions)) return "questions must be an object";
+  if (typeof questions !== "object" || questions === null || Array.isArray(questions))
+    return "questions must be an object";
   const entries = Object.entries(questions);
   if (entries.length === 0) return "no questions";
   if (entries.length > LIMITS.questions) return `more than ${LIMITS.questions} questions`;
@@ -133,11 +142,13 @@ export const readJudgeBody = (body: unknown): PageSnapshot | string => {
   if (title !== undefined && !isText(title, LIMITS.hole)) return `title: at most ${LIMITS.hole} characters`;
   if (typeof table !== "object" || table === null) return "table: expected { title, headers, rows }";
   const t = table as { title?: unknown; headers?: unknown; rows?: unknown };
-  if (t.title !== undefined && t.title !== null && !isText(t.title, LIMITS.hole)) return `table.title: at most ${LIMITS.hole} characters`;
+  if (t.title !== undefined && t.title !== null && !isText(t.title, LIMITS.hole))
+    return `table.title: at most ${LIMITS.hole} characters`;
   if (!Array.isArray(t.headers) || t.headers.length === 0 || t.headers.length > LIMITS.columns) {
     return `table.headers: 1 to ${LIMITS.columns} headers`;
   }
-  if (!t.headers.every((h) => isText(h, LIMITS.hole))) return `table.headers: text of at most ${LIMITS.hole} characters`;
+  if (!t.headers.every((h) => isText(h, LIMITS.hole)))
+    return `table.headers: text of at most ${LIMITS.hole} characters`;
   const width = t.headers.length;
   if (!Array.isArray(t.rows) || t.rows.length > LIMITS.rows) return `table.rows: at most ${LIMITS.rows} rows`;
   for (const row of t.rows as unknown[]) {
@@ -148,6 +159,13 @@ export const readJudgeBody = (body: unknown): PageSnapshot | string => {
   return {
     url: "",
     title: title ?? "",
-    tables: [{ id: "t0", title: (t.title as string | null | undefined) ?? null, headers: t.headers as string[], rows: t.rows as string[][] }],
+    tables: [
+      {
+        id: "t0",
+        title: (t.title as string | null | undefined) ?? null,
+        headers: t.headers as string[],
+        rows: t.rows as string[][],
+      },
+    ],
   };
 };

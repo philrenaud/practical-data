@@ -36,8 +36,10 @@ export class Quota extends DurableObject {
   async reserve(install: string, allowance: Allowance): Promise<Reservation> {
     this.#init();
     const sql = this.ctx.storage.sql;
-    const spent = sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
-    const used = sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
+    const spent =
+      sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
+    const used =
+      sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
     const left = Math.max(0, allowance.installRequests - used);
     if (spent >= allowance.tokenBudget) return { status: "budget_spent", remaining: left };
     if (left === 0) return { status: "install_limit", remaining: 0 };
@@ -64,7 +66,8 @@ export class Quota extends DurableObject {
     this.#init();
     const sql = this.ctx.storage.sql;
     const i = sql.exec<{ n: number; r: number | null }>("SELECT COUNT(*) AS n, SUM(requests) AS r FROM installs").one();
-    const tokens = sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
+    const tokens =
+      sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
     return { installs: i.n, requests: i.r ?? 0, tokens };
   }
 
