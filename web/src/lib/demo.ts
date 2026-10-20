@@ -3,6 +3,7 @@
  * for them (scripts/demo-data.ts writes demo/data.json). Nothing on the site
  * calls a model.
  */
+import { isDateUnit } from "../../../src/core/dates.ts";
 import type { ColumnEncoding, PageJudgment, PageSnapshot } from "../../../src/core/types.ts";
 import data from "../../../demo/data.json";
 
@@ -52,11 +53,15 @@ const pct = (p: number) => `${Math.round(p * 100)}%`;
 export const plainReason = (reason: string | undefined): string => REASONS[reason ?? ""] ?? reason ?? "not comparable";
 
 export const describeEncoding = (e: ColumnEncoding): string =>
-  e.kind === "quantitative"
+  e.kind === "quantitative" && isDateUnit(e.unit)
+    ? "dates · earliest to latest"
+    : e.kind === "quantitative"
     ? `${POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
     : `ordered: ${e.order.join(" → ")}`;
 
 export const confidenceOf = (e: ColumnEncoding): string =>
-  e.kind === "quantitative"
+  e.kind === "quantitative" && isDateUnit(e.unit)
+    ? "decided by code"
+    : e.kind === "quantitative"
     ? `measure ${pct(e.evidence.comparable)} · direction ${pct(Math.max(...Object.values(e.evidence.polarity)))}`
     : `ordered ${pct(e.evidence.comparable)} · order ${pct(e.evidence.orderConfidence ?? 0)}`;

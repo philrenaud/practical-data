@@ -1,3 +1,4 @@
+import { isDateUnit } from "../../../../src/core/dates.ts";
 import type { TableJudgment } from "../../../../src/core/types.ts";
 import { plainReason } from "../demo.ts";
 import type { Check } from "./types.ts";
@@ -52,6 +53,7 @@ export const evidenceFor = (check: Check, table: TableJudgment): string => {
   if (check.kind === "aggregates" || check.kind === "shared") return "";
   const e = table.encodings.find((x) => x.header === check.column);
   const s = table.skipped.find((x) => x.header === check.column);
+  if (e?.kind === "quantitative" && isDateUnit(e.unit)) return check.kind === "detect" ? "not asked: dates" : "";
   if (check.kind === "detect") {
     if (e !== undefined) return `${e.kind === "ordinal" ? "P(ordered)" : "P(amount)"} ${p2(e.evidence.comparable)}`;
     if (s === undefined) return "";

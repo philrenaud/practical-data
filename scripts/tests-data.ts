@@ -13,6 +13,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { Effect, Layer } from "effect";
+import { formatDate, parseDate, type DatePrecision, type DateUnit } from "../src/core/dates.ts";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 import type { PageJudgment, PageSnapshot, TableJudgment, TableSnapshot } from "../src/core/types.ts";
 import { DEFAULT_POLICY, judgePage, MAX_TRANSPOSE_ROWS } from "../src/decide/judge.ts";
@@ -237,13 +238,21 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
 const PARSE_EXAMPLES = [
   "$0.025", "€1,200.50", "($3.00)", "-$3", "45%", ".312", "1.5B", "272K", "6' 6\"", "2:59", "20–25", "65+",
   "≤ 272K", "> 200K", "12-4", "35-10", "1,066", "3.2 GB", "829.8 m", "2,722 ft", "N/A", "—", "2023-01-01", "July 17, 2009",
+  "December 1993", "3 days ago", "February 6", "7:05 PM",
 ];
-const parsing = PARSE_EXAMPLES.map((input) => ({
-  input,
-  missing: isMissing(input),
-  date: isDateLike(input),
-  parsed: parseNumber(input),
-}));
+const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = { month: "month", day: "date", minute: "datetime", relative: "ago" };
+const now = Date.now();
+const parsing = PARSE_EXAMPLES.map((input) => {
+  const date = isMissing(input) ? null : parseDate(input, { now });
+  return {
+    input,
+    missing: isMissing(input),
+    date: date !== null || isDateLike(input),
+    when: date === null ? null : formatDate(date.time, DATE_FORM[date.precision], now),
+    // A date is never also a number ("3 days ago" is not 3 days).
+    parsed: date === null && !isDateLike(input) ? parseNumber(input) : null,
+  };
+});
 
 const kinds = ["detect", "polarity", "transform", "order", "aggregates", "shared", "orientation"] as const;
 const totals = Object.fromEntries(
