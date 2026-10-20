@@ -27,7 +27,7 @@ export const KINDS: readonly KindInfo[] = [
     short: "Is it useful to compare the values in this column?",
     about: [
       "Code sorts each column into numbers, labels, or text. Code does not send text columns to the model.",
-      "For a number column, the model tells what the numbers are. Only amounts get shading. Code ignores identifiers, years, ranks, cutoffs, and records such as 12-4. A bracket such as 20–25 or 65+ is an amount when it is a value of the row, such as a median age. Code puts it on the scale at its midpoint. Brackets in the first column that name the rows (0–4, 5–9, 10–14) are like years: code ignores them.",
+      "For a number column, the model tells what the numbers are. Amounts get shading. Code ignores identifiers, years, cutoffs, and records such as 12-4. It ignores ranks that count the rows (1, 2, 3 down the table), but shades other ranks, such as one outlet's ranking beside the table's own. A bracket such as 20–25 or 65+ is an amount when it is a value of the row, such as a median age. Code puts it on the scale at its midpoint. Brackets in the first column that name the rows (0–4, 5–9, 10–14) are like years: code ignores them.",
       "For a label column, the model tells if the labels are grades in a fixed order. Only ordered labels get shading. Code ignores a column with only two labels, unless it shares a scale with a column that has more labels.",
     ],
     questions: ["n#.role", "c#.relation"],

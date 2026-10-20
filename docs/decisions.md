@@ -23,7 +23,7 @@ in parallel at no extra latency.
 
 | Question | Type | Used for |
 | --- | --- | --- |
-| `n{col}.role`: measure / bins / identifier / time / rank / record / threshold | Choice | Shade the column only if `measure` + `bins` ≥ 0.7 |
+| `n{col}.role`: measure / bins / identifier / time / rank / record / threshold | Choice | Shade the column only if `measure` + `bins` + `rank` ≥ 0.7; `bins` don't count when they name the rows, and `rank` doesn't when it counts them (1, 2, 3 down the table). Ranks are always linear |
 | `n{col}.polarity`: higher better / lower better / neutral | Choice | Diverging scale direction; neutral below 0.55 |
 | `n{col}.log`: do ratios matter more than differences? | Noul | Asked only when the spread is at least 10×; log at ≥ 0.5 |
 | `row{r}.aggregate`: is this row a total or average? | Noul | First two and last two rows; excluded from the domain |

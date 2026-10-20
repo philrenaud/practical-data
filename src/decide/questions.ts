@@ -144,6 +144,23 @@ export interface NumericReading {
 export const namesRows = (p: NumericProfile): boolean =>
   p.col === 0 && p.distinct === p.values.filter((v) => v !== null).length;
 
+/**
+ * Ranks that count the rows (1, 2, 3, or 51, 52, 53 on a second page, with
+ * ties as 1, 1, 3) repeat the row order, so shading them says nothing. Other
+ * ranks, such as one outlet's ranking beside the table's own, or each team's
+ * lowest rank, are worth comparing. Either direction counts.
+ */
+export const followsRows = (p: NumericProfile): boolean => {
+  // Row positions are kept: a blank cell is a tie written once (1, 2, "", 4).
+  const rows = p.values.flatMap((v, i) => (v === null ? [] : [{ v, i }]));
+  const counts = (dir: 1 | -1) =>
+    rows.every(
+      ({ v, i }, k) =>
+        k === 0 || v === rows[k - 1]!.v || v === rows[k - 1]!.v + dir || v === rows[0]!.v + dir * (i - rows[0]!.i),
+    );
+  return counts(1) || counts(-1);
+};
+
 /** Only ask about log scales when the data could plausibly use one. */
 export const logEligible = (p: NumericProfile): boolean => p.decades !== null && p.decades >= 1;
 
@@ -184,8 +201,9 @@ export const numericQuestions = (k: number, p: NumericProfile) => {
     const role = probabilities(answers, id("role"));
     const roleAnswer = answers[id("role")];
     return {
-      // Brackets are shaded like amounts, by their midpoints, unless they name the rows.
-      measure: (role["measure"] ?? 0) + (namesRows(p) ? 0 : (role["bins"] ?? 0)),
+      // Brackets are shaded like amounts, by their midpoints, unless they name the rows; ranks, unless they follow them.
+      measure:
+        (role["measure"] ?? 0) + (namesRows(p) ? 0 : (role["bins"] ?? 0)) + (followsRows(p) ? 0 : (role["rank"] ?? 0)),
       role: roleAnswer?.type === "choice" ? roleAnswer.choice : "unknown",
       polarity: readPolarity(answers, id("polarity")),
       log: logEligible(p) ? noul(answers, id("log")) : null,

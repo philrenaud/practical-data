@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { Effect, Layer } from "effect";
 import { DecisionError, DecisionModel, type Answer, type DecisionRequest } from "../src/decide/model.ts";
 import { judgePage } from "../src/decide/judge.ts";
+import { followsRows } from "../src/decide/questions.ts";
+import type { NumericProfile } from "../src/core/profile.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
 
 /** A fake model that answers by question id, so tests exercise judge composition, not inference. */
@@ -319,6 +321,57 @@ test("brackets that name the rows are ignored; brackets that are values are shad
   assert.ok(!shaded.includes("Age group"), "row-naming brackets are ignored");
   assert.ok(shaded.includes("Median age"), "bracket values are shaded");
   assert.ok(shaded.includes("Population"));
+});
+
+test("ranks that count the rows, and ranks that don't", () => {
+  const follows = (values: (number | null)[]) => followsRows({ values } as unknown as NumericProfile);
+  assert.ok(follows([1, 2, 3, 4]));
+  assert.ok(follows([51, 52, 53]), "a second page");
+  assert.ok(follows([1, 1, 3, 4]), "ties, competition style");
+  assert.ok(follows([1, 1, 2, 3]), "ties, dense style");
+  assert.ok(follows([10, 9, 8, 7]), "counting down");
+  assert.ok(follows([1, null, 3]));
+  assert.ok(follows([7, 8, null, 10]), "a tie written once");
+  assert.ok(!follows([2, 1, 5, 3]), "one outlet's ranking");
+  assert.ok(!follows([3, 4, 5, 7, 8, 9, 9, 10]), "rising, but not one row at a time");
+});
+
+test("ranks in row order are ignored; ranks out of row order are shaded, on a linear scale", async () => {
+  // A combined ranking sorted by its own order, beside one outlet's ranking of the same teams.
+  const rankings = pricing(
+    "t0",
+    ["#", "Team", "Outlet A"],
+    [
+      ["1", "Gulls", "2"],
+      ["2", "Owls", "1"],
+      ["3", "Elks", "5"],
+      ["4", "Foxes", "3"],
+      ["5", "Hawks", "4"],
+      ["6", "Bears", "12"],
+      ["7", "Wolves", "6"],
+      ["8", "Rams", "9"],
+      ["9", "Jays", "7"],
+      ["10", "Cats", "8"],
+      ["11", "Lynx", "10"],
+      ["12", "Pikes", "11"],
+    ],
+  );
+  const ranks = scripted((id) => {
+    if (id.endsWith(".role")) return choice({ rank: 0.9, measure: 0.1 });
+    if (id.endsWith(".polarity")) return choice({ lower_is_better: 0.9, higher_is_better: 0.05, neutral: 0.05 });
+    return { type: "noul", noul: 1 };
+  });
+  const j = await Effect.runPromise(judgePage({ ...page, tables: [rankings] }).pipe(Effect.provide(ranks)));
+  const t = j.tables[0]!;
+  assert.deepEqual(
+    t.encodings.map((e) => e.header),
+    ["Outlet A"],
+  );
+  const outlet = t.encodings[0]!;
+  assert.ok(outlet.kind === "quantitative");
+  assert.equal(outlet.polarity, "lower_is_better");
+  assert.equal(outlet.transform, "linear", "the model's log answer is overruled for ranks");
+  assert.equal(t.skipped.find((s) => s.header === "#")?.reason, "looks like rank");
 });
 
 test("date columns are shaded by code, never asked about, and never shared", async () => {
