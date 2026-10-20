@@ -8,12 +8,13 @@
     "allow.test.ts": "The free endpoint accepts each request that the extension sends on the test pages. It refuses all other requests.",
     "allowance.test.ts": "The free daily allowance as the reader sees it: the requests that remain, the reset time, and the text.",
     "judge.test.ts": "The judge, with answers supplied by code. Code ignores identifiers and two-level labels. Shared scales. One failed table does not stop the other tables.",
+    "dates.test.ts": "Cell text to dates: calendar dates, months, times with offsets, and relative times such as 3 days ago. Day and month order for numeric dates. The text that must not become a date.",
     "legend.test.ts": "The card that shows when you put the pointer on a header: ranges and units for shared, log, ranked, and duration columns, and the totals that are not on the scale.",
     "model.test.ts": "Validation of answers, and the quota and allowance values from the free endpoint.",
     "order.test.ts": "The label order from pair answers, also when some answers disagree.",
     "orient.test.ts": "Row-based tables, read one row at a time.",
     "parse.test.ts": "Cell text to numbers: currencies, percentages, suffixes, durations, ranges, and bounds. Also the text that must not become a number.",
-    "profile.test.ts": "Column profiles: kind, spread, unit, ranks, years, and label order. Dates stay out.",
+    "profile.test.ts": "Column profiles: kind, spread, unit, ranks, years, and label order. Dates do not go to the model.",
     "scale.test.ts": "Values to positions to colors, for each palette.",
     "tint.test.ts": "Colors on the page background. For each palette, step, and page, the text contrast stays at 5:1 or more. If not, the cell is not shaded.",
   };
@@ -31,7 +32,7 @@
 <p class="score"><strong>{total - failed} of {total}</strong> unit tests pass.</p>
 
 <h2>Parsing</h2>
-<p>The parser changes cell text into numbers. Each row below is the output of <code>parseNumber</code> during the build. Text that is not clear becomes no number, thus it cannot change a scale.</p>
+<p>The parser changes cell text into numbers and dates. Each row below is the output of <code>parseNumber</code> and <code>parseDate</code> during the build. Text that is not clear becomes no value, thus it cannot change a scale.</p>
 <div class="scroll-x">
   <table class="list parse">
     <thead><tr><th scope="col">Cell text</th><th scope="col" class="num">Value</th><th scope="col">Unit</th><th scope="col">Result</th></tr></thead>
@@ -43,7 +44,8 @@
           <td class="mono">{x.parsed?.unit === ":" ? "m:ss" : (x.parsed?.unit ?? "")}</td>
           <td class="muted">
             {#if x.missing}No value
-            {:else if x.parsed === null}{x.date ? "A date, not an amount" : "Not a number"}
+            {:else if x.when !== null}A date: {x.when}. Code shades dates from earliest to latest
+            {:else if x.parsed === null}{x.date ? "A time of day. Not shaded" : "Not a number"}
             {:else if x.parsed.range}Range from {fmt(x.parsed.range[0])} to {fmt(x.parsed.range[1])}; the value is the midpoint
             {:else if x.parsed.unit === ":"}A clock value. The model decides if it is a duration or a time of day
             {:else if x.parsed.bound}A limit, not an exact amount

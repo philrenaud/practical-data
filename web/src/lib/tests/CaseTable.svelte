@@ -4,6 +4,7 @@
   this page's kind. Pointing at a check outlines its column.
 -->
 <script lang="ts">
+  import { isDateUnit } from "../../../../src/core/dates.ts";
   import { DEFAULT_PALETTE } from "../../../../src/core/palettes.ts";
   import type { ColumnEncoding, SkippedColumn } from "../../../../src/core/types.ts";
   import { plainReason } from "../demo.ts";
@@ -42,6 +43,7 @@
   const DIRECTION: Readonly<Record<string, string>> = { higher_is_better: "higher is better", lower_is_better: "lower is better", neutral: "no direction" };
   /** Every judgment on one column, in two short lines. */
   const summary = (e: ColumnEncoding | undefined, s: SkippedColumn | undefined): { kind: string; detail: string; on: boolean } => {
+    if (e?.kind === "quantitative" && isDateUnit(e.unit)) return { kind: "Dates", detail: "earliest to latest", on: true };
     if (e?.kind === "quantitative") {
       const parts = [DIRECTION[e.polarity]!, e.transform === "log" ? "log scale" : "linear", ...(e.group === null ? [] : ["shared scale"])];
       return { kind: "Amount", detail: parts.join(" · "), on: true };

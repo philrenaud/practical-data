@@ -38,6 +38,8 @@ export interface ParseExample {
   readonly input: string;
   readonly missing: boolean;
   readonly date: boolean;
+  /** The date that the cell names, for dates that are shaded: "Dec 1993", "3 days ago". */
+  readonly when: string | null;
   readonly parsed: { readonly value: number; readonly unit: string | null; readonly bound: boolean; readonly range: readonly [number, number] | null } | null;
 }
 

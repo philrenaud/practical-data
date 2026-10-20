@@ -71,7 +71,7 @@ const DATE_RE = new RegExp(
   "i",
 );
 
-/** Dates and clock times: ordered, but by the calendar, which is not something to shade. */
+/** Dates and clock times: never numbers. Dates that dates.ts can read are shaded as time. */
 export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw));
 
 /**

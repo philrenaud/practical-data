@@ -3,6 +3,7 @@
  * labels vs. free text) and computes every statistic; the decision model only
  * judges meaning. See docs/decisions.md for the split.
  */
+import { parseDate } from "./dates.ts";
 import { isDateLike, isMissing, normalizeLabel, parseNumber, stripNoise } from "./parse.ts";
 import type { TableSnapshot } from "./types.ts";
 
@@ -145,13 +146,17 @@ const profileCategorical = (
   return { kind: "categorical", col, header, values, levels, display };
 };
 
+/** A date, a clock time, or a relative time ("3 days ago", which would otherwise parse as 3 days). */
+const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(cell, { now: 0 }) !== null;
+
 /** Profiles every column of a table. */
 export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
   table.headers.map((rawHeader, col) => {
     const header = stripNoise(rawHeader);
     const cells = table.rows.map((r) => r[col] ?? "");
     const filled = cells.filter((c) => !isMissing(c));
-    if (filled.length > 0 && filled.filter(isDateLike).length / filled.length >= NUMERIC_SHARE) {
+    // Dates stay out of the model's requests; judge.ts shades the ones that parse (dates.ts).
+    if (filled.length > 0 && filled.filter(looksLikeDate).length / filled.length >= NUMERIC_SHARE) {
       return { kind: "text", col, header, reason: "dates or times", samples: cells.slice(0, 5).map(stripNoise) };
     }
     const numeric = profileNumeric(col, header, cells);
