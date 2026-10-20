@@ -107,3 +107,20 @@ test("a sorted column of dates without years crosses New Year once", () => {
   const unsorted = parseDateColumn(["Mar 3", "May 1", "Feb 2"], NOW)!.values;
   assert.ok(unsorted[2]! < unsorted[0]!);
 });
+
+test("notes in parentheses and ranges of days", () => {
+  assert.equal(at("Jan 15, 1967 (1966 AFL/1966 NFL)")?.time, Date.UTC(1967, 0, 15));
+  assert.equal(at("Feb 2030 (2029)")?.time, Date.UTC(2030, 1, 1));
+  const mid = (a: number, b: number) => (a + b) / 2;
+  assert.deepEqual(at("July 16–22, 2021"), { time: mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)), precision: "day" });
+  assert.equal(at("July 16-22, 2021")?.time, mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)));
+  assert.equal(at("16–22 July 2021")?.time, mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)));
+  assert.equal(at("July 30 – August 2, 2021")?.time, mid(Date.UTC(2021, 6, 30), Date.UTC(2021, 7, 2)));
+  assert.equal(at("Dec 28, 2020 to Jan 3, 2021")?.time, mid(Date.UTC(2020, 11, 28), Date.UTC(2021, 0, 3)));
+  assert.equal(at("2021-07-16 – 2021-07-22")?.time, mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)));
+  // In a column, where dates without a year are allowed, the start still takes the end's year.
+  assert.equal(parseDate("July 16–22, 2021", { now: NOW, year: 2000 })?.time, mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)));
+  assert.deepEqual(parseDateColumn(["April 16, 2021", "July 16–22, 2021", "None", "May 1, 2022"], NOW)?.values, [Date.UTC(2021, 3, 16), mid(Date.UTC(2021, 6, 16), Date.UTC(2021, 6, 22)), null, Date.UTC(2022, 4, 1)]);
+  // Backwards, or not two dates.
+  for (const raw of ["July 22–16, 2021", "No Pre-release Scheduled", "1997–98", "3 days ago – 2 days ago"]) assert.equal(at(raw), null, raw);
+});

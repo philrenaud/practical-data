@@ -133,11 +133,46 @@ const relative = (t: string, now: number): number | null => {
   return last === null ? null : now - spanOf(last[1]!)!;
 };
 
-/** One cell. Returns null for anything that is not clearly one instant. */
-export const parseDate = (raw: string, options: DateOptions): ParsedDate | null => {
-  const t = stripNoise(raw).toLowerCase();
-  if (t === "") return null;
+/** A trailing note in parentheses: "Jan 15, 1967 (1966 AFL/1966 NFL)". */
+const NOTE = /\s*\([^()]*\)$/;
+/** Where a range splits: "July 16–22, 2021", "Dec 28, 2020 to Jan 3, 2021". */
+const RANGE_SPLIT = /\s*[–—-]\s*|\s+to\s+/g;
+const TRAILING_YEAR = /(\d{4})$/;
+const MONTH_IN = /[a-z]{3,9}\.?/g;
 
+/**
+ * A range of days, as its midpoint, like a numeric range (parse.ts). The
+ * start may leave out what the end says: "July 16–22, 2021" (month and year
+ * from the other side), "16–22 July 2021", "July 30 – August 2, 2021".
+ */
+const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
+  const year = TRAILING_YEAR.exec(t)?.[1];
+  for (const m of t.matchAll(RANGE_SPLIT)) {
+    const left = t.slice(0, m.index).trim();
+    const right = t.slice(m.index + m[0].length).trim();
+    if (left === "" || right === "") continue;
+    const leftMonth = [...left.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
+    const end = parseOne(right, options) ?? (leftMonth === undefined ? null : parseOne(`${leftMonth} ${right}`, options));
+    if (end === null || end.precision === "relative") continue;
+    const rightMonth = [...right.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
+    // The end's year first: in a column, "July 16" alone would take the column's placeholder year.
+    const candidates = [...(year === undefined ? [] : [`${left}, ${year}`, ...(rightMonth === undefined ? [] : [`${left} ${rightMonth} ${year}`])]), left];
+    const start = candidates.map((c) => parseOne(c, options)).find((d) => d !== null && d.precision !== "relative");
+    if (start === undefined || start === null || start.time > end.time) continue;
+    return { time: (start.time + end.time) / 2, precision: start.precision === "month" && end.precision === "month" ? "month" : "day" };
+  }
+  return null;
+};
+
+/** One cell. Returns null for anything that is not clearly one instant or one range of days. */
+export const parseDate = (raw: string, options: DateOptions): ParsedDate | null => {
+  const t = stripNoise(raw).toLowerCase().replace(NOTE, "");
+  if (t === "") return null;
+  return parseOne(t, options) ?? parseRange(t, options);
+};
+
+/** One instant, from lowercase text without notes. */
+const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
   const rel = relative(t, options.now);
   if (rel !== null) return { time: rel, precision: "relative" };
 

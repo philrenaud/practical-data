@@ -238,7 +238,7 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
 const PARSE_EXAMPLES = [
   "$0.025", "€1,200.50", "($3.00)", "-$3", "45%", ".312", "1.5B", "272K", "6' 6\"", "2:59", "20–25", "65+",
   "≤ 272K", "> 200K", "12-4", "35-10", "1,066", "3.2 GB", "829.8 m", "2,722 ft", "N/A", "—", "2023-01-01", "July 17, 2009",
-  "December 1993", "3 days ago", "February 6", "7:05 PM",
+  "December 1993", "3 days ago", "February 6", "July 16–22, 2021", "Jan 15, 1967 (1966)", "7:05 PM",
 ];
 const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = { month: "month", day: "date", minute: "datetime", relative: "ago" };
 const now = Date.now();
