@@ -1,0 +1,6 @@
+# Data, not source: recorded model answers, page snapshots, generated demo data.
+fixtures/
+demo/
+package-lock.json
+web/.svelte-kit/
+web/dev-fonts/
