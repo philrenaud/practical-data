@@ -100,6 +100,8 @@ const wrangler = spawn(
     "TYPESAFE_API_KEY:test-key",
     "--var",
     `INSTALL_DAILY_REQUESTS:${INSTALL_LIMIT}`,
+    "--var",
+    "STATS_TOKEN:smoke-stats",
   ],
   { stdio: ["ignore", "pipe", "pipe"] },
 );
@@ -200,6 +202,17 @@ try {
 
   await check("a missing install id is refused", async () => {
     assert.equal((await post({})).status, 400);
+  });
+
+  await check("today's stats need the stats token", async () => {
+    const stats = (authorization?: string) =>
+      fetch(`${ORIGIN}/v1/stats`, authorization === undefined ? {} : { headers: { Authorization: authorization } });
+    assert.equal((await stats()).status, 401);
+    assert.equal((await stats("Bearer smoke-stat")).status, 401);
+    const r = await stats("Bearer smoke-stats");
+    assert.equal(r.status, 200);
+    const body = (await r.json()) as { requests: number; tokens: number };
+    assert.ok(body.requests > 0 && body.tokens > 0, JSON.stringify(body));
   });
 
   await check(

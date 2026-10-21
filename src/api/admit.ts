@@ -1,5 +1,21 @@
 /** Helpers that decide who a request comes from. They have no Workers dependencies, so Node tests can load them. */
 
+const sha256 = async (s: string) => new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
+
+/**
+ * Returns whether an Authorization header is `Bearer <secret>`. It compares
+ * SHA-256 digests byte by byte without stopping early, so the time it takes
+ * does not show how much of the token matched. An empty secret matches
+ * nothing.
+ */
+export const sameSecret = async (authorization: string | null, secret: string): Promise<boolean> => {
+  if (secret === "" || authorization === null) return false;
+  const [given, expected] = await Promise.all([sha256(authorization), sha256(`Bearer ${secret}`)]);
+  let difference = 0;
+  for (let i = 0; i < expected.length; i++) difference |= given[i]! ^ expected[i]!;
+  return difference === 0;
+};
+
 const IPV4_MAPPED = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i;
 
 /**

@@ -27,7 +27,7 @@ import {
   validateAnswers,
   type Question,
 } from "../decide/model.ts";
-import { rateLimitKey } from "./admit.ts";
+import { rateLimitKey, sameSecret } from "./admit.ts";
 import { checkRequest, LIMITS, readBody, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
@@ -309,8 +309,7 @@ export default {
     if (pathname === "/v1/judge" && request.method === "POST") return judge(request, env, ctx);
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
     if (pathname === "/v1/stats" && request.method === "GET") {
-      const token = env.STATS_TOKEN ?? "";
-      if (token === "" || request.headers.get("authorization") !== `Bearer ${token}`)
+      if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
         return refuse(401, "auth", "Unauthorized.");
       return json(200, { day: today(), ...(await env.QUOTA.get(env.QUOTA.idFromName(today())).stats()) });
     }
