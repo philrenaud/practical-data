@@ -43,3 +43,11 @@ interface ExecutionContext {
 interface CacheStorage {
   readonly default: Cache;
 }
+
+interface AnalyticsEngineDataset {
+  writeDataPoint(point: {
+    readonly blobs?: readonly string[];
+    readonly doubles?: readonly number[];
+    readonly indexes?: readonly string[];
+  }): void;
+}

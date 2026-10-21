@@ -17,6 +17,8 @@
     // Input tokens for all installs together per UTC day. 0 turns the free endpoint off.
     "DAILY_TOKEN_BUDGET": "50000000",
   },
+  // Anonymous usage data points: route, outcome, and counts. See src/api/usage.ts.
+  "analytics_engine_datasets": [{ "binding": "USAGE", "dataset": "practical_data_api" }],
   "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
   // Requests per minute, keyed by install id and by client IP.

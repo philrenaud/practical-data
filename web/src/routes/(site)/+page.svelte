@@ -192,9 +192,8 @@
         <h3>Your key, or soon none at all</h3>
         <p>
           With your own key, table text goes straight to your provider and nothing passes through the author. From
-          1.1.0, a free endpoint judges tables without a key and keeps only the answers. No analytics, no telemetry. <a
-            href="/privacy">Privacy policy</a
-          >
+          1.1.0, a free endpoint judges tables without a key and keeps only the answers and anonymous counts. The
+          extension has no analytics or telemetry. <a href="/privacy">Privacy policy</a>
         </p>
       </li>
       <li>

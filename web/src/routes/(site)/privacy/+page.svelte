@@ -6,7 +6,7 @@
 <main class="doc">
   <a class="back" href="/">← Practical Data</a>
   <h1>Privacy policy</h1>
-  <p><em>Practical Data, a Chrome extension. Last updated October 12, 2026.</em></p>
+  <p><em>Practical Data, a Chrome extension. Last updated October 21, 2026.</em></p>
   <p>
     Practical Data shades the comparable columns of tables on web pages. To decide what each column means, it asks a
     decision model. From version 1.1.0, that goes by default through the free endpoint at <code
@@ -55,8 +55,16 @@
           Your IP address is used only by Cloudflare's rate limiter, for about a minute, and is not stored by the
           Worker.
         </li>
+        <li>
+          <strong>Anonymous counts</strong> of requests, in Cloudflare Workers Analytics Engine for three months: for each
+          request, whether it was answered from the cache, answered by the model, or refused and why; the input tokens it
+          used; and how many requests its install had made that day. They have no install id, IP address, location, or table
+          text. They show how much the endpoint is used and whether it is abused.
+        </li>
       </ul>
-      Nothing is logged, and nothing is used for analytics or shared with anyone but TypeSafe.
+      Nothing is logged. The Worker, its cache, and the counts run on Cloudflare, under
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>. The table text goes to
+      TypeSafe and to no one else.
     </li>
     <li>
       <strong>TypeSafe</strong> (Jev, with your own key), at <code>api.typesafe.ai</code>, under
@@ -106,6 +114,9 @@
   <p>Sites can opt out for all users with <code>&lt;meta name="practical-data" content="off"&gt;</code>.</p>
   <h2>Changes</h2>
   <p>Changes to this policy will be noted here with a new date.</p>
+  <ul>
+    <li>October 21, 2026: the free endpoint keeps anonymous request counts.</li>
+  </ul>
 </main>
 
 <style>

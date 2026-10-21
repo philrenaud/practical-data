@@ -11,6 +11,9 @@
  *   GET  /v1/health      → { ok: true }
  *   GET  /v1/stats       → today's counts, with Authorization: Bearer STATS_TOKEN
  *
+ * Every response except /v1/health adds one anonymous data point to
+ * Analytics Engine (usage.ts).
+ *
  * The Worker sets the model from MODEL and ignores a `model` in the body.
  * The Worker writes no logs. The cache holds answers under a hash of the
  * request, never the request itself. The daily counts hold install ids, and
@@ -26,6 +29,7 @@ import {
 import { rateLimitKey, sameSecret } from "./admit.ts";
 import { LIMITS, readBody, readRequest } from "./allow.ts";
 import type { Quota } from "./quota.ts";
+import { usagePoint } from "./usage.ts";
 
 export { Quota } from "./quota.ts";
 
@@ -41,6 +45,8 @@ interface Env {
   readonly QUOTA: DurableObjectNamespace<Quota>;
   readonly RL_INSTALL: RateLimit;
   readonly RL_IP: RateLimit;
+  /** Anonymous usage data points (usage.ts). Absent in tests. */
+  readonly USAGE?: AnalyticsEngineDataset;
 }
 
 const CACHE_TTL_S = 30 * 24 * 60 * 60;
@@ -227,16 +233,30 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   });
 };
 
+const route = async (request: Request, env: Env, ctx: ExecutionContext, pathname: string): Promise<Response> => {
+  if (pathname === "/v1/systemone" && request.method === "POST") return decide(request, env, ctx);
+  if (pathname === "/v1/stats" && request.method === "GET") {
+    if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
+      return refuse(401, "auth", "Unauthorized.");
+    return json(200, { day: today(), ...(await env.QUOTA.get(env.QUOTA.idFromName(today())).stats()) });
+  }
+  return refuse(404, "not_found", "Not found.");
+};
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url);
-    if (pathname === "/v1/systemone" && request.method === "POST") return decide(request, env, ctx);
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
-    if (pathname === "/v1/stats" && request.method === "GET") {
-      if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
-        return refuse(401, "auth", "Unauthorized.");
-      return json(200, { day: today(), ...(await env.QUOTA.get(env.QUOTA.idFromName(today())).stats()) });
+    const response = await route(request, env, ctx, pathname);
+    if (env.USAGE !== undefined) {
+      const usage = env.USAGE;
+      ctx.waitUntil(
+        usagePoint(pathname, response.clone()).then(
+          (p) => usage.writeDataPoint(p),
+          () => undefined,
+        ),
+      );
     }
-    return refuse(404, "not_found", "Not found.");
+    return response;
   },
 };

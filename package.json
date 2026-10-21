@@ -30,6 +30,7 @@
     "package": "node scripts/package.ts",
     "api:dev": "wrangler dev -c api/wrangler.jsonc",
     "api:smoke": "node scripts/api-smoke.ts",
+    "api:usage": "node scripts/api-usage.ts",
     "api:deploy": "wrangler deploy -c api/wrangler.jsonc",
     "demo:data": "node scripts/demo-data.ts",
     "tests:data": "node scripts/tests-data.ts",
