@@ -98,15 +98,19 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
     pageConfig(msg.url).then(sendResponse, () => sendResponse({ enabled: false } satisfies PageConfig));
     return true;
   }
+  // The switches belong to the popup. A content script runs inside a web page, so it can't send them.
+  const fromExtensionPage = sender.url?.startsWith(chrome.runtime.getURL("")) === true;
   if (msg.type === "setPagePaused") {
+    if (!fromExtensionPage) return false;
     pausePage(msg.tabId, msg.url, msg.paused).then(() => sendResponse(true));
     return true;
   }
   if (msg.type === "setSiteEnabled") {
+    if (!fromExtensionPage) return false;
     enableSite(msg.tabId, msg.host, msg.enabled).then(() => sendResponse(true));
     return true;
   }
-  if (sender.tab === undefined) return false;
+  if (msg.type !== "judge" || sender.tab === undefined) return false;
   judge(msg).then(
     (reply) => {
       sendResponse(reply);

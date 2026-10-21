@@ -604,12 +604,24 @@ const storageScenario = async (): Promise<string[]> => {
   if (local.startsWith("read")) problems.push(`storage: the content script can read storage.local (${local})`);
   const session = await read("session");
   if (!session.startsWith("read")) problems.push(`storage: the content script can't read storage.session (${session})`);
+  // The popup's site switch, sent from the content script's world, must change nothing.
+  await cdp.send("Runtime.evaluate", {
+    contextId: world.id,
+    awaitPromise: true,
+    expression: `chrome.runtime.sendMessage({ type: "setSiteEnabled", tabId: 0, host: "127.0.0.1", enabled: false }).catch(() => undefined)`,
+  });
+  const disabled = await worker.evaluate(
+    async () => ((await chrome.storage.local.get("settings"))["settings"] as { disabledHosts: string[] }).disabledHosts,
+  );
+  if (disabled.length > 0) problems.push(`storage: a content script turned off ${disabled.join(", ")}`);
   await page.close();
   return problems;
 };
 
 const storageProblems = await storageScenario();
-console.log(`${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read settings`);
+console.log(
+  `${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read settings or flip switches`,
+);
 for (const p of storageProblems) console.log(`    - ${p}`);
 if (storageProblems.length > 0) failed++;
 
