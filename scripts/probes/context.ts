@@ -4,7 +4,6 @@
  * needs TYPESAFE_API_KEY. See docs/decisions.md for the results.
  */
 import { readFile } from "node:fs/promises";
-import { Effect } from "effect";
 import { profileTable, type CategoricalProfile } from "../../src/core/profile.ts";
 import type { PageSnapshot } from "../../src/core/types.ts";
 import { categoricalQuestions, categoricalState } from "../../src/decide/questions.ts";
@@ -37,7 +36,7 @@ for (const [slug, id, header] of cases) {
   };
   const out: string[] = [];
   for (const [name, state] of Object.entries(variants)) {
-    const r = await Effect.runPromise(model.evaluate({ state, questions: categoricalQuestions(p).questions }));
+    const r = await model.evaluate({ state, questions: categoricalQuestions(p).questions });
     const a = r.answers[`c${p.col}.relation`];
     out.push(`${name}=${a?.type === "choice" ? (a.probabilities["ordered_levels"] ?? 0).toFixed(2) : "?"}`);
   }

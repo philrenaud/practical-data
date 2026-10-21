@@ -10,7 +10,6 @@
  * 4. One page request asks whether same-named columns in different tables
  *    share a scale. Shared columns get one domain or one order.
  */
-import { Effect } from "effect";
 import { orderFromPairs } from "../core/order.ts";
 import { isDateUnit, parseDateColumn } from "../core/dates.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
@@ -26,7 +25,8 @@ import type {
   TableJudgment,
   TableSnapshot,
 } from "../core/types.ts";
-import { DecisionError, DecisionModel, type Question } from "./model.ts";
+import { mapConcurrent } from "./concurrency.ts";
+import { DecisionError, type DecisionModel, type Question } from "./model.ts";
 import {
   aggregateQuestions,
   type Answers,
@@ -168,173 +168,182 @@ interface Planned {
 }
 
 /** Judges one table column by column. With `askOrientation`, the table request also asks the orientation question. */
-const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, askOrientation: boolean, now: number) =>
-  Effect.gen(function* () {
-    const model = yield* DecisionModel;
-    const profiles = profileTable(table);
-    const candidates = profiles.filter(
-      (p): p is NumericProfile | CategoricalProfile => p.kind === "numeric" || p.kind === "categorical",
-    );
-    const skipped: SkippedColumn[] = profiles.flatMap((p) =>
-      p.kind === "text" ? [{ col: p.col, header: p.header, reason: p.reason, comparable: null }] : [],
-    );
-    const unasked = (dates: readonly ColumnEncoding[]): Planned => ({
-      table,
-      judgment: {
-        id: table.id,
-        orientation: "columns",
-        rowsScore: null,
-        encodings: dates,
-        skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)),
-        aggregateRows: [],
-      },
-      samples: new Map(),
-      units: new Map(),
-    });
-    if (table.rows.length < MIN_ROWS) return { planned: unasked([]), rowsScore: null };
-    if (candidates.length === 0)
-      return { planned: unasked(dateEncodings(table, profiles, new Set(), now)), rowsScore: null };
-
-    const ctx = { page: page.title, table: table.title };
-    const numeric = candidates.filter((p) => p.kind === "numeric");
-    const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p) }));
-    const categoricalPlans = candidates
-      .filter((p) => p.kind === "categorical")
-      .map((p) => ({ profile: p, ...categoricalQuestions(p) }));
-    const aggregates = aggregateQuestions(table.headers, table.rows);
-    // Orientation only matters when several numeric columns could be read either way.
-    const orientation =
-      askOrientation && numeric.length >= 2
-        ? orientationQuestion({
-            header: table.headers[0] ?? "",
-            examples: table.rows.slice(0, 5).map((r) => r[0] ?? ""),
-          })
-        : null;
-
-    // One request covers the numeric columns and the summary rows. Each
-    // categorical column gets its own request. All of them run concurrently.
-    const [tableAnswers, ...categoricalAnswers] = yield* Effect.all(
-      [
-        model.evaluate({
-          state: tableState(ctx, profiles, numeric),
-          questions: Object.assign(
-            {},
-            aggregates.questions,
-            orientation?.questions ?? {},
-            ...numericPlans.map((p) => p.questions),
-          ),
-        }),
-        ...categoricalPlans.map(({ profile: p, ...q }) =>
-          Effect.gen(function* () {
-            const state = categoricalState(
-              ctx,
-              p,
-              table.headers.filter((h, i) => i !== p.col && h !== ""),
-            );
-            const first = yield* model.evaluate({ state, questions: q.questions });
-            // Send the pairwise order questions only when the labels might be ordered.
-            // A column of 12 team names would otherwise send 132 of them.
-            if (q.ordinalOf(first.answers) < policy.ordinalWithStrongOrder) return first;
-            const pairs = yield* model.evaluate({ state, questions: q.pairQuestions });
-            return { ...first, answers: { ...first.answers, ...pairs.answers } };
-          }),
-        ),
-      ],
-      { concurrency: "unbounded" },
-    );
-    const answers = tableAnswers!.answers;
-    const aggregateRows = aggregates.read(answers, policy.aggregate);
-    const excluded = new Set(aggregateRows);
-    const plans = [
-      ...numericPlans.map((plan) => ({ kind: "numeric" as const, ...plan, answers })),
-      ...categoricalPlans.map((plan, i) => ({
-        kind: "categorical" as const,
-        ...plan,
-        answers: categoricalAnswers[i]!.answers,
-      })),
-    ];
-
-    const encodings: ColumnEncoding[] = [];
-    const samples = new Map<number, readonly string[]>();
-    const units = new Map<number, string | null>();
-    for (const plan of plans) {
-      if (plan.kind === "numeric") {
-        const p = plan.profile;
-        const r = plan.read(plan.answers);
-        if (r.measure < policy.measure) {
-          skipped.push({ col: p.col, header: p.header, reason: `looks like ${r.role}`, comparable: r.measure });
-          continue;
-        }
-        const domain = extent(p.values, excluded);
-        encodings.push({
-          kind: "quantitative",
-          col: p.col,
-          header: p.header,
-          polarity: pickPolarity(r.polarity, policy.polarity),
-          // Ranks are evenly spaced positions. A log scale would crowd the bottom of the list.
-          transform: r.role !== "rank" && r.log !== null && r.log >= policy.log && domain[0] > 0 ? "log" : "linear",
-          unit: p.unit,
-          domain,
-          values: p.values,
-          group: null,
-          evidence: { comparable: r.measure, polarity: r.polarity, log: r.log, orderConfidence: null },
-        });
-        samples.set(p.col, p.samples);
-        units.set(p.col, p.unit);
-      } else {
-        const p = plan.profile;
-        const r = plan.read(plan.answers);
-        const { order, confidence } = orderFromPairs(p.levels, r.lower);
-        const ordered =
-          (r.ordinal >= policy.ordinal && confidence >= policy.orderConfidence) ||
-          (r.ordinal >= policy.ordinalWithStrongOrder && confidence >= policy.strongOrder);
-        if (!ordered) {
-          skipped.push({
-            col: p.col,
-            header: p.header,
-            reason:
-              r.ordinal < policy.ordinalWithStrongOrder
-                ? `labels look like ${r.relation.replaceAll("_", " ")}`
-                : "order is uncertain",
-            comparable: r.ordinal,
-          });
-          continue;
-        }
-        encodings.push({
-          kind: "ordinal",
-          col: p.col,
-          header: p.header,
-          polarity: pickPolarity(r.polarity, policy.polarity),
-          order,
-          labels: order.map((l) => p.display[l] ?? l),
-          values: p.values,
-          group: null,
-          evidence: { comparable: r.ordinal, polarity: r.polarity, log: null, orderConfidence: confidence },
-        });
-        samples.set(
-          p.col,
-          order.map((l) => p.display[l] ?? l),
-        );
-      }
-    }
-    const dates = dateEncodings(table, profiles, excluded, now);
-    encodings.push(...dates);
-    encodings.sort((a, b) => a.col - b.col);
-    const planned: Planned = {
-      table,
-      judgment: {
-        id: table.id,
-        orientation: "columns",
-        rowsScore: null,
-        encodings,
-        skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)).sort((a, b) => a.col - b.col),
-        aggregateRows,
-      },
-      samples,
-      units,
-    };
-    return { planned, rowsScore: orientation?.read(answers) ?? null };
+const judgeColumns = async (
+  model: DecisionModel,
+  page: PageSnapshot,
+  table: TableSnapshot,
+  policy: Policy,
+  askOrientation: boolean,
+  now: number,
+) => {
+  const profiles = profileTable(table);
+  const candidates = profiles.filter(
+    (p): p is NumericProfile | CategoricalProfile => p.kind === "numeric" || p.kind === "categorical",
+  );
+  const skipped: SkippedColumn[] = profiles.flatMap((p) =>
+    p.kind === "text" ? [{ col: p.col, header: p.header, reason: p.reason, comparable: null }] : [],
+  );
+  const unasked = (dates: readonly ColumnEncoding[]): Planned => ({
+    table,
+    judgment: {
+      id: table.id,
+      orientation: "columns",
+      rowsScore: null,
+      encodings: dates,
+      skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)),
+      aggregateRows: [],
+    },
+    samples: new Map(),
+    units: new Map(),
   });
+  if (table.rows.length < MIN_ROWS) return { planned: unasked([]), rowsScore: null };
+  if (candidates.length === 0)
+    return { planned: unasked(dateEncodings(table, profiles, new Set(), now)), rowsScore: null };
+
+  const ctx = { page: page.title, table: table.title };
+  const numeric = candidates.filter((p) => p.kind === "numeric");
+  const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p) }));
+  const categoricalPlans = candidates
+    .filter((p) => p.kind === "categorical")
+    .map((p) => ({ profile: p, ...categoricalQuestions(p) }));
+  const aggregates = aggregateQuestions(table.headers, table.rows);
+  // Orientation only matters when several numeric columns could be read either way.
+  const orientation =
+    askOrientation && numeric.length >= 2
+      ? orientationQuestion({
+          header: table.headers[0] ?? "",
+          examples: table.rows.slice(0, 5).map((r) => r[0] ?? ""),
+        })
+      : null;
+
+  // One request covers the numeric columns and the summary rows. Each
+  // categorical column gets its own request. All of them run concurrently.
+  // The first failure stops the others.
+  const [tableAnswers, ...categoricalAnswers] = await mapConcurrent(
+    [
+      (signal: AbortSignal) =>
+        model.evaluate(
+          {
+            state: tableState(ctx, profiles, numeric),
+            questions: Object.assign(
+              {},
+              aggregates.questions,
+              orientation?.questions ?? {},
+              ...numericPlans.map((p) => p.questions),
+            ),
+          },
+          signal,
+        ),
+      ...categoricalPlans.map(({ profile: p, ...q }) => async (signal: AbortSignal) => {
+        const state = categoricalState(
+          ctx,
+          p,
+          table.headers.filter((h, i) => i !== p.col && h !== ""),
+        );
+        const first = await model.evaluate({ state, questions: q.questions }, signal);
+        // Send the pairwise order questions only when the labels might be ordered.
+        // A column of 12 team names would otherwise send 132 of them.
+        if (q.ordinalOf(first.answers) < policy.ordinalWithStrongOrder) return first;
+        const pairs = await model.evaluate({ state, questions: q.pairQuestions }, signal);
+        return { ...first, answers: { ...first.answers, ...pairs.answers } };
+      }),
+    ],
+    Infinity,
+    (ask, signal) => ask(signal),
+  );
+  const answers = tableAnswers!.answers;
+  const aggregateRows = aggregates.read(answers, policy.aggregate);
+  const excluded = new Set(aggregateRows);
+  const plans = [
+    ...numericPlans.map((plan) => ({ kind: "numeric" as const, ...plan, answers })),
+    ...categoricalPlans.map((plan, i) => ({
+      kind: "categorical" as const,
+      ...plan,
+      answers: categoricalAnswers[i]!.answers,
+    })),
+  ];
+
+  const encodings: ColumnEncoding[] = [];
+  const samples = new Map<number, readonly string[]>();
+  const units = new Map<number, string | null>();
+  for (const plan of plans) {
+    if (plan.kind === "numeric") {
+      const p = plan.profile;
+      const r = plan.read(plan.answers);
+      if (r.measure < policy.measure) {
+        skipped.push({ col: p.col, header: p.header, reason: `looks like ${r.role}`, comparable: r.measure });
+        continue;
+      }
+      const domain = extent(p.values, excluded);
+      encodings.push({
+        kind: "quantitative",
+        col: p.col,
+        header: p.header,
+        polarity: pickPolarity(r.polarity, policy.polarity),
+        // Ranks are evenly spaced positions. A log scale would crowd the bottom of the list.
+        transform: r.role !== "rank" && r.log !== null && r.log >= policy.log && domain[0] > 0 ? "log" : "linear",
+        unit: p.unit,
+        domain,
+        values: p.values,
+        group: null,
+        evidence: { comparable: r.measure, polarity: r.polarity, log: r.log, orderConfidence: null },
+      });
+      samples.set(p.col, p.samples);
+      units.set(p.col, p.unit);
+    } else {
+      const p = plan.profile;
+      const r = plan.read(plan.answers);
+      const { order, confidence } = orderFromPairs(p.levels, r.lower);
+      const ordered =
+        (r.ordinal >= policy.ordinal && confidence >= policy.orderConfidence) ||
+        (r.ordinal >= policy.ordinalWithStrongOrder && confidence >= policy.strongOrder);
+      if (!ordered) {
+        skipped.push({
+          col: p.col,
+          header: p.header,
+          reason:
+            r.ordinal < policy.ordinalWithStrongOrder
+              ? `labels look like ${r.relation.replaceAll("_", " ")}`
+              : "order is uncertain",
+          comparable: r.ordinal,
+        });
+        continue;
+      }
+      encodings.push({
+        kind: "ordinal",
+        col: p.col,
+        header: p.header,
+        polarity: pickPolarity(r.polarity, policy.polarity),
+        order,
+        labels: order.map((l) => p.display[l] ?? l),
+        values: p.values,
+        group: null,
+        evidence: { comparable: r.ordinal, polarity: r.polarity, log: null, orderConfidence: confidence },
+      });
+      samples.set(
+        p.col,
+        order.map((l) => p.display[l] ?? l),
+      );
+    }
+  }
+  const dates = dateEncodings(table, profiles, excluded, now);
+  encodings.push(...dates);
+  encodings.sort((a, b) => a.col - b.col);
+  const planned: Planned = {
+    table,
+    judgment: {
+      id: table.id,
+      orientation: "columns",
+      rowsScore: null,
+      encodings,
+      skipped: skipped.filter((s) => !dates.some((d) => d.col === s.col)).sort((a, b) => a.col - b.col),
+      aggregateRows,
+    },
+    samples,
+    units,
+  };
+  return { planned, rowsScore: orientation?.read(answers) ?? null };
+};
 
 /**
  * Judges one table. `forced` is the orientation the user chose. Without it,
@@ -342,22 +351,28 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
  * `Policy.rows`, the table is judged again, transposed. A table with more
  * than `MAX_TRANSPOSE_ROWS` rows is always judged by columns.
  */
-const judgeTable = (page: PageSnapshot, table: TableSnapshot, policy: Policy, now: number, forced?: Orientation) =>
-  Effect.gen(function* () {
-    if (forced === "rows" && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-      const { planned } = yield* judgeColumns(page, transposeSnapshot(table), policy, false, now);
-      return { ...planned, judgment: { ...planned.judgment, orientation: "rows" as const } } satisfies Planned;
-    }
-    const { planned, rowsScore } = yield* judgeColumns(page, table, policy, forced === undefined, now);
-    if (rowsScore !== null && rowsScore >= policy.rows && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-      const rows = yield* judgeColumns(page, transposeSnapshot(table), policy, false, now);
-      return {
-        ...rows.planned,
-        judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore },
-      } satisfies Planned;
-    }
-    return { ...planned, judgment: { ...planned.judgment, rowsScore } } satisfies Planned;
-  });
+const judgeTable = async (
+  model: DecisionModel,
+  page: PageSnapshot,
+  table: TableSnapshot,
+  policy: Policy,
+  now: number,
+  forced?: Orientation,
+): Promise<Planned> => {
+  if (forced === "rows" && table.rows.length <= MAX_TRANSPOSE_ROWS) {
+    const { planned } = await judgeColumns(model, page, transposeSnapshot(table), policy, false, now);
+    return { ...planned, judgment: { ...planned.judgment, orientation: "rows" as const } } satisfies Planned;
+  }
+  const { planned, rowsScore } = await judgeColumns(model, page, table, policy, forced === undefined, now);
+  if (rowsScore !== null && rowsScore >= policy.rows && table.rows.length <= MAX_TRANSPOSE_ROWS) {
+    const rows = await judgeColumns(model, page, transposeSnapshot(table), policy, false, now);
+    return {
+      ...rows.planned,
+      judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore },
+    } satisfies Planned;
+  }
+  return { ...planned, judgment: { ...planned.judgment, rowsScore } } satisfies Planned;
+};
 
 // ── Cross-table sharing ─────────────────────────────────────────────────────
 
@@ -447,74 +462,77 @@ const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Pol
  * the model accepts gets one domain and transform, or one order, and one
  * direction.
  */
-const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], policy: Policy) =>
-  Effect.gen(function* () {
-    const groups = findGroups(planned);
-    if (groups.length === 0) return planned;
-    const model = yield* DecisionModel;
+const shareAcrossTables = async (
+  model: DecisionModel,
+  page: PageSnapshot,
+  planned: readonly Planned[],
+  policy: Policy,
+): Promise<readonly Planned[]> => {
+  const groups = findGroups(planned);
+  if (groups.length === 0) return planned;
 
-    const questions: Record<string, Question> = {};
-    const unions = new Map<string, { labels: string[]; read: (a: Answers) => (i: number, j: number) => number }>();
-    groups.forEach((g, gi) => {
-      questions[`g${gi}.share`] = shareQuestion(
-        g.kind,
-        g.members.map((m) => ({
-          table: m.planned.table.title,
-          header: m.encoding.header,
-          unit: m.planned.units.get(m.encoding.col) ?? null,
-          examples: m.planned.samples.get(m.encoding.col) ?? [],
-        })),
-      );
-      if (g.kind === "ordinal") {
-        // Asked before the share answer is known. The answers are used only when the
-        // group is shared and its tables have different labels.
-        const labels = [...new Set(g.members.flatMap((m) => (m.encoding.kind === "ordinal" ? m.encoding.order : [])))];
-        if (labels.length > MAX_UNION_LEVELS) return;
-        const pq = pairQuestions(`g${gi}`, `the column "${g.members[0]!.encoding.header}"`, labels);
-        Object.assign(questions, pq.questions);
-        unions.set(g.key, { labels, read: pq.read });
-      }
-    });
-
-    const response = yield* model.evaluate({ state: { page_title: page.title }, questions });
-    const replacements = new Map<ColumnEncoding, ColumnEncoding>();
-    groups.forEach((g, gi) => {
-      if (noul(response.answers, `g${gi}.share`) < policy.share) return;
-      const id = `shared:${gi}`;
-      if (g.kind === "quantitative") {
-        const qs = g.members.map((m) => m.encoding).filter((e) => e.kind === "quantitative");
-        const domain: [number, number] = [
-          Math.min(...qs.map((e) => e.domain[0])),
-          Math.max(...qs.map((e) => e.domain[1])),
-        ];
-        // One transform for the group: log when at least half the members use log.
-        // Mixed transforms would break the comparison.
-        const logVotes = qs.filter((e) => e.transform === "log").length;
-        const transform = logVotes * 2 >= qs.length && domain[0] > 0 ? "log" : "linear";
-        const polarity = sharedPolarity(qs, policy);
-        for (const e of qs) replacements.set(e, { ...e, domain, transform, polarity, group: id });
-      } else {
-        const union = unions.get(g.key);
-        const os = g.members.map((m) => m.encoding).filter((e) => e.kind === "ordinal");
-        const largest = os.reduce((a, b) => (b.order.length > a.order.length ? b : a));
-        const order =
-          union !== undefined && union.labels.length > largest.order.length
-            ? orderFromPairs(union.labels, union.read(response.answers)).order
-            : largest.order;
-        // Without a union order, a label outside the largest table's order would lose its color.
-        if (!os.every((e) => e.order.every((l) => order.includes(l)))) return;
-        const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
-        const labels = order.map((l) => display.get(l) ?? l);
-        const polarity = sharedPolarity(os, policy);
-        for (const e of os) replacements.set(e, { ...e, order, labels, polarity, group: id });
-      }
-    });
-
-    return planned.map((p) => ({
-      ...p,
-      judgment: { ...p.judgment, encodings: p.judgment.encodings.map((e) => replacements.get(e) ?? e) },
-    }));
+  const questions: Record<string, Question> = {};
+  const unions = new Map<string, { labels: string[]; read: (a: Answers) => (i: number, j: number) => number }>();
+  groups.forEach((g, gi) => {
+    questions[`g${gi}.share`] = shareQuestion(
+      g.kind,
+      g.members.map((m) => ({
+        table: m.planned.table.title,
+        header: m.encoding.header,
+        unit: m.planned.units.get(m.encoding.col) ?? null,
+        examples: m.planned.samples.get(m.encoding.col) ?? [],
+      })),
+    );
+    if (g.kind === "ordinal") {
+      // Asked before the share answer is known. The answers are used only when the
+      // group is shared and its tables have different labels.
+      const labels = [...new Set(g.members.flatMap((m) => (m.encoding.kind === "ordinal" ? m.encoding.order : [])))];
+      if (labels.length > MAX_UNION_LEVELS) return;
+      const pq = pairQuestions(`g${gi}`, `the column "${g.members[0]!.encoding.header}"`, labels);
+      Object.assign(questions, pq.questions);
+      unions.set(g.key, { labels, read: pq.read });
+    }
   });
+
+  const response = await model.evaluate({ state: { page_title: page.title }, questions });
+  const replacements = new Map<ColumnEncoding, ColumnEncoding>();
+  groups.forEach((g, gi) => {
+    if (noul(response.answers, `g${gi}.share`) < policy.share) return;
+    const id = `shared:${gi}`;
+    if (g.kind === "quantitative") {
+      const qs = g.members.map((m) => m.encoding).filter((e) => e.kind === "quantitative");
+      const domain: [number, number] = [
+        Math.min(...qs.map((e) => e.domain[0])),
+        Math.max(...qs.map((e) => e.domain[1])),
+      ];
+      // One transform for the group: log when at least half the members use log.
+      // Mixed transforms would break the comparison.
+      const logVotes = qs.filter((e) => e.transform === "log").length;
+      const transform = logVotes * 2 >= qs.length && domain[0] > 0 ? "log" : "linear";
+      const polarity = sharedPolarity(qs, policy);
+      for (const e of qs) replacements.set(e, { ...e, domain, transform, polarity, group: id });
+    } else {
+      const union = unions.get(g.key);
+      const os = g.members.map((m) => m.encoding).filter((e) => e.kind === "ordinal");
+      const largest = os.reduce((a, b) => (b.order.length > a.order.length ? b : a));
+      const order =
+        union !== undefined && union.labels.length > largest.order.length
+          ? orderFromPairs(union.labels, union.read(response.answers)).order
+          : largest.order;
+      // Without a union order, a label outside the largest table's order would lose its color.
+      if (!os.every((e) => e.order.every((l) => order.includes(l)))) return;
+      const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
+      const labels = order.map((l) => display.get(l) ?? l);
+      const polarity = sharedPolarity(os, policy);
+      for (const e of os) replacements.set(e, { ...e, order, labels, polarity, group: id });
+    }
+  });
+
+  return planned.map((p) => ({
+    ...p,
+    judgment: { ...p.judgment, encodings: p.judgment.encodings.map((e) => replacements.get(e) ?? e) },
+  }));
+};
 
 /**
  * The fewest levels an ordinal column needs to keep its color. Two-level
@@ -550,63 +568,61 @@ const dropBinaryOrdinals = (j: TableJudgment): TableJudgment => {
 
 /**
  * Judges every table on `page`. A table whose requests fail is listed in
- * `failed`, and the other tables keep their results. The effect fails only
- * when every table fails.
+ * `failed`, and the other tables keep their results. It rejects with a
+ * `DecisionError` only when every table fails.
  */
-export const judgePage = (
+export const judgePage = async (
+  model: DecisionModel,
   page: PageSnapshot,
   policy: Policy = DEFAULT_POLICY,
   /** The orientation the user chose, by table id. A table listed here skips the orientation question. */
   orientations: Readonly<Record<string, Orientation>> = {},
   /** The instant that relative dates such as "3 days ago" count back from. */
   now: number = Date.now(),
-) =>
-  Effect.gen(function* () {
-    const model = yield* DecisionModel;
-    const tables = page.tables.filter((t) => t.rows.length >= MIN_ROWS && t.headers.length >= 2);
-    // Count each `evaluate` call and its input tokens for `usage`. Cache hits count
-    // too, and one call can send several HTTP requests.
-    let inputTokens = 0;
-    let requests = 0;
-    const counted = DecisionModel.of({
-      name: model.name,
-      evaluate: (req) =>
-        model.evaluate(req).pipe(
-          Effect.tap((r) =>
-            Effect.sync(() => {
-              inputTokens += r.usage.input_tokens;
-              requests += 1;
-            }),
-          ),
-        ),
-    });
-    // Each table succeeds or fails on its own. One failed request does not discard
-    // the other tables' results.
-    const results = yield* Effect.forEach(
-      tables,
-      (t) => Effect.result(judgeTable(page, t, policy, now, orientations[t.id])),
-      {
-        concurrency: 6,
+): Promise<PageJudgment> => {
+  const tables = page.tables.filter((t) => t.rows.length >= MIN_ROWS && t.headers.length >= 2);
+  // Count each `evaluate` call and its input tokens for `usage`. Cache hits count
+  // too, and one call can send several HTTP requests.
+  let inputTokens = 0;
+  let requests = 0;
+  const counted: DecisionModel = {
+    name: model.name,
+    evaluate: async (req, signal) => {
+      const r = await model.evaluate(req, signal);
+      inputTokens += r.usage.input_tokens;
+      requests += 1;
+      return r;
+    },
+  };
+  // Each table succeeds or fails on its own. One failed request does not discard
+  // the other tables' results. An error other than a DecisionError is a bug, and rejects.
+  const results = await mapConcurrent(tables, 6, (t) =>
+    judgeTable(counted, page, t, policy, now, orientations[t.id]).then(
+      (success) => ({ ok: true as const, success }),
+      (e: unknown) => {
+        if (e instanceof DecisionError) return { ok: false as const, failure: e };
+        throw e;
       },
-    ).pipe(Effect.provideService(DecisionModel, counted));
-    const planned = results.flatMap((r) => (r._tag === "Success" ? [r.success] : []));
-    const failed = results.flatMap((r, i) =>
-      r._tag === "Failure" ? [{ id: tables[i]!.id, reason: r.failure.reason, message: r.failure.message }] : [],
-    );
-    // If no table was judged, fail with the first error instead of returning an empty judgment.
-    if (planned.length === 0 && failed.length > 0) {
-      return yield* new DecisionError({ reason: failed[0]!.reason, message: failed[0]!.message });
-    }
-    // If the share request fails, each table keeps its own scales.
-    const shared = yield* shareAcrossTables(page, planned, policy).pipe(
-      Effect.provideService(DecisionModel, counted),
-      Effect.orElseSucceed(() => planned),
-    );
-    return {
-      url: page.url,
-      model: model.name,
-      tables: shared.map((p) => dropBinaryOrdinals(p.judgment)),
-      failed: failed.map(({ id, reason }) => ({ id, reason })),
-      usage: { inputTokens, requests },
-    } satisfies PageJudgment;
+    ),
+  );
+  const planned = results.flatMap((r) => (r.ok ? [r.success] : []));
+  const failed = results.flatMap((r, i) =>
+    r.ok ? [] : [{ id: tables[i]!.id, reason: r.failure.reason, message: r.failure.message }],
+  );
+  // If no table was judged, fail with the first error instead of returning an empty judgment.
+  if (planned.length === 0 && failed.length > 0) {
+    throw new DecisionError({ reason: failed[0]!.reason, message: failed[0]!.message });
+  }
+  // If the share request fails, each table keeps its own scales.
+  const shared = await shareAcrossTables(counted, page, planned, policy).catch((e: unknown) => {
+    if (e instanceof DecisionError) return planned;
+    throw e;
   });
+  return {
+    url: page.url,
+    model: model.name,
+    tables: shared.map((p) => dropBinaryOrdinals(p.judgment)),
+    failed: failed.map(({ id, reason }) => ({ id, reason })),
+    usage: { inputTokens, requests },
+  } satisfies PageJudgment;
+};

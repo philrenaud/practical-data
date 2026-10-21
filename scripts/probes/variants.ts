@@ -3,7 +3,6 @@
  * improve the pairwise order. Calls Jev live, so it needs TYPESAFE_API_KEY.
  */
 import { readFile } from "node:fs/promises";
-import { Effect } from "effect";
 import { profileTable, type CategoricalProfile } from "../../src/core/profile.ts";
 import { orderFromPairs } from "../../src/core/order.ts";
 import type { PageSnapshot } from "../../src/core/types.ts";
@@ -40,7 +39,7 @@ for (const [slug, tableId, header] of cases) {
   const out: string[] = [];
   for (const [name, state] of Object.entries(variants)) {
     const q = categoricalQuestions(p);
-    const r = await Effect.runPromise(model.evaluate({ state, questions: q.questions }));
+    const r = await model.evaluate({ state, questions: q.questions });
     const { order, confidence } = orderFromPairs(p.levels, q.read(r.answers).lower);
     out.push(`${name}: ${order.join("<")} (${confidence.toFixed(2)})`);
   }

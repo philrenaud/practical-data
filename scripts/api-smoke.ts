@@ -20,7 +20,6 @@ import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
-import { Effect, Layer } from "effect";
 import { chromium } from "playwright";
 import { EXTENSION_ARGS, fixturePages, serve } from "./serve.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
@@ -33,7 +32,7 @@ const FAIL_UPSTREAM = "smoke: fail upstream with";
 // The hosted transport reads its origin from this global, which esbuild defines in builds.
 // Modules that import model.ts are imported dynamically, after the global is set.
 (globalThis as unknown as { PD_API_ORIGIN: string }).PD_API_ORIGIN = ORIGIN;
-const { DecisionError, DecisionModel, hosted, jev } = await import("../src/decide/model.ts");
+const { DecisionError, hosted, jev } = await import("../src/decide/model.ts");
 const { judgePage } = await import("../src/decide/judge.ts");
 const { fileCache } = await import("./lib/cache.ts");
 const { aggregateQuestions, numericQuestions } = await import("../src/decide/questions.ts");
@@ -164,14 +163,10 @@ try {
   const install = randomUUID();
 
   await check("a page judged through the endpoint matches Jev's own judgment", async () => {
-    const viaEndpoint = await Effect.runPromise(
-      judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(install)))),
-    );
+    const viaEndpoint = await judgePage(hosted(install), page);
     const realFetch = globalThis.fetch;
     globalThis.fetch = async () => new Response("offline", { status: 401 });
-    const direct = await Effect.runPromise(
-      judgePage(page).pipe(Effect.provide(Layer.merge(Layer.succeed(DecisionModel, jev("")), fileCache()))),
-    ).finally(() => (globalThis.fetch = realFetch));
+    const direct = await judgePage(jev("", { cache: fileCache() }), page).finally(() => (globalThis.fetch = realFetch));
     assert.ok(viaEndpoint.usage.requests > 0);
     assert.deepEqual(
       viaEndpoint.tables.map((t) => t.encodings.map((e) => [e.header, e.kind, e.polarity])),
@@ -181,9 +176,7 @@ try {
 
   await check("a repeated request is answered from the shared cache", async () => {
     const calls = upstreamCalls;
-    const again = await Effect.runPromise(
-      judgePage(page).pipe(Effect.provide(Layer.succeed(DecisionModel, hosted(randomUUID())))),
-    );
+    const again = await judgePage(hosted(randomUUID()), page);
     assert.ok(again.usage.requests > 0);
     assert.equal(upstreamCalls, calls, "upstream was called again");
   });
@@ -267,11 +260,12 @@ try {
       }
       assert.equal(n, INSTALL_LIMIT, `refused after ${n}`);
       assert.equal(status, 429);
-      const viaClient = await Effect.runPromise(
-        hosted(id)
-          .evaluate({ state: { page_title: "Price 99" }, questions: roleQuestion("Price 99") })
-          .pipe(Effect.flip),
-      );
+      const viaClient = await hosted(id)
+        .evaluate({ state: { page_title: "Price 99" }, questions: roleQuestion("Price 99") })
+        .then(
+          () => assert.fail("the request after the allowance succeeded"),
+          (e: unknown) => e,
+        );
       assert.ok(viaClient instanceof DecisionError);
       assert.equal(viaClient.reason, "quota");
     },

@@ -5,7 +5,6 @@
  *   node scripts/probes/explain.ts <slug> <tableId> <header>
  */
 import { readFile } from "node:fs/promises";
-import { Effect } from "effect";
 import { profileTable } from "../../src/core/profile.ts";
 import type { PageSnapshot } from "../../src/core/types.ts";
 import { categoricalQuestions, categoricalState } from "../../src/decide/questions.ts";
@@ -22,9 +21,7 @@ const state = categoricalState(
   table.headers.filter((h) => h !== header && h !== ""),
 );
 console.log(JSON.stringify(state));
-const r = await Effect.runPromise(
-  jev(process.env["TYPESAFE_API_KEY"]!).evaluate({ state, questions: categoricalQuestions(p).questions }),
-);
+const r = await jev(process.env["TYPESAFE_API_KEY"]!).evaluate({ state, questions: categoricalQuestions(p).questions });
 for (const [id, a] of Object.entries(r.answers)) {
   console.log(id.padEnd(16), a.type === "choice" ? JSON.stringify(a.probabilities) : JSON.stringify(a));
 }

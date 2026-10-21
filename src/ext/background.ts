@@ -2,9 +2,8 @@
  * The service worker. It holds the credentials and makes every call to the
  * decision model. The content script receives only judgments.
  */
-import { Effect, Layer } from "effect";
 import { DEFAULT_POLICY, judgePage } from "../decide/judge.ts";
-import { AnswerCache, DecisionError, layerFromConfig, type Allowance } from "../decide/model.ts";
+import { DecisionError, modelFromConfig, type Allowance } from "../decide/model.ts";
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
 import { answerCache } from "./cache.ts";
 import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
@@ -31,7 +30,7 @@ import {
 void chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => undefined);
 void chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => undefined);
 
-const ChromeAnswerCache = Layer.succeed(AnswerCache, answerCache(chrome.storage.local));
+const chromeAnswerCache = answerCache(chrome.storage.local);
 
 /** After rate limiting or overload, the worker stops sending for a while instead of retrying on every scroll. */
 const COOL_DOWN_MS = 30_000;
@@ -75,18 +74,22 @@ const judge = async (msg: Extract<ToWorker, { type: "judge" }>): Promise<JudgeRe
     ...msg.page,
     tables: msg.page.tables.slice(0, MAX_TABLES).map((t) => ({ ...t, rows: t.rows.slice(0, MAX_ROWS) })),
   };
-  const program = judgePage(page, DEFAULT_POLICY, msg.orientations).pipe(
-    Effect.provide(Layer.merge(layerFromConfig(config), ChromeAnswerCache)),
-    Effect.map((judgment): JudgeReply => ({ ok: true, judgment, palette: settings.palette })),
-    Effect.catchTag("DecisionError", (e: DecisionError) => {
-      if (e.reason === "rate_limited" || e.reason === "overloaded" || isQuota(e.reason)) {
-        coolUntil = Date.now() + (isQuota(e.reason) ? QUOTA_COOL_DOWN_MS : COOL_DOWN_MS);
-        coolReason = e.reason;
-      }
-      return Effect.succeed<JudgeReply>({ ok: false, reason: e.reason, message: e.message });
-    }),
-  );
-  return Effect.runPromise(program);
+  try {
+    const judgment = await judgePage(
+      modelFromConfig(config, chromeAnswerCache),
+      page,
+      DEFAULT_POLICY,
+      msg.orientations,
+    );
+    return { ok: true, judgment, palette: settings.palette };
+  } catch (e) {
+    if (!(e instanceof DecisionError)) throw e;
+    if (e.reason === "rate_limited" || e.reason === "overloaded" || isQuota(e.reason)) {
+      coolUntil = Date.now() + (isQuota(e.reason) ? QUOTA_COOL_DOWN_MS : COOL_DOWN_MS);
+      coolReason = e.reason;
+    }
+    return { ok: false, reason: e.reason, message: e.message };
+  }
 };
 
 chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {

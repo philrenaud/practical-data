@@ -4,7 +4,6 @@
  * eval scores (see docs/decisions.md). Calls Jev live, so it needs
  * TYPESAFE_API_KEY.
  */
-import { Effect } from "effect";
 import { jev } from "../../src/decide/model.ts";
 import type { Question } from "../../src/decide/model.ts";
 
@@ -129,12 +128,10 @@ const pairwise = (h: string, values: string[]): Record<string, Question> => {
 const columns = all.filter((c) => c.ordinal);
 for (const c of columns) {
   const state = { page_title: c.context, column: { header: c.header, values: c.values } };
-  const r = await Effect.runPromise(
-    model.evaluate({
-      state,
-      questions: { ...isOrdinalVariants(c.header), ...(c.ordinal ? pairwise(c.header, c.values) : {}) },
-    }),
-  );
+  const r = await model.evaluate({
+    state,
+    questions: { ...isOrdinalVariants(c.header), ...(c.ordinal ? pairwise(c.header, c.values) : {}) },
+  });
   const a = r.answers;
   const n = a["noul_plain"]!;
   const ch = a["choice_relation"]!;
