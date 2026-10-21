@@ -155,8 +155,18 @@ const relative = (t: string, now: number): number | null => {
   return last === null ? null : now - spanOf(last[1]!)!;
 };
 
-/** A trailing note in parentheses, as in "Jan 15, 1967 (1966 AFL/1966 NFL)". */
-const NOTE = /\s*\([^()]*\)$/;
+/**
+ * A trailing note in parentheses, as in "Jan 15, 1967 (1966 AFL/1966 NFL)".
+ * It has no leading `\s*`, which made the search quadratic on long runs of
+ * spaces. The caller trims the space before the note.
+ */
+const NOTE = /\([^()]*\)$/;
+/**
+ * The longest cell text that can be a date, after footnotes are removed. Real
+ * dates and ranges with a note are under 100 characters. Range parsing tries
+ * every separator, so its time grows with the square of the length.
+ */
+const MAX_DATE_LENGTH = 200;
 /** The separator of a range, as in "July 16–22, 2021" or "Dec 28, 2020 to Jan 3, 2021". */
 const RANGE_SPLIT = /\s*[–—-]\s*|\s+to\s+/g;
 const TRAILING_YEAR = /(\d{4})$/;
@@ -198,7 +208,9 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
 
 /** Parses one cell. Returns null for text that is not clearly one instant or one range of days. */
 export const parseDate = (raw: string, options: DateOptions): ParsedDate | null => {
-  const t = stripNoise(raw).toLowerCase().replace(NOTE, "");
+  const text = stripNoise(raw);
+  if (text.length > MAX_DATE_LENGTH) return null;
+  const t = text.toLowerCase().replace(NOTE, "").trimEnd();
   if (t === "") return null;
   return parseOne(t, options) ?? parseRange(t, options);
 };
