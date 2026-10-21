@@ -1,4 +1,4 @@
-<!-- A disclosure whose contents are only rendered once opened: raw requests can run to hundreds of questions. -->
+<!-- A disclosure that renders its contents only after it opens. A table's raw requests can hold hundreds of questions. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
 

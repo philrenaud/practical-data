@@ -12,7 +12,7 @@
   --radius: 14px;
   color-scheme: light;
 }
-/* Dark when the system asks for it (unless the page toggle says light), or when the toggle says dark. */
+/* Dark theme when the system prefers dark and the toggle is not light, or when the toggle is dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #121115;
@@ -81,7 +81,7 @@ code {
   overflow: hidden;
 }
 .hero::after {
-  /* The extension's own palette as a quiet band along the bottom edge. */
+  /* A band of the extension's palette along the bottom edge. */
   content: "";
   position: absolute;
   inset: auto 0 0 0;
@@ -263,6 +263,16 @@ main {
   max-width: 1040px;
   margin: 0 auto;
   padding: 0 16px;
+}
+
+/* Hidden on screen, read by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* ── Examples ── */

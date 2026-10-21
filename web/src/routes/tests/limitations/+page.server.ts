@@ -1,7 +1,7 @@
 import { publicChecks, readIndex } from "#lib/server/tests.ts";
 import { KINDS } from "#lib/tests/kinds.ts";
 
-/** Each documented failure, as a limitation of the tool: one per reason, with every check it explains. */
+/** Groups the known failures by reason. Each reason is one limitation, with the checks that it explains. */
 export const load = async () => {
   const index = await readIndex();
   const names = new Map(index.pages.map((p) => [p.slug, p.name]));
@@ -12,7 +12,7 @@ export const load = async () => {
   for (const c of publicChecks(index).checks) {
     if (c.ok || c.known === null) continue;
     const kind = KINDS.find((k) => k.kind === c.kind)!;
-    // A shared-scale check names "t0:Death toll + t1:Death toll"; readers need the header once.
+    // A shared-scale check names its columns as "t0:Death toll + t1:Death toll". Show each header once.
     const example = {
       kind: kind.title,
       slug: kind.slug,
@@ -27,7 +27,7 @@ export const load = async () => {
   }
   return {
     limitations: [...byReason].map(([reason, examples]) => {
-      // The first sentence states the limitation; the rest explains it.
+      // The first sentence is the title. The rest is the body.
       const cut = reason.indexOf(". ");
       return {
         title: cut < 0 ? reason : reason.slice(0, cut + 1),

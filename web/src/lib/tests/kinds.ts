@@ -1,7 +1,7 @@
 /**
- * The categories of eval check, in reading order. Each names the question
- * kinds behind it and the policy threshold that turns probabilities into a
- * decision (src/decide/judge.ts, DEFAULT_POLICY).
+ * The eval check kinds, in the order that the site shows them. Each kind lists
+ * its question kinds and its decision rule. The rule reads its thresholds from
+ * the policy (DEFAULT_POLICY in src/decide/judge.ts).
  */
 import type { Policy } from "../../../../src/decide/judge.ts";
 import type { CheckKind } from "./types.ts";
@@ -11,11 +11,11 @@ export interface KindInfo {
   readonly slug: string;
   readonly title: string;
   readonly short: string;
-  /** What the check proves, one paragraph per item. */
+  /** What the check tests. Each item is one paragraph. */
   readonly about: readonly string[];
   /** Question kinds, as ids with numbers replaced by #. */
   readonly questions: readonly string[];
-  /** `maxTransposeRows` is MAX_TRANSPOSE_ROWS from judge.ts, passed in from the build data. */
+  /** Returns the decision rule as text. `maxTransposeRows` is MAX_TRANSPOSE_ROWS from judge.ts, read from the build data. */
   readonly rule: (p: Policy, maxTransposeRows: number) => string;
 }
 

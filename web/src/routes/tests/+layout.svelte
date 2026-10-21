@@ -1,4 +1,4 @@
-<!-- The tests site: each check the eval makes, on the tables it is made on. -->
+<!-- The tests site shell, with the top bar and the navigation. -->
 <script lang="ts">
   import "../../app.css";
   import "#lib/tests/docs.css";

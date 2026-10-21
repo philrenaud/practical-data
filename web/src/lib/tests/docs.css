@@ -1,4 +1,4 @@
-/* The tests site: a docs shell on the site's own tokens (app.css). Everything is under .docs. */
+/* Styles for the tests site. They reuse the tokens in app.css and apply only under .docs. */
 .docs {
   --pass: #2a7d57;
   --known: #9a5f0c;
@@ -89,7 +89,7 @@
   padding: 32px 0 40px;
   font-size: 14.5px;
 }
-/* Groups are told apart by space, not labels. */
+/* Space, not labels, separates the nav groups. */
 .docs-nav ul {
   list-style: none;
   margin: 0;
@@ -128,7 +128,7 @@
 .docs-nav .count.bad {
   color: var(--known);
 }
-/* app.css styles the home page's <main>; the docs column undoes it. */
+/* Undo the home page styles that app.css sets on <main>. */
 .docs .docs-main {
   min-width: 0;
   max-width: none;

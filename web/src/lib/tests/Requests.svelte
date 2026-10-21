@@ -1,8 +1,8 @@
-<!-- A table's requests and answers, fetched from the page's requests JSON when first opened. -->
+<!-- A table's recorded requests and answers. Fetches the page's requests file when the panel first opens. -->
 <script lang="ts" module>
   import type { PageRequests } from "./types.ts";
 
-  // One fetch per page, shared by all its tables.
+  // Fetch each page's requests file once, for all of its tables.
   const cache = new Map<string, Promise<PageRequests>>();
   const load = (slug: string) => {
     let p = cache.get(slug);
@@ -10,7 +10,7 @@
       p = fetch(`/tests/requests/${slug}.json`).then((r) =>
         r.ok ? (r.json() as Promise<PageRequests>) : Promise.reject(new Error(String(r.status))),
       );
-      // A failure isn't kept: closing and reopening the panel tries again.
+      // Drop a failed fetch from the cache so that reopening the panel tries again.
       p.catch(() => cache.delete(slug));
       cache.set(slug, p);
     }
@@ -32,7 +32,7 @@
   }
   const { slug, table, count, questions }: Props = $props();
 
-  /** What a request asks, by question kind, in order: "What kind of numbers are in the column? · Is this row a total?". */
+  /** Returns the distinct glossary questions for a request's question ids, in order. */
   const topics = (ids: readonly string[]) => [...new Set(ids.map((id) => glossaryFor(id)?.question ?? id))];
 </script>
 

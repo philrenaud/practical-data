@@ -1,4 +1,4 @@
-/** Shapes of demo/tests/*.json (written by scripts/tests-data.ts). */
+/** Types for the files in demo/tests/, which scripts/tests-data.ts writes. */
 import type { Policy } from "../../../../src/decide/judge.ts";
 import type { Answer, Question } from "../../../../src/decide/model.ts";
 import type { ColumnEncoding, PageJudgment, TableJudgment, TableSnapshot } from "../../../../src/core/types.ts";
@@ -9,20 +9,20 @@ export type { Check, CheckKind };
 export interface ScoredCheck extends Check {
   /** Why a documented failure is accepted (expectations.$known), or null. */
   readonly known: string | null;
-  /** On a check page, a shared-scale check's full column list ("t0:Input + t1:Input"); `column` is then one member. */
+  /** The full column list of a shared-scale check, such as "t0:Input + t1:Input". Set on check pages, where `column` is one member. */
   readonly group?: string;
 }
 
 export interface PageSummary {
   readonly slug: string;
-  /** Short and distinct, for navigation. */
+  /** A short, unique name for navigation. */
   readonly name: string;
   readonly title: string;
   readonly origin: "live" | "synthetic";
   readonly source: { readonly title: string; readonly url: string; readonly rights: string } | null;
   readonly tables: number;
   readonly columns: number;
-  /** Checks passing, of all checks on the page. */
+  /** Passing checks and all checks on the page. */
   readonly score: readonly [number, number];
   readonly known: number;
   readonly requests: number;
@@ -43,7 +43,7 @@ export interface ParseExample {
   readonly input: string;
   readonly missing: boolean;
   readonly date: boolean;
-  /** The date that the cell names, for dates that are shaded: "Dec 1993", "3 days ago". */
+  /** The date that the cell names, such as "Dec 1993" or "3 days ago". Null if the cell is not a shaded date. */
   readonly when: string | null;
   readonly parsed: {
     readonly value: number;
@@ -65,7 +65,7 @@ export interface TestsIndex {
   readonly pages: readonly PageSummary[];
   readonly units: readonly UnitFile[];
   readonly parsing: readonly ParseExample[];
-  /** One real question per question kind ("n#.polarity"), with the request state sent with it. */
+  /** One recorded question for each question kind, such as "n#.polarity", with the request state sent with it. */
   readonly samples: Readonly<Record<string, Sample>>;
   readonly known: Readonly<Record<string, string>>;
 }
@@ -88,14 +88,14 @@ export interface Sample {
   readonly table: string | null;
 }
 
-/** A test table; its judgment is the matching entry in the page's judgment. */
+/** A test table. Its judgment is the entry with the same id in the page judgment. */
 export interface TraceTable {
   readonly snapshot: TableSnapshot;
-  /** The requests themselves are in requests/<slug>.json, by table id. */
+  /** Counts only. The requests are in requests/<slug>.json, keyed by table id. */
   readonly requests: { readonly count: number; readonly questions: number; readonly inputTokens: number };
 }
 
-/** demo/tests/requests/<slug>.json: each table's requests, by table id. */
+/** The contents of demo/tests/requests/<slug>.json. Each table's requests, keyed by table id. */
 export type PageRequests = Readonly<Record<string, readonly Exchange[]>>;
 
 export interface TestPage extends Omit<PageSummary, "tables"> {
@@ -107,12 +107,12 @@ export interface TestPage extends Omit<PageSummary, "tables"> {
 
 /** Where a test table comes from, for its caption. */
 export interface CaseSource {
-  /** "baseball-reference.com · Aaron Judge: batting". */
+  /** For example, "baseball-reference.com · Aaron Judge: batting". */
   readonly label: string;
   readonly url: string | null;
 }
 
-/** One table on a check page: the table as shaded, and the checks of that kind made on it. */
+/** One table on a check page, with its checks of the page's kind. */
 export interface CaseTable {
   readonly slug: string;
   readonly id: string;
@@ -124,14 +124,14 @@ export interface CaseTable {
   readonly judgment: TableJudgment;
   /** Shared-scale group sizes for the whole page, which the painter needs. */
   readonly groupSizes: ReadonlyMap<string, number>;
-  /** `column` is this table's header for column checks (shared checks included). */
+  /** For column checks, including shared-scale checks, `column` is this table's header. */
   readonly checks: readonly ScoredCheck[];
   readonly requests: number;
-  /** Questions across those requests. */
+  /** The number of questions in those requests. */
   readonly questions: number;
 }
 
-/** One shared-scale check: the columns it names, their own ranges, and the scale each was painted on. */
+/** One shared-scale check, with each column that it names. */
 export interface ShareGroup {
   readonly check: ScoredCheck;
   readonly members: readonly {
@@ -141,9 +141,9 @@ export interface ShareGroup {
     readonly header: string;
     readonly range: readonly [number, number] | null;
     readonly domain: readonly [number, number] | null;
-    /** One cell as written, so the scale can be labeled in the column's own format ("$39.00"). */
+    /** One cell as written on the page, such as "$39.00". The axis labels copy its format. */
     readonly format: string;
-    /** The column's judgment (with the shared domain or order), for painting its values. */
+    /** The column's judgment, with the shared domain or order. */
     readonly encoding: ColumnEncoding | null;
     /** Header of the column that names each row (Team, Model, Location). */
     readonly labelHeader: string;

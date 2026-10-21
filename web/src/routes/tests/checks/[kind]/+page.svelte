@@ -10,10 +10,11 @@
   const failing = $derived(data.total - data.passed);
   const caseOf = (slug: string, id: string | null) => data.cases.find((c) => c.slug === slug && c.id === id);
   /** The column or row a question is about, from its id: "n4.role" is column 4, "row9.aggregate" is row 9. */
-  const targetOf = (id: string) => ({
-    col: /^[nc](\d+)\./.exec(id)?.[1] === undefined ? null : Number(/^[nc](\d+)\./.exec(id)![1]),
-    row: /^row(\d+)\./.exec(id)?.[1] === undefined ? null : Number(/^row(\d+)\./.exec(id)![1]),
-  });
+  const indexIn = (re: RegExp, id: string) => {
+    const n = re.exec(id)?.[1];
+    return n === undefined ? null : Number(n);
+  };
+  const targetOf = (id: string) => ({ col: indexIn(/^[nc](\d+)\./, id), row: indexIn(/^row(\d+)\./, id) });
 </script>
 
 <svelte:head>
