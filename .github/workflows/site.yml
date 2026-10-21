@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # No step pushes, so the job keeps no Git credentials.
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
           cache: npm
@@ -41,7 +41,7 @@ jobs:
       - run: npm run demo
       - name: Deploy
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        run: npx wrangler@4.147.0 deploy
+        run: npx --no wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 487d9e8878e5651c3e6a8210c91b33f4

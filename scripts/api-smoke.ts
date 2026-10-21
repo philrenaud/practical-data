@@ -85,7 +85,9 @@ const upstreamPort = (upstream.address() as { port: number }).port;
 const wrangler = spawn(
   "npx",
   [
-    "wrangler@4.147.0",
+    // Use the wrangler in devDependencies. Never download one.
+    "--no",
+    "wrangler",
     "dev",
     "-c",
     "api/wrangler.jsonc",
