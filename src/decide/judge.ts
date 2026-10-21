@@ -197,8 +197,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
 
     const ctx = { page: page.title, table: table.title };
     const numeric = candidates.filter((p) => p.kind === "numeric");
-    const categorical = candidates.filter((p) => p.kind === "categorical");
     const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p) }));
+    const categoricalPlans = candidates
+      .filter((p) => p.kind === "categorical")
+      .map((p) => ({ profile: p, ...categoricalQuestions(p) }));
     const aggregates = aggregateQuestions(table.headers, table.rows);
     // Orientation only matters when several numeric columns could be read either way.
     const orientation =
@@ -222,9 +224,8 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
             ...numericPlans.map((p) => p.questions),
           ),
         }),
-        ...categorical.map((p) =>
+        ...categoricalPlans.map(({ profile: p, ...q }) =>
           Effect.gen(function* () {
-            const q = categoricalQuestions(p);
             const state = categoricalState(
               ctx,
               p,
@@ -246,10 +247,9 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
     const excluded = new Set(aggregateRows);
     const plans = [
       ...numericPlans.map((plan) => ({ kind: "numeric" as const, ...plan, answers })),
-      ...categorical.map((p, i) => ({
+      ...categoricalPlans.map((plan, i) => ({
         kind: "categorical" as const,
-        profile: p,
-        read: categoricalQuestions(p).read,
+        ...plan,
         answers: categoricalAnswers[i]!.answers,
       })),
     ];

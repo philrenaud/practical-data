@@ -90,7 +90,7 @@ const reasonForStatus = (status: number): DecisionErrorReason =>
     ? "auth"
     : status === 429
       ? "rate_limited"
-      : status === 529 || status >= 500
+      : status >= 500
         ? "overloaded"
         : "bad_request";
 
