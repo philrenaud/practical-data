@@ -4,7 +4,7 @@
  * same answers. Each provider is a `Transport` with a per-request question
  * limit. Code outside this file sees only decoded and validated answers.
  */
-import { Context, Data, Effect, Layer, Schedule, Schema } from "effect";
+import { Context, Data, Effect, Layer, Schedule } from "effect";
 
 // ── Request ─────────────────────────────────────────────────────────────────
 
@@ -33,33 +33,72 @@ export interface DecisionRequest {
 
 // ── Response ────────────────────────────────────────────────────────────────
 
-const Probabilities = Schema.Record(Schema.String, Schema.Number);
-
 /** The answer to one question. */
-export const Answer = Schema.Union([
-  Schema.Struct({ type: Schema.Literal("noul"), noul: Schema.Number }),
-  Schema.Struct({
-    type: Schema.Literal("choice"),
-    choice: Schema.String,
-    probabilities: Probabilities,
-    confidence: Schema.Number,
-  }),
-  Schema.Struct({
-    type: Schema.Literal("score"),
-    score: Schema.Number,
-    probabilities: Probabilities,
-    confidence: Schema.Number,
-  }),
-]);
-export type Answer = typeof Answer.Type;
+export type Answer =
+  | { readonly type: "noul"; readonly noul: number }
+  | {
+      readonly type: "choice";
+      readonly choice: string;
+      readonly probabilities: Readonly<Record<string, number>>;
+      readonly confidence: number;
+    }
+  | {
+      readonly type: "score";
+      readonly score: number;
+      readonly probabilities: Readonly<Record<string, number>>;
+      readonly confidence: number;
+    };
 
 /** A System One response: the model version, the answers by question id, and the input tokens. */
-export const DecisionResponse = Schema.Struct({
-  model: Schema.String,
-  answers: Schema.Record(Schema.String, Answer),
-  usage: Schema.Struct({ input_tokens: Schema.Number }),
-});
-export type DecisionResponse = typeof DecisionResponse.Type;
+export interface DecisionResponse {
+  readonly model: string;
+  readonly answers: Readonly<Record<string, Answer>>;
+  readonly usage: { readonly input_tokens: number };
+}
+
+/** True for an object that is not null and not an array. */
+const isRecord = (x: unknown): x is Readonly<Record<string, unknown>> =>
+  typeof x === "object" && x !== null && !Array.isArray(x);
+
+/** Decodes a record of numbers. Returns null if a value is not a number. */
+const decodeProbabilities = (x: unknown): Readonly<Record<string, number>> | null => {
+  if (!isRecord(x)) return null;
+  const entries = Object.entries(x);
+  return entries.every(([, p]) => typeof p === "number")
+    ? (Object.fromEntries(entries) as Record<string, number>)
+    : null;
+};
+
+/** Decodes one answer. Returns null if its fields do not match its type. The result has only the known fields. */
+const decodeAnswer = (x: unknown): Answer | null => {
+  if (!isRecord(x)) return null;
+  if (x["type"] === "noul") return typeof x["noul"] === "number" ? { type: "noul", noul: x["noul"] } : null;
+  if (x["type"] !== "choice" && x["type"] !== "score") return null;
+  const probabilities = decodeProbabilities(x["probabilities"]);
+  const confidence = x["confidence"];
+  if (probabilities === null || typeof confidence !== "number") return null;
+  if (x["type"] === "choice")
+    return typeof x["choice"] === "string" ? { type: "choice", choice: x["choice"], probabilities, confidence } : null;
+  return typeof x["score"] === "number" ? { type: "score", score: x["score"], probabilities, confidence } : null;
+};
+
+/**
+ * Decodes a System One response. Returns null if it does not have the
+ * shape of `DecisionResponse`. The result has only the known fields.
+ * `Object.fromEntries` keeps a key such as "__proto__" as data.
+ */
+export const decodeDecisionResponse = (x: unknown): DecisionResponse | null => {
+  if (!isRecord(x) || typeof x["model"] !== "string" || !isRecord(x["answers"]) || !isRecord(x["usage"])) return null;
+  const inputTokens = x["usage"]["input_tokens"];
+  if (typeof inputTokens !== "number") return null;
+  const answers: [string, Answer][] = [];
+  for (const [id, raw] of Object.entries(x["answers"])) {
+    const answer = decodeAnswer(raw);
+    if (answer === null) return null;
+    answers.push([id, answer]);
+  }
+  return { model: x["model"], answers: Object.fromEntries(answers), usage: { input_tokens: inputTokens } };
+};
 
 // ── Errors ──────────────────────────────────────────────────────────────────
 
@@ -136,8 +175,6 @@ const chunk = <A>(xs: readonly A[], size: number): A[][] => {
   for (let i = 0; i < xs.length; i += size) out.push(xs.slice(i, i + size));
   return out;
 };
-
-const decode = Schema.decodeUnknownEffect(DecisionResponse);
 
 /** How one provider sends a request body and returns System One JSON. */
 interface Transport {
@@ -273,9 +310,9 @@ const sendOnce = (transport: Transport, body: unknown) => {
       try: () => response.json() as Promise<unknown>,
       catch: (e) => new DecisionError({ reason: "decode", message: String(e) }),
     });
-    return yield* decode(transport.unwrap(json)).pipe(
-      Effect.mapError((e) => new DecisionError({ reason: "decode", message: String(e) })),
-    );
+    const decoded = decodeDecisionResponse(transport.unwrap(json));
+    if (decoded === null) return yield* new DecisionError({ reason: "decode", message: "unexpected response shape" });
+    return decoded;
   }).pipe(
     Effect.retry({
       while: retryable,
@@ -301,10 +338,8 @@ const makeModel = (transport: Transport) =>
               const questions = Object.fromEntries(entries);
               // Check cached answers again, because storage can hold entries from older code.
               const raw = yield* cache.get(key);
-              const hit = raw === undefined ? undefined : Schema.decodeUnknownOption(DecisionResponse)(raw);
-              if (hit !== undefined && hit._tag === "Some" && validateAnswers(questions, hit.value) === null) {
-                return hit.value;
-              }
+              const hit = raw === undefined ? null : decodeDecisionResponse(raw);
+              if (hit !== null && validateAnswers(questions, hit) === null) return hit;
               const fresh = yield* sendOnce(transport, body);
               const invalid = validateAnswers(questions, fresh);
               if (invalid !== null) return yield* new DecisionError({ reason: "decode", message: invalid });
