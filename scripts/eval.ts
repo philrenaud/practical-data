@@ -13,7 +13,6 @@
  */
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { Effect } from "effect";
 import type { PageJudgment, PageSnapshot } from "../src/core/types.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import type { ProviderConfig } from "../src/decide/model.ts";
@@ -66,7 +65,7 @@ const slugs = (await readdir("fixtures/snapshots"))
   .map((f) => f.replace(/\.json$/, ""))
   .filter((s) => !s.startsWith("$") && s in expectations && (args.only === undefined || s === args.only));
 
-const layer = recordedJev(config());
+const model = recordedJev(config());
 const out: Record<string, PageJudgment> = {};
 let tokens = 0;
 let requests = 0;
@@ -75,7 +74,7 @@ const started = performance.now();
 for (const slug of slugs) {
   const page = JSON.parse(await readFile(`fixtures/snapshots/${slug}.json`, "utf8")) as PageSnapshot;
   const t0 = performance.now();
-  const judgment = await Effect.runPromise(judgePage(page).pipe(Effect.provide(layer)));
+  const judgment = await judgePage(model, page);
   out[slug] = judgment;
   tokens += judgment.usage.inputTokens;
   requests += judgment.usage.requests;

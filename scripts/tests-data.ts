@@ -12,12 +12,11 @@
  */
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
-import { Effect, Layer } from "effect";
 import { formatDate, parseDate, type DatePrecision, type DateUnit } from "../src/core/dates.ts";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 import type { PageJudgment, PageSnapshot, TableJudgment, TableSnapshot } from "../src/core/types.ts";
 import { DEFAULT_POLICY, judgePage, MAX_TRANSPOSE_ROWS } from "../src/decide/judge.ts";
-import { DecisionModel, jev, type DecisionRequest, type DecisionResponse } from "../src/decide/model.ts";
+import { jev, type DecisionModel, type DecisionRequest, type DecisionResponse } from "../src/decide/model.ts";
 import { fileCache } from "./lib/cache.ts";
 import { knownReason, scorePage, type Check, type PageExpect } from "./lib/score.ts";
 
@@ -42,24 +41,21 @@ interface Exchange {
 /** Judges `page` from the recordings and keeps every request and answer. */
 const judgeRecorded = async (page: PageSnapshot) => {
   const exchanges: Exchange[] = [];
-  const recorded = jev("");
-  const capture = Layer.succeed(DecisionModel, {
+  const recorded = jev("", { cache: fileCache() });
+  const capture: DecisionModel = {
     name: recorded.name,
-    evaluate: (req) =>
-      recorded.evaluate(req).pipe(
-        Effect.tap((res) =>
-          Effect.sync(() =>
-            exchanges.push({
-              state: req.state,
-              questions: req.questions,
-              answers: res.answers,
-              inputTokens: res.usage.input_tokens,
-            }),
-          ),
-        ),
-      ),
-  });
-  const judgment = await Effect.runPromise(judgePage(page).pipe(Effect.provide(Layer.merge(capture, fileCache()))));
+    evaluate: async (req, signal) => {
+      const res = await recorded.evaluate(req, signal);
+      exchanges.push({
+        state: req.state,
+        questions: req.questions,
+        answers: res.answers,
+        inputTokens: res.usage.input_tokens,
+      });
+      return res;
+    },
+  };
+  const judgment = await judgePage(capture, page);
   return { judgment, exchanges };
 };
 

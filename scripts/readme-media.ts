@@ -5,7 +5,6 @@
  * docs/media/<card>-<theme>.png.
  */
 import * as esbuild from "esbuild";
-import { Effect } from "effect";
 import { chromium } from "playwright";
 import { DEFAULT_PALETTE } from "../src/core/palettes.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
@@ -21,7 +20,7 @@ await esbuild.build({
   logLevel: "warning",
 });
 
-const layer = recordedJev();
+const model = recordedJev();
 
 const { url, server } = await serve("docs/media-src");
 const browser = await chromium.launch();
@@ -36,9 +35,7 @@ for (const theme of ["light", "dark"] as const) {
   await page.goto(`${url}/cards.html`);
   await page.addScriptTag({ path: "dist-probe/media.js" });
   const snapshot = await page.evaluate(() => (globalThis as unknown as { __media: Media }).__media.snapshot());
-  const judgment = await Effect.runPromise(
-    judgePage({ ...snapshot, title: "Table examples" }).pipe(Effect.provide(layer)),
-  );
+  const judgment = await judgePage(model, { ...snapshot, title: "Table examples" });
   await page.evaluate(([j, p]) => (globalThis as unknown as { __media: Media }).__media.paint(j, p), [
     judgment,
     DEFAULT_PALETTE,

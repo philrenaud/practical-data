@@ -6,7 +6,6 @@
  * colors.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { Effect } from "effect";
 import type { PageJudgment, PageSnapshot, TableSnapshot } from "../src/core/types.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import { recordedJev } from "./lib/cache.ts";
@@ -160,7 +159,7 @@ const trim = (t: TableSnapshot, pick: Pick, id: string): TableSnapshot => {
   };
 };
 
-const layer = recordedJev();
+const model = recordedJev();
 
 const out: { section: Omit<Section, "picks" | "slug">; page: PageSnapshot; judgment: PageJudgment }[] = [];
 for (const section of SECTIONS) {
@@ -171,7 +170,7 @@ for (const section of SECTIONS) {
     return trim(t, pick, `${section.id}-${i}`);
   });
   const page: PageSnapshot = { url: section.source, title: full.title, tables };
-  const judgment = await Effect.runPromise(judgePage(page).pipe(Effect.provide(layer)));
+  const judgment = await judgePage(model, page);
   const { picks: _picks, slug: _slug, ...meta } = section;
   out.push({ section: meta, page, judgment });
   const colored = judgment.tables.flatMap((t) => t.encodings.map((e) => e.header));

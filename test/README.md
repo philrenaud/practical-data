@@ -13,6 +13,7 @@ the judge combines answers, not what the model answers. The eval in
 | --- | --- | --- |
 | `allow.test.ts` | `src/api/allow.ts` | The free endpoint's question allowlist and body reader. One test replays every recorded request for the fixture snapshots and checks that the allowlist accepts each one, so a changed question fails here before it fails in production. |
 | `allowance.test.ts` | `src/ext/allowance.ts` | The free allowance shown in the popup: merging reported counts, the reset time, and the messages. |
+| `concurrency.test.ts` | `src/decide/concurrency.ts` | Result order, the concurrency limit, and the abort on the first failure. |
 | `dates.test.ts` | `src/core/dates.ts` | Parsing of dates, months, times, relative times, and ranges of days, and the legend's date text. |
 | `judge.test.ts` | `src/decide/judge.ts` | Shared scales, declined columns, failed requests, ranks, brackets, and date columns, with a scripted model. |
 | `legend.test.ts` | `src/core/legend.ts` | The legend's status line, extents, and facts. |

@@ -10,7 +10,6 @@
  * recording calls Jev, which needs TYPESAFE_API_KEY.
  */
 import { parseArgs } from "node:util";
-import { Effect } from "effect";
 import { chromium } from "playwright";
 import { profileTable } from "../src/core/profile.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
@@ -35,7 +34,7 @@ const snapshot = (await page.evaluate(() =>
 const rawTables = await page.evaluate(() => document.querySelectorAll("table").length);
 await browser.close();
 
-const judgment = await Effect.runPromise(judgePage(snapshot).pipe(Effect.provide(recordedJev())));
+const judgment = await judgePage(recordedJev(), snapshot);
 
 console.log(
   `${snapshot.title}\n${rawTables} <table> elements, ${snapshot.tables.length} extracted, ${judgment.usage.requests} requests, ${judgment.usage.inputTokens.toLocaleString()} tokens\n`,

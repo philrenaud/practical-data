@@ -19,8 +19,13 @@
  * request, never the request itself. The daily counts hold install ids, and
  * each day's counts are deleted two days later.
  */
-import { Effect, Schema } from "effect";
-import { DecisionResponse, hashJson, validateAnswers, type Question } from "../decide/model.ts";
+import {
+  decodeDecisionResponse,
+  hashJson,
+  validateAnswers,
+  type DecisionResponse,
+  type Question,
+} from "../decide/model.ts";
 import { rateLimitKey, sameSecret } from "./admit.ts";
 import { LIMITS, readBody, readRequest } from "./allow.ts";
 import type { Quota } from "./quota.ts";
@@ -128,12 +133,12 @@ const ask = async (
   const forward = { model: env.MODEL, state: state ?? {}, questions };
 
   // The same table produces the same request for every user, so one answer serves them all.
-  const key = await Effect.runPromise(hashJson(forward));
+  const key = await hashJson(forward);
   const cacheKey = new Request(`https://answers.practicaldata.dev/${key}`);
   const hit = await caches.default.match(cacheKey);
   if (hit !== undefined) {
-    const decoded = Schema.decodeUnknownOption(DecisionResponse)(await hit.json().catch(() => null));
-    if (decoded._tag === "Some") return { response: decoded.value, remaining: null };
+    const decoded = decodeDecisionResponse(await hit.json().catch(() => null));
+    if (decoded !== null) return { response: decoded, remaining: null };
   }
 
   const body = JSON.stringify(forward);
@@ -187,23 +192,23 @@ const ask = async (
       ),
     };
   }
-  const decoded = Schema.decodeUnknownOption(DecisionResponse)(await upstream.json().catch(() => null));
-  if (decoded._tag === "None" || validateAnswers(questions, decoded.value) !== null) {
+  const decoded = decodeDecisionResponse(await upstream.json().catch(() => null));
+  if (decoded === null || validateAnswers(questions, decoded) !== null) {
     // The model ran, so the request and its estimated tokens stay counted.
     return { refusal: refuse(502, "upstream", "The model's answer didn't match the questions.") };
   }
   ctx.waitUntil(
     Promise.all([
-      quota.settle(estimate, decoded.value.usage.input_tokens),
+      quota.settle(estimate, decoded.usage.input_tokens),
       caches.default.put(
         cacheKey,
-        new Response(JSON.stringify(decoded.value), {
+        new Response(JSON.stringify(decoded), {
           headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${CACHE_TTL_S}` },
         }),
       ),
     ]),
   );
-  return { response: decoded.value, remaining: reservation.remaining };
+  return { response: decoded, remaining: reservation.remaining };
 };
 
 /** Handles POST /v1/systemone. The Worker forwards the body as `readRequest` returns it. */
