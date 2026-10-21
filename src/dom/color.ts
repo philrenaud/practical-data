@@ -1,11 +1,12 @@
-/**
- * Resolves any CSS color the browser understands (oklch, color-mix, named,
- * hsl…) to sRGB by drawing one pixel. d3-color only parses CSS Color 3, so
- * modern computed colors (Tailwind v4 emits oklch) would come back as NaN.
- */
 let ctx: CanvasRenderingContext2D | null = null;
 const memo = new Map<string, { rgb: string; alpha: number }>();
 
+/**
+ * Returns the sRGB color and the alpha of any CSS color the browser can parse,
+ * such as oklch(), color-mix(), or a named color. The color is drawn to a
+ * one-pixel canvas and read back. d3-color parses only CSS Color 3, so it
+ * returns NaN channels for the oklch() colors that Tailwind v4 emits.
+ */
 export const resolveColor = (css: string): { rgb: string; alpha: number } => {
   const hit = memo.get(css);
   if (hit !== undefined) return hit;

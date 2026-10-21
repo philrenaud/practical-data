@@ -1,7 +1,8 @@
 /**
- * DOM → TableSnapshot. Resolves rowspan/colspan into a rectangular grid so a
- * column index means the same thing on every row, and keeps a parallel grid of
- * cell elements for painting.
+ * Reads tables from the DOM into TableSnapshot objects. The extractor expands
+ * rowspan and colspan into a rectangular grid, so a column index names the
+ * same column on every row. It also keeps a grid of the cell elements for the
+ * painter.
  */
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import { parseNumber } from "../core/parse.ts";
@@ -9,15 +10,16 @@ import type { PageSnapshot, TableSnapshot } from "../core/types.ts";
 
 export interface ExtractedTable {
   readonly element: HTMLTableElement;
-  /** "rows" for a transposed view: each column below is one original row. */
+  /** "rows" when the table is transposed. Then each column is one row of the original table. */
   readonly axis: Orientation;
   readonly snapshot: TableSnapshot;
   /** `cells[row][col]`, aligned with `snapshot.rows`. Spanned cells repeat. */
   readonly cells: readonly (readonly HTMLTableCellElement[])[];
-  /** Bottom-most header cell per column; where legends go. */
+  /** The lowest header cell of each column. The painter attaches legends to these cells. */
   readonly headerCells: readonly (HTMLTableCellElement | null)[];
 }
 
+/** The largest span the grid honors. Browsers allow colspan up to 1000 and rowspan up to 65534. */
 const MAX_SPAN = 64;
 
 /**
@@ -31,9 +33,10 @@ const textOf = (el: HTMLElement): string =>
   (el.isConnected && typeof el.innerText === "string" ? el.innerText : el.textContent) ?? "";
 
 /**
- * Superscripts that annotate rather than carry data: footnote links
- * (Wikipedia, Statistics Canada) and one- or two-letter quality flags
- * ("74.3ʳ"). Exponents like km² have no link and are digits, so they stay.
+ * True for a superscript that annotates the cell instead of holding data, such
+ * as a footnote link (Wikipedia, Statistics Canada) or a quality flag of one
+ * or two letters ("74.3ʳ"). Exponents such as km² have no link and are
+ * digits, so they are kept.
  */
 const isAnnotation = (sup: HTMLElement): boolean =>
   sup.querySelector("a") !== null || /^\s*(?:[A-Za-z]{1,2}|\[[^\]]*\])\s*$/.test(sup.textContent ?? "");
@@ -41,9 +44,10 @@ const isAnnotation = (sup: HTMLElement): boolean =>
 const BREAKS = new Set(["block", "list-item", "table-cell", "table-row", "flex", "grid"]);
 
 /**
- * Visible text with annotations skipped in place. Removing an annotation's
- * text by string match would also delete that letter elsewhere in the cell
- * ("American" → "Americn" when the footnote is "a").
+ * Returns the visible text of a cell without the elements in `skip`. It walks
+ * the nodes because removing an annotation's text by string match also
+ * removes that letter elsewhere in the cell ("American" becomes "Americn" when
+ * the footnote is "a").
  */
 const textSkipping = (cell: HTMLElement, skip: ReadonlySet<Element>): string => {
   let out = "";
@@ -88,7 +92,7 @@ const buildGrid = (rows: readonly HTMLTableRowElement[]): HTMLTableCellElement[]
     for (const cell of Array.from(row.cells)) {
       while (grid[r]![c] !== undefined) c++;
       const colspan = Math.min(Math.max(cell.colSpan || 1, 1), MAX_SPAN);
-      // rowspan="0" means "to the end of the section"; treat as the rest of the table.
+      // rowspan="0" spans to the end of the row group. The grid treats it as the rest of the table.
       const rowspan = cell.rowSpan === 0 ? rows.length - r : Math.min(Math.max(cell.rowSpan || 1, 1), MAX_SPAN);
       for (let dr = 0; dr < rowspan && r + dr < rows.length; dr++) {
         for (let dc = 0; dc < colspan; dc++) grid[r + dr]![c + dc] = cell;
@@ -99,7 +103,16 @@ const buildGrid = (rows: readonly HTMLTableRowElement[]): HTMLTableCellElement[]
   return grid;
 };
 
-/** Most common row width (widest on ties); one malformed row must not reshape the table. */
+/**
+ * True when slots 0 to width - 1 all hold a cell. A row with fewer cells than
+ * a rowspan above it reaches has a hole in the middle, not just a short end.
+ */
+const isFull = (row: readonly (HTMLTableCellElement | undefined)[], width: number): boolean => {
+  for (let c = 0; c < width; c++) if (row[c] === undefined) return false;
+  return true;
+};
+
+/** Returns the most common row width, or the widest on a tie, so one malformed row does not set the width. */
 const modalWidth = (grid: readonly (readonly unknown[])[]): number => {
   const counts = new Map<number, number>();
   for (const g of grid) counts.set(g.length, (counts.get(g.length) ?? 0) + 1);
@@ -123,7 +136,7 @@ const repeatsHeader = (cell: string, header: string): boolean => {
   return c === h || h.split(": ").some((part) => withoutFootnotes(part) === c);
 };
 
-/** A cell's shape: runs of letters as "a", runs of digits as "9" ("(94-68)" → "(9-9)"). */
+/** The shape of a cell's text. Each run of letters becomes "a" and each run of digits becomes "9". */
 const shapeOf = (text: string): string =>
   text
     .replace(/\p{L}+/gu, "a")
@@ -137,15 +150,15 @@ const isBold = (cell: HTMLTableCellElement): boolean => {
 };
 
 /**
- * True when a table without <th> or <thead> starts with a data row: each cell
- * of the first row has the shape of some cell below it, and none is bold.
- * "Atlanta Braves | (94-68)" over "Miami Marlins | (80-82)" is data; "Team |
+ * True when a table without <th> or <thead> starts with a data row. Each cell
+ * of such a row has the shape of some cell below it, and no cell is bold.
+ * "Atlanta Braves | (94-68)" over "Miami Marlins | (80-82)" is data. "Team |
  * W-L" over the same rows is a header.
  */
 const looksLikeData = (grid: readonly (readonly HTMLTableCellElement[])[], width: number): boolean => {
   const first = grid[0];
-  const body = grid.slice(1).filter((g) => g.length >= width);
-  if (first === undefined || first.length < width || body.length === 0) return false;
+  const body = grid.slice(1).filter((g) => isFull(g, width));
+  if (first === undefined || !isFull(first, width) || body.length === 0) return false;
   for (let c = 0; c < width; c++) {
     const cell = first[c]!;
     if (isBold(cell)) return false;
@@ -169,11 +182,15 @@ const precedingHeading = (table: Element, headings: readonly Element[]): string 
   return best === null ? null : cellText(best as HTMLElement) || null;
 };
 
+/**
+ * True for tables that the extractor skips. Presentation tables and tables
+ * that contain tables are layout. Tables in an editable region are skipped
+ * because an editor saves the painted inline styles with the document.
+ */
 const isLayoutTable = (table: HTMLTableElement): boolean =>
-  table.getAttribute("role") === "presentation" ||
-  table.querySelector("table") !== null ||
-  table.closest("[contenteditable=true]") !== null;
+  table.getAttribute("role") === "presentation" || table.querySelector("table") !== null || table.isContentEditable;
 
+/** Reads one table. Returns null for a layout table, or a table with fewer than two rows or columns or no data rows. */
 export const extractTable = (
   table: HTMLTableElement,
   id: string,
@@ -187,19 +204,20 @@ export const extractTable = (
   const width = modalWidth(grid);
   if (width < 2) return null;
 
-  // Header rows: the leading run of thead / all-<th> rows; else the first row,
-  // unless it reads like one more data row (a standings table with no header).
+  // The header is the leading rows that are in <thead> or have only <th> cells.
+  // Without those, it is the first row, unless that row looks like data (a
+  // standings table with no header).
   let headerCount = 0;
   while (headerCount < rows.length - 1 && isHeaderRow(rows[headerCount]!)) headerCount++;
   if (headerCount === 0 && !looksLikeData(grid, width)) headerCount = 1;
-  // Units rows written as <td> ("Percent", "Index") under the real header:
-  // leading rows with no numbers, directly above rows that have them.
+  // Units rows written as <td> ("Percent", "Index") sit under the real header.
+  // They have no numbers and are directly above a row that has numbers.
   const hasNumber = (r: number) => (grid[r] ?? []).some((cell) => parseNumber(cellText(cell)) !== null);
   for (let extra = 0; extra < 2 && headerCount > 0 && headerCount < rows.length - 2; extra++) {
     const r = headerCount;
     const row = grid[r] ?? [];
     const texts = row.map((cell) => cellText(cell));
-    // Section labels ("Pre-cycle sets") are one cell spanning the row; units rows are short distinct cells.
+    // A section label ("Pre-cycle sets") is one cell that spans the row. A units row has short, distinct cells.
     const distinctCells = new Set(row).size;
     if (distinctCells < 2 || texts.some((t) => t.length > 30)) break;
     if (hasNumber(r) || texts.every((t) => t === "") || !hasNumber(r + 1)) break;
@@ -225,9 +243,9 @@ export const extractTable = (
     const row = rows[r]!;
     const g = grid[r]!;
     if (row.parentElement?.tagName === "TFOOT") continue;
-    // Section labels: one cell spanning (nearly) the whole row.
+    // Skip section labels, which are one cell that spans the row.
     if (new Set(g).size === 1 && width > 2) continue;
-    if (g.length < width) continue;
+    if (!isFull(g, width)) continue;
     const cellsInRow = g.slice(0, width);
     const text = cellsInRow.map((cell) => cellText(cell));
     // Repeated header rows inside tbody (baseball-reference every 20 rows, Wikipedia at the foot).
@@ -254,8 +272,8 @@ export const extractTable = (
 };
 
 /**
- * The same table seen row-wise: original row j is column j + 1, and the
- * row-label cells become the headers that carry legends.
+ * Returns the table transposed. Row j of the original becomes column j + 1,
+ * and the row-label cells become the header cells that carry legends.
  */
 export const transposeExtracted = (t: ExtractedTable): ExtractedTable => {
   const width = t.snapshot.headers.length;
@@ -272,9 +290,10 @@ export const transposeExtracted = (t: ExtractedTable): ExtractedTable => {
 };
 
 /**
- * Every <table> element, and snapshots for those `include` accepts (all, by
- * default). Ids are document order among all tables, so they don't depend on
- * which ones were included.
+ * Returns every <table> element, and snapshots of the tables that `include`
+ * accepts (all of them by default). An id is the table's index among all
+ * tables in document order, so ids do not depend on which tables `include`
+ * accepts.
  */
 export const extractPage = (
   doc: Document,

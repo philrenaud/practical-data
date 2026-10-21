@@ -1,14 +1,14 @@
 /**
- * Cell text → a point in time, in milliseconds since the epoch (UTC).
+ * Parses cell text as a point in time, in milliseconds since the epoch (UTC).
  *
  * Calendar dates ("Feb 6, 2023", "2023-02-06", "December 1993") and relative
- * times ("3 days ago", "yesterday") both become instants, so a column shades
- * from earliest to latest. Like parse.ts, this is conservative: a year alone
- * or a season ("2010-11") returns null. A month and day without a year
- * ("Feb 6") needs a year from its column (parseDateColumn).
+ * times ("3 days ago", "yesterday") both become instants, so a column can
+ * shade from earliest to latest. Like parse.ts, the parser is conservative. A
+ * year alone or a season ("2010-11") returns null. A month and day without a
+ * year ("Feb 6") gets its year from the column (see parseDateColumn).
  *
- * Times without an offset are read as UTC. Within a column every cell is read
- * the same way, which is all a scale needs.
+ * Times without an offset are read as UTC. Every cell in a column is read the
+ * same way, so the order of the cells is still correct.
  */
 import { isMissing, stripNoise } from "./parse.ts";
 
@@ -18,11 +18,11 @@ export type DatePrecision = "month" | "day" | "minute" | "relative";
 export interface ParsedDate {
   readonly time: number;
   readonly precision: DatePrecision;
-  /** Written without a year ("Feb 6"); `time` is in `DateOptions.year`. */
+  /** True when written without a year ("Feb 6"). Then `time` is in `DateOptions.year`. */
   readonly yearless?: true;
 }
 
-/** The legend format of a date column: the coarsest form that shows every value. */
+/** The legend format of a date column. It is the coarsest format that tells every value apart. */
 export type DateUnit = "month" | "date" | "monthday" | "datetime" | "ago";
 
 export const DATE_UNITS: readonly DateUnit[] = ["month", "date", "monthday", "datetime", "ago"];
@@ -44,7 +44,7 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
-/** Mean Gregorian lengths: "1 month ago" is a span, not a calendar step. */
+/** Mean Gregorian lengths. "1 month ago" is a span, not a calendar step. */
 const YEAR = 365.2425 * DAY;
 const MONTH_SPAN = YEAR / 12;
 
@@ -63,7 +63,7 @@ const MONTHS = [
   "december",
 ];
 
-/** "Sept", "Feb.", "february" → 1-based month; null for anything else ("Mayday"). */
+/** The 1-based month of "Sept", "Feb.", or "february". Null for any other word ("Mayday"). */
 const monthOf = (word: string): number | null => {
   const w = word.toLowerCase().replace(/\.$/, "");
   if (w.length < 3) return null;
@@ -78,7 +78,7 @@ const utc = (y: number, m: number, d: number, h = 0, min = 0, s = 0): number | n
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d ? t : null;
 };
 
-/** "'26" and "26" → 2026; "93" → 1993. */
+/** The full year of a short year. "'26" and "26" are 2026, and "93" is 1993. */
 const fullYear = (raw: string): number => {
   const digits = raw.replace(/^'/, "");
   if (digits.length === 4) return Number(digits);
@@ -86,7 +86,7 @@ const fullYear = (raw: string): number => {
   return n <= 50 ? 2000 + n : 1900 + n;
 };
 
-/** "-0400", "+05:30", "Z", "UTC" → minutes east of UTC. */
+/** Minutes east of UTC for an offset such as "-0400", "+05:30", "Z", or "UTC". */
 const offsetMinutes = (raw: string | undefined): number => {
   if (raw === undefined || /^(z|utc|gmt)$/i.test(raw)) return 0;
   const m = /^([+-])(\d{2}):?(\d{2})$/.exec(raw);
@@ -108,9 +108,9 @@ const NAMED: readonly RegExp[] = [
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})(?:[t\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?\s*(z|[+-]\d{2}:?\d{2})?$/;
 const YMD = /^(\d{4})[/.](\d{1,2})[/.](\d{1,2})$/;
-/** Day and month in either order: slashes or dots with any year, dashes only with a four-digit year. */
+/** Day and month in either order. Slashes and dots take any year. Dashes need a four-digit year. */
 const NUMERIC = /^(\d{1,2})([/.])(\d{1,2})\2(\d{2}|\d{4})$|^(\d{1,2})-(\d{1,2})-(\d{4})$/;
-/** A trailing clock time: ", 3:04 PM", " at 19:07:16 -0400". */
+/** A trailing clock time, such as ", 3:04 PM" or " at 19:07:16 -0400". */
 const TIME =
   /(?:,\s*|\s+at\s+|\s+)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?:\s*(z|utc|gmt|[+-]\d{2}:?\d{2}))?$/;
 const WEEKDAY = /^(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\.?,?\s+/;
@@ -144,7 +144,7 @@ const IN = /^in\s+(?:about\s+)?(\d+|an?|one|(?:a\s+)?few)\s*([a-z]+)$/;
 const LAST = /^last\s+(week|month|year)$/;
 
 const relative = (t: string, now: number): number | null => {
-  if (t in RELATIVE_WORDS) return now + RELATIVE_WORDS[t]!;
+  if (Object.hasOwn(RELATIVE_WORDS, t)) return now + RELATIVE_WORDS[t]!;
   const ago = AGO.exec(t) ?? IN.exec(t);
   if (ago !== null) {
     const span = spanOf(ago[2]!);
@@ -155,17 +155,28 @@ const relative = (t: string, now: number): number | null => {
   return last === null ? null : now - spanOf(last[1]!)!;
 };
 
-/** A trailing note in parentheses: "Jan 15, 1967 (1966 AFL/1966 NFL)". */
-const NOTE = /\s*\([^()]*\)$/;
-/** Where a range splits: "July 16–22, 2021", "Dec 28, 2020 to Jan 3, 2021". */
+/**
+ * A trailing note in parentheses, as in "Jan 15, 1967 (1966 AFL/1966 NFL)".
+ * It has no leading `\s*`, which made the search quadratic on long runs of
+ * spaces. The caller trims the space before the note.
+ */
+const NOTE = /\([^()]*\)$/;
+/**
+ * The longest cell text that can be a date, after footnotes are removed. Real
+ * dates and ranges with a note are under 100 characters. Range parsing tries
+ * every separator, so its time grows with the square of the length.
+ */
+const MAX_DATE_LENGTH = 200;
+/** The separator of a range, as in "July 16–22, 2021" or "Dec 28, 2020 to Jan 3, 2021". */
 const RANGE_SPLIT = /\s*[–—-]\s*|\s+to\s+/g;
 const TRAILING_YEAR = /(\d{4})$/;
 const MONTH_IN = /[a-z]{3,9}\.?/g;
 
 /**
- * A range of days, as its midpoint, like a numeric range (parse.ts). The
- * start may leave out what the end says: "July 16–22, 2021" (month and year
- * from the other side), "16–22 July 2021", "July 30 – August 2, 2021".
+ * Parses a range of days as its midpoint, like a numeric range in parse.ts.
+ * The start can leave out parts that the end has. In "July 16–22, 2021" the
+ * end takes its month from the start, and the start takes its year from the
+ * end. "16–22 July 2021" and "July 30 – August 2, 2021" also parse.
  */
 const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
   const year = TRAILING_YEAR.exec(t)?.[1];
@@ -178,7 +189,7 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
       parseOne(right, options) ?? (leftMonth === undefined ? null : parseOne(`${leftMonth} ${right}`, options));
     if (end === null || end.precision === "relative") continue;
     const rightMonth = [...right.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
-    // The end's year first: in a column, "July 16" alone would take the column's placeholder year.
+    // Try the end's year first. In a column, "July 16" alone would get the column's placeholder year.
     const candidates = [
       ...(year === undefined
         ? []
@@ -195,14 +206,16 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
   return null;
 };
 
-/** One cell. Returns null for anything that is not clearly one instant or one range of days. */
+/** Parses one cell. Returns null for text that is not clearly one instant or one range of days. */
 export const parseDate = (raw: string, options: DateOptions): ParsedDate | null => {
-  const t = stripNoise(raw).toLowerCase().replace(NOTE, "");
+  const text = stripNoise(raw);
+  if (text.length > MAX_DATE_LENGTH) return null;
+  const t = text.toLowerCase().replace(NOTE, "").trimEnd();
   if (t === "") return null;
   return parseOne(t, options) ?? parseRange(t, options);
 };
 
-/** One instant, from lowercase text without notes. */
+/** Parses one instant from lowercase text without notes. */
 const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
   const rel = relative(t, options.now);
   if (rel !== null) return { time: rel, precision: "relative" };
@@ -215,7 +228,7 @@ const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
     return { time: base - offsetMinutes(zone) * MINUTE, precision: h === undefined ? "day" : "minute" };
   }
 
-  // Split off a weekday and a clock time; what is left is the date.
+  // Split off a weekday and a clock time. The rest is the date.
   let rest = t.replace(WEEKDAY, "");
   let clock: { h: number; min: number; s: number; zone: string | undefined } | null = null;
   const time = TIME.exec(rest);
@@ -269,19 +282,20 @@ const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
   return day.yearless ? { ...parsed, yearless: true } : parsed;
 };
 
-/** The year of a column of dates without years: a leap year, so "Feb 29" is a date. */
+/** The placeholder year for dates written without one. It is a leap year, so "Feb 29" parses. */
 const LEAP_YEAR = 2000;
 
 const monthAt = (t: number) => new Date(t).getUTCMonth() + 1;
-/** A step across New Year: from September or later to April or earlier. */
+/** True for a step across New Year, from September or later to April or earlier. */
 const crossesNewYear = (from: number, to: number) => monthAt(from) >= 9 && monthAt(to) <= 4;
 
 /**
- * Dates without years, in a column sorted by date that crosses New Year once
- * (Sep 8 … Dec 30, Jan 5): the dates after the step are in the next year. In
- * a column sorted newest first, the dates before the step are. Any other
- * column keeps one year, since nothing in it tells where a year ends; so does
- * one that would then span a year or more.
+ * Assigns years to a column of dates without years. If the column is sorted
+ * by date and crosses New Year once (Sep 8 … Dec 30, Jan 5), the dates after
+ * the step are in the next year. If it is sorted newest first, the dates
+ * before the step are. Any other column keeps one year, because nothing in it
+ * shows where a year ends. A column that would then span a year or more also
+ * keeps one year.
  */
 const unwrapYear = (
   cells: readonly string[],
@@ -304,14 +318,14 @@ const unwrapYear = (
   return Math.max(...times) - Math.min(...times) < 365 * DAY ? shifted : [...parsed];
 };
 
-/** Share of filled cells that must parse, as for numbers (profile.ts). */
+/** The share of filled cells that must parse. profile.ts uses the same share for numbers. */
 const DATE_SHARE = 0.8;
 const MIN_DATES = 3;
 
 /**
- * Day order for a column's numeric dates, from the cells that settle it: a
- * first part over 12 is a day, a second part over 12 is a day. Dots are day
- * first by convention. Null when nothing settles it, or the cells disagree.
+ * The day order of a column's numeric dates. A part over 12 is a day, so a
+ * cell with one settles the order. Dates with dots are day first by
+ * convention. Null when no cell settles the order, or the cells disagree.
  */
 const columnOrder = (cells: readonly string[]): DayOrder | null => {
   let dmy = false;
@@ -330,9 +344,9 @@ const columnOrder = (cells: readonly string[]): DayOrder | null => {
 };
 
 /**
- * A whole column, when it is a column of dates: one instant per row (null for
- * missing cells) and the unit its legend uses. Null when too few cells parse,
- * or every date is the same.
+ * Parses a column of dates. Returns one instant per row (null for missing
+ * cells) and the unit for its legend. Returns null when too few cells parse,
+ * or when every date is the same.
  */
 export const parseDateColumn = (
   cells: readonly string[],
@@ -380,7 +394,7 @@ const RELATIVE_STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[
   ["minute", MINUTE],
 ];
 
-/** A date for a legend: "Feb 6, 2023", "Dec 1993", or "3 days ago" against `now`. */
+/** Formats a date for a legend: "Feb 6, 2023", "Dec 1993", or "3 days ago" counted from `now`. */
 export const formatDate = (time: number, unit: DateUnit, now: number): string => {
   if (unit !== "ago") return new Intl.DateTimeFormat("en-US", FORMATS[unit]).format(time).replace(" at ", ", ");
   const delta = time - now;

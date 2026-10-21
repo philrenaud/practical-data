@@ -1,10 +1,11 @@
 /**
- * Paints judgments onto live tables with d3-selection. All page mutations are
- * reversible: original inline styles are stashed and restored by `unpaint`.
- * Colored columns are marked by a gradient underline on the header cell; the
- * hover card lives in a shadow root so page CSS can't reach it.
+ * Paints judgments onto live tables. `unpaint` undoes every change that
+ * `paintTable` makes, and restores the original value of each inline style
+ * property that the painter set. A gradient bar on the header cell marks each
+ * shaded column. The hover card is in a shadow root, so page CSS does not
+ * reach it.
  */
-import { select, selectAll } from "d3-selection";
+import { select } from "d3-selection";
 import { describeColumn, type Legend } from "../core/legend.ts";
 import { positions, schemeColor, type Palette } from "../core/scale.ts";
 import { cellFill, isDark, luminance } from "../core/tint.ts";
@@ -15,11 +16,7 @@ import type { ExtractedTable } from "./extract.ts";
 
 // ── Color helpers ───────────────────────────────────────────────────────────
 
-/**
- * Background behind a cell. Starts at the row, not the cell: the cell's own
- * background (e.g. Wikipedia's bgcolor category colors) is what gets replaced.
- * Rows are cached per paint pass: every cell in a row shares the answer.
- */
+/** The first background at `start` or above it that is more than half opaque, or white. */
 const backgroundOf = (start: Element | null): string => {
   for (let node = start; node !== null; node = node.parentElement) {
     const c = resolveColor(getComputedStyle(node).backgroundColor);
@@ -28,6 +25,11 @@ const backgroundOf = (start: Element | null): string => {
   return "rgb(255, 255, 255)";
 };
 
+/**
+ * The background behind a cell. The search starts at the row because the
+ * shading replaces the cell's own background, such as Wikipedia's bgcolor
+ * category colors. `rows` caches the answer for each row during one paint.
+ */
 const effectiveBackground = (cell: Element, rows?: Map<Element, string>): string => {
   const row = cell.parentElement;
   if (rows === undefined || row === null) return backgroundOf(row);
@@ -41,9 +43,10 @@ const effectiveBackground = (cell: Element, rows?: Map<Element, string>): string
 // ── Reversible styles ───────────────────────────────────────────────────────
 
 /**
- * Original inline values of the properties we set, per element. Restoring
- * only these (rather than the whole style string) keeps whatever the page
- * itself changed after we painted, such as a sticky column's `left`.
+ * The original inline value of each property the painter set, per element.
+ * `unpaint` restores only these properties, not the whole style attribute, so
+ * it keeps changes the page made after painting, such as a sticky column's
+ * `left`.
  */
 const originals = new WeakMap<HTMLElement, { attr: string | null; props: Map<string, [string, string]> }>();
 const STYLED = "pdStyled";
@@ -51,7 +54,7 @@ const STYLED = "pdStyled";
 const setStyle = (el: HTMLElement, prop: string, value: string) => {
   let entry = originals.get(el);
   if (entry === undefined) {
-    // style="" means the same as no attribute; record it as none so restoring never writes one.
+    // An empty style attribute means the same as none. Record it as none, so a restore never writes one.
     const attr = el.getAttribute("style");
     entry = { attr: attr === null || attr.trim() === "" ? null : attr, props: new Map() };
     originals.set(el, entry);
@@ -78,15 +81,14 @@ let probe: HTMLElement | null = null;
 const restoreStyles = (el: HTMLElement) => {
   const entry = originals.get(el);
   if (entry !== undefined) {
-    // If the page changed nothing else since we painted, put back the original
-    // attribute in one step. Removing properties first leaves Chrome's lazily
-    // synced style attribute able to reappear as style="".
+    // If the page changed nothing else after painting, put back the original
+    // attribute in one step. After CSSOM writes, Chrome syncs the declarations
+    // back into the attribute lazily, so removing properties or the attribute
+    // alone can leave style="". Setting the attribute first prevents that.
     probe ??= document.createElement("div");
     probe.setAttribute("style", entry.attr ?? "");
     const ours = new Set(entry.props.keys());
     if (declarations(el.style, ours) === declarations(probe.style, ours)) {
-      // setAttribute first: after CSSOM writes, Chrome syncs the declaration block
-      // back into the attribute lazily, so a bare removeAttribute leaves style="".
       el.setAttribute("style", entry.attr ?? "");
       if (entry.attr === null) el.removeAttribute("style");
     } else {
@@ -115,7 +117,7 @@ const paintColumn = (
 ) => {
   const ts = positions(encoding, excluded);
   const cells = table.cells.map((row) => row[encoding.col]!);
-  // Spanned cells repeat in the grid; paint each element once (first row wins).
+  // Spanned cells repeat in the grid. Paint each element once, at the position of its first row.
   const seen = new Set<HTMLTableCellElement>();
   const unique = cells.flatMap((cell, row) => {
     if (seen.has(cell)) return [];
@@ -123,20 +125,26 @@ const paintColumn = (
     return [{ cell, t: ts[row] ?? null }];
   });
 
-  selectAll<HTMLTableCellElement, (typeof unique)[number]>(unique.map((u) => u.cell))
-    .data(unique)
-    .each(function (d) {
-      if (d.t === null) {
-        this.dataset["pdT"] = "";
-        return;
-      }
-      const base = effectiveBackground(this, rows);
-      const { color, weight } = schemeColor(encoding, palette, d.t, isDark(base));
-      const { fill, text } = cellFill(color, weight, base, resolveColor(getComputedStyle(this).color).rgb);
-      setStyle(this, "background-color", fill);
-      if (text !== null) setStyle(this, "color", text);
-      select(this).attr("data-pd-t", d.t.toFixed(3)).attr("data-pd-col", encoding.col);
-    });
+  // Read every computed style before the first write. A read after a write
+  // forces a style recalculation, so interleaving them makes painting
+  // quadratic in the row count.
+  const fills = unique.map(({ cell, t }) => {
+    if (t === null) return null;
+    const base = effectiveBackground(cell, rows);
+    const { color, weight } = schemeColor(encoding, palette, t, isDark(base));
+    return { t, ...cellFill(color, weight, base, resolveColor(getComputedStyle(cell).color).rgb) };
+  });
+  unique.forEach(({ cell }, i) => {
+    const paint = fills[i];
+    if (paint == null) {
+      cell.dataset["pdT"] = "";
+      return;
+    }
+    setStyle(cell, "background-color", paint.fill);
+    if (paint.text !== null) setStyle(cell, "color", paint.text);
+    cell.dataset["pdT"] = paint.t.toFixed(3);
+    cell.dataset["pdCol"] = String(encoding.col);
+  });
 };
 
 // ── Header underline + hover card ───────────────────────────────────────────
@@ -147,10 +155,10 @@ const gradient = (stops: readonly string[], direction = "90deg") =>
 const UNDERLINE_PX = 3;
 
 /**
- * Marks a colored column by drawing its gradient along the bottom of the
- * header cell, as an extra background layer in front of the header's own
- * (Wikipedia's sort arrows are background images). Adds no element, so the
- * column's width and the label's alignment can't change.
+ * Marks a shaded column with its gradient along the bottom of the header cell.
+ * The gradient is an extra background layer in front of the header's own
+ * layers, so background images such as Wikipedia's sort arrows stay. No
+ * element is added, so the column width and the label alignment do not change.
  */
 const underline = (header: HTMLElement, stops: readonly string[], axis: Orientation) => {
   const cs = getComputedStyle(header);
@@ -158,7 +166,7 @@ const underline = (header: HTMLElement, stops: readonly string[], axis: Orientat
   const own = resolveColor(cs.backgroundColor);
   const behind = own.alpha > 0.5 ? own.rgb : effectiveBackground(header);
   const edge = luminance(behind) < 0.2 ? "rgb(255 255 255 / 0.4)" : "rgb(0 0 0 / 0.3)";
-  // Columns: a bar along the header's bottom. Rows: along the row label's right edge.
+  // For columns the bar is along the bottom of the header. For rows it is along the right edge of the row label.
   const layers =
     axis === "columns"
       ? [
@@ -213,6 +221,9 @@ const ensureCard = () => {
   if (card !== null && card.host.isConnected) return card;
   const host = document.createElement("span");
   host.setAttribute("data-pd-card", "");
+  // Page rules that match the host (`span { display: block }`) outrank `:host`.
+  // An important inline declaration outranks them, so the host takes no space.
+  host.style.setProperty("all", "initial", "important");
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `<style>${CARD_CSS}</style><div class="card" role="tooltip"></div>`;
   document.documentElement.append(host);
@@ -266,7 +277,10 @@ function hideCard() {
 const LONG_PRESS_MS = 450;
 const detach = new WeakMap<HTMLElement, () => void>();
 
-/** Mouse: hover the header. Touch and pen: press and hold, so a tap still sorts. */
+/**
+ * Opens the card while the mouse is over the header. With touch or a pen, a
+ * press and hold opens it, so a tap still sorts the table.
+ */
 const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const open = () => showCard(header, legends);
@@ -283,6 +297,7 @@ const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
   header.addEventListener("pointercancel", up);
   header.dataset["pdLegend"] = legends.map((l) => l.title).join("|");
   detach.set(header, () => {
+    clearTimeout(timer);
     header.removeEventListener("pointerenter", enter);
     header.removeEventListener("pointerleave", leave);
     header.removeEventListener("pointerdown", down);
@@ -294,6 +309,7 @@ const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
+/** Shades the encoded columns of one table and attaches a legend card to each shaded header. */
 export const paintTable = (
   table: ExtractedTable,
   judgment: TableJudgment,
@@ -302,15 +318,14 @@ export const paintTable = (
 ) => {
   const excluded = new Set(judgment.aggregateRows);
   const aggregates = judgment.aggregateRows.map((r) => table.snapshot.rows[r]?.[0] ?? "").filter((x) => x !== "");
-  // A spanning header can sit over several encoded columns; it gets one card listing each.
+  // A spanning header can be over several shaded columns. It gets one card with a section for each.
   const byHeader = new Map<HTMLTableCellElement, Legend[]>();
   const rows = new Map<Element, string>();
   for (const e of judgment.encodings) {
     paintColumn(table, e, palette, excluded, rows);
     const header = table.headerCells[e.col];
     if (header == null) continue;
-    const behind = header == null ? "rgb(255, 255, 255)" : effectiveBackground(header);
-    const legend = describeColumn(e, palette, isDark(behind), {
+    const legend = describeColumn(e, palette, isDark(effectiveBackground(header)), {
       sharedWith: e.group === null ? 1 : (groupSizes.get(e.group) ?? 1),
       aggregates,
     });
@@ -329,14 +344,22 @@ export const paintTable = (
     .join("|");
 };
 
+/** `root` and its descendants that match `selector`. */
+const matching = (root: ParentNode, selector: string): HTMLElement[] => [
+  ...(root instanceof HTMLElement && root.matches(selector) ? [root] : []),
+  ...root.querySelectorAll<HTMLElement>(selector),
+];
+
+/** Removes all shading, legends, and data attributes from `root` and its descendants. */
 export const unpaint = (root: ParentNode = document) => {
-  root.querySelectorAll<HTMLElement>("[data-pd-legend]").forEach((el) => detach.get(el)?.());
-  root.querySelectorAll<HTMLElement>("[data-pd-styled], [data-pd-t]").forEach((el) => {
+  matching(root, "[data-pd-legend]").forEach((el) => detach.get(el)?.());
+  matching(root, "[data-pd-styled], [data-pd-t]").forEach((el) => {
     restoreStyles(el);
     delete el.dataset["pdT"];
     delete el.dataset["pdCol"];
   });
-  root.querySelectorAll<HTMLElement>("[data-pd-table]").forEach((el) => {
+  // The site unpaints one table at a time, so `root` is often the table itself.
+  matching(root, "[data-pd-table]").forEach((el) => {
     delete el.dataset["pdTable"];
     delete el.dataset["pdEncoded"];
     delete el.dataset["pdOrientation"];

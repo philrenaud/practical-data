@@ -1,12 +1,16 @@
 /**
- * Ordering labels from pairwise judgments.
+ * Orders labels from pairwise judgments.
  *
- * Each pair (i, j) has p = P(label i is the lower grade). Each label scores
- * the probability mass of every comparison it "wins as lower"; sorting by
- * that score (a soft Copeland count) is robust to a single bad comparison.
+ * Each pair (i, j) has p, the probability that label i is the lower grade.
+ * Label i scores p for the pair and label j scores 1 - p. Sorting by total
+ * score is a soft Copeland count, which tolerates a single bad comparison.
  */
 
-/** `lower(i, j)` = P(label i is lower than label j), for i < j. */
+/**
+ * Returns the labels from lowest to highest, and the mean probability of the
+ * chosen direction of each pair. `lower(i, j)` is the probability that label
+ * i is lower than label j, for i < j.
+ */
 export const orderFromPairs = (
   labels: readonly string[],
   lower: (i: number, j: number) => number,
@@ -23,7 +27,6 @@ export const orderFromPairs = (
   const ranked = labels.map((_, i) => i).sort((a, b) => score[b]! - score[a]! || a - b);
   const rank = new Array<number>(n);
   ranked.forEach((label, r) => (rank[label] = r));
-  // Confidence: mean probability the model assigned to each pair's final orientation.
   let agree = 0;
   let pairs = 0;
   for (let i = 0; i < n; i++) {

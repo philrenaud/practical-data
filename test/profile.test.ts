@@ -57,3 +57,23 @@ test("timestamps and dates are not offered as categories or numbers", () => {
   assert.deepEqual([time?.kind, day?.kind, type?.kind], ["text", "text", "categorical"]);
   assert.equal(time?.kind === "text" && time.reason, "dates or times");
 });
+
+test("labels that name Object.prototype members are levels like any other", () => {
+  const p = profileTable({
+    id: "t0",
+    title: null,
+    headers: ["Role"],
+    rows: [["Driver"], ["Constructor"], ["__proto__"], ["Driver"], ["Constructor"]],
+  });
+  assert.equal(p[0]?.kind, "categorical");
+  if (p[0]?.kind !== "categorical") return;
+  assert.deepEqual(p[0].levels, ["driver", "constructor", "__proto__"]);
+  assert.deepEqual(
+    p[0].display,
+    Object.fromEntries([
+      ["driver", "Driver"],
+      ["constructor", "Constructor"],
+      ["__proto__", "__proto__"],
+    ]),
+  );
+});

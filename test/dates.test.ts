@@ -174,3 +174,23 @@ test("ignores notes in parentheses and reads ranges of days as their midpoint", 
   for (const raw of ["July 22–16, 2021", "No Pre-release Scheduled", "1997–98", "3 days ago – 2 days ago"])
     assert.equal(at(raw), null, raw);
 });
+
+test("words that name Object.prototype members are not dates", () => {
+  for (const raw of ["constructor", "__proto__", "Constructor"]) assert.equal(at(raw), null, raw);
+});
+
+test("cells far longer than any date return null", () => {
+  for (const raw of [
+    "-".repeat(8000) + "x",
+    "Jan 1 - ".repeat(1000),
+    "1 to ".repeat(1600),
+    `Feb 6, 2023 (${"a ".repeat(4000)})`,
+  ]) {
+    assert.equal(at(raw), null, raw.slice(0, 20));
+  }
+});
+
+test("a date with a long trailing note still parses", () => {
+  assert.equal(at(`Jan 15, 1967 (${"note ".repeat(30)})`)?.time, Date.UTC(1967, 0, 15));
+  assert.equal(at("Jan 15, 1967   (1966 AFL/1966 NFL)")?.time, Date.UTC(1967, 0, 15));
+});

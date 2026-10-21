@@ -437,6 +437,16 @@ const controlsScenario = async (): Promise<string[]> => {
     path: "artifacts/screens/controls.png",
     clip: { ...(await table.boundingBox())!, y: Math.max(0, (await table.boundingBox())!.y - 50), height: 200 },
   });
+  // Page rules that match the shadow hosts must not give them a box.
+  await page.addStyleTag({ content: "html > span { display: block !important; padding: 40px !important; }" });
+  const hostSizes = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-pd-controls], [data-pd-card]")].map((h) => {
+      const r = h.getBoundingClientRect();
+      return r.width * r.height;
+    }),
+  );
+  if (hostSizes.length === 0 || hostSizes.some((a) => a > 0))
+    problems.push(`controls: page CSS gave the shadow hosts a box (areas ${hostSizes.join(", ")})`);
   await click("Columns");
   if (!(await waitFor(async () => (await orientation()) === "columns")))
     problems.push("controls: 'Columns' didn't re-shade by column");
@@ -549,6 +559,42 @@ const lifecycleScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Extractor: malformed markup and editable tables ─────────────────────────
+
+const malformedScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  // Row "B" has one cell, and the rowspan above reaches its fourth slot: a hole at slots 1 and 2.
+  await page.setContent(`
+    <table><tr><td>A</td><td>1</td><td>2</td><td rowspan="2">3</td></tr><tr><td>B</td></tr>
+      <tr><td>C</td><td>4</td><td>5</td><td>6</td></tr><tr><td>D</td><td>7</td><td>8</td><td>9</td></tr></table>
+    <table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table>
+    <div contenteditable=""><table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table></div>
+    <div contenteditable="plaintext-only"><table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table></div>`);
+  await page.addScriptTag({ path: "dist-probe/probe.js" });
+  const result = await page.evaluate(() => {
+    try {
+      const probe = (globalThis as unknown as { __practicalData: { extractPage: () => unknown } }).__practicalData;
+      return probe.extractPage() as { tables: { rows: unknown[][] }[] };
+    } catch (e) {
+      return String(e);
+    }
+  });
+  await page.close();
+  if (typeof result === "string") return [`malformed: extraction threw (${result})`];
+  const problems: string[] = [];
+  // The editable tables are left out: styles painted into an editor would be saved with the document.
+  if (result.tables.length !== 2) problems.push(`malformed: expected 2 tables, got ${result.tables.length}`);
+  const rows = result.tables.flatMap((t) => t.rows);
+  if (rows.some((r) => r.some((c) => typeof c !== "string")))
+    problems.push("malformed: a snapshot row has a missing cell");
+  return problems;
+};
+
+const malformedProblems = await malformedScenario();
+console.log(`${malformedProblems.length === 0 ? "✓" : "✗"} extractor: a row with a hole, editable tables`);
+for (const p of malformedProblems) console.log(`    - ${p}`);
+if (malformedProblems.length > 0) failed++;
+
 const lifecycleProblems = await lifecycleScenario();
 console.log(
   `${lifecycleProblems.length === 0 ? "✓" : "✗"} lifecycle: in-place edits, inserted tables, page styles, oklch, navigation`,
@@ -571,7 +617,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 3 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 4 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

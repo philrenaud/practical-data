@@ -1,16 +1,16 @@
 /**
- * Per-table controls: a small bar that appears at a judged table's top-right
- * corner while the pointer is over it. It switches the shading between
- * columns and rows, or hides it for that table. Lives in a shadow root so
- * page CSS can't reach it, and is positioned over the page without touching
- * the table's layout.
+ * Per-table controls. A small bar appears at the top-right corner of a judged
+ * table while the mouse pointer is over it. The bar switches the shading
+ * between columns and rows, or hides the shading for that table. The bar is in
+ * a shadow root, so page CSS does not reach it. It is positioned over the page
+ * and does not change the table's layout.
  */
 import type { Orientation } from "../core/orient.ts";
 
 export interface TableControlState {
   readonly orientation: Orientation;
   readonly hidden: boolean;
-  /** Whether rows/columns makes sense here (several numeric columns and rows). */
+  /** True when the bar shows the Columns and Rows buttons. */
   readonly canOrient: boolean;
 }
 
@@ -48,6 +48,9 @@ const ensureBar = () => {
   if (bar !== null && bar.host.isConnected) return bar;
   const host = document.createElement("span");
   host.setAttribute("data-pd-controls", "");
+  // Page rules that match the host (`span { display: block }`) outrank `:host`.
+  // An important inline declaration outranks them, so the host takes no space.
+  host.style.setProperty("all", "initial", "important");
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `<style>${CSS}</style><div class="bar" role="toolbar" aria-label="Table shading"></div>`;
   document.documentElement.append(host);
@@ -112,7 +115,7 @@ const place = (table: HTMLTableElement) => {
 
 const attached = new WeakMap<HTMLTableElement, { state: TableControlState; detach: () => void }>();
 
-/** Attaches (or updates) controls for a judged table. Idempotent. */
+/** Attaches controls to a judged table, or updates the state of controls already attached. */
 export const attachControls = (table: HTMLTableElement, state: TableControlState, handlers: TableControlHandlers) => {
   const existing = attached.get(table);
   if (existing !== undefined) {
@@ -140,6 +143,7 @@ export const attachControls = (table: HTMLTableElement, state: TableControlState
   attached.set(table, entry);
 };
 
+/** Removes the controls from a table, and hides the bar if it shows that table. */
 export const detachControls = (table: HTMLTableElement) => {
   attached.get(table)?.detach();
   attached.delete(table);
