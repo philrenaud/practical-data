@@ -543,6 +543,39 @@ const lifecycleScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Extractor: malformed markup ─────────────────────────────────────────────
+
+const malformedScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  // Row "B" has one cell, and the rowspan above reaches its fourth slot: a hole at slots 1 and 2.
+  await page.setContent(`
+    <table><tr><td>A</td><td>1</td><td>2</td><td rowspan="2">3</td></tr><tr><td>B</td></tr>
+      <tr><td>C</td><td>4</td><td>5</td><td>6</td></tr><tr><td>D</td><td>7</td><td>8</td><td>9</td></tr></table>
+    <table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table>`);
+  await page.addScriptTag({ path: "dist-probe/probe.js" });
+  const result = await page.evaluate(() => {
+    try {
+      const probe = (globalThis as unknown as { __practicalData: { extractPage: () => unknown } }).__practicalData;
+      return probe.extractPage() as { tables: { rows: unknown[][] }[] };
+    } catch (e) {
+      return String(e);
+    }
+  });
+  await page.close();
+  if (typeof result === "string") return [`malformed: extraction threw (${result})`];
+  const problems: string[] = [];
+  if (result.tables.length !== 2) problems.push(`malformed: expected 2 tables, got ${result.tables.length}`);
+  const rows = result.tables.flatMap((t) => t.rows);
+  if (rows.some((r) => r.some((c) => typeof c !== "string")))
+    problems.push("malformed: a snapshot row has a missing cell");
+  return problems;
+};
+
+const malformedProblems = await malformedScenario();
+console.log(`${malformedProblems.length === 0 ? "✓" : "✗"} extractor: a row with a hole`);
+for (const p of malformedProblems) console.log(`    - ${p}`);
+if (malformedProblems.length > 0) failed++;
+
 const lifecycleProblems = await lifecycleScenario();
 console.log(
   `${lifecycleProblems.length === 0 ? "✓" : "✗"} lifecycle: in-place edits, inserted tables, page styles, oklch, navigation`,
@@ -565,7 +598,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // recorded; those runs fail harmlessly and the final full-set run replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 3 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 4 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

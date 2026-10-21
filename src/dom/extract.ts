@@ -99,6 +99,15 @@ const buildGrid = (rows: readonly HTMLTableRowElement[]): HTMLTableCellElement[]
   return grid;
 };
 
+/**
+ * True when slots 0 to width - 1 all hold a cell. A row with fewer cells than
+ * a rowspan above it reaches has a hole in the middle, not just a short end.
+ */
+const isFull = (row: readonly (HTMLTableCellElement | undefined)[], width: number): boolean => {
+  for (let c = 0; c < width; c++) if (row[c] === undefined) return false;
+  return true;
+};
+
 /** Most common row width (widest on ties); one malformed row must not reshape the table. */
 const modalWidth = (grid: readonly (readonly unknown[])[]): number => {
   const counts = new Map<number, number>();
@@ -144,8 +153,8 @@ const isBold = (cell: HTMLTableCellElement): boolean => {
  */
 const looksLikeData = (grid: readonly (readonly HTMLTableCellElement[])[], width: number): boolean => {
   const first = grid[0];
-  const body = grid.slice(1).filter((g) => g.length >= width);
-  if (first === undefined || first.length < width || body.length === 0) return false;
+  const body = grid.slice(1).filter((g) => isFull(g, width));
+  if (first === undefined || !isFull(first, width) || body.length === 0) return false;
   for (let c = 0; c < width; c++) {
     const cell = first[c]!;
     if (isBold(cell)) return false;
@@ -227,7 +236,7 @@ export const extractTable = (
     if (row.parentElement?.tagName === "TFOOT") continue;
     // Section labels: one cell spanning (nearly) the whole row.
     if (new Set(g).size === 1 && width > 2) continue;
-    if (g.length < width) continue;
+    if (!isFull(g, width)) continue;
     const cellsInRow = g.slice(0, width);
     const text = cellsInRow.map((cell) => cellText(cell));
     // Repeated header rows inside tbody (baseball-reference every 20 rows, Wikipedia at the foot).
