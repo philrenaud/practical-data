@@ -335,14 +335,21 @@ export const paintTable = (
     .join("|");
 };
 
+/** `root` and its descendants that match `selector`. */
+const matching = (root: ParentNode, selector: string): HTMLElement[] => [
+  ...(root instanceof HTMLElement && root.matches(selector) ? [root] : []),
+  ...root.querySelectorAll<HTMLElement>(selector),
+];
+
 export const unpaint = (root: ParentNode = document) => {
-  root.querySelectorAll<HTMLElement>("[data-pd-legend]").forEach((el) => detach.get(el)?.());
-  root.querySelectorAll<HTMLElement>("[data-pd-styled], [data-pd-t]").forEach((el) => {
+  matching(root, "[data-pd-legend]").forEach((el) => detach.get(el)?.());
+  matching(root, "[data-pd-styled], [data-pd-t]").forEach((el) => {
     restoreStyles(el);
     delete el.dataset["pdT"];
     delete el.dataset["pdCol"];
   });
-  root.querySelectorAll<HTMLElement>("[data-pd-table]").forEach((el) => {
+  // The site unpaints one table at a time, so `root` is often the table itself.
+  matching(root, "[data-pd-table]").forEach((el) => {
     delete el.dataset["pdTable"];
     delete el.dataset["pdEncoded"];
     delete el.dataset["pdOrientation"];
