@@ -1,4 +1,4 @@
-<!-- practicaldata.dev home: recorded examples shaded by the extension's own painter. -->
+<!-- The home page. The extension's painter shades the recorded examples. -->
 <script lang="ts">
   import { DEFAULT_PALETTE, divergingStops, PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
   import { config } from "../../../../package.json";
@@ -12,11 +12,10 @@
   let palette = $state<PaletteId>(DEFAULT_PALETTE);
   let theme = $state<"auto" | "light" | "dark">("auto");
   let systemDark = $state(false);
-  // Swatches show the ramp the page will actually use; recomputed when the theme changes.
+  // Each swatch shows the ramp for the current theme. The theme effect recomputes them.
   let swatches = $state<Record<string, string>>({});
-  // The theme as applied to the page ("" until then). Tables paint once it is set and
-  // repaint when it changes, only after the page's colors have switched, since the
-  // painter blends over the backgrounds it finds.
+  // The theme applied to the page, or "" before the first apply. The tables paint only
+  // after it is set, so that the painter blends over the new background colors.
   let applied = $state("");
 
   const palettes = Object.entries(PALETTES) as [PaletteId, (typeof PALETTES)[PaletteId]][];
@@ -38,7 +37,7 @@
       palettes.map(([id]) => [id, `linear-gradient(90deg, ${divergingStops(id, dark, mid).join(", ")})`]),
     );
     applied = dark ? "dark" : "light";
-    // The page theme is this page's control; other pages open in Auto.
+    // The theme toggle applies only to this page. Remove it so that other pages open in Auto.
     return () => delete document.documentElement.dataset["theme"];
   });
 </script>
@@ -63,9 +62,7 @@
       shades the comparable columns of any HTML table, so the better and worse rows show without reading every cell.
     </p>
     <div class="actions">
-      {#if storeUrl}<a class="button primary" href={storeUrl}>Add to Chrome</a>{/if}
-      {#if !storeUrl}<a class="button primary" href="practical-data-extension.zip" download>Download the extension</a
-        >{/if}
+      <a class="button primary" href={storeUrl}>Add to Chrome</a>
       <a class="button" href="https://github.com/philrenaud/practical-data"
         ><svg class="gh" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"
           ><path
@@ -74,7 +71,6 @@
           /></svg
         > Source on GitHub</a
       >
-      {#if !storeUrl}<a class="button" href="#install">How to install</a>{/if}
     </div>
     <a class="proof" href="/tests"
       ><strong>{data.tests.passed} of {data.tests.total}</strong> hand-labeled checks on real tables pass.
@@ -115,7 +111,8 @@
 </nav>
 
 <main>
-  <section id="examples" class="examples" aria-label="Examples">
+  <section id="examples" class="examples" aria-labelledby="examples-title">
+    <h2 id="examples-title" class="sr-only">Examples</h2>
     {#each sections as section, i (section.section.id)}
       <Example {section} index={i} {palette} colored={view === "colored"} theme={applied} />
     {/each}
@@ -235,20 +232,13 @@
 
   <section class="install" id="install" aria-labelledby="install-title">
     <h2 id="install-title">Install</h2>
-    {#if storeUrl}<ol>
-        <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
-        <li>
-          Paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options page, which opens when it's installed.
-          The next version, 1.1.0, works without a key.
-        </li>
-      </ol>{/if}
-    {#if !storeUrl}<ol>
-        <li>Download <a href="practical-data-extension.zip" download>the extension</a> and unzip it.</li>
-        <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
-        <li>Select <b>Load unpacked</b> and choose the unzipped folder.</li>
-        <li>That's it: tables are shaded for free, no key or sign-up.</li>
-      </ol>
-      <p class="note">The Chrome Web Store listing is coming soon. Until then, the extension loads unpacked.</p>{/if}
+    <ol>
+      <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
+      <li>
+        Paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options page, which opens when it's installed. The
+        next version, 1.1.0, works without a key.
+      </li>
+    </ol>
     <p class="note">
       Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is
       sent to be judged, straight to your own provider (or, from 1.1.0, through the free endpoint); nothing is sent for

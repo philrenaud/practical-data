@@ -1,12 +1,13 @@
 /**
- * Answers "why was / wasn't this column colored?" for any URL.
+ * Explains why each column on a page was or was not colored.
  *
  *   node scripts/explain-url.ts <url> [--table t3] [--wait 5000]
  *
- * Loads the page in Chromium (CSP bypassed so the extractor can be injected),
- * runs the same extractor and judge the extension uses, and prints every
- * table's columns with the decision and the reason or probabilities behind it.
- * Answers are cached in fixtures/recordings like the eval.
+ * Loads the page in Chromium, with CSP bypassed so that the extractor can be
+ * injected. Runs the same extractor and judge as the extension, then prints
+ * each column with its decision and the reason or probabilities behind it.
+ * Answers use the eval's recordings in fixtures/recordings. A question with no
+ * recording calls Jev, which needs TYPESAFE_API_KEY.
  */
 import { parseArgs } from "node:util";
 import { Effect } from "effect";

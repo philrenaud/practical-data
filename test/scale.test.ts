@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { divergingColor, PALETTES, type PaletteId } from "../src/core/palettes.ts";
+import { divergingColor, isPaletteId, PALETTES, type PaletteId } from "../src/core/palettes.ts";
 import { positions, schemeColor } from "../src/core/scale.ts";
 import type { ColumnEncoding } from "../src/core/types.ts";
 
@@ -55,7 +55,7 @@ test("ordinal levels spread evenly from 0 to 1", () => {
   assert.deepEqual(positions(e), [1, 0, 0.5, null]);
 });
 
-test("every palette: the ends are full strength, and fading ramps leave the middle plain", () => {
+test("every palette has full-strength ends, and fading ramps leave the middle plain", () => {
   for (const id of Object.keys(PALETTES) as PaletteId[]) {
     for (const dark of [false, true]) {
       const ramp = dark ? PALETTES[id].dark : PALETTES[id].light;
@@ -71,4 +71,10 @@ test("on dark pages, single-hue scales ramp up from the background", () => {
   const neutral: ColumnEncoding = { ...e, polarity: "neutral" } as ColumnEncoding;
   assert.ok(schemeColor(neutral, "calm", 0, true).weight < schemeColor(neutral, "calm", 1, true).weight);
   assert.equal(schemeColor(neutral, "calm", 0, false).weight, 1);
+});
+
+test("isPaletteId accepts palette names only", () => {
+  assert.equal(isPaletteId("calm"), true);
+  assert.equal(isPaletteId("constructor"), false);
+  assert.equal(isPaletteId("toString"), false);
 });

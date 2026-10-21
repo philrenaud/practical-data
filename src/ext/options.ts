@@ -1,4 +1,4 @@
-/** Options page: credentials, palette with a live preview, per-site switches. */
+/** The options page. It edits the provider credentials, the palette with a preview, and the per-site switches. */
 import { select } from "d3-selection";
 import { Effect } from "effect";
 import { DEFAULT_PALETTE, divergingStops, isPaletteId, PALETTES, type PaletteId as Palette } from "../core/palettes.ts";
@@ -43,7 +43,7 @@ const evidence = {
   orderConfidence: 1,
 };
 
-/** What a typical judgment of SAMPLE looks like, so the preview renders before any key exists. */
+/** A typical judgment of SAMPLE. The preview uses it until a test returns a real judgment. */
 const EXAMPLE: TableJudgment = {
   id: "t0",
   orientation: "columns",
@@ -152,7 +152,7 @@ const currentPalette = (): Palette => {
 
 const gradient = (stops: readonly string[]) => `linear-gradient(90deg, ${stops.join(", ")})`;
 
-/** One card per palette, with its light and dark ramps side by side. */
+/** Renders one card per palette, with its light and dark ramps side by side. */
 const renderPalettes = () => {
   select("#palettes")
     .selectAll("label")

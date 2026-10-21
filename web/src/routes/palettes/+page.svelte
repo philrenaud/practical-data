@@ -1,4 +1,4 @@
-<!-- Palette study: every diverging palette on the same tables, light and dark. -->
+<!-- Palette study. Paints the same tables with each diverging palette, on a light and a dark page. -->
 <script lang="ts">
   import { PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
   import type { TableJudgment } from "../../../../src/core/types.ts";
@@ -9,7 +9,7 @@
     const s = sections.find((x) => x.section.id === id)!;
     const t = s.page.tables[table]!;
     const j = s.judgment.tables[table]!;
-    // Positions come from the full table's judgment; trim its values to the rows shown.
+    // The judgment covers the full table. Trim its values to the rows shown.
     const judgment = {
       ...j,
       encodings: j.encodings.map((e) => ({ ...e, values: e.values.slice(0, rows) })),

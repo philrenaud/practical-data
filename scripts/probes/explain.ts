@@ -1,5 +1,7 @@
 /**
- * Prints the raw answers behind one categorical column's judgment.
+ * Probe. Prints the raw answers behind the judgment of one categorical column
+ * in a fixture snapshot. Calls Jev live, so it needs TYPESAFE_API_KEY.
+ *
  *   node scripts/probes/explain.ts <slug> <tableId> <header>
  */
 import { readFile } from "node:fs/promises";

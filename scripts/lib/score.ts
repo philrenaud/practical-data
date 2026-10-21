@@ -1,7 +1,6 @@
 /**
- * Scores a page judgment against its hand labels (fixtures/expectations.json).
- * Shared by the eval (which prints a tally) and the tests site (which shows
- * every check), so the two can't disagree.
+ * Scores a page judgment against its hand labels in fixtures/expectations.json.
+ * The eval and the tests site both use it, so their results cannot differ.
  */
 import type { ColumnEncoding, PageJudgment, Polarity } from "../../src/core/types.ts";
 
@@ -10,7 +9,7 @@ export type Spec =
 export type TableExpect = Record<string, Spec> & { aggregateRows?: number[] };
 export type PageExpect = Record<string, TableExpect> & { shared?: string[][] };
 
-/** What a check is about; each is one category on the tests site and one line of the eval tally. */
+/** The property that a check tests. Each kind is one category on the tests site and one line of the eval tally. */
 export type CheckKind = "detect" | "polarity" | "transform" | "order" | "aggregates" | "shared" | "orientation";
 
 export interface Check {
@@ -22,11 +21,9 @@ export interface Check {
   readonly ok: boolean;
   readonly expected: string;
   readonly actual: string;
-  /**
-   * For a failing check, the eval's one-line report. For "detect", which side
-   * it fails on decides the list: "colored" (a false positive) or "missed".
-   */
+  /** The one-line report for a failing check, or null for a passing one. */
   readonly message: string | null;
+  /** For a "detect" check, whether a failure is a false positive ("colored") or a miss ("missed"). */
   readonly side?: "colored" | "missed";
 }
 
@@ -180,7 +177,7 @@ export const scorePage = (slug: string, judgment: PageJudgment, expect: PageExpe
   return checks;
 };
 
-/** Known, documented failures (expectations.$known), matched by message prefix. */
+/** Returns the documented reason for a failing check from expectations.$known, matched by message prefix, or null. */
 export const knownReason = (check: Check, known: Readonly<Record<string, string>>): string | null => {
   if (check.message === null) return null;
   const key = Object.keys(known).find((k) => check.message!.startsWith(k));

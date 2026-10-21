@@ -1,4 +1,8 @@
-/** Probe: does sibling context (other headers, row names) change the ordinal relation call? */
+/**
+ * Probe. Checks whether sibling context, meaning other headers and row names,
+ * changes the relation answer for a categorical column. Calls Jev live, so it
+ * needs TYPESAFE_API_KEY. See docs/decisions.md for the results.
+ */
 import { readFile } from "node:fs/promises";
 import { Effect } from "effect";
 import { profileTable, type CategoricalProfile } from "../../src/core/profile.ts";

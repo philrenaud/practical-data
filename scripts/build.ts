@@ -5,12 +5,17 @@
  */
 import { execFileSync } from "node:child_process";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { basename } from "node:path";
 import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
-await cp("static", "dist", { recursive: true, filter: (src) => !src.endsWith(".svg") });
+// Skip dotfiles, such as Finder's .DS_Store, and the SVG icon source.
+await cp("static", "dist", {
+  recursive: true,
+  filter: (src) => !basename(src).startsWith(".") && !src.endsWith(".svg"),
+});
 
 // Stamp the build so a stale unpacked copy is obvious in chrome://extensions.
 const git = (...args: string[]) => {
@@ -23,7 +28,11 @@ const git = (...args: string[]) => {
 const sha = git("rev-parse", "--short", "HEAD") || "nogit";
 const dirty = git("status", "--porcelain", "--", "src", "static") === "" ? "" : "+dev";
 const manifest = JSON.parse(await readFile("dist/manifest.json", "utf8")) as Record<string, unknown>;
-const built = new Date().toISOString().slice(0, 16).replace("T", " ");
+// A clean build takes its time from the commit, so two builds of one commit are identical.
+// A build with local changes takes the current time.
+const committed = Number(git("log", "-1", "--format=%ct"));
+const stamp = dirty === "" && committed > 0 ? new Date(committed * 1000) : new Date();
+const built = stamp.toISOString().slice(0, 16).replace("T", " ");
 manifest["version_name"] = `${String(manifest["version"])} (${sha}${dirty}, ${built})`;
 // A local endpoint needs its own host permission, as api.practicaldata.dev has in the manifest.
 const apiOrigin = process.env["PD_API_ORIGIN"];
@@ -35,7 +44,7 @@ const common = {
   target: "chrome120",
   logLevel: "info",
   legalComments: "none",
-  // Unminified: Web Store reviewers (and anyone auditing a key-handling extension) can read it.
+  // The bundle is not minified, so Web Store reviewers and anyone who audits the extension can read it.
   minify: false,
   sourcemap: watch ? "inline" : false,
   // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
@@ -56,7 +65,6 @@ const builds: esbuild.BuildOptions[] = [
     entryPoints: { probe: "src/dom/probe.ts" },
     outdir: "dist-probe",
     format: "iife",
-    minify: false,
   },
 ];
 

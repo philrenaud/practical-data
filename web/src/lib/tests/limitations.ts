@@ -1,6 +1,6 @@
 /**
- * Limitations seen on live pages rather than in a check: the copies the
- * checks use can't show them. Checked against the live pages, October 2026.
+ * Limitations that show only on the live pages. The page copies that the
+ * checks use cannot show them. Last checked against the live pages in October 2026.
  */
 
 export interface SiteLimitation {
@@ -17,7 +17,7 @@ export const SITE_LIMITATIONS: readonly SiteLimitation[] = [
   },
 ];
 
-/** What a reader should know before opening a test site with the extension, by fixture slug. */
+/** Notes for the sites page, keyed by fixture slug. */
 export const SITE_NOTES: Readonly<Record<string, string>> = {
   "mtggoldfish-modern-price-index":
     "The live page now builds its price lists from div elements, not tables. The extension does not shade them.",

@@ -1,12 +1,12 @@
 /**
- * Diverging palettes for "better ↔ worse" columns. Each has a light and a
- * dark ramp, chosen per cell from the background it lands on, so the reader
- * never picks a theme.
+ * Diverging palettes for columns with a better and a worse end. Each palette
+ * has a light ramp and a dark ramp. The painter picks one for each cell from
+ * the background behind it, so there is no theme setting.
  *
- * Ramps run bad → good. A `fade` ramp has no middle color: values near the
- * middle fade to the page background and only the ends carry color. Dark
+ * Ramps run from bad to good. A `fade` ramp has no middle color. Values near
+ * the middle fade to the page background, and only the ends carry color. Dark
  * ramps always fade, because a yellow or sand midpoint blended over a dark
- * page turns to olive mud.
+ * page turns a dull olive.
  */
 import { interpolateLab, piecewise } from "d3-interpolate";
 import { interpolateRdYlBu, interpolateRdYlGn } from "d3-scale-chromatic";
@@ -14,7 +14,7 @@ import { interpolateRdYlBu, interpolateRdYlGn } from "d3-scale-chromatic";
 export type PaletteId = "brewer" | "calm" | "earth" | "vivid" | "teal" | "colorblind";
 
 export interface Ramp {
-  /** Bad → good. With `fade`, exactly two: the bad end and the good end. */
+  /** Colors from bad to good. A `fade` ramp has exactly two, the bad end and the good end. */
   readonly stops: readonly string[];
   readonly fade: boolean;
 }
@@ -70,7 +70,7 @@ export const PALETTES: Readonly<Record<PaletteId, PaletteSpec>> = {
 
 export const DEFAULT_PALETTE: PaletteId = "calm";
 
-export const isPaletteId = (v: unknown): v is PaletteId => typeof v === "string" && v in PALETTES;
+export const isPaletteId = (v: unknown): v is PaletteId => typeof v === "string" && Object.hasOwn(PALETTES, v);
 
 /**
  * Color for a position `t` (0 = worst, 1 = best) and how strongly to apply
@@ -86,7 +86,7 @@ export const divergingColor = (palette: PaletteId, t: number, dark: boolean): { 
   return { color: piecewise(interpolateLab, [...ramp.stops])(clamped), weight: 1 };
 };
 
-/** Gradient stops for legends, bad → good. Fading ramps pass through `mid`. */
+/** Gradient stops for legends, from bad to good. Fading ramps pass through `mid`. */
 export const divergingStops = (palette: PaletteId, dark: boolean, mid: string, n = 9): string[] => {
   const ramp = dark ? PALETTES[palette].dark : PALETTES[palette].light;
   if (!ramp.fade) return Array.from({ length: n }, (_, i) => piecewise(interpolateLab, [...ramp.stops])(i / (n - 1)));

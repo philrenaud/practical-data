@@ -52,7 +52,7 @@ const page: PageSnapshot = {
   ],
 };
 
-// Positions for the three category labels, keyed by label text in the question.
+// The rank of each label, keyed by its text in the pairwise question.
 const rankOf: Record<string, number> = { Lightweight: 1, Versatile: 2, Powerful: 3, Default: 1, "Long context": 2 };
 
 const answers = scripted((id, req) => {
@@ -139,7 +139,7 @@ test("drops two-level ordinals unless a shared scale widens them", async () => {
   );
   assert.equal(j.tables[0]!.skipped.find((s) => s.header === "Tier")?.reason, "only two levels");
 
-  // t1 in the shared page has only Versatile/Powerful, yet keeps color via t0's three-level scale.
+  // In the shared page, t1 has only Versatile and Powerful, but it keeps its color through t0's three-level scale.
   const shared = await Effect.runPromise(judgePage(page).pipe(Effect.provide(answers)));
   assert.ok(shared.tables[1]!.encodings.some((e) => e.header === "Category"));
 });
@@ -222,7 +222,7 @@ test("unordered label columns never send pairwise order questions", async () => 
 });
 
 test("never offers a share for same-named columns of different magnitude", async () => {
-  // Home runs in the last five games (0 to 1) and per season (4 to 62): one header, not one scale.
+  // Home runs per game (0 to 1) and per season (4 to 62) share a header but not a scale.
   const games = pricing(
     "t0",
     ["Date", "HR"],
@@ -261,7 +261,7 @@ test("never offers a share for same-named columns of different magnitude", async
 });
 
 test("columns on one shared scale share one direction", async () => {
-  // Two stores' prices; the model is sure about one table and unsure about the other.
+  // Prices from two stores. The model is sure about one table and unsure about the other.
   const a = pricing(
     "t0",
     ["Item", "Price"],
@@ -299,7 +299,7 @@ test("columns on one shared scale share one direction", async () => {
 });
 
 test("brackets that name the rows are ignored; brackets that are values are shaded", async () => {
-  // Age brackets name each row, like years; a median-age bracket is a value of the row.
+  // Age brackets name each row, as years do. A median-age bracket is a value of the row.
   const ages = pricing(
     "t0",
     ["Age group", "Median age", "Population"],
@@ -381,7 +381,7 @@ test("date columns are shaded by code, never asked about, and never shared", asy
     asked.push(id);
     return { type: "noul", noul: 0 };
   });
-  // Nine unique names: free text, so the only candidate column is the dates.
+  // Nine unique names read as free text, so the dates are the only candidate column.
   const releases = (id: string) =>
     pricing(
       id,
@@ -416,4 +416,35 @@ test("date columns are shaded by code, never asked about, and never shared", asy
     j.tables[0]!.skipped.map((s) => s.header),
     ["Set"],
   );
+});
+
+test("a shared ordinal scale too wide to reorder leaves each table its own order", async () => {
+  // Seven grades per table and thirteen across both: more than the union order asks about.
+  const grades = Array.from({ length: 13 }, (_, i) => `G${String(i + 1).padStart(2, "0")}`);
+  const graded = (id: string, levels: readonly string[]) =>
+    pricing(
+      id,
+      ["Item", "Grade"],
+      levels.map((g, i) => [`${id}-${i}`, g]),
+    );
+  const model = scripted((id, req) => {
+    if (id.endsWith(".relation"))
+      return choice({ ordered_levels: 0.95, unordered_kinds: 0.05, workflow_states: 0, options: 0 });
+    if (id.endsWith(".polarity")) return choice({ higher_is_better: 0.9, lower_is_better: 0.05, neutral: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    if (/\.lt\d+_\d+$/.test(id)) {
+      const { a, b } = req.questions[id]!.instructions as { a: string; b: string };
+      return a < b ? choice({ a: 0.95, b: 0.05 }) : choice({ a: 0.05, b: 0.95 });
+    }
+    return { type: "noul", noul: 0 };
+  });
+  const tables = [graded("t0", grades.slice(0, 7)), graded("t1", grades.slice(6))];
+  const j = await Effect.runPromise(judgePage({ ...page, tables }).pipe(Effect.provide(model)));
+  const grade1 = j.tables[1]!.encodings.find((e) => e.header === "Grade");
+  assert.ok(grade1?.kind === "ordinal");
+  assert.deepEqual(
+    grade1.order,
+    grades.slice(6).map((g) => g.toLowerCase()),
+  );
+  assert.equal(grade1.group, null);
 });

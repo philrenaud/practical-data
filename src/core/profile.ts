@@ -1,7 +1,8 @@
 /**
- * Column profiling. Code decides what is *possible* (numeric vs. a short set of
- * labels vs. free text) and computes every statistic; the decision model only
- * judges meaning. See docs/decisions.md for the split.
+ * Profiles the columns of a table. The code decides what a column can be
+ * (numbers, a short set of labels, or free text) and computes every
+ * statistic. The decision model judges only meaning. docs/decisions.md
+ * explains the split.
  */
 import { parseDate } from "./dates.ts";
 import { isDateLike, isMissing, normalizeLabel, parseNumber, stripNoise } from "./parse.ts";
@@ -25,13 +26,13 @@ export interface NumericProfile {
   readonly distinct: number;
   /** log10(max / min) when every value is positive, else null. */
   readonly decades: number | null;
-  /** Values are exactly 1..n in row order: almost always a rank column. */
+  /** True when the values are exactly 1 to n in row order, which almost always means a rank column. */
   readonly isSequence: boolean;
-  /** Every value is an integer between 1800 and 2100. */
+  /** True when every value is an integer from 1800 to 2100. */
   readonly looksLikeYears: boolean;
   /** Share of parsed values written as bounds ("≤ 272K", "65+"). */
   readonly boundShare: number;
-  /** Share of parsed values written as ranges ("20–25"); compared by midpoint. */
+  /** Share of parsed values written as ranges ("20–25"). A range is compared by its midpoint. */
   readonly rangeShare: number;
   /** Share of parsed values written as clock durations ("2:59"). */
   readonly durationShare: number;
@@ -43,7 +44,7 @@ export interface CategoricalProfile {
   readonly kind: "categorical";
   readonly col: number;
   readonly header: string;
-  /** Normalized label per row; null when missing. */
+  /** The normalized label of each row. Null when the cell is missing. */
   readonly values: readonly (string | null)[];
   /** Distinct normalized labels in first-seen order. */
   readonly levels: readonly string[];
@@ -56,7 +57,7 @@ export interface TextProfile {
   readonly col: number;
   readonly header: string;
   readonly reason: string;
-  /** First few cells; used as row-label context for other questions. */
+  /** The first five cells. Questions about other columns use them as row labels. */
   readonly samples: readonly string[];
 }
 
@@ -119,21 +120,20 @@ const profileNumeric = (col: number, header: string, cells: readonly string[]): 
 const profileCategorical = (col: number, header: string, cells: readonly string[]): CategoricalProfile | string => {
   const values = cells.map((c) => (isMissing(c) ? null : normalizeLabel(c)));
   const filled = values.filter((v) => v !== null);
-  const display: Record<string, string> = {};
-  const levels: string[] = [];
+  // A Map treats labels such as "constructor" and "__proto__" as ordinary keys. An object does not.
+  const first = new Map<string, string>();
   cells.forEach((c, i) => {
     const v = values[i];
-    if (v != null && !(v in display)) {
-      display[v] = stripNoise(c);
-      levels.push(v);
-    }
+    if (v != null && !first.has(v)) first.set(v, stripNoise(c));
   });
+  const levels = [...first.keys()];
+  const display: Record<string, string> = Object.fromEntries(first);
   if (filled.length < MIN_FILLED) return "too few filled cells";
   if (levels.length < 2) return "single value";
   if (levels.length > MAX_ORDINAL_LEVELS) return "too many distinct values";
   if (levels.some((l) => l.length > 32)) return "values are long text";
   // All-unique labels are names, unless the list is short enough to be a full
-  // ranking (Tropical storm, Category 1 … Category 5); the model sorts those out.
+  // ranking (Tropical storm, Category 1 … Category 5). The model decides those.
   if (levels.length === filled.length && filled.length > 8) return "every value is unique";
   return { kind: "categorical", col, header, values, levels, display };
 };
@@ -147,7 +147,7 @@ export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
     const header = stripNoise(rawHeader);
     const cells = table.rows.map((r) => r[col] ?? "");
     const filled = cells.filter((c) => !isMissing(c));
-    // Dates stay out of the model's requests; judge.ts shades the ones that parse (dates.ts).
+    // Dates stay out of the model's requests. judge.ts shades the ones that dates.ts parses.
     if (filled.length > 0 && filled.filter(looksLikeDate).length / filled.length >= NUMERIC_SHARE) {
       return { kind: "text", col, header, reason: "dates or times", samples: cells.slice(0, 5).map(stripNoise) };
     }
@@ -169,7 +169,7 @@ export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
     };
   });
 
-/** Plain-language description of a numeric spread; Jev reads words better than ratios. */
+/** Describes the spread of a numeric column in words, because Jev reads words better than ratios. */
 export const describeSpread = (p: NumericProfile): string => {
   if (p.decades === null) return "includes zero or negative values";
   if (p.decades < 0.3) return "values are within a factor of 2 of each other";

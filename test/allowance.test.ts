@@ -2,11 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { lowAllowanceNote, mergeAllowance, quotaMessage, resetTime } from "../src/ext/allowance.ts";
 
-// 3 pm in New York on October 18 is 19:00 UTC; the next UTC midnight is 8 pm there.
+// 3 PM in New York on October 18 is 19:00 UTC. The next UTC midnight is 8 PM there.
 process.env["TZ"] = "America/New_York";
 const now = new Date("2026-10-18T19:00:00Z");
 
-test("the reset is the next UTC midnight, in the reader's time", () => {
+test("the reset is the next UTC midnight, shown in local time", () => {
   assert.equal(resetTime(now, "en-US"), "8:00 PM");
 });
 
@@ -30,7 +30,7 @@ test("a note appears only when under a fifth of today's allowance is left", () =
   assert.equal(at(80), null);
   assert.equal(at(79), "About 7 pages of free use left today. Add your own key in Options for unlimited use.");
   assert.equal(at(10), "About a page of free use left today. Add your own key in Options for unlimited use.");
-  assert.equal(at(0), null, "used up is the summary's job, not the note's");
+  assert.equal(at(0), null, "the summary reports a used-up allowance, not the note");
   assert.equal(at(10, "2026-10-17"), null, "yesterday's count no longer applies");
   assert.equal(lowAllowanceNote(undefined, now), null);
 });

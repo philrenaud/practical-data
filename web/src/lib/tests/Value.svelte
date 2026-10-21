@@ -1,4 +1,4 @@
-<!-- Any JSON value from a request, as a reader would want to see it: lists inline, uniform objects as a table, other objects as fields. -->
+<!-- Renders a JSON value from a request. Scalar lists render inline, object arrays and wide flat objects as tables, other objects as fields. -->
 <script lang="ts">
   import Value from "./Value.svelte";
 
@@ -7,7 +7,7 @@
   type Obj = Readonly<Record<string, unknown>>;
   const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
   const isScalar = (v: unknown) => v === null || typeof v !== "object";
-  /** Keys of an array of plain objects, in first-seen order; null if the array isn't one. */
+  /** Returns the keys of an array of plain objects, in first-seen order. Returns null for any other value. */
   const columnsOf = (v: unknown): string[] | null => {
     if (!Array.isArray(v) || v.length === 0 || !v.every(isObj)) return null;
     const keys = new Set<string>();
@@ -45,7 +45,7 @@
     </table>
   </div>
 {:else if isObj(value) && Object.keys(value).length > 4 && Object.values(value).every(isScalar)}
-  <!-- A flat record (one table row): read across, like the row it is. -->
+  <!-- A flat record with more than four fields, such as a table row, renders as one row. -->
   <div class="grid-wrap">
     <table class="rows">
       <thead

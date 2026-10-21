@@ -1,16 +1,16 @@
 # Fixture sources and attribution
 
-`fixtures/live/` holds excerpts of public web pages used to test table
-extraction and judging: each file keeps only the page title, its headings and
-its tables (scripts, styles, images and links removed), retrieved in October
-2026. They are included for testing and research, with attribution below;
-they are not covered by this repository's MIT license, which applies to the
-code. If you hold rights in one of these pages and want it removed, open an
-issue.
+`fixtures/live/` holds excerpts of public web pages, retrieved in October
+2026, for testing table extraction and judging. Each file keeps only the page
+title, the headings, and the tables. Scripts, styles, images, and links are
+removed. The excerpts are included for testing and research, with the
+attribution below. This repository's MIT license applies to the code, not to
+these excerpts. If you hold rights in one of these pages and want it removed,
+open an issue.
 
-`fixtures/synthetic/` pages are original and MIT-licensed with the code.
-`fixtures/recordings/` holds recorded decision-model answers (probabilities
-only) so the test suite can run offline.
+The pages in `fixtures/synthetic/` are original and MIT-licensed with the
+code. `fixtures/recordings/` holds recorded answers from the decision model,
+which contain probabilities only, so that the tests can run offline.
 
 | Fixture | Source | Rights |
 | --- | --- | --- |

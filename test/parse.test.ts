@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isMissing, parseNumber } from "../src/core/parse.ts";
+import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 
 const cases: ReadonlyArray<readonly [string, number | null, string | null, (readonly [number, number])?]> = [
   ["$0.25", 0.25, "$"],
-  // Games behind and other halves: "6½", "½".
+  // Halves, as in games behind.
   ["6½", 6.5, null],
   ["½", 0.5, null],
   ["51½", 51.5, null],
@@ -67,9 +67,12 @@ test("isMissing recognizes placeholders", () => {
   for (const t of ["0", "$0.00", "None of the above"]) assert.equal(isMissing(t), false, t);
 });
 
-test("clock-like durations are numbers; times of day stay dates", async () => {
-  const { isDateLike } = await import("../src/core/parse.ts");
+test("clock-like durations are numbers; times of day stay dates", () => {
   assert.equal(isDateLike("2:59"), false);
   assert.equal(isDateLike("7:05 PM"), true);
   assert.equal(isDateLike("2024-01-02"), true);
+});
+
+test("a unit that names an Object.prototype member is a unit, not a magnitude", () => {
+  assert.deepEqual(parseNumber("5 constructor"), { value: 5, unit: "constructor", bound: false, range: null });
 });

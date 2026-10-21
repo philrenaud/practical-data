@@ -1,6 +1,8 @@
 /**
- * Probe: compares question designs for ordinal detection and ordering on real
- * columns. Not part of the eval; used to pick the design that the eval scores.
+ * Probe. Compares question designs for ordinal detection and ordering on real
+ * columns. It is not part of the eval. Its results chose the design that the
+ * eval scores (see docs/decisions.md). Calls Jev live, so it needs
+ * TYPESAFE_API_KEY.
  */
 import { Effect } from "effect";
 import { jev } from "../../src/decide/model.ts";

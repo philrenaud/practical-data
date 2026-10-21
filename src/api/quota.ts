@@ -1,77 +1,66 @@
 /**
  * Daily allowances for the hosted endpoint. One Durable Object per UTC day
- * holds that day's counts: requests per install, and input tokens spent in
- * total. A new day is a new object, so counts reset without a sweep; each
- * object deletes itself two days later.
+ * holds that day's counts. It counts the requests from each install and the
+ * input tokens that all installs spend. Each day uses a new object, so the
+ * counts reset with no cleanup job. An alarm deletes each object's storage
+ * two days after the object first creates its tables. The SQL is in
+ * counts.ts.
  */
 import { DurableObject } from "cloudflare:workers";
+import {
+  createTables,
+  release,
+  reserve,
+  settle,
+  stats,
+  type Allowance,
+  type Reservation,
+  type Stats,
+} from "./counts.ts";
 
-export interface Allowance {
-  /** Requests one install may send to the model per day (cache hits don't count). */
-  readonly installRequests: number;
-  /** Input tokens all installs together may spend per day. */
-  readonly tokenBudget: number;
-}
-
-export interface Reservation {
-  readonly status: "ok" | "install_limit" | "budget_spent";
-  /** Requests this install has left today, after this one. */
-  readonly remaining: number;
-}
+export type { Allowance, Reservation } from "./counts.ts";
 
 const KEEP_MS = 2 * 24 * 60 * 60 * 1000;
 
+/** The counts for one UTC day. */
 export class Quota extends DurableObject {
   #ready = false;
 
-  #init() {
+  /** Creates the tables, and sets the delete alarm, on the first call after the object starts. */
+  async #open() {
     if (this.#ready) return;
-    const sql = this.ctx.storage.sql;
-    sql.exec("CREATE TABLE IF NOT EXISTS installs (id TEXT PRIMARY KEY, requests INTEGER NOT NULL)");
-    sql.exec("CREATE TABLE IF NOT EXISTS totals (name TEXT PRIMARY KEY, value INTEGER NOT NULL)");
+    createTables(this.ctx.storage.sql);
+    if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + KEEP_MS);
     this.#ready = true;
   }
 
-  /** Counts one model request for `install`, unless today's allowance is used up. */
-  async reserve(install: string, allowance: Allowance): Promise<Reservation> {
-    this.#init();
-    const sql = this.ctx.storage.sql;
-    const spent =
-      sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
-    const used =
-      sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
-    const left = Math.max(0, allowance.installRequests - used);
-    if (spent >= allowance.tokenBudget) return { status: "budget_spent", remaining: left };
-    if (left === 0) return { status: "install_limit", remaining: 0 };
-    sql.exec(
-      "INSERT INTO installs (id, requests) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET requests = requests + 1",
-      install,
-    );
-    if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + KEEP_MS);
-    return { status: "ok", remaining: left - 1 };
+  /** Counts one model request and its estimated input tokens, unless today's allowance is used up. */
+  async reserve(install: string, allowance: Allowance, estimate: number): Promise<Reservation> {
+    await this.#open();
+    return reserve(this.ctx.storage.sql, install, allowance, estimate);
   }
 
-  /** Adds the input tokens a forwarded request actually used. */
-  charge(tokens: number): void {
-    this.#init();
-    if (!Number.isFinite(tokens) || tokens <= 0) return;
-    this.ctx.storage.sql.exec(
-      "INSERT INTO totals (name, value) VALUES ('tokens', ?) ON CONFLICT(name) DO UPDATE SET value = value + excluded.value",
-      Math.round(tokens),
-    );
+  /** Gives back a request and its estimated tokens, when the upstream call failed. */
+  async release(install: string, estimate: number): Promise<void> {
+    await this.#open();
+    release(this.ctx.storage.sql, install, estimate);
+  }
+
+  /** Replaces a request's estimated tokens with the input tokens it used. */
+  async settle(estimate: number, used: number): Promise<void> {
+    await this.#open();
+    settle(this.ctx.storage.sql, estimate, used);
   }
 
   /** Today's totals, for the operator. */
-  stats(): { installs: number; requests: number; tokens: number } {
-    this.#init();
-    const sql = this.ctx.storage.sql;
-    const i = sql.exec<{ n: number; r: number | null }>("SELECT COUNT(*) AS n, SUM(requests) AS r FROM installs").one();
-    const tokens =
-      sql.exec<{ value: number }>("SELECT value FROM totals WHERE name = 'tokens'").toArray()[0]?.value ?? 0;
-    return { installs: i.n, requests: i.r ?? 0, tokens };
+  async stats(): Promise<Stats> {
+    await this.#open();
+    return stats(this.ctx.storage.sql);
   }
 
+  /** Deletes the day's counts. */
   async alarm(): Promise<void> {
     await this.ctx.storage.deleteAll();
+    this.#ready = false;
   }
 }

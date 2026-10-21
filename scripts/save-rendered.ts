@@ -1,8 +1,8 @@
 /**
  * Saves a page's DOM after its scripts have run, for fixtures whose tables
- * are built client-side. Scripts are stripped so the copy stays static.
+ * are built in the browser. It removes scripts so that the copy stays static.
  *
- *   node scripts/save-rendered.ts <url> <slug>   # → fixtures/live/<slug>.html
+ *   node scripts/save-rendered.ts <url> <slug>   # writes fixtures/live/<slug>.html
  */
 import { writeFile } from "node:fs/promises";
 import { chromium } from "playwright";

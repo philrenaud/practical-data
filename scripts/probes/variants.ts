@@ -1,4 +1,7 @@
-/** Probe: does adding per-label row counts or sibling headers to state improve pairwise order? */
+/**
+ * Probe. Checks whether per-label row counts or sibling headers in the state
+ * improve the pairwise order. Calls Jev live, so it needs TYPESAFE_API_KEY.
+ */
 import { readFile } from "node:fs/promises";
 import { Effect } from "effect";
 import { profileTable, type CategoricalProfile } from "../../src/core/profile.ts";

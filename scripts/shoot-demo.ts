@@ -1,4 +1,8 @@
-/** Screenshots the built demo site (site/) at desktop and phone widths, light and dark, and checks contrast + console errors. */
+/**
+ * Screenshots the built site in site/, or the URL in the first argument, at
+ * desktop and phone widths in light and dark. Reports painted cells,
+ * horizontal overflow, and page errors.
+ */
 import { chromium } from "playwright";
 import { serve } from "./serve.ts";
 

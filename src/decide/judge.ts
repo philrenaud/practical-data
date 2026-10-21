@@ -1,11 +1,14 @@
 /**
- * The judging program: page snapshot in, color encodings out.
+ * Turns a `PageSnapshot` into a `PageJudgment`: the color encoding of each
+ * column that is worth shading. See README.md in this directory.
  *
- * 1. Profile every table in code.
- * 2. One request per table (run concurrently) asks about every candidate column.
- * 3. Readers + `Policy` thresholds turn probabilities into encodings.
- * 4. One page-level request asks whether same-named columns across tables
- *    should share a scale, then widens their domains / merges their orders.
+ * 1. `profileTable` profiles each table in code.
+ * 2. Each table gets one request for its numeric columns and summary rows,
+ *    and one request per categorical column. All requests run concurrently.
+ * 3. The `read` functions and the `Policy` thresholds turn the answers into
+ *    encodings. Code alone encodes date columns.
+ * 4. One page request asks whether same-named columns in different tables
+ *    share a scale. Shared columns get one domain or one order.
  */
 import { Effect } from "effect";
 import { orderFromPairs } from "../core/order.ts";
@@ -37,31 +40,43 @@ import {
   tableState,
 } from "./questions.ts";
 
-/** Probability thresholds. Tuned against `fixtures/expectations.json` by `npm run eval`. */
+/**
+ * The probability thresholds that turn answers into decisions. The values in
+ * `DEFAULT_POLICY` were set by running `npm run eval` against
+ * `fixtures/expectations.json`.
+ */
 export interface Policy {
+  /** P(amount) needed to shade a numeric column. */
   readonly measure: number;
+  /** P(ordered levels) needed to shade a categorical column. */
   readonly ordinal: number;
+  /** Pairwise order agreement needed together with `ordinal`. */
   readonly orderConfidence: number;
+  /** P(ratios matter) needed for a log scale. */
   readonly log: number;
-  /** Below this, a polarity call falls back to neutral. */
+  /** P(higher is better) or P(lower is better) needed for a direction. Below it, the scale is neutral. */
   readonly polarity: number;
+  /** P(summary row) needed to leave a row out of the domains. */
   readonly aggregate: number;
+  /** P(same quantity) needed to put a group of columns on one scale. */
   readonly share: number;
   /** P(values compare across rows) needed to judge a table transposed. */
   readonly rows: number;
   /**
-   * A middling "ordered levels" probability still counts when the pairwise
-   * comparisons agree strongly: consistent pairwise answers are evidence the
-   * order is real (Lightweight < Versatile < Powerful scores ~0.6 / 0.95).
+   * A lower P(ordered levels) that still counts when the pairwise answers
+   * agree at `strongOrder` or above. Consistent pairwise answers are evidence
+   * that the order is real. Lightweight < Versatile < Powerful scores about
+   * 0.6 and 0.95. Below this value, the pairwise questions are not sent.
    */
   readonly ordinalWithStrongOrder: number;
   readonly strongOrder: number;
 }
 
 /**
- * Coloring needs the model to be at least "fairly sure" (0.7) that a column is
- * comparable and, for categories, of their order. An unsure *direction* still
- * colors, on the neutral scale.
+ * The shipped thresholds. A column gets color only when the model is at
+ * least 0.7 sure that it is comparable. Label columns also need 0.7 for
+ * their order. A column with an unsure direction still gets color, on the
+ * neutral scale.
  */
 export const DEFAULT_POLICY: Policy = {
   measure: 0.7,
@@ -76,10 +91,11 @@ export const DEFAULT_POLICY: Policy = {
   strongOrder: 0.85,
 };
 
+/** Tables with fewer rows are not judged. */
 const MIN_ROWS = 3;
-/** Rows become columns when transposed; past this, each would be its own question set. */
+/** The most rows a table can have and still be judged transposed. Each row becomes a column with its own questions. */
 export const MAX_TRANSPOSE_ROWS = 40;
-/** Cap on labels merged across tables before asking pairwise order questions. */
+/** The most labels in a shared ordinal group for which a merged order is asked. */
 const MAX_UNION_LEVELS = 12;
 
 const pickPolarity = (p: Readonly<Record<Polarity, number>>, threshold: number): Polarity => {
@@ -100,8 +116,9 @@ const extent = (values: readonly (number | null)[], exclude: ReadonlySet<number>
 };
 
 /**
- * Evidence for a column code decided alone. A date column is always comparable
- * and has no better direction: earlier and later are not good and bad.
+ * The evidence recorded for a column that code encodes without the model. A
+ * date column is always comparable. It has no better direction, because
+ * earlier and later are not good and bad.
  */
 const CODE_EVIDENCE: ColumnEncoding["evidence"] = {
   comparable: 1,
@@ -110,7 +127,7 @@ const CODE_EVIDENCE: ColumnEncoding["evidence"] = {
   orderConfidence: null,
 };
 
-/** Date columns, shaded from earliest to latest without asking the model. */
+/** Encodes the date columns from earliest to latest, without the model. */
 const dateEncodings = (
   table: TableSnapshot,
   profiles: readonly ColumnProfile[],
@@ -140,15 +157,17 @@ const dateEncodings = (
     ];
   });
 
+/** A table's judgment before cross-table sharing, with what the share question needs. */
 interface Planned {
   readonly table: TableSnapshot;
   readonly judgment: TableJudgment;
-  /** Samples per encoded column, for cross-table questions. */
+  /** Samples per encoded column, by column index. */
   readonly samples: ReadonlyMap<number, readonly string[]>;
+  /** Units per encoded numeric column, by column index. */
   readonly units: ReadonlyMap<number, string | null>;
 }
 
-/** One table, judged column by column. Optionally asks the orientation question too. */
+/** Judges one table column by column. With `askOrientation`, the table request also asks the orientation question. */
 const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, askOrientation: boolean, now: number) =>
   Effect.gen(function* () {
     const model = yield* DecisionModel;
@@ -178,8 +197,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
 
     const ctx = { page: page.title, table: table.title };
     const numeric = candidates.filter((p) => p.kind === "numeric");
-    const categorical = candidates.filter((p) => p.kind === "categorical");
     const numericPlans = numeric.map((p, k) => ({ profile: p, ...numericQuestions(k, p) }));
+    const categoricalPlans = candidates
+      .filter((p) => p.kind === "categorical")
+      .map((p) => ({ profile: p, ...categoricalQuestions(p) }));
     const aggregates = aggregateQuestions(table.headers, table.rows);
     // Orientation only matters when several numeric columns could be read either way.
     const orientation =
@@ -190,8 +211,8 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
           })
         : null;
 
-    // One request for the numeric columns and aggregate rows, plus one focused
-    // request per categorical column, all in flight together.
+    // One request covers the numeric columns and the summary rows. Each
+    // categorical column gets its own request. All of them run concurrently.
     const [tableAnswers, ...categoricalAnswers] = yield* Effect.all(
       [
         model.evaluate({
@@ -203,17 +224,16 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
             ...numericPlans.map((p) => p.questions),
           ),
         }),
-        ...categorical.map((p) =>
+        ...categoricalPlans.map(({ profile: p, ...q }) =>
           Effect.gen(function* () {
-            const q = categoricalQuestions(p);
             const state = categoricalState(
               ctx,
               p,
               table.headers.filter((h, i) => i !== p.col && h !== ""),
             );
             const first = yield* model.evaluate({ state, questions: q.questions });
-            // Pairwise order questions only when the labels might be ordered (a 12-team
-            // column would otherwise send 132 of them).
+            // Send the pairwise order questions only when the labels might be ordered.
+            // A column of 12 team names would otherwise send 132 of them.
             if (q.ordinalOf(first.answers) < policy.ordinalWithStrongOrder) return first;
             const pairs = yield* model.evaluate({ state, questions: q.pairQuestions });
             return { ...first, answers: { ...first.answers, ...pairs.answers } };
@@ -227,10 +247,9 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
     const excluded = new Set(aggregateRows);
     const plans = [
       ...numericPlans.map((plan) => ({ kind: "numeric" as const, ...plan, answers })),
-      ...categorical.map((p, i) => ({
+      ...categoricalPlans.map((plan, i) => ({
         kind: "categorical" as const,
-        profile: p,
-        read: categoricalQuestions(p).read,
+        ...plan,
         answers: categoricalAnswers[i]!.answers,
       })),
     ];
@@ -252,7 +271,7 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
           col: p.col,
           header: p.header,
           polarity: pickPolarity(r.polarity, policy.polarity),
-          // Ranks are evenly spaced positions; a log scale would crowd the bottom of the list.
+          // Ranks are evenly spaced positions. A log scale would crowd the bottom of the list.
           transform: r.role !== "rank" && r.log !== null && r.log >= policy.log && domain[0] > 0 ? "log" : "linear",
           unit: p.unit,
           domain,
@@ -318,9 +337,10 @@ const judgeColumns = (page: PageSnapshot, table: TableSnapshot, policy: Policy, 
   });
 
 /**
- * One table in its natural orientation. Without an override, the orientation
- * question rides along in the column pass; if the model says rows, the table
- * is judged again transposed.
+ * Judges one table. `forced` is the orientation the user chose. Without it,
+ * the first pass also asks the orientation question. If P(rows) reaches
+ * `Policy.rows`, the table is judged again, transposed. A table with more
+ * than `MAX_TRANSPOSE_ROWS` rows is always judged by columns.
  */
 const judgeTable = (page: PageSnapshot, table: TableSnapshot, policy: Policy, now: number, forced?: Orientation) =>
   Effect.gen(function* () {
@@ -347,16 +367,18 @@ interface GroupCandidate {
   readonly members: readonly { readonly planned: Planned; readonly encoding: ColumnEncoding }[];
 }
 
+/** Columns with the same kind, normalized header, and unit get the same key. */
 const groupKey = (planned: Planned, e: ColumnEncoding): string =>
   `${e.kind}|${normalizeLabel(e.header)
     .replace(/[^a-z0-9%$]+/g, " ")
     .trim()}|${planned.units.get(e.col) ?? ""}`;
 
 /**
- * Largest magnitude ratio between columns that may share a scale. The same
- * header can name a total at different spans (home runs in the last five
- * games, 0 to 1, and in a season, 0 to 62); on one scale the smaller column
- * would show as one color, so such columns are never offered to the model.
+ * The largest ratio between the magnitudes of columns that can share a scale.
+ * One header can name totals over different spans, such as home runs in the
+ * last five games (0 to 1) and in a season (0 to 62). On one scale, the
+ * smaller column would show as one color. Such columns are never offered to
+ * the model.
  */
 export const MAX_SHARE_RATIO = 10;
 
@@ -365,7 +387,11 @@ type Member = GroupCandidate["members"][number];
 const magnitude = (e: ColumnEncoding): number =>
   e.kind === "quantitative" ? Math.max(Math.abs(e.domain[0]), Math.abs(e.domain[1])) : 0;
 
-/** Splits numeric members into runs whose largest values are within MAX_SHARE_RATIO of each other. */
+/**
+ * Splits quantitative members into runs by magnitude. Each member is within
+ * `MAX_SHARE_RATIO` of the smallest member of its run. Ordinal members stay
+ * in one run.
+ */
 const byMagnitude = (members: readonly Member[]): Member[][] => {
   if (members[0]?.encoding.kind !== "quantitative") return [[...members]];
   const sorted = [...members].sort((a, b) => magnitude(a.encoding) - magnitude(b.encoding));
@@ -376,16 +402,20 @@ const byMagnitude = (members: readonly Member[]): Member[][] => {
     if (run !== undefined && magnitude(m.encoding) <= Math.max(floor, Number.MIN_VALUE) * MAX_SHARE_RATIO) run.push(m);
     else runs.push([m]);
   }
-  // Page order within a run, so a group the split leaves whole asks the same question as before.
+  // Keep page order within a run. A group that the split leaves whole then sends
+  // the same request as before the split, and its recording still matches.
   return runs.map((run) => members.filter((m) => run.includes(m)));
 };
 
-/** Same header (normalized), same kind, same unit and similar magnitude, in two or more tables. */
+/**
+ * Finds the columns that may share a scale. Members have the same `groupKey`
+ * and a similar magnitude, and come from two or more tables.
+ */
 const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
   const byKey = new Map<string, Member[]>();
   for (const p of planned) {
     for (const e of p.judgment.encodings) {
-      // Dates are never offered: the question is about measures, and code decided them alone.
+      // Skip dates. The share question is about measures, and code encoded the dates alone.
       if (e.kind === "quantitative" && isDateUnit(e.unit)) continue;
       const key = groupKey(p, e);
       byKey.set(key, [...(byKey.get(key) ?? []), { planned: p, encoding: e }]);
@@ -400,9 +430,9 @@ const findGroups = (planned: readonly Planned[]): GroupCandidate[] => {
 };
 
 /**
- * One direction for a shared scale: the members' direction probabilities,
- * averaged, through the usual rule. Otherwise one table could read a value as
- * good and the other as neutral, and the same value would get two colors.
+ * Picks one direction for a shared scale from the mean of the members'
+ * polarity probabilities. Without it, one table could read a value as good
+ * and another as neutral, and the same value would get two colors.
  */
 const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Polarity => {
   const mean = (k: Polarity) => members.reduce((n, e) => n + e.evidence.polarity[k], 0) / members.length;
@@ -412,6 +442,11 @@ const sharedPolarity = (members: readonly ColumnEncoding[], policy: Policy): Pol
   );
 };
 
+/**
+ * Sends one page request with a share question per group. Each group that
+ * the model accepts gets one domain and transform, or one order, and one
+ * direction.
+ */
 const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], policy: Policy) =>
   Effect.gen(function* () {
     const groups = findGroups(planned);
@@ -431,7 +466,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
         })),
       );
       if (g.kind === "ordinal") {
-        // Speculative: only consumed if the group is shared and tables disagree on levels.
+        // Asked before the share answer is known. The answers are used only when the
+        // group is shared and its tables have different labels.
         const labels = [...new Set(g.members.flatMap((m) => (m.encoding.kind === "ordinal" ? m.encoding.order : [])))];
         if (labels.length > MAX_UNION_LEVELS) return;
         const pq = pairQuestions(`g${gi}`, `the column "${g.members[0]!.encoding.header}"`, labels);
@@ -451,7 +487,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
           Math.min(...qs.map((e) => e.domain[0])),
           Math.max(...qs.map((e) => e.domain[1])),
         ];
-        // One transform for the whole group, by majority; mixed scales would defeat the comparison.
+        // One transform for the group: log when at least half the members use log.
+        // Mixed transforms would break the comparison.
         const logVotes = qs.filter((e) => e.transform === "log").length;
         const transform = logVotes * 2 >= qs.length && domain[0] > 0 ? "log" : "linear";
         const polarity = sharedPolarity(qs, policy);
@@ -464,6 +501,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
           union !== undefined && union.labels.length > largest.order.length
             ? orderFromPairs(union.labels, union.read(response.answers)).order
             : largest.order;
+        // Without a union order, a label outside the largest table's order would lose its color.
+        if (!os.every((e) => e.order.every((l) => order.includes(l)))) return;
         const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
         const labels = order.map((l) => display.get(l) ?? l);
         const polarity = sharedPolarity(os, policy);
@@ -478,13 +517,17 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
   });
 
 /**
- * Two-level ordinals (GA / Preview, Default / Long context, AL / NL) carry one
- * bit the text already shows, and they are where the model's ordinal calls are
- * least stable. Applied after sharing, so a two-level column that joined a
- * wider shared scale keeps its color.
+ * The fewest levels an ordinal column needs to keep its color. Two-level
+ * columns such as GA / Preview or AL / NL carry one bit that the text already
+ * shows. The model's ordinal calls were also least stable on them.
  */
 const MIN_ORDINAL_LEVELS = 3;
 
+/**
+ * Moves ordinal encodings with fewer than `MIN_ORDINAL_LEVELS` levels to
+ * `skipped`. It runs after sharing, so a two-level column on a wider shared
+ * scale keeps its color.
+ */
 const dropBinaryOrdinals = (j: TableJudgment): TableJudgment => {
   const binary = j.encodings.filter((e) => e.kind === "ordinal" && e.order.length < MIN_ORDINAL_LEVELS);
   if (binary.length === 0) return j;
@@ -505,18 +548,24 @@ const dropBinaryOrdinals = (j: TableJudgment): TableJudgment => {
 
 // ── Entry point ─────────────────────────────────────────────────────────────
 
+/**
+ * Judges every table on `page`. A table whose requests fail is listed in
+ * `failed`, and the other tables keep their results. The effect fails only
+ * when every table fails.
+ */
 export const judgePage = (
   page: PageSnapshot,
   policy: Policy = DEFAULT_POLICY,
-  /** Per-table orientation chosen by the reader; skips the orientation question. */
+  /** The orientation the user chose, by table id. A table listed here skips the orientation question. */
   orientations: Readonly<Record<string, Orientation>> = {},
-  /** The instant relative dates ("3 days ago") count back from. */
+  /** The instant that relative dates such as "3 days ago" count back from. */
   now: number = Date.now(),
 ) =>
   Effect.gen(function* () {
     const model = yield* DecisionModel;
     const tables = page.tables.filter((t) => t.rows.length >= MIN_ROWS && t.headers.length >= 2);
-    // Wrap the model once so every request below is counted for the usage report.
+    // Count each `evaluate` call and its input tokens for `usage`. Cache hits count
+    // too, and one call can send several HTTP requests.
     let inputTokens = 0;
     let requests = 0;
     const counted = DecisionModel.of({
@@ -531,8 +580,8 @@ export const judgePage = (
           ),
         ),
     });
-    // Each table succeeds or fails on its own; one failed request must not discard
-    // every other table's results (including cache hits).
+    // Each table succeeds or fails on its own. One failed request does not discard
+    // the other tables' results.
     const results = yield* Effect.forEach(
       tables,
       (t) => Effect.result(judgeTable(page, t, policy, now, orientations[t.id])),
@@ -544,11 +593,11 @@ export const judgePage = (
     const failed = results.flatMap((r, i) =>
       r._tag === "Failure" ? [{ id: tables[i]!.id, reason: r.failure.reason, message: r.failure.message }] : [],
     );
-    // Nothing judged at all: surface the error instead of an empty success.
+    // If no table was judged, fail with the first error instead of returning an empty judgment.
     if (planned.length === 0 && failed.length > 0) {
       return yield* new DecisionError({ reason: failed[0]!.reason, message: failed[0]!.message });
     }
-    // Shared scales are a refinement: if that request fails, keep each table's own scale.
+    // If the share request fails, each table keeps its own scales.
     const shared = yield* shareAcrossTables(page, planned, policy).pipe(
       Effect.provideService(DecisionModel, counted),
       Effect.orElseSucceed(() => planned),

@@ -3,7 +3,7 @@
 
   const { data } = $props();
 
-  /** What each test file covers, by the module it tests. */
+  /** A summary of each test file, keyed by file name. */
   const ABOUT: Readonly<Record<string, string>> = {
     "allow.test.ts":
       "The free endpoint accepts each request that the extension sends on the test pages. It refuses all other requests.",

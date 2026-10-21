@@ -1,4 +1,4 @@
-<!-- Pass, known limitation (the reason is shown where the failure is listed), or fail. -->
+<!-- A pass, fail, or known-limitation badge. The caller shows the reason for a known limitation. -->
 <script lang="ts">
   interface Props {
     readonly ok: boolean;

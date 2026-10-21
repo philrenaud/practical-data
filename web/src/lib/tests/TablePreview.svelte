@@ -1,6 +1,6 @@
 <!--
-  A shaded table in a short frame, with one column or one row outlined and
-  scrolled into view: the context for an example question.
+  A shaded table in a short frame, for an example question. The frame outlines
+  the question's column or row and scrolls it into view.
 -->
 <script lang="ts">
   import { DEFAULT_PALETTE } from "../../../../src/core/palettes.ts";
@@ -16,7 +16,7 @@
   }
   const { t, col = null, row = null }: Props = $props();
 
-  /** Scrolls the frame so the outlined column and row are in view. Positions are measured against the frame, not the page. */
+  /** Scrolls the frame so that the outlined column and row are in view. Measures positions against the frame, not the page. */
   const focus = (frame: HTMLElement, target: { col: number | null; row: number | null }) => {
     const box = frame.getBoundingClientRect();
     const th = target.col === null ? undefined : frame.querySelectorAll("thead th")[target.col];

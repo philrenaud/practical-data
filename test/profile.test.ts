@@ -17,7 +17,7 @@ const table = {
 
 test("profiles each column by kind", () => {
   const p = profileTable(table);
-  // Short all-unique lists stay candidates (they can be full rankings); the model rejects names and notes.
+  // Short lists of unique values stay candidates, because they can be full rankings. The model rejects names and notes.
   assert.deepEqual(
     p.map((c) => c.kind),
     ["categorical", "categorical", "numeric", "numeric", "numeric", "categorical"],
@@ -56,4 +56,24 @@ test("timestamps and dates are not offered as categories or numbers", () => {
   const [time, day, type] = profileTable(events);
   assert.deepEqual([time?.kind, day?.kind, type?.kind], ["text", "text", "categorical"]);
   assert.equal(time?.kind === "text" && time.reason, "dates or times");
+});
+
+test("labels that name Object.prototype members are levels like any other", () => {
+  const p = profileTable({
+    id: "t0",
+    title: null,
+    headers: ["Role"],
+    rows: [["Driver"], ["Constructor"], ["__proto__"], ["Driver"], ["Constructor"]],
+  });
+  assert.equal(p[0]?.kind, "categorical");
+  if (p[0]?.kind !== "categorical") return;
+  assert.deepEqual(p[0].levels, ["driver", "constructor", "__proto__"]);
+  assert.deepEqual(
+    p[0].display,
+    Object.fromEntries([
+      ["driver", "Driver"],
+      ["constructor", "Constructor"],
+      ["__proto__", "__proto__"],
+    ]),
+  );
 });

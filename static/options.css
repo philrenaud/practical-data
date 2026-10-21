@@ -1,4 +1,4 @@
-/* Fonts ship with the extension (SIL OFL; licenses in fonts/), so Options makes no third-party requests. */
+/* The fonts ship with the extension under the SIL OFL, with licenses in fonts/. Options makes no third-party requests. */
 @font-face {
   font-family: "Bricolage Grotesque";
   src: url("fonts/bricolage-grotesque-latin.woff2") format("woff2");

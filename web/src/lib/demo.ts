@@ -1,7 +1,7 @@
 /**
- * The recorded examples: real tables and the judgments the real pipeline made
- * for them (scripts/demo-data.ts writes demo/data.json). Nothing on the site
- * calls a model.
+ * The home page examples. Each one is a real table and the judgment that the
+ * extension made for it. scripts/demo-data.ts writes them to demo/data.json.
+ * The site never calls a model.
  */
 import { isDateUnit } from "../../../src/core/dates.ts";
 import type { ColumnEncoding, PageJudgment, PageSnapshot } from "../../../src/core/types.ts";
@@ -20,7 +20,7 @@ export interface DemoSection {
 
 export const sections = data as unknown as readonly DemoSection[];
 
-/** Same-named columns that share a scale across one page's tables, by group. */
+/** Returns the number of columns in each shared-scale group of a page. */
 export const groupSizes = (judgment: PageJudgment): ReadonlyMap<string, number> => {
   const sizes = new Map<string, number>();
   for (const t of judgment.tables)
@@ -28,8 +28,7 @@ export const groupSizes = (judgment: PageJudgment): ReadonlyMap<string, number> 
   return sizes;
 };
 
-// ── Plain-language reasons ──────────────────────────────────────────────────
-
+/** Plain words for the reasons that the judge leaves a column unshaded. */
 const REASONS: Readonly<Record<string, string>> = {
   "looks like time": "a point in time (year, season, age)",
   "looks like identifier": "an identifier, not an amount",
@@ -48,7 +47,7 @@ const REASONS: Readonly<Record<string, string>> = {
   constant: "every value is the same",
 };
 
-const POLARITY: Readonly<Record<ColumnEncoding["polarity"], string>> = {
+export const POLARITY: Readonly<Record<ColumnEncoding["polarity"], string>> = {
   higher_is_better: "higher is better",
   lower_is_better: "lower is better",
   neutral: "no better direction",

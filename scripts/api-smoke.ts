@@ -1,13 +1,18 @@
 /**
- * Runs the hosted endpoint locally (`wrangler dev`) against a stand-in for
- * TypeSafe that replays fixtures/recordings, then checks what the extension
- * and an abuser would see: a whole page judged through the endpoint matches
- * Jev's own judgment, as does a table sent whole to /v1/judge (the Sheets
- * add-on's route), repeats come from the shared cache, foreign questions,
- * web-page origins and missing install ids are refused, and a spent daily
- * allowance surfaces as the "quota" error. Last, a fresh install of the
- * extension, built against the local endpoint and given no settings at all,
- * shades a page (dist/ is rebuilt for production afterwards).
+ * Runs the free endpoint locally with `wrangler dev`, against a stand-in for
+ * the TypeSafe API that replays fixtures/recordings. It checks the following:
+ *
+ * - A page judged through the endpoint matches Jev's own judgment.
+ * - A table sent to /v1/judge, the Sheets add-on's route, gets the same judgment.
+ * - A repeated request is answered from the shared cache.
+ * - The endpoint refuses unknown questions, web-page origins, and requests
+ *   with no install id.
+ * - A spent daily allowance returns the "quota" error.
+ * - A fresh install, built against the local endpoint with no settings,
+ *   shades a page.
+ *
+ * The last check rebuilds dist/ for the local endpoint, then rebuilds it for
+ * production.
  *
  *   node scripts/api-smoke.ts
  */
@@ -24,34 +29,43 @@ import type { PageSnapshot } from "../src/core/types.ts";
 const PORT = 8799;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const INSTALL_LIMIT = 12;
-// The hosted transport reads its origin from this global (esbuild defines it in builds), so
-// everything that imports model.ts is imported dynamically, after it is set.
+/** A page title that makes the stand-in for TypeSafe fail with the status that follows it. */
+const FAIL_UPSTREAM = "smoke: fail upstream with";
+// The hosted transport reads its origin from this global, which esbuild defines in builds.
+// Modules that import model.ts are imported dynamically, after the global is set.
 (globalThis as unknown as { PD_API_ORIGIN: string }).PD_API_ORIGIN = ORIGIN;
 const { DecisionError, DecisionModel, hosted, jev } = await import("../src/decide/model.ts");
 const { judgePage } = await import("../src/decide/judge.ts");
 const { fileCache } = await import("./lib/cache.ts");
-const { numericQuestions } = await import("../src/decide/questions.ts");
+const { aggregateQuestions, numericQuestions } = await import("../src/decide/questions.ts");
 type Question = import("../src/decide/model.ts").Question;
 type NumericProfile = import("../src/core/profile.ts").NumericProfile;
 
-/** A real "what kind of numbers" question, for a column called `header`. */
+/** Builds the extension's real role question for a column named `header`. */
 const roleQuestion = (header: string) =>
   numericQuestions(0, { kind: "numeric", col: 0, header, decades: 0 } as unknown as NumericProfile).questions;
 
 // ── Stand-in for TypeSafe ───────────────────────────────────────────────────
 
 let upstreamCalls = 0;
+/** Every Authorization header the endpoint sent upstream. A check below asserts on it. */
+const upstreamAuth = new Set<string>();
+/** The last request body that reached the stand-in for TypeSafe. */
+let upstreamBody = "";
 const upstream = createServer(async (req, res) => {
   let raw = "";
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
-  assert.equal(req.headers.authorization, "Bearer test-key");
+  upstreamAuth.add(req.headers.authorization ?? "(none)");
+  upstreamBody = raw;
+  const failure = raw.match(new RegExp(`${FAIL_UPSTREAM} (\\d{3})`));
+  if (failure !== null) return void res.writeHead(Number(failure[1]), { "Retry-After": "5" }).end("stand-in failure");
   const recorded = await readFile(
     `fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`,
     "utf8",
   ).catch(() => null);
   if (recorded !== null) return void res.writeHead(200, { "Content-Type": "application/json" }).end(recorded);
-  // Unrecorded: a well-formed answer that picks each question's first option.
+  // For a request with no recording, return a well-formed answer that picks the first option of each question.
   const { questions } = JSON.parse(raw) as { questions: Record<string, Question> };
   const answers = Object.fromEntries(
     Object.entries(questions).map(([id, q]) => {
@@ -80,7 +94,9 @@ const upstreamPort = (upstream.address() as { port: number }).port;
 const wrangler = spawn(
   "npx",
   [
-    "wrangler@4.147.0",
+    // Use the wrangler in devDependencies. Never download one.
+    "--no",
+    "wrangler",
     "dev",
     "-c",
     "api/wrangler.jsonc",
@@ -96,6 +112,8 @@ const wrangler = spawn(
     "TYPESAFE_API_KEY:test-key",
     "--var",
     `INSTALL_DAILY_REQUESTS:${INSTALL_LIMIT}`,
+    "--var",
+    "STATS_TOKEN:smoke-stats",
   ],
   { stdio: ["ignore", "pipe", "pipe"] },
 );
@@ -182,11 +200,25 @@ try {
 
   await check("questions the extension doesn't ask are refused", async () => {
     const r = await post(
-      { state: {}, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
+      { state: { page_title: "Inbox" }, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
       { "X-Practical-Data-Install": install },
     );
     assert.equal(r.status, 400);
     assert.equal(((await r.json()) as { error: string }).error, "questions");
+  });
+
+  await check("a 10,000-character cell is forwarded clipped to 2,000 characters", async () => {
+    const id = randomUUID();
+    const rows = Array.from({ length: 5 }, () => ["Total", "x".repeat(10_000)]);
+    const r = await post(
+      { state: { page_title: `Long cell ${id}` }, questions: aggregateQuestions(["Name", "Notes"], rows).questions },
+      { "X-Practical-Data-Install": id },
+    );
+    assert.equal(r.status, 200, await r.clone().text());
+    const sent = JSON.parse(upstreamBody) as {
+      questions: Record<string, { instructions: { row: { Notes: string } } }>;
+    };
+    assert.equal(sent.questions["row0.aggregate"]!.instructions.row.Notes, "x".repeat(2000));
   });
 
   await check("web pages are refused", async () => {
@@ -198,21 +230,31 @@ try {
     assert.equal((await post({})).status, 400);
   });
 
+  await check("today's stats need the stats token", async () => {
+    const stats = (authorization?: string) =>
+      fetch(`${ORIGIN}/v1/stats`, authorization === undefined ? {} : { headers: { Authorization: authorization } });
+    assert.equal((await stats()).status, 401);
+    assert.equal((await stats("Bearer smoke-stat")).status, 401);
+    const r = await stats("Bearer smoke-stats");
+    assert.equal(r.status, 200);
+    const body = (await r.json()) as { requests: number; tokens: number };
+    assert.ok(body.requests > 0 && body.tokens > 0, JSON.stringify(body));
+  });
+
   await check(
     `each request reports what's left, and after ${INSTALL_LIMIT} an install gets the quota error`,
     async () => {
       const id = randomUUID();
-      const role = roleQuestion;
       let status = 0;
       let n = 0;
       for (; n <= INSTALL_LIMIT; n++) {
-        // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
+        // The run id stops answers that earlier runs cached in artifacts/api-dev from replaying.
         const r = await post(
-          { state: { n, run: id }, questions: role(`Price ${n}`) },
+          { state: { page_title: `Price ${n} ${id}` }, questions: roleQuestion(`Price ${n}`) },
           { "X-Practical-Data-Install": id },
         );
         status = r.status;
-        // Each request that spends from the allowance says what's left.
+        // Each request that spends from the allowance reports what is left.
         assert.equal(r.headers.get("x-practical-data-limit"), String(INSTALL_LIMIT));
         assert.equal(r.headers.get("x-practical-data-remaining"), String(Math.max(0, INSTALL_LIMIT - n - 1)));
         if (status !== 200) {
@@ -228,13 +270,38 @@ try {
       assert.equal(status, 429);
       const viaClient = await Effect.runPromise(
         hosted(id)
-          .evaluate({ state: { n: 99 }, questions: role("Price 99") })
+          .evaluate({ state: { page_title: "Price 99" }, questions: roleQuestion("Price 99") })
           .pipe(Effect.flip),
       );
       assert.ok(viaClient instanceof DecisionError);
       assert.equal(viaClient.reason, "quota");
     },
   );
+
+  // Runs after the quota check, whose unique run ids always reach upstream.
+  await check("every upstream request carries the endpoint's TypeSafe key", async () => {
+    assert.ok(upstreamCalls > 0, "upstream was never called");
+    assert.deepEqual([...upstreamAuth], ["Bearer test-key"]);
+  });
+
+  await check("a request that fails upstream is a 503 and doesn't spend the allowance", async () => {
+    const id = randomUUID();
+    // An upstream 429 is not the endpoint's own rate limit, so the client must not read it as one.
+    for (const status of [500, 429]) {
+      const failed = await post(
+        { state: { page_title: `${FAIL_UPSTREAM} ${status} ${id}` }, questions: roleQuestion("Price") },
+        { "X-Practical-Data-Install": id },
+      );
+      assert.equal(failed.status, 503, `upstream ${status}`);
+      assert.equal(failed.headers.get("retry-after"), "5");
+    }
+    const ok = await post(
+      { state: { page_title: `after failure ${id}` }, questions: roleQuestion("Price") },
+      { "X-Practical-Data-Install": id },
+    );
+    assert.equal(ok.status, 200, await ok.clone().text());
+    assert.equal(ok.headers.get("x-practical-data-remaining"), String(INSTALL_LIMIT - 1));
+  });
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
     execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });

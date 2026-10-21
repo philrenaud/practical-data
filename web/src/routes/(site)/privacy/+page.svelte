@@ -1,4 +1,4 @@
-<!-- Privacy policy. Keep in step with PRIVACY.md. -->
+<!-- Keep this page in step with PRIVACY.md. -->
 <svelte:head>
   <title>Privacy policy · Practical Data</title>
 </svelte:head>

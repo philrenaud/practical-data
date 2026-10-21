@@ -1,6 +1,6 @@
 <!--
-  One question as the model received it: the question text, the context sent
-  with it, and each possible answer with the probability the model gave it.
+  One question as the model received it. Shows the question text, the context
+  sent with it, and the probability of each answer.
 -->
 <script lang="ts">
   import type { Answer, Question } from "../../../../src/decide/model.ts";
@@ -11,17 +11,14 @@
     readonly id: string;
     readonly question: Question;
     readonly answer?: Answer | undefined;
-    /** The request's state (the table description), when shown with the question. */
+    /** The request state, which is the table description. Omit it to hide the description. */
     readonly state?: unknown;
   }
   const { id, question, answer, state }: Props = $props();
 
   // Structured instructions carry the question in `question` and context in the other fields.
   const instructions = $derived(question.instructions);
-  /**
-   * The question text, with the column named by its header: "the column `columns[2]` ("AB")"
-   * reads as "the column "AB"". The extension sends the path; readers need the name.
-   */
+  /** Replaces a column path and its header, such as `columns[2]` ("AB"), with the header alone. */
   const readable = (text: string) => text.replace(/`columns?(?:\[\d+\])?` \(("[^"]*")\)/g, "$1");
   const raw = $derived(
     typeof instructions === "string"
@@ -37,7 +34,7 @@
       : Object.fromEntries(Object.entries(instructions as Record<string, unknown>).filter(([k]) => k !== "question")),
   );
   const entry = $derived(glossaryFor(id));
-  // Answers are shown by name; what each means is on the glossary page, not repeated under every question.
+  // Show answers by name only. The glossary page defines them.
   const options = $derived.by(() => {
     if (question.type === "noul") {
       const p = answer?.type === "noul" ? answer.noul : null;
@@ -151,8 +148,6 @@
   }
   .answers td:first-child {
     padding-right: 20px;
-  }
-  .answers td:first-child {
     color: var(--muted);
   }
   .answers td:first-child a {

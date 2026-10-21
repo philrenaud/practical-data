@@ -26,11 +26,11 @@
     "demo": "npm run build && npm run demo:data && npm run tests:data && node scripts/build-demo.ts",
     "web:dev": "npm run demo:data && npm run tests:data && npm run dev -w web",
     "web:check": "npm run check -w web",
-    "deploy": "npm run demo && npx wrangler@4.147.0 deploy",
+    "deploy": "npm run demo && wrangler deploy",
     "package": "node scripts/package.ts",
-    "api:dev": "npx wrangler@4.147.0 dev -c api/wrangler.jsonc",
+    "api:dev": "wrangler dev -c api/wrangler.jsonc",
     "api:smoke": "node scripts/api-smoke.ts",
-    "api:deploy": "npx wrangler@4.147.0 deploy -c api/wrangler.jsonc",
+    "api:deploy": "wrangler deploy -c api/wrangler.jsonc",
     "demo:data": "node scripts/demo-data.ts",
     "tests:data": "node scripts/tests-data.ts",
     "format": "prettier --write .",
@@ -56,7 +56,8 @@
     "playwright": "1.63.0",
     "prettier": "3.9.10",
     "prettier-plugin-svelte": "4.1.1",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "wrangler": "4.147.0"
   },
   "workspaces": [
     "web"

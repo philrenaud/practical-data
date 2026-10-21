@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateAnswers, type Question } from "../src/decide/model.ts";
+import { Effect } from "effect";
+import { hosted, validateAnswers, type Question } from "../src/decide/model.ts";
 
 const questions: Record<string, Question> = {
   role: { type: "choice", instructions: "?", criteria: { measure: null, identifier: null } },
@@ -44,8 +45,6 @@ test("rejects missing answers, wrong types, unknown options and out-of-range pro
 });
 
 test("a spent hosted allowance fails at once as quota, without waiting or retrying", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   let calls = 0;
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () => {
@@ -67,8 +66,6 @@ test("a spent hosted allowance fails at once as quota, without waiting or retryi
 });
 
 test("a spent allowance for everyone is told apart from this install's own", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () =>
     new Response('{"error":"budget_spent"}', {
@@ -92,8 +89,6 @@ test("a spent allowance for everyone is told apart from this install's own", asy
 });
 
 test("hosted responses report what's left of the allowance; cache hits report nothing", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   const heard: unknown[] = [];
   const realFetch = globalThis.fetch;
   let hit = false;
@@ -110,4 +105,32 @@ test("hosted responses report what's left of the allowance; cache hits report no
   } finally {
     globalThis.fetch = realFetch;
   }
+});
+
+/** Counts the fetch calls that one evaluate makes when every response is a 503. */
+const callsOn503 = async (provider: "hosted" | "jev"): Promise<number> => {
+  const { Effect } = await import("effect");
+  const { hosted, jev } = await import("../src/decide/model.ts");
+  let calls = 0;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    calls++;
+    return new Response('{"error":"upstream"}', { status: 503 });
+  };
+  try {
+    const model = provider === "hosted" ? hosted("id") : jev("key");
+    const error = await Effect.runPromise(model.evaluate({ state: {}, questions }).pipe(Effect.flip));
+    assert.equal(error.reason, "overloaded");
+    return calls;
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+};
+
+test("the hosted endpoint retries a 503 only once, because each attempt spends from the allowance", async () => {
+  assert.equal(await callsOn503("hosted"), 2);
+});
+
+test("Jev retries a 503 four times", async () => {
+  assert.equal(await callsOn503("jev"), 5);
 });

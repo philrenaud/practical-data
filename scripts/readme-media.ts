@@ -1,7 +1,8 @@
 /**
- * Renders the README's images from docs/media-src/cards.html: the real
- * extractor, judge (recorded answers) and painter, screenshotted per card in
- * light and dark at 2× → docs/media/<card>-<theme>.png.
+ * Renders the README images from docs/media-src/cards.html. It runs the real
+ * extractor, judge, and painter on the page, with recorded answers, and
+ * screenshots each card in light and dark at 2x scale to
+ * docs/media/<card>-<theme>.png.
  */
 import * as esbuild from "esbuild";
 import { Effect } from "effect";
