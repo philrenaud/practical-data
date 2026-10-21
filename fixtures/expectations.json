@@ -440,5 +440,29 @@
       "PTS": { "kind": "quantitative", "polarity": ["higher_is_better"] },
       "Awards": "none"
     }
+  },
+  "rankings": {
+    "t0": {
+      "#": "none",
+      "Team": "none",
+      "Avg": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "High": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Low": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "SD": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
+      "Gazette": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Courier": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Herald": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Wire": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Post": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Ledger": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Radio": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Fan poll": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" }
+    },
+    "t1": {
+      "Player": "none",
+      "Team": "none",
+      "Finish": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
+      "Points": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    }
   }
 }
