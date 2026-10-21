@@ -553,7 +553,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
   return problems;
 };
 
-// ── Extractor: malformed markup ─────────────────────────────────────────────
+// ── Extractor: malformed markup and editable tables ─────────────────────────
 
 const malformedScenario = async (): Promise<string[]> => {
   const page = await context.newPage();
@@ -561,7 +561,9 @@ const malformedScenario = async (): Promise<string[]> => {
   await page.setContent(`
     <table><tr><td>A</td><td>1</td><td>2</td><td rowspan="2">3</td></tr><tr><td>B</td></tr>
       <tr><td>C</td><td>4</td><td>5</td><td>6</td></tr><tr><td>D</td><td>7</td><td>8</td><td>9</td></tr></table>
-    <table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table>`);
+    <table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table>
+    <div contenteditable=""><table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table></div>
+    <div contenteditable="plaintext-only"><table><tr><th>x</th><th>y</th></tr><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table></div>`);
   await page.addScriptTag({ path: "dist-probe/probe.js" });
   const result = await page.evaluate(() => {
     try {
@@ -574,6 +576,7 @@ const malformedScenario = async (): Promise<string[]> => {
   await page.close();
   if (typeof result === "string") return [`malformed: extraction threw (${result})`];
   const problems: string[] = [];
+  // The editable tables are left out: styles painted into an editor would be saved with the document.
   if (result.tables.length !== 2) problems.push(`malformed: expected 2 tables, got ${result.tables.length}`);
   const rows = result.tables.flatMap((t) => t.rows);
   if (rows.some((r) => r.some((c) => typeof c !== "string")))
@@ -582,7 +585,7 @@ const malformedScenario = async (): Promise<string[]> => {
 };
 
 const malformedProblems = await malformedScenario();
-console.log(`${malformedProblems.length === 0 ? "✓" : "✗"} extractor: a row with a hole`);
+console.log(`${malformedProblems.length === 0 ? "✓" : "✗"} extractor: a row with a hole, editable tables`);
 for (const p of malformedProblems) console.log(`    - ${p}`);
 if (malformedProblems.length > 0) failed++;
 

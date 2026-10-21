@@ -179,9 +179,7 @@ const precedingHeading = (table: Element, headings: readonly Element[]): string 
 };
 
 const isLayoutTable = (table: HTMLTableElement): boolean =>
-  table.getAttribute("role") === "presentation" ||
-  table.querySelector("table") !== null ||
-  table.closest("[contenteditable=true]") !== null;
+  table.getAttribute("role") === "presentation" || table.querySelector("table") !== null || table.isContentEditable;
 
 export const extractTable = (
   table: HTMLTableElement,
