@@ -1,7 +1,7 @@
 /**
- * Shared data shapes. Everything here is plain JSON so it can cross the
- * content-script / service-worker message boundary and be written to disk
- * by the eval harness.
+ * Shared data shapes. Every type is plain JSON, so values can pass between the
+ * content script and the service worker in messages, and the eval script can
+ * write them to disk.
  */
 
 /** A table read from the DOM, reduced to text. */
@@ -26,7 +26,7 @@ export type Polarity = "higher_is_better" | "lower_is_better" | "neutral";
 
 export type Transform = "linear" | "log";
 
-/** How one column should be colored. `col` indexes `TableSnapshot.headers`. */
+/** How to shade one column. `col` indexes `TableSnapshot.headers`. */
 export type ColumnEncoding =
   | {
       readonly kind: "quantitative";
@@ -34,11 +34,11 @@ export type ColumnEncoding =
       readonly header: string;
       readonly polarity: Polarity;
       readonly transform: Transform;
-      /** Most common unit in the column ("$", "%", "GB"); for legends. */
+      /** The most common unit in the column ("$", "%", "GB"), for legends. */
       readonly unit: string | null;
       /** Extent used for the color scale. Shared across tables when `group` is set. */
       readonly domain: readonly [number, number];
-      /** Parsed value per data row; null for missing or unparseable cells. */
+      /** The parsed value of each data row. Null for missing or unparseable cells. */
       readonly values: readonly (number | null)[];
       readonly group: string | null;
       readonly evidence: Evidence;
@@ -52,24 +52,24 @@ export type ColumnEncoding =
       readonly order: readonly string[];
       /** `order` as written on the page ("Lightweight", not "lightweight"). */
       readonly labels: readonly string[];
-      /** Normalized category per data row; null for missing cells. */
+      /** The normalized category of each data row. Null for missing cells. */
       readonly values: readonly (string | null)[];
       readonly group: string | null;
       readonly evidence: Evidence;
     };
 
-/** Raw model probabilities behind an encoding, kept for tooltips and evals. */
+/** The model probabilities behind an encoding, kept for display and evals. */
 export interface Evidence {
-  /** P(column is comparable): `role=measure` for numbers, `ordinal` for categories. */
+  /** P(column is comparable). For numbers it is `role=measure`, for categories `ordinal`. */
   readonly comparable: number;
   readonly polarity: Readonly<Record<Polarity, number>>;
-  /** P(log scale fits); null when the spread made the question moot. */
+  /** P(log scale fits). Null when the question was not asked. */
   readonly log: number | null;
-  /** Mean probability of the chosen ordinal positions; null for numbers. */
+  /** The mean probability of the chosen ordinal positions. Null for numbers. */
   readonly orderConfidence: number | null;
 }
 
-/** A column the model looked at and declined to color, with why. */
+/** A column the judge did not shade, and the reason. */
 export interface SkippedColumn {
   readonly col: number;
   readonly header: string;
@@ -81,14 +81,14 @@ export interface TableJudgment {
   readonly id: string;
   /**
    * "rows" when values compare across each row (benchmarks × models). Then
-   * every `col` below indexes the transposed table: column j + 1 is row j.
+   * every `col` below indexes the transposed table, where column j + 1 is row j.
    */
   readonly orientation: "columns" | "rows";
-  /** P(rows) from the model; null when the question wasn't asked or was overridden. */
+  /** P(rows) from the model. Null when the question was not asked or the user chose the orientation. */
   readonly rowsScore: number | null;
   readonly encodings: readonly ColumnEncoding[];
   readonly skipped: readonly SkippedColumn[];
-  /** Row indexes judged to be totals/averages; excluded from domains. */
+  /** Indexes of rows judged to be totals or averages. Domains leave them out. */
   readonly aggregateRows: readonly number[];
 }
 
@@ -96,7 +96,7 @@ export interface PageJudgment {
   readonly url: string;
   readonly model: string;
   readonly tables: readonly TableJudgment[];
-  /** Tables whose judgment failed (after retries); the rest are still painted. */
+  /** Tables whose judgment failed after retries. The other tables are still painted. */
   readonly failed: readonly { readonly id: string; readonly reason: string }[];
   readonly usage: { readonly inputTokens: number; readonly requests: number };
 }

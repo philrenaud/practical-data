@@ -1,16 +1,16 @@
 /**
- * Cell text → number. Deliberately conservative: anything ambiguous (dates,
- * clock times, "35-10" scores) returns null so it never pollutes a scale.
- * Ranges ("20–25") parse to their midpoint and keep their bounds.
+ * Parses cell text as a number. The parser is conservative. Ambiguous text,
+ * such as dates, clock times, and "35-10" scores, returns null, so it never
+ * enters a scale. A range ("20–25") parses to its midpoint and keeps its ends.
  */
 
 export interface ParsedNumber {
   readonly value: number;
-  /** Normalized unit: a currency symbol, "%", "x", or a trailing word like "GB". */
+  /** The normalized unit: a currency symbol, "%", "x", or a trailing word such as "GB". */
   readonly unit: string | null;
-  /** Written with a comparator ("≤ 272K", "> 200K", "65+"): a bound, not an exact amount. */
+  /** True when written with a comparator ("≤ 272K", "> 200K", "65+"). The value is a bound, not an exact amount. */
   readonly bound: boolean;
-  /** For ranges ("20–25"), the low and high ends; `value` is the midpoint. */
+  /** The low and high ends of a range ("20–25"). For a range, `value` is the midpoint. */
   readonly range: readonly [number, number] | null;
 }
 
@@ -69,10 +69,10 @@ const NUMBER_RE = new RegExp(
     "$",
 );
 
-/** Heights like 6' 6", 5′11″, 6 ft 2 in. Converted to inches. "6-2" stays ambiguous (scores, records). */
+/** Heights such as 6' 6", 5′11″, and 6 ft 2 in, in inches. "6-2" stays ambiguous because scores and records use that form. */
 const FEET_INCHES_RE = /^(\d{1,2})\s*(?:'|′|ft\.?|feet)\s*(?:(\d{1,2}(?:\.\d+)?)\s*(?:"|″|''|in\.?|inches)?)?$/i;
 
-/** Strips footnote markers such as "[12]", "[a]", "*", "†", and a trailing lone digit after a letter. */
+/** Removes footnote markers ("[12]", "[a]", and a trailing "*", "†", "‡", "§", or "¶") and collapses whitespace. */
 export const stripNoise = (text: string): string =>
   text
     .replace(/\[[^\]]{1,6}\]/g, "")
@@ -80,7 +80,7 @@ export const stripNoise = (text: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-/** Placeholders, including dash-decorated ones such as "— N/a". */
+/** True for placeholders such as "N/A", "—", or "..", including ones wrapped in dashes ("— N/a"). */
 export const isMissing = (text: string): boolean => {
   const t = stripNoise(text).toLowerCase();
   return MISSING.has(t) || MISSING.has(t.replace(/^[\s\-–—−]+|[\s\-–—−]+$/g, ""));
@@ -98,13 +98,14 @@ const DATE_RE = new RegExp(
   "i",
 );
 
-/** Dates and clock times: never numbers. Dates that dates.ts can read are shaded as time. */
+/** True for dates and clock times, which never parse as numbers. Dates that dates.ts can read are shaded as time. */
 export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw));
 
 /**
- * Clock-style durations: "2:59" (h:mm or m:ss) and "1:02:03" (h:mm:ss).
- * Read as base-60 numbers, a:b → a·60 + b, so 3:00 is one more than 2:59.
- * Within a column the format is consistent, which is all a scale needs.
+ * Clock-style durations: "2:59" (h:mm or m:ss) and "1:02:03" (h:mm:ss). They
+ * parse as base-60 numbers, so a:b is a × 60 + b, and 3:00 is one more than
+ * 2:59. A column uses one format, so the order is correct whichever unit the
+ * column means.
  */
 const DURATION_RE = /^(\d{1,3}):([0-5]\d)(?::([0-5]\d))?$/;
 
@@ -122,7 +123,7 @@ const VULGAR: Readonly<Record<string, number>> = {
 };
 const VULGAR_RE = /^(\d*)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/;
 
-/** One number, no ranges. */
+/** Parses one number. parseRange handles ranges. */
 const parseSingle = (input: string): ParsedNumber | null => {
   let text = input;
   const clock = DURATION_RE.exec(text);
@@ -170,7 +171,7 @@ const parseSingle = (input: string): ParsedNumber | null => {
     } else if (suffix === "x" || suffix === "×") {
       unit = "x";
     } else {
-      // Ordinals ("1st") and units ("GB") are both letters; ordinals are ranks, not amounts.
+      // Ordinals ("1st") and units ("GB") are both letters. Ordinals are ranks, not amounts.
       if (/^(st|nd|rd|th)$/i.test(suffix)) return null;
       unit = unit ?? suffix;
     }
@@ -186,10 +187,11 @@ const parseSingle = (input: string): ParsedNumber | null => {
 const RANGE_SEPARATOR = /\s*(?:–|—|-|\bto\b)\s*/g;
 
 /**
- * "20-25", "26–30", "$10 to $20", "1.5-2.5 GB". Both ends must parse, the low
- * end must be strictly lower, and units must agree, which rules out scores
- * and records written high-first ("35-10") and year-months ("2024-01").
- * Low-first records ("4-12") still parse; the model's `record` role catches those.
+ * Parses a range such as "20-25", "26–30", "$10 to $20", or "1.5-2.5 GB". Both
+ * ends must parse, the low end must be strictly lower, and the units must
+ * agree. These rules reject scores and records written high first ("35-10")
+ * and year-months ("2024-01"). Records written low first ("4-12") still
+ * parse. The model's `record` role rejects those.
  */
 const parseRange = (text: string): ParsedNumber | null => {
   for (const m of text.matchAll(RANGE_SEPARATOR)) {
@@ -216,5 +218,5 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
   return parseSingle(text) ?? parseRange(text);
 };
 
-/** Normalizes a categorical label for grouping: trims noise, collapses case. */
+/** Normalizes a category label for grouping. It removes footnote markers and lowercases the text. */
 export const normalizeLabel = (raw: string): string => stripNoise(raw).toLowerCase();

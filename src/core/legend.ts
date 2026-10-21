@@ -1,7 +1,7 @@
 /**
- * What the hover card says about a colored column: a terse status line, the
- * scale's extents, and a few facts. Pure: the painter supplies the encoding
- * and page context.
+ * Builds the text of the hover card for a shaded column: a status line, the
+ * values at the ends of the scale, and a few facts. The painter supplies the
+ * encoding and the page context.
  */
 import { formatDate, isDateUnit } from "./dates.ts";
 import { legendStops, type Palette } from "./scale.ts";
@@ -11,7 +11,7 @@ export interface Legend {
   readonly title: string;
   /** "Lower is better · Log scale", "Ranked categories · 3 levels". */
   readonly status: string;
-  /** Gradient stops, low value → high value. */
+  /** Gradient stops, from the low value to the high value. */
   readonly stops: readonly string[];
   readonly lo: string;
   readonly hi: string;
@@ -35,12 +35,13 @@ const formatNumber = (v: number): string =>
 
 const pad = (n: number) => String(Math.round(n)).padStart(2, "0");
 
-/** Base-60 durations back to clock form: 179 → "2:59", 3723 → "1:02:03". */
+/** Formats a base-60 duration as a clock time. 179 is "2:59" and 3723 is "1:02:03". */
 const clock = (v: number): string =>
   v >= 3600
     ? `${Math.floor(v / 3600)}:${pad(Math.floor((v % 3600) / 60))}:${pad(v % 60)}`
     : `${Math.floor(v / 60)}:${pad(v % 60)}`;
 
+/** Formats a value with its column's unit, for a legend. */
 export const withUnit = (v: number, unit: string | null, now: number = Date.now()): string => {
   if (unit === ":") return clock(v);
   if (isDateUnit(unit)) return formatDate(v, unit, now);
@@ -56,10 +57,11 @@ const DIRECTION: Readonly<Record<ColumnEncoding["polarity"], string>> = {
   neutral: "No better direction",
 };
 
-/** "200× range", "3,000× range", "1.4M× range". */
+/** The ratio of the ends of a log scale, such as "200× range" or "1.4M× range". */
 const spread = (lo: number, hi: number): string =>
   `${new Intl.NumberFormat("en-US", { notation: hi / lo >= 1e4 ? "compact" : "standard", maximumSignificantDigits: 2 }).format(hi / lo)}× range`;
 
+/** The legend for one shaded column. */
 export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolean, ctx: LegendContext): Legend => {
   const facts: string[] = [];
   let status: string;
