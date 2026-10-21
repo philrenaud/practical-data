@@ -1,7 +1,7 @@
 /** The toolbar popup. It shows what is shaded on the page and has switches for the page and the site. */
 import { lowAllowanceNote, quotaMessage, type StoredAllowance } from "./allowance.ts";
 import type { PageState, ToContent, ToWorker } from "./messages.ts";
-import { isPagePaused, loadSettings, siteEnabled } from "./settings.ts";
+import { isPagePaused, isPrivateHost, loadSettings, siteEnabled } from "./settings.ts";
 
 const summary = document.querySelector<HTMLParagraphElement>("#summary")!;
 const allowanceNote = document.querySelector<HTMLParagraphElement>("#allowance")!;
@@ -32,7 +32,9 @@ const ERRORS: Readonly<Record<string, string>> = {
   rate_limited: "Busy right now; try again in a minute.",
 };
 
-const describe = (s: PageState | undefined, paused: boolean, siteOff: boolean): string => {
+const describe = (s: PageState | undefined, paused: boolean, siteOff: boolean, everywhere: boolean): string => {
+  if (siteOff && everywhere && isPrivateHost(host))
+    return `Off on ${host}. Sites on a local or private network are off until you turn them on.`;
   if (siteOff) return `Off on ${host}.`;
   if (paused) return "Off on this page.";
   if (s === undefined) return "Not available on this page.";
@@ -52,7 +54,7 @@ const refresh = async () => {
   site.disabled = host === "";
   document.querySelector("#site-label")!.textContent =
     host === "" ? "Shade tables on this site" : `Shade tables on ${host}`;
-  summary.textContent = describe(state, paused, siteOff);
+  summary.textContent = describe(state, paused, siteOff, settings.mode === "everywhere");
   // With the free provider, show a note when little of today's allowance is left.
   // Skip it when the summary already says the allowance is spent.
   const { allowance } = (await chrome.storage.local.get("allowance")) as { allowance?: StoredAllowance };

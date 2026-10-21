@@ -14,11 +14,14 @@ export interface Settings {
   readonly cloudflareApiToken: string;
   readonly clefModel: "clef" | "clef-flash";
   readonly palette: Palette;
-  /** In "everywhere" mode, a site is on unless the user turns it off. In "chosen" mode, a site is off unless the user turns it on. */
+  /**
+   * In "everywhere" mode, a site is on unless the user turns it off. A private host (`isPrivateHost`)
+   * is off until the user turns it on. In "chosen" mode, every site is off until the user turns it on.
+   */
   readonly mode: "everywhere" | "chosen";
   /** Hostnames turned off in "everywhere" mode. */
   readonly disabledHosts: readonly string[];
-  /** Hostnames turned on in "chosen" mode. */
+  /** Hostnames turned on in "chosen" mode, and private hosts turned on in "everywhere" mode. */
   readonly enabledHosts: readonly string[];
 }
 
@@ -44,16 +47,53 @@ export const loadSettings = async (): Promise<Settings> => {
 
 export const saveSettings = (s: Settings) => chrome.storage.local.set({ settings: s });
 
+/**
+ * Suffixes of names that only resolve on a local network:
+ * .local (mDNS, RFC 6762), .home.arpa (RFC 8375), .internal (reserved by
+ * ICANN in 2024 for private use), and .lan and .corp, which many routers and
+ * companies use without a standard.
+ */
+const PRIVATE_SUFFIXES = [".localhost", ".local", ".home.arpa", ".internal", ".lan", ".corp"];
+
+/** IPv4 ranges that are not on the public internet, as [first octet, second octet low, second octet high]. */
+const PRIVATE_IPV4: readonly (readonly [number, number, number])[] = [
+  [10, 0, 255],
+  [127, 0, 255],
+  [169, 254, 254],
+  [172, 16, 31],
+  [192, 168, 168],
+  [100, 64, 127], // Carrier-grade NAT, which Tailscale also uses.
+];
+
+/**
+ * Returns true if `host` is on a local or private network: localhost, a
+ * name with no dot, a private suffix, or a private IP address. Pages on such
+ * hosts are often internal tools, so the extension does not send their
+ * tables until the user turns the site on.
+ */
+export const isPrivateHost = (host: string): boolean => {
+  if (host === "") return false;
+  if (host.startsWith("[")) return /^\[(::1|f[cd][0-9a-f]{0,2}:|fe[89ab][0-9a-f]:)/i.test(host);
+  const v4 = host.match(/^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (v4 !== null) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])];
+    return PRIVATE_IPV4.some(([first, low, high]) => a === first && b >= low && b <= high);
+  }
+  return host === "localhost" || !host.includes(".") || PRIVATE_SUFFIXES.some((s) => host.endsWith(s));
+};
+
 /** Returns true if the extension is on for `host`. */
-export const siteEnabled = (s: Settings, host: string): boolean =>
-  s.mode === "everywhere" ? !s.disabledHosts.includes(host) : s.enabledHosts.includes(host);
+export const siteEnabled = (s: Settings, host: string): boolean => {
+  if (s.mode === "chosen" || isPrivateHost(host)) return s.enabledHosts.includes(host);
+  return !s.disabledHosts.includes(host);
+};
 
 /** Returns a copy of `s` with `host` turned on or off in the current mode. */
 export const setSiteEnabledIn = (s: Settings, host: string, enabled: boolean): Settings => {
   const without = (xs: readonly string[]) => xs.filter((h) => h !== host);
-  return s.mode === "everywhere"
-    ? { ...s, disabledHosts: enabled ? without(s.disabledHosts) : [...without(s.disabledHosts), host] }
-    : { ...s, enabledHosts: enabled ? [...without(s.enabledHosts), host] : without(s.enabledHosts) };
+  return s.mode === "chosen" || isPrivateHost(host)
+    ? { ...s, enabledHosts: enabled ? [...without(s.enabledHosts), host] : without(s.enabledHosts) }
+    : { ...s, disabledHosts: enabled ? without(s.disabledHosts) : [...without(s.disabledHosts), host] };
 };
 
 /** Returns the config for the chosen provider, or null if its credentials are missing. */
