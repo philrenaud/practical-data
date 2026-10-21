@@ -1,19 +1,25 @@
 /**
- * End-to-end: loads dist/ as an unpacked extension in Chromium, opens every
- * fixture page, and checks what a user would see.
+ * Loads dist/ as an unpacked extension in Chromium, opens every fixture page,
+ * and checks what a user sees.
  *
- *   node scripts/e2e.ts             # decision API calls go live (needs TYPESAFE_API_KEY)
- *   node scripts/e2e.ts --offline   # API calls are answered from fixtures/recordings
+ *   node scripts/e2e.ts             # calls the decision API and records answers (needs TYPESAFE_API_KEY)
+ *   node scripts/e2e.ts --offline   # answers API calls from fixtures/recordings
  *   node scripts/e2e.ts --live      # also visits the real URLs in fixtures/live/sources.json
  *   node scripts/e2e.ts --headed
  *
- * Checks per page: the pipeline finishes; every encoded column paints all its
- * non-missing cells; text on painted cells keeps ≥ 4.5:1 contrast; the
- * best-valued cell is greener than the worst for directional columns; legend
- * headers carry the gradient underline without changing any column width;
- * collapsed tables get judged once expanded; toggling off restores the
- * original markup exactly.
- * Screenshots land in artifacts/screens/.
+ * On each page, it checks the following:
+ *
+ * - The pipeline finishes.
+ * - Every encoded column paints all of its non-missing cells.
+ * - Text on painted cells keeps a contrast ratio of at least 4.5:1.
+ * - In a directional column, the best cell is greener than the worst.
+ * - Legend headers carry the gradient underline.
+ * - Painting changes no column width.
+ * - A collapsed table is judged after it expands.
+ * - Turning shading off restores the original markup exactly.
+ *
+ * Then it runs three scenarios: page lifecycle, per-table controls, and the
+ * popup. Screenshots go to artifacts/screens/.
  */
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -43,20 +49,20 @@ const context: BrowserContext = await chromium.launchPersistentContext("", {
   args: ["--disable-extensions-except=dist", "--load-extension=dist"],
 });
 
-// Fixture pages must not reach the internet; the decision API may (or is replayed).
+// Fixture pages get no network access. Decision API calls go live or replay from recordings.
 let replayMisses = 0;
 await context.route("**/*", async (route) => {
   const req = route.request();
   const url = req.url();
   if (url.startsWith(base) || url.startsWith("chrome-extension://")) return route.continue();
   if (url.startsWith("https://api.typesafe.ai/")) {
-    // Same key as AnswerCache: sha-256 of the exact JSON body.
+    // Use the AnswerCache key, the SHA-256 of the exact JSON body.
     const key = createHash("sha256")
       .update(req.postData() ?? "")
       .digest("hex");
     if (!args.offline) {
-      // Live: answer from the API and record it, so offline runs replay every request this run made.
-      // A failed call should reach the extension as a network error, as it would in a browser.
+      // Record each live answer, so an offline run can replay every request that this run made.
+      // A failed call reaches the extension as a network error, as it would in a browser.
       try {
         const response = await route.fetch();
         const body = await response.text();
@@ -72,7 +78,7 @@ await context.route("**/*", async (route) => {
       ? route.fulfill({ status: 401, body: "no recording" })
       : route.fulfill({ status: 200, contentType: "application/json", body });
   }
-  // Live sites load unmodified: blocking their images trips ad-block walls that lock scrolling.
+  // Load live sites unmodified. Blocking their images triggers ad-block walls that lock scrolling.
   if (args.live) return route.continue();
   return route.abort();
 });
@@ -84,21 +90,21 @@ await worker.evaluate((settings) => chrome.storage.local.set({ settings }), {
   palette: "classic",
   disabledHosts: [],
 });
-// The worker opens options on first install; close it.
+// The worker opens the options page on first install. Close it.
 for (const p of context.pages()) if (p.url().includes("options.html")) await p.close();
 
 interface PageReport {
   status: string;
-  /** Tables judged before scrolling; lazy judging keeps this below `tables` on long pages. */
+  /** The number of tables judged before scrolling. On long pages, lazy judging keeps it below `tables`. */
   initial: number;
   tables: number;
   columns: number;
   problems: string[];
 }
 
-/** Runs inside the page: verifies painted state. */
+/** Checks the painted state. Runs inside the page. */
 const inspect = () => {
-  // Resolve any CSS color (oklch, color-mix…) to sRGB via a 1-pixel canvas, as the painter does.
+  // Resolve any CSS color, such as oklch() or color-mix(), to sRGB through a 1-pixel canvas, as the painter does.
   const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
   const toRgb = (css: string) => {
     ctx.clearRect(0, 0, 1, 1);
@@ -175,7 +181,7 @@ const inspect = () => {
   };
 };
 
-/** Waits past the transient "idle" (tables found, none near the viewport yet) for a settled status. */
+/** Waits for a settled status. It waits past "idle", which means that the page has tables but none near the viewport yet. */
 const waitForStatus = async (page: Page) => {
   await page
     .waitForFunction(
@@ -187,7 +193,7 @@ const waitForStatus = async (page: Page) => {
   return (await page.evaluate(() => document.documentElement.dataset["pdStatus"])) ?? "missing";
 };
 
-/** Serialized style + data attributes of every table subtree, to prove unpaint is exact. */
+/** Returns the outerHTML of every table, to prove that turning shading off restores the markup exactly. */
 const markup = (page: Page) =>
   page.evaluate(() =>
     [...document.querySelectorAll("table")].map((t, i) => `<!--table ${i}-->${t.outerHTML}`).join("\n"),
@@ -199,7 +205,7 @@ const LAZY_PAGES = ["bbref-aaron-judge", "wiki-mtg-sets"];
 const run = async (name: string, url: string, live: boolean): Promise<PageReport> => {
   const page = await context.newPage();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  // Saved Baseball-Reference pages keep #content hidden until the site's JS runs; offline it never does.
+  // Saved Baseball-Reference pages hide #content until the site's script runs. Offline, that script never runs.
   if (!live && name.startsWith("bbref-"))
     await page.addStyleTag({ content: "#content { display: block !important; }" });
   // Capture the untouched markup as early as possible for the restore check.
@@ -208,8 +214,8 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
   let toggles: Awaited<ReturnType<ReturnType<Page["locator"]>["all"]>> = [];
   const initial = await page.evaluate(() => document.querySelectorAll("table[data-pd-table]").length);
   if (status === "done" || status === "idle") {
-    // Scroll through the page like a user, so tables judged lazily near the viewport get painted.
-    // Wait for load first: some sites (Baseball-Reference) reset scroll position on load.
+    // Scroll through the page as a user would, so that lazily judged tables get painted.
+    // Wait for load first, because some sites, such as Baseball-Reference, reset the scroll position on load.
     await page.waitForLoadState("load", { timeout: 15_000 }).catch(() => undefined);
     await page.mouse.move(400, 400);
     for (let i = 0; i < 200; i++) {
@@ -219,7 +225,7 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
       if (atEnd) break;
     }
     await page.waitForTimeout(800);
-    // Collapsed tables: expand them the way a user would; they must get judged afterwards.
+    // Expand collapsed tables as a user would. Each one must be judged after it expands.
     toggles = await page.locator("[data-e2e-expand]").all();
     for (const toggle of toggles) {
       await toggle.scrollIntoViewIfNeeded();
@@ -230,7 +236,7 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     await page.evaluate(() => window.scrollTo(0, 0));
   }
   const report: PageReport = { status, initial, tables: 0, columns: 0, problems: [] };
-  // Pages that opt out (the demo site paints itself) must be left alone.
+  // The extension must not touch a page that opts out. The demo site opts out because it paints itself.
   const optedOut = await page.evaluate(
     () => document.querySelector('meta[name="practical-data"][content="off"]') !== null,
   );
@@ -243,7 +249,7 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     return report;
   }
   if (status === "done") {
-    // Let background transitions (and any repaint the page's own JS triggered) settle.
+    // Wait for background transitions, and any repaint by the page's own scripts, to finish.
     await page
       .waitForFunction(() => document.getAnimations().length === 0, undefined, { polling: 100, timeout: 10_000 })
       .catch(() => undefined);
@@ -262,7 +268,7 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     const thWidths = () =>
       page.evaluate(() => [...document.querySelectorAll("th")].map((h) => h.getBoundingClientRect().width));
     const paintedWidths = await thWidths();
-    // Without the "tabs" permission the worker can't match tabs by URL; only this page is open.
+    // Without the "tabs" permission, the worker cannot match tabs by URL. Only this page is open, so send to every tab.
     await worker.evaluate(async () => {
       for (const tab of await chrome.tabs.query({})) {
         if (tab.id !== undefined)
@@ -272,7 +278,7 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     await page.waitForFunction(() => document.documentElement.dataset["pdStatus"] === "off", undefined, {
       polling: 100,
     });
-    // Painting must not change layout: every header keeps its width once the paint is gone.
+    // Painting must not change layout. Each header must keep its width after the paint is removed.
     const plainWidths = await thWidths();
     const shifted = plainWidths.filter((w, i) => Math.abs(w - (paintedWidths[i] ?? w)) > 1).length;
     if (shifted > 0) report.problems.push(`painting changed the width of ${shifted} header cell(s)`);
@@ -280,8 +286,8 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
       () => document.querySelectorAll("[data-pd-styled], [data-pd-t], [data-pd-table], [data-pd-legend]").length,
     );
     if (leftovers > 0) report.problems.push(`toggle off left ${leftovers} painted elements behind`);
-    // Exact markup equality only holds where the page's own scripts don't rewrite tables.
-    // Exact equality also can't hold where this test expanded a table itself.
+    // Exact markup equality holds only on saved pages, whose scripts do not rewrite tables,
+    // and only if this test did not expand a table.
     const after = await markup(page);
     if (!live && toggles.length === 0 && after !== before) {
       let i = 0;
@@ -336,7 +342,7 @@ for (const t of selected) {
 
 const popupScenario = async (): Promise<string[]> => {
   const problems: string[] = [];
-  // The toolbar button must open the popup (the popup itself is driven below by URL).
+  // The toolbar button must open the popup. The steps below open the popup by URL.
   const popupPath = await worker.evaluate(() => chrome.action.getPopup({}));
   if (!popupPath.endsWith("/popup.html")) problems.push(`toolbar button opens "${popupPath}", not popup.html`);
   const target = await context.newPage();
@@ -364,7 +370,7 @@ const popupScenario = async (): Promise<string[]> => {
   const painted = () => target.evaluate(() => document.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length);
   const status = () => target.evaluate(() => document.documentElement.dataset["pdStatus"]);
 
-  // This page, off: clears now and stays off after a reload.
+  // Turning this page off clears the shading now and after a reload.
   await popup.click("label:has(#page)");
   await target
     .waitForFunction(() => document.documentElement.dataset["pdStatus"] === "off", undefined, { timeout: 5000 })
@@ -373,13 +379,13 @@ const popupScenario = async (): Promise<string[]> => {
   await target.reload({ waitUntil: "domcontentloaded" });
   await target.waitForTimeout(800);
   if ((await status()) !== "off") problems.push(`popup: paused page came back after reload (status ${await status()})`);
-  // And back on.
+  // Turn the page back on.
   await popup.reload();
   await popup.click("label:has(#page)");
   if ((await waitForStatus(target)) !== "done" || (await painted()) === 0)
     problems.push("popup: turning the page back on didn't repaint");
 
-  // This site, off: persists across reloads; then restore.
+  // Turning this site off persists across reloads. Then turn the site back on.
   await popup.reload();
   await popup.click("label:has(#site)");
   await target.reload({ waitUntil: "domcontentloaded" });
@@ -445,7 +451,7 @@ const controlsScenario = async (): Promise<string[]> => {
   await hover();
   await click("Show shading");
   if (!(await waitFor(async () => (await orientation()) === "columns" && (await painted()) > 0))) {
-    problems.push(`controls: 'Show shading' should restore the reader's columns choice (got ${await orientation()})`);
+    problems.push(`controls: 'Show shading' should restore the user's columns choice (got ${await orientation()})`);
   }
   await page.close();
   return problems;
@@ -469,7 +475,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
   const painted = (sel: string) =>
     page.evaluate((s) => document.querySelectorAll(`${s} [data-pd-t]:not([data-pd-t=''])`).length, sel);
 
-  // 1. Prices rewritten in place: the most expensive cell must end up at the bad end.
+  // 1. The page rewrites prices in place. The most expensive cell must end up at the bad end.
   await page.click("#reprice");
   const repriced = await until(() =>
     page.evaluate(() => {
@@ -480,7 +486,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
   );
   if (!repriced) problems.push("lifecycle: shading didn't follow prices rewritten in place");
 
-  // 2. Hide Standings, then insert a table above it: the choice must stay with Standings.
+  // 2. Hide Standings, then insert a table above it. The hidden choice must stay with Standings.
   const standings = page.locator("#standings");
   const box = (await standings.boundingBox())!;
   await page.mouse.move(box.x + 30, box.y + 30);
@@ -494,7 +500,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
     problems.push("lifecycle: inserting a table above moved the hidden choice off Standings");
   if ((await painted("#prices")) === 0) problems.push("lifecycle: inserting a table above unshaded Prices");
 
-  // 3. The page changes a shaded cell's style; turning shading off must keep that change.
+  // 3. The page changes a shaded cell's style. Turning shading off must keep that change.
   await page.click("#nudge");
   await worker.evaluate(async () => {
     for (const tab of await chrome.tabs.query({})) {
@@ -516,7 +522,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
   });
   await waitForStatus(page);
 
-  // 4. An oklch dark background must be read as dark: the ramp starts near the page, not near white.
+  // 4. An oklch() dark background must be read as dark, so the ramp starts near the page color, not near white.
   const rain = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>("#rain [data-pd-t]:not([data-pd-t=''])")].map(
       (c) => getComputedStyle(c).backgroundColor,
@@ -534,7 +540,7 @@ const lifecycleScenario = async (): Promise<string[]> => {
   else if (light.length > 0)
     problems.push(`lifecycle: ${light.length} cells on the oklch dark background got light fills (${light[0]})`);
 
-  // 5. In-app navigation: page 2 starts fresh, so Standings (hidden on page 1) is shaded again.
+  // 5. After in-app navigation, page 2 starts fresh, so Standings is shaded again.
   await page.click("#navigate");
   if (!(await until(async () => (await painted("#standings")) > 0, 8000)))
     problems.push("lifecycle: after pushState, page 1's hidden choice still applied");
@@ -561,8 +567,8 @@ for (const p of popupProblems) console.log(`    - ${p}`);
 if (popupProblems.length > 0) failed++;
 
 await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
-// Lazy judging sends intermediate table subsets whose page-level share request the eval never
-// recorded; those runs fail harmlessly and the final full-set run replays.
+// Lazy judging sends share requests for intermediate sets of tables, which the eval never recorded.
+// Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
   `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 3 scenarios checked. Screenshots: artifacts/screens/`,

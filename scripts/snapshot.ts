@@ -16,7 +16,7 @@ await mkdir("fixtures/snapshots", { recursive: true });
 for (const { slug, path } of await fixturePages()) {
   const page = await context.newPage();
   await page.goto(`${url}/${path}`, { waitUntil: "domcontentloaded" });
-  // Snapshot the expanded state: that is what gets judged once a user clicks [show].
+  // Expand collapsed tables first. The extension judges a collapsed table after the user expands it.
   for (const toggle of await page.locator("[data-e2e-expand]").all()) await toggle.click();
   await page.addScriptTag({ path: "dist-probe/probe.js" });
   const snapshot = await page.evaluate(() =>

@@ -40,7 +40,7 @@ const common = {
   target: "chrome120",
   logLevel: "info",
   legalComments: "none",
-  // Unminified: Web Store reviewers (and anyone auditing a key-handling extension) can read it.
+  // The bundle is not minified, so Web Store reviewers and anyone who audits the extension can read it.
   minify: false,
   sourcemap: watch ? "inline" : false,
   // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
@@ -61,7 +61,6 @@ const builds: esbuild.BuildOptions[] = [
     entryPoints: { probe: "src/dom/probe.ts" },
     outdir: "dist-probe",
     format: "iife",
-    minify: false,
   },
 ];
 

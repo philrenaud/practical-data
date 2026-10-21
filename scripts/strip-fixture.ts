@@ -1,7 +1,7 @@
 /**
- * Cuts a saved page down to what the tests use: its title, its headings,
- * and its tables, in document order. Scripts, styles, ads and page chrome go.
- * Adds a source and attribution comment.
+ * Reduces a saved page to its title, headings, and tables, in document order.
+ * It removes scripts, styles, ads, and page chrome, and adds a comment with
+ * the source and attribution.
  *
  *   node scripts/strip-fixture.ts            # every fixtures/live/*.html
  *   node scripts/strip-fixture.ts <slug>…
@@ -36,7 +36,7 @@ for (const slug of slugs) {
     for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) {
       const el = (n as Element).cloneNode(true) as Element;
       el.querySelectorAll("script, noscript, iframe, link, img, video, svg").forEach((x) => x.remove());
-      // Links matter only as footnote markers (<sup><a>); elsewhere keep just their text.
+      // Keep links only as footnote markers (<sup><a>). Replace other links with their text.
       el.querySelectorAll("a").forEach((a) => {
         if (a.closest("sup") !== null) {
           a.removeAttribute("href");

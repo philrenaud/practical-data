@@ -1,13 +1,18 @@
 /**
- * Runs the hosted endpoint locally (`wrangler dev`) against a stand-in for
- * TypeSafe that replays fixtures/recordings, then checks what the extension
- * and an abuser would see: a whole page judged through the endpoint matches
- * Jev's own judgment, as does a table sent whole to /v1/judge (the Sheets
- * add-on's route), repeats come from the shared cache, foreign questions,
- * web-page origins and missing install ids are refused, and a spent daily
- * allowance surfaces as the "quota" error. Last, a fresh install of the
- * extension, built against the local endpoint and given no settings at all,
- * shades a page (dist/ is rebuilt for production afterwards).
+ * Runs the free endpoint locally with `wrangler dev`, against a stand-in for
+ * the TypeSafe API that replays fixtures/recordings. It checks the following:
+ *
+ * - A page judged through the endpoint matches Jev's own judgment.
+ * - A table sent to /v1/judge, the Sheets add-on's route, gets the same judgment.
+ * - A repeated request is answered from the shared cache.
+ * - The endpoint refuses unknown questions, web-page origins, and requests
+ *   with no install id.
+ * - A spent daily allowance returns the "quota" error.
+ * - A fresh install, built against the local endpoint with no settings,
+ *   shades a page.
+ *
+ * The last check rebuilds dist/ for the local endpoint, then rebuilds it for
+ * production.
  *
  *   node scripts/api-smoke.ts
  */
@@ -24,8 +29,8 @@ import type { PageSnapshot } from "../src/core/types.ts";
 const PORT = 8799;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const INSTALL_LIMIT = 12;
-// The hosted transport reads its origin from this global (esbuild defines it in builds), so
-// everything that imports model.ts is imported dynamically, after it is set.
+// The hosted transport reads its origin from this global, which esbuild defines in builds.
+// Modules that import model.ts are imported dynamically, after the global is set.
 (globalThis as unknown as { PD_API_ORIGIN: string }).PD_API_ORIGIN = ORIGIN;
 const { DecisionError, DecisionModel, hosted, jev } = await import("../src/decide/model.ts");
 const { judgePage } = await import("../src/decide/judge.ts");
@@ -34,7 +39,7 @@ const { numericQuestions } = await import("../src/decide/questions.ts");
 type Question = import("../src/decide/model.ts").Question;
 type NumericProfile = import("../src/core/profile.ts").NumericProfile;
 
-/** A real "what kind of numbers" question, for a column called `header`. */
+/** Builds the extension's real role question for a column named `header`. */
 const roleQuestion = (header: string) =>
   numericQuestions(0, { kind: "numeric", col: 0, header, decades: 0 } as unknown as NumericProfile).questions;
 
@@ -51,7 +56,7 @@ const upstream = createServer(async (req, res) => {
     "utf8",
   ).catch(() => null);
   if (recorded !== null) return void res.writeHead(200, { "Content-Type": "application/json" }).end(recorded);
-  // Unrecorded: a well-formed answer that picks each question's first option.
+  // For a request with no recording, return a well-formed answer that picks the first option of each question.
   const { questions } = JSON.parse(raw) as { questions: Record<string, Question> };
   const answers = Object.fromEntries(
     Object.entries(questions).map(([id, q]) => {
@@ -202,17 +207,16 @@ try {
     `each request reports what's left, and after ${INSTALL_LIMIT} an install gets the quota error`,
     async () => {
       const id = randomUUID();
-      const role = roleQuestion;
       let status = 0;
       let n = 0;
       for (; n <= INSTALL_LIMIT; n++) {
-        // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
+        // The run id stops answers that earlier runs cached in artifacts/api-dev from replaying.
         const r = await post(
-          { state: { n, run: id }, questions: role(`Price ${n}`) },
+          { state: { n, run: id }, questions: roleQuestion(`Price ${n}`) },
           { "X-Practical-Data-Install": id },
         );
         status = r.status;
-        // Each request that spends from the allowance says what's left.
+        // Each request that spends from the allowance reports what is left.
         assert.equal(r.headers.get("x-practical-data-limit"), String(INSTALL_LIMIT));
         assert.equal(r.headers.get("x-practical-data-remaining"), String(Math.max(0, INSTALL_LIMIT - n - 1)));
         if (status !== 200) {
@@ -228,7 +232,7 @@ try {
       assert.equal(status, 429);
       const viaClient = await Effect.runPromise(
         hosted(id)
-          .evaluate({ state: { n: 99 }, questions: role("Price 99") })
+          .evaluate({ state: { n: 99 }, questions: roleQuestion("Price 99") })
           .pipe(Effect.flip),
       );
       assert.ok(viaClient instanceof DecisionError);

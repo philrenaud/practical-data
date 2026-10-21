@@ -1,8 +1,9 @@
 /**
- * Builds demo/data.json: trimmed tables from the fixture snapshots plus the
- * judgments the real pipeline makes for them. Answers come from
- * fixtures/recordings (live Jev only for questions not yet recorded), so the
- * demo shows actual model output, never hand-written colors.
+ * Builds demo/data.json from trimmed tables in the fixture snapshots and the
+ * judgments that the real pipeline makes for them. Answers replay from
+ * fixtures/recordings. Only a question with no recording calls Jev, which
+ * needs TYPESAFE_API_KEY. The demo shows model output, never hand-written
+ * colors.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { Effect } from "effect";
@@ -18,7 +19,7 @@ interface Pick {
   readonly where?: RegExp;
   /** Keep up to `per` rows for each distinct value of `column`, in page order. */
   readonly spread?: { readonly column: string; readonly per: number };
-  /** Optional title override for the trimmed table. */
+  /** Replaces the table's title. */
   readonly title?: string;
 }
 

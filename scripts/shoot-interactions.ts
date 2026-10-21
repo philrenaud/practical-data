@@ -1,6 +1,7 @@
 /**
- * Exercises UI paths the e2e doesn't: the legend hover card on a painted page,
- * and the options page "Test" button calling the live model. Needs TYPESAFE_API_KEY.
+ * Screenshots two UI paths that the e2e does not check: the legend hover card
+ * on a painted page, and the options page Test button, which calls the live
+ * model. Needs TYPESAFE_API_KEY.
  */
 import { chromium } from "playwright";
 import { serve } from "./serve.ts";
@@ -24,7 +25,7 @@ await worker.evaluate(
 
 const page = await context.newPage();
 await page.goto(`${url}/live/github-copilot-pricing.html`);
-// Tables are judged lazily, as they near the viewport.
+// The extension judges a table when it nears the viewport, so scroll to it.
 await page.locator("table").first().scrollIntoViewIfNeeded();
 await page.waitForFunction(() => document.documentElement.dataset["pdStatus"] === "done", undefined, { polling: 200 });
 for (const [name, nth] of [

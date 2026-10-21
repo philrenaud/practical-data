@@ -1,4 +1,4 @@
-/** Minimal static server for fixtures; Playwright can't load extensions on file:// reliably. */
+/** A static file server for fixtures and built sites. Playwright cannot reliably run the extension on file:// pages. */
 import { createServer, type Server } from "node:http";
 import { readFile, readdir } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
@@ -15,6 +15,7 @@ const TYPES: Record<string, string> = {
 export const serve = (root: string): Promise<{ url: string; server: Server }> =>
   new Promise((resolve) => {
     const server = createServer(async (req, res) => {
+      // Strip leading "../" so that a request cannot leave `root`.
       const raw = normalize(decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname)).replace(
         /^(\.\.[/\\])+/,
         "",
@@ -34,7 +35,7 @@ export const serve = (root: string): Promise<{ url: string; server: Server }> =>
     });
   });
 
-/** Every fixture page as { slug, path } relative to fixtures/. */
+/** Lists the HTML pages in fixtures/live/ and fixtures/synthetic/, with paths relative to fixtures/. */
 export const fixturePages = async (): Promise<{ slug: string; path: string }[]> => {
   const out: { slug: string; path: string }[] = [];
   for (const dir of ["live", "synthetic"]) {

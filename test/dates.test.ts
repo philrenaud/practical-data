@@ -6,7 +6,7 @@ const NOW = Date.UTC(2026, 9, 20, 12, 0, 0);
 const DAY = 86_400_000;
 const at = (raw: string) => parseDate(raw, { now: NOW });
 
-test("calendar dates in common forms", () => {
+test("parses calendar dates in common formats", () => {
   const feb6 = Date.UTC(2023, 1, 6);
   for (const raw of [
     "2023-02-06",
@@ -22,7 +22,7 @@ test("calendar dates in common forms", () => {
   }
 });
 
-test("months without a day", () => {
+test("parses months without a day", () => {
   const dec = Date.UTC(1993, 11, 1);
   for (const raw of ["December 1993", "Dec 1993", "Dec. 1993", "1993-Dec", "Dec-1993"]) {
     assert.deepEqual(at(raw), { time: dec, precision: "month" }, raw);
@@ -30,7 +30,7 @@ test("months without a day", () => {
   assert.deepEqual(at("2026-Mar"), { time: Date.UTC(2026, 2, 1), precision: "month" });
 });
 
-test("times of day, offsets and two-digit years", () => {
+test("parses times of day, offsets, and two-digit years", () => {
   assert.deepEqual(at("2024-01-02T03:04:05Z"), { time: Date.UTC(2024, 0, 2, 3, 4, 5), precision: "minute" });
   assert.deepEqual(at("2024-01-02 03:04"), { time: Date.UTC(2024, 0, 2, 3, 4), precision: "minute" });
   assert.deepEqual(at("Sep 29, '26 19:07:16 -0400"), { time: Date.UTC(2026, 8, 29, 23, 7, 16), precision: "minute" });
@@ -50,7 +50,7 @@ test("relative times count back from now", () => {
   assert.equal(at("in 2 weeks")?.time, NOW + 14 * DAY);
 });
 
-test("not dates", () => {
+test("rejects strings that are not dates", () => {
   for (const raw of [
     "2019-20",
     "2010-11",
@@ -81,9 +81,9 @@ test("numeric dates need a column to tell day from month", () => {
   assert.deepEqual(us?.values, [Date.UTC(2026, 8, 10), Date.UTC(2026, 8, 29), Date.UTC(2026, 9, 1)]);
   const eu = parseDateColumn(["9/10/2026", "29/9/2026", "1/10/2026"], NOW);
   assert.deepEqual(eu?.values, [Date.UTC(2026, 9, 9), Date.UTC(2026, 8, 29), Date.UTC(2026, 9, 1)]);
-  // Every day and month 12 or under: no way to tell, so no dates.
+  // If every day and month is 12 or less, the order is ambiguous, so the column has no dates.
   assert.equal(parseDateColumn(["1/2/2026", "3/4/2026", "5/6/2026"], NOW), null);
-  // Dots are day first.
+  // Dates with dots are day first.
   assert.equal(parseDateColumn(["1.2.2026", "3.4.2026", "5.6.2026"], NOW)?.values[0], Date.UTC(2026, 1, 1));
 });
 
@@ -100,7 +100,7 @@ test("a column of dates: missing cells, units, and the share needed", () => {
   assert.equal(parseDateColumn(["Feb 6, 2023", "Feb 6, 2023", "Feb 6, 2023"], NOW), null);
 });
 
-test("legend text in the column's own precision", () => {
+test("formats legend text at the column's precision", () => {
   assert.equal(formatDate(Date.UTC(2023, 1, 6), "date", NOW), "Feb 6, 2023");
   assert.equal(formatDate(Date.UTC(1993, 11, 1), "month", NOW), "Dec 1993");
   assert.equal(formatDate(Date.UTC(2024, 0, 2, 15, 4), "datetime", NOW), "Jan 2, 2024, 3:04 PM");
@@ -117,7 +117,7 @@ test("dates without a year take one from their column", () => {
   });
   assert.equal(parseDate("6 February", { now: NOW, year: 2000 })?.time, Date.UTC(2000, 1, 6));
 
-  // Unsorted: one year, a leap year.
+  // An unsorted column takes one year. That year is a leap year, so February 29 parses.
   const quakes = parseDateColumn(
     ["February 6", "February 6", "September 8", "May 19", "December 2", "February 29"],
     NOW,
@@ -129,7 +129,7 @@ test("dates without a year take one from their column", () => {
   );
   assert.equal(formatDate(Date.UTC(2000, 1, 6), "monthday", NOW), "Feb 6");
 
-  // Beside dates with years, a date without one is this year.
+  // In a column with full dates, a date without a year takes the current year.
   assert.equal(parseDateColumn(["Mar 3", "Jan 2, 2024", "Feb 5, 2023"], NOW)?.values[0], Date.UTC(2026, 2, 3));
 });
 
@@ -141,12 +141,12 @@ test("a sorted column of dates without years crosses New Year once", () => {
   const newestFirst = parseDateColumn(["Feb 2", "Jan 5", "Dec 30", "Oct 12"], NOW)!.values;
   assert.ok(newestFirst.every((v, i) => i === 0 || v! < newestFirst[i - 1]!));
 
-  // One step down, but not across New Year (May to February): one year.
+  // One step down that does not cross New Year (May to February) keeps one year.
   const unsorted = parseDateColumn(["Mar 3", "May 1", "Feb 2"], NOW)!.values;
   assert.ok(unsorted[2]! < unsorted[0]!);
 });
 
-test("notes in parentheses and ranges of days", () => {
+test("ignores notes in parentheses and reads ranges of days as their midpoint", () => {
   assert.equal(at("Jan 15, 1967 (1966 AFL/1966 NFL)")?.time, Date.UTC(1967, 0, 15));
   assert.equal(at("Feb 2030 (2029)")?.time, Date.UTC(2030, 1, 1));
   const mid = (a: number, b: number) => (a + b) / 2;
@@ -170,7 +170,7 @@ test("notes in parentheses and ranges of days", () => {
     null,
     Date.UTC(2022, 4, 1),
   ]);
-  // Backwards, or not two dates.
+  // Reject backward ranges and ranges that are not two dates.
   for (const raw of ["July 22–16, 2021", "No Pre-release Scheduled", "1997–98", "3 days ago – 2 days ago"])
     assert.equal(at(raw), null, raw);
 });

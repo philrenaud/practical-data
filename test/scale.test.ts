@@ -55,7 +55,7 @@ test("ordinal levels spread evenly from 0 to 1", () => {
   assert.deepEqual(positions(e), [1, 0, 0.5, null]);
 });
 
-test("every palette: the ends are full strength, and fading ramps leave the middle plain", () => {
+test("every palette has full-strength ends, and fading ramps leave the middle plain", () => {
   for (const id of Object.keys(PALETTES) as PaletteId[]) {
     for (const dark of [false, true]) {
       const ramp = dark ? PALETTES[id].dark : PALETTES[id].light;

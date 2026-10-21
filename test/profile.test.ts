@@ -17,7 +17,7 @@ const table = {
 
 test("profiles each column by kind", () => {
   const p = profileTable(table);
-  // Short all-unique lists stay candidates (they can be full rankings); the model rejects names and notes.
+  // Short lists of unique values stay candidates, because they can be full rankings. The model rejects names and notes.
   assert.deepEqual(
     p.map((c) => c.kind),
     ["categorical", "categorical", "numeric", "numeric", "numeric", "categorical"],

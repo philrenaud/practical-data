@@ -1,8 +1,8 @@
 /**
- * Builds the tests site's data in demo/tests/ (git-ignored): every eval check,
- * the tables they are made on, and the unit tests as run. Everything
- * comes from an offline replay of fixtures/recordings, so it is exactly what
- * `npm run eval -- --offline` and `npm test` see.
+ * Builds the data for the tests site in demo/tests/, which is not committed.
+ * The data holds every eval check, the tables that the checks run on, and the
+ * unit test results. It replays fixtures/recordings offline, so it matches
+ * `npm run eval -- --offline` and `npm test`.
  *
  *   demo/tests/index.json           totals, checks, pages, unit tests, parsing examples
  *   demo/tests/pages/<slug>.json    tables, judgments and checks
@@ -23,8 +23,8 @@ import { knownReason, scorePage, type Check, type PageExpect } from "./lib/score
 
 const OUT = "demo/tests";
 
-// A miss fails the build instead of calling the model: the site shows recorded answers only.
-// The judge absorbs a failed table or share request, so misses are counted here.
+// The site shows recorded answers only, so a missing recording fails the build instead of calling the model.
+// The judge recovers from a failed table or share request, so count the misses here.
 let unrecorded = 0;
 globalThis.fetch = async () => {
   unrecorded++;
@@ -39,7 +39,7 @@ interface Exchange {
   readonly inputTokens: number;
 }
 
-/** Runs `page` against the recordings, keeping every request and answer. */
+/** Judges `page` from the recordings and keeps every request and answer. */
 const judgeRecorded = async (page: PageSnapshot) => {
   const exchanges: Exchange[] = [];
   const recorded = jev("");
@@ -68,7 +68,7 @@ const sources = new Map(
     JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string }[]
   ).map((s) => [s.slug, s]),
 );
-/** Short, distinct names for navigation (page titles run long, and two pages share one). */
+/** Short, distinct names for site navigation. Page titles are long, and two pages share one title. */
 const NAMES: Readonly<Record<string, string>> = {
   "bbref-aaron-judge": "Aaron Judge: batting",
   "bbref-rules-changes": "MLB rules changes",
@@ -98,7 +98,7 @@ const NAMES: Readonly<Record<string, string>> = {
 };
 
 const notice = await readFile("fixtures/NOTICE.md", "utf8");
-/** Attribution per live fixture, from the NOTICE table: | `slug` | [title](url) | rights |. */
+/** Attribution for each live fixture, parsed from the table in fixtures/NOTICE.md. */
 const rights = new Map(
   [...notice.matchAll(/^\| `([^`]+)` \| \[([^\]]+)\]\(([^)]+)\) \| ([^|]+) \|$/gm)].map((m) => [
     m[1]!,
@@ -126,11 +126,12 @@ const samples: Record<
   { id: string; question: unknown; answer: unknown; state: unknown; page: string; table: string | null }
 > = {};
 /**
- * How well a question shows what its check is about; the best one of each
- * kind becomes the example. A question about a column that was shaded beats
- * one about an ignored column, and an answer that shows the point of the
- * question (lower is better, ordered labels, a total, a log scale) beats a
- * routine one. Ties keep the first seen.
+ * Scores how well a question illustrates its kind. The highest-scoring
+ * question of each kind becomes the example on the site. A question about a
+ * shaded column scores above one about an ignored column. An answer that
+ * shows the point of its question, such as lower-is-better, ordered labels, a
+ * total, or a log scale, scores above a routine one. Ties keep the first
+ * question seen.
  */
 const sampleScore = (
   id: string,
@@ -144,7 +145,8 @@ const sampleScore = (
   if (/^n\d+\.polarity$/.test(id)) return (e?.kind === "quantitative" ? 2 : 0) + (choice === "lower_is_better" ? 1 : 0);
   if (/^c\d+\.polarity$/.test(id)) return e?.kind === "ordinal" ? 2 : 0;
   if (/^c\d+\.relation$/.test(id)) return (e?.kind === "ordinal" ? 2 : 0) + (choice === "ordered_levels" ? 1 : 0);
-  // Numbers that are names (jersey numbers, records) show the question best; years and ranks next.
+  // Identifiers and records, such as jersey numbers and win-loss records, illustrate the role question best.
+  // Years and ranks come next.
   if (/^n\d+\.role$/.test(id))
     return choice === "identifier" || choice === "record" ? 2 : choice !== null && choice !== "measure" ? 1 : 0;
   return yes ? 1 : 0;
@@ -163,9 +165,9 @@ const offerSample = (
 ) => {
   const kind = id.replace(/\d+/g, "#");
   const answer = x.answers[id];
-  // A column with a failing check makes a misleading example; it is a limitation, shown elsewhere.
+  // A column with a failing check makes a misleading example. The site lists failures separately.
   const header = headers[Number(/^[nc](\d+)\./.exec(id)?.[1] ?? -1)];
-  // A hand-labeled column that passes is the clearest example: the reader can check it.
+  // A passing hand-labeled column is the best example, because a visitor can check the answer against its label.
   const score =
     header !== undefined && failing.has(header)
       ? -1
@@ -191,14 +193,14 @@ for (const slug of slugs) {
   }));
   checks.push(...pageChecks);
 
-  // Each table alone, for its own trace: its requests are the same ones the full page sent
-  // (state names the page and table, never other tables), so they replay from the recordings.
+  // Judge each table alone to get its own trace. The state names only the page and the table,
+  // so these requests match the ones that the full page sent, and they replay from the recordings.
   const tables = [];
   for (const t of page.tables) {
     const judgment = full.judgment.tables.find((x) => x.id === t.id);
     if (judgment === undefined) continue;
     const alone = await judgeRecorded({ ...page, tables: [t] });
-    // Example questions come from hand-labeled tables on real pages, which the site shows.
+    // Take example questions only from hand-labeled tables on live pages.
     const labeled = sources.has(slug) && (expectations[slug] as Record<string, unknown>)[t.id] !== undefined;
     const passingColumns = new Set(
       pageChecks.filter((c) => c.ok && c.table === t.id && c.column !== null).map((c) => c.column!),
@@ -206,7 +208,7 @@ for (const slug of slugs) {
     const failingColumns = new Set(
       pageChecks.filter((c) => !c.ok && c.table === t.id && c.column !== null).map((c) => c.column!),
     );
-    // A totals example needs a table with hand-labeled totals, so the site shows it.
+    // Take a totals example only from a table with hand-labeled totals.
     const totalsLabeled =
       ((expectations[slug] as Record<string, { aggregateRows?: unknown }>)[t.id]?.aggregateRows ?? null) !== null;
     for (const x of labeled ? alone.exchanges : []) {
@@ -224,7 +226,7 @@ for (const slug of slugs) {
       },
     });
   }
-  // The page-level request: do same-named columns across tables share a scale?
+  // The page-level request asks whether same-named columns in different tables share a scale.
   const shared = full.exchanges.filter((x) => Object.keys(x.questions).some((id) => id.endsWith(".share")));
   // Shared-scale examples come from pages with hand-labeled shared scales.
   for (const x of sources.has(slug) && expectations[slug]!.shared !== undefined ? shared : []) {
@@ -249,7 +251,7 @@ for (const slug of slugs) {
     inputTokens: full.judgment.usage.inputTokens,
   };
   pages.push(summary);
-  // Requests and answers are most of the bytes; the site fetches them only when a reader opens them.
+  // Requests and answers are most of the data, so they go in a separate file that the site fetches on demand.
   await writeFile(
     `${OUT}/pages/${slug}.json`,
     JSON.stringify({
@@ -269,7 +271,7 @@ for (const slug of slugs) {
   console.log(`${slug.padEnd(36)} ${summary.score[0]}/${summary.score[1]} checks  ${tables.length} tables`);
 }
 
-// ── Unit tests, as run ──────────────────────────────────────────────────────
+// ── Unit test results ───────────────────────────────────────────────────────
 
 const units = [];
 for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts")).sort()) {
@@ -282,7 +284,7 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
   } catch (e) {
     tap = (e as { stdout?: string }).stdout ?? "";
   }
-  // Top-level tests only (the suite has no describe blocks); a TAP "#" in a name is escaped as "\#".
+  // Match top-level tests only, because the suite has no describe blocks. TAP escapes "#" in a name as "\#".
   const tests = [
     ...tap.matchAll(/^(ok|not ok) \d+ - (.+?)(?: # (SKIP|TODO)\b.*)?\n {2}---\n {2}duration_ms: ([\d.]+)/gm),
   ].map((m) => ({
@@ -295,7 +297,7 @@ for (const file of (await readdir("test")).filter((f) => f.endsWith(".test.ts"))
   units.push({ file, tests });
 }
 
-// ── Parsing, live ───────────────────────────────────────────────────────────
+// ── Parsing examples ────────────────────────────────────────────────────────
 
 const PARSE_EXAMPLES = [
   "$0.025",
@@ -337,7 +339,7 @@ const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = {
 };
 const now = Date.now();
 const parsing = PARSE_EXAMPLES.map((input) => {
-  // A date without a year gets one from its column; any year shows the form.
+  // A date without a year takes its year from the column. Any year shows the format.
   const date = isMissing(input) ? null : parseDate(input, { now, year: 2000 });
   return {
     input,

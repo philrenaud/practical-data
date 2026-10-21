@@ -1,7 +1,8 @@
 /**
- * Recorded model answers on disk, keyed like the extension's cache (sha-256
- * of the request body). Shared by eval, demo-data, explain-url and
- * readme-media so a recording made by one replays in all of them.
+ * Reads and writes recorded model answers in fixtures/recordings/. The key is
+ * the SHA-256 of the request body, the same key as the extension's cache.
+ * The scripts and tests share one set of recordings, so an answer recorded by
+ * one replays in all of them.
  */
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { Effect, Layer } from "effect";
@@ -21,7 +22,7 @@ export const fileCache = (dir = RECORDINGS) =>
     set: (key, value) =>
       Effect.promise(async () => {
         await mkdir(dir, { recursive: true });
-        // Write-then-rename: parallel requests can record the same key at once.
+        // Write to a temporary file, then rename it. Parallel requests can record the same key at once.
         const tmp = `${dir}/.${key}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
         await writeFile(tmp, JSON.stringify(value))
           .then(() => rename(tmp, `${dir}/${key}.json`))
@@ -29,7 +30,7 @@ export const fileCache = (dir = RECORDINGS) =>
       }),
   });
 
-/** Jev with recordings: replays what exists, records what doesn't (needs TYPESAFE_API_KEY). */
+/** The provider in `config`, Jev by default, behind the recordings. A question with no recording calls the provider and records its answer. */
 export const recordedJev = (
   config: ProviderConfig = { provider: "jev", apiKey: process.env["TYPESAFE_API_KEY"] ?? "" },
 ) => Layer.merge(layerFromConfig(config), fileCache());

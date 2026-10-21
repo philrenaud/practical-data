@@ -7,8 +7,9 @@
  *   node scripts/eval.ts --only edge-cases --verbose
  *   node scripts/eval.ts --offline --strict   # CI gate: fails on undocumented mismatches
  *
- * Answers are cached in fixtures/recordings/ keyed by request hash, so a rerun
- * with unchanged questions costs nothing and is deterministic.
+ * Answers are recorded in fixtures/recordings/, keyed by the SHA-256 of the
+ * request body. A rerun with unchanged questions makes no API calls and gives
+ * the same result.
  */
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
@@ -39,10 +40,10 @@ const config = (): ProviderConfig => {
   };
 };
 
-/** Requests with no recording. The judge absorbs a failed table or share request, so count them here. */
+/** Counts requests with no recording. The judge recovers from a failed table or share request, so a miss alone does not fail the run. */
 let unrecorded = 0;
 if (args.offline) {
-  // A 401 is not retried, so a cache miss fails immediately and loudly.
+  // The model client does not retry a 401, so a miss fails at once.
   globalThis.fetch = async () => {
     unrecorded++;
     return new Response("offline: no recording for this request", { status: 401 });
@@ -112,7 +113,7 @@ list("Colored but shouldn't be:", falsePositive);
 list("Missed:", falseNegative);
 list("Wrong details:", misses);
 
-// --strict: fail on any regression not documented in expectations.$known.
+// With --strict, any mismatch that expectations.$known does not list fails the run.
 const known = Object.keys((expectations["$known"] ?? {}) as Record<string, unknown>);
 const unexpected = [...falsePositive, ...falseNegative, ...misses].filter((m) => !known.some((k) => m.startsWith(k)));
 if (args.strict && unexpected.length > 0) {

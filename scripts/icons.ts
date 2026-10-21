@@ -1,4 +1,4 @@
-/** Renders static/icon.svg to the PNG sizes the manifest needs. Run once; output is committed. */
+/** Renders static/icon.svg to the PNG sizes that the manifest uses. The PNGs are committed, so run this only after the SVG changes. */
 import { readFile } from "node:fs/promises";
 import { chromium } from "playwright";
 

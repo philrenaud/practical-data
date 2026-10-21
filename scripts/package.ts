@@ -1,7 +1,8 @@
 /**
- * Builds the Chrome Web Store upload: release/practical-data-<version>.zip.
- * Refuses a dirty tree, so the zip always matches a commit (its version_name
- * carries that commit's sha).
+ * Builds the Chrome Web Store upload, release/practical-data-<version>.zip.
+ * It refuses to run with uncommitted changes in src/, static/, or
+ * scripts/build.ts, so the zip matches a commit. The manifest's version_name
+ * carries that commit's short SHA.
  */
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";

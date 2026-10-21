@@ -11,7 +11,7 @@ const pages: ReadonlyArray<readonly [string, string]> = [
   ["rgb(161, 136, 252)", "rgb(32, 33, 34)"], // Wikipedia category purple
 ];
 
-test("every palette, every step, every page: text stays at 5:1 or the cell is left plain", () => {
+test("text keeps 5:1 contrast on every palette, step, and page, or the cell is left plain", () => {
   for (const [base, text] of pages) {
     const dark = base.startsWith("rgb(15");
     for (const id of Object.keys(PALETTES) as PaletteId[]) {

@@ -8,7 +8,7 @@ import { judgePage } from "../src/decide/judge.ts";
 import { DecisionModel, jev, type DecisionRequest, type Question } from "../src/decide/model.ts";
 import { fileCache } from "../scripts/lib/cache.ts";
 
-/** Every request the judge sends for the eval pages, replayed from recordings. */
+/** Collects every request that the judge sends for the fixture snapshots, replayed from recordings. */
 const realRequests = async (): Promise<DecisionRequest[]> => {
   const seen: DecisionRequest[] = [];
   const recorded = jev("");
@@ -32,7 +32,7 @@ const realRequests = async (): Promise<DecisionRequest[]> => {
   return seen;
 };
 
-test("accepts every request the extension sends on the eval pages", async () => {
+test("accepts every request the extension sends for the fixture pages", async () => {
   const requests = await realRequests();
   assert.ok(requests.length > 200, `only ${requests.length} requests replayed`);
   const ids = new Set<string>();
@@ -44,7 +44,7 @@ test("accepts every request the extension sends on the eval pages", async () => 
     const chunk = Object.fromEntries(Object.entries(r.questions).slice(0, 200));
     assert.equal(checkQuestions(chunk), null, JSON.stringify(r.questions).slice(0, 300));
   }
-  // Every kind of question appears at least once, so a wording change in any of them is caught.
+  // Each kind of question must appear at least once, so the test catches a wording change in any kind.
   for (const kind of [
     "n#.role",
     "n#.polarity",
@@ -57,7 +57,7 @@ test("accepts every request the extension sends on the eval pages", async () => 
     "g#.share",
     "g#.lt#_#",
   ]) {
-    assert.ok(ids.has(kind), `no ${kind} question in the eval pages`);
+    assert.ok(ids.has(kind), `no ${kind} question in the fixture pages`);
   }
 });
 
