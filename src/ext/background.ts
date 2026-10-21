@@ -4,8 +4,9 @@
  */
 import { Effect, Layer } from "effect";
 import { DEFAULT_POLICY, judgePage } from "../decide/judge.ts";
-import { AnswerCache, DecisionError, layerFromConfig, type Allowance, type DecisionResponse } from "../decide/model.ts";
+import { AnswerCache, DecisionError, layerFromConfig, type Allowance } from "../decide/model.ts";
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
+import { answerCache } from "./cache.ts";
 import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
 import {
   getInstallId,
@@ -18,42 +19,7 @@ import {
   siteEnabled,
 } from "./settings.ts";
 
-/** Versioned so a change in answer format never replays old entries. */
-const CACHE_PREFIX = "answers:v2:";
-const CACHE_INDEX = "answers:v2:index";
-/**
- * Pages whose numbers change on every load add a new entry each time; keep the
- * newest. Sized to stay well inside storage.local's default 10 MB quota.
- */
-const CACHE_MAX = 1500;
-const CACHE_EVICT = 300;
-
-/**
- * Raw answers persist across sessions, so unchanged tables cost nothing on a
- * second visit. Entries are re-validated on read (model.ts); writes are
- * best-effort, since a full or failing store must not fail a judgment.
- */
-const ChromeAnswerCache = Layer.succeed(AnswerCache, {
-  get: (key) =>
-    Effect.promise(async () => {
-      const k = CACHE_PREFIX + key;
-      const hit = await chrome.storage.local.get(k).catch(() => ({}) as Record<string, unknown>);
-      return hit[k] as DecisionResponse | undefined;
-    }),
-  set: (key, value) =>
-    Effect.promise(async () => {
-      try {
-        const stored = await chrome.storage.local.get(CACHE_INDEX);
-        const index = (stored[CACHE_INDEX] as string[] | undefined) ?? [];
-        index.push(key);
-        const evicted = index.length > CACHE_MAX ? index.splice(0, CACHE_EVICT) : [];
-        await chrome.storage.local.set({ [CACHE_PREFIX + key]: value, [CACHE_INDEX]: index });
-        if (evicted.length > 0) await chrome.storage.local.remove(evicted.map((k) => CACHE_PREFIX + k));
-      } catch {
-        // Best effort.
-      }
-    }),
-});
+const ChromeAnswerCache = Layer.succeed(AnswerCache, answerCache(chrome.storage.local));
 
 /** After rate limiting or overload, stop sending for a while instead of retrying on every scroll. */
 const COOL_DOWN_MS = 30_000;
