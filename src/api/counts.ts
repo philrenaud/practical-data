@@ -43,33 +43,39 @@ const addTokens = (sql: Sql, n: number): void => {
   );
 };
 
-/** Counts one model request for `install`, unless today's allowance is used up. */
-export const reserve = (sql: Sql, install: string, allowance: Allowance): Reservation => {
-  const used =
-    sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
-  const left = Math.max(0, allowance.installRequests - used);
+const requests = (sql: Sql, install: string): number =>
+  sql.exec<{ requests: number }>("SELECT requests FROM installs WHERE id = ?", install).toArray()[0]?.requests ?? 0;
+
+/**
+ * Counts one model request for `install`, unless today's allowance is used
+ * up. It also adds `estimate` input tokens to the day's total at once, so
+ * that requests in flight count against the budget. If the estimate is not
+ * below the real usage, the day's total passes the budget by at most the one
+ * request that crosses it.
+ */
+export const reserve = (sql: Sql, install: string, allowance: Allowance, estimate: number): Reservation => {
+  const left = Math.max(0, allowance.installRequests - requests(sql, install));
   if (tokens(sql) >= allowance.tokenBudget) return { status: "budget_spent", remaining: left };
   if (left === 0) return { status: "install_limit", remaining: 0 };
   sql.exec(
     "INSERT INTO installs (id, requests) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET requests = requests + 1",
     install,
   );
+  addTokens(sql, estimate);
   return { status: "ok", remaining: left - 1 };
 };
 
-/** Gives back a request that `reserve` counted, when the upstream call failed. */
-export const release = (sql: Sql, install: string): void => {
-  sql.exec("UPDATE installs SET requests = requests - 1 WHERE id = ? AND requests > 0", install);
+/** Gives back a request and its estimated tokens, when the upstream call failed. */
+export const release = (sql: Sql, install: string, estimate: number): void => {
+  if (requests(sql, install) === 0) return;
+  sql.exec("UPDATE installs SET requests = requests - 1 WHERE id = ?", install);
+  addTokens(sql, -estimate);
 };
 
-/**
- * Adds the input tokens that a forwarded request used. The Worker charges
- * tokens after the response arrives, so requests in flight can take the
- * total past the budget.
- */
-export const charge = (sql: Sql, n: number): void => {
-  if (!Number.isFinite(n) || n <= 0) return;
-  addTokens(sql, Math.round(n));
+/** Replaces a request's estimated tokens with the input tokens it used. */
+export const settle = (sql: Sql, estimate: number, used: number): void => {
+  if (!Number.isFinite(used) || used < 0) return;
+  addTokens(sql, Math.round(used) - estimate);
 };
 
 /** Today's totals, for the operator. */

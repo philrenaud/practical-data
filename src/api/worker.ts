@@ -139,11 +139,15 @@ const ask = async (
     if (decoded._tag === "Some") return { response: decoded.value, remaining: null };
   }
 
+  const body = JSON.stringify(forward);
+  // In the recordings, every request uses fewer input tokens than its body has bytes.
+  const estimate = new TextEncoder().encode(body).byteLength;
   const quota = env.QUOTA.get(env.QUOTA.idFromName(today()));
-  const reservation = await quota.reserve(caller.install, {
-    installRequests: Number(env.INSTALL_DAILY_REQUESTS),
-    tokenBudget: Number(env.DAILY_TOKEN_BUDGET),
-  });
+  const reservation = await quota.reserve(
+    caller.install,
+    { installRequests: Number(env.INSTALL_DAILY_REQUESTS), tokenBudget: Number(env.DAILY_TOKEN_BUDGET) },
+    estimate,
+  );
   const allowance = allowanceHeaders(env, reservation.remaining);
   if (reservation.status !== "ok") {
     return {
@@ -163,15 +167,15 @@ const ask = async (
     upstream = await fetch(env.UPSTREAM_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.TYPESAFE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify(forward),
+      body,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
-    await quota.release(caller.install);
+    await quota.release(caller.install, estimate);
     return { refusal: refuse(503, "upstream", "The model didn't answer in time.") };
   }
   if (!upstream.ok) {
-    await quota.release(caller.install);
+    await quota.release(caller.install, estimate);
     // Do not pass on the provider's error body. The status is enough for the client to decide whether to retry.
     const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
@@ -186,11 +190,12 @@ const ask = async (
   }
   const decoded = Schema.decodeUnknownOption(DecisionResponse)(await upstream.json().catch(() => null));
   if (decoded._tag === "None" || validateAnswers(questions, decoded.value) !== null) {
+    // The model ran, so the request and its estimated tokens stay counted.
     return { refusal: refuse(502, "upstream", "The model's answer didn't match the questions.") };
   }
   ctx.waitUntil(
     Promise.all([
-      quota.charge(decoded.value.usage.input_tokens),
+      quota.settle(estimate, decoded.value.usage.input_tokens),
       caches.default.put(
         cacheKey,
         new Response(JSON.stringify(decoded.value), {

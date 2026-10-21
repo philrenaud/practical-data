@@ -60,15 +60,17 @@ the refusal.
 6. **Shared cache.** `ask` hashes `{ model, state, questions }` with SHA-256
    and looks up the hash in `caches.default`. A hit returns at once, with
    `X-Cache: hit`, and spends no allowance.
-7. **Daily quota.** `Quota.reserve` counts one request for the install. A
-   refusal is a 429 with `X-Practical-Data-Quota` set to `install_limit` or
-   `budget_spent`, and `Retry-After` set to the seconds until midnight UTC.
+7. **Daily quota.** `Quota.reserve` counts one request for the install. It
+   also adds an estimate of the input tokens to the day's total. The
+   estimate is one token per byte of the forwarded body. A refusal is a 429
+   with `X-Practical-Data-Quota` set to `install_limit` or `budget_spent`,
+   and `Retry-After` set to the seconds until midnight UTC.
 8. **Forward.** The Worker posts the request to `UPSTREAM_URL` with
    `TYPESAFE_API_KEY`. `validateAnswers` checks the answers against the
    questions. After the response, `ctx.waitUntil` caches the answers for 30
-   days and adds the input tokens to the day's total with `Quota.charge`. If
-   the upstream call fails or times out, `Quota.release` gives the request
-   back to the install.
+   days, and `Quota.settle` replaces the estimate with the real input
+   tokens. If the upstream call fails or times out, `Quota.release` gives the
+   request and its estimate back.
 
 Every response that spent from the allowance carries
 `X-Practical-Data-Remaining` and `X-Practical-Data-Limit`. Cache hits carry
@@ -131,8 +133,12 @@ the code calls no `console` method.
 | Upstream timeout                   | 20 seconds                                    | `UPSTREAM_TIMEOUT_MS` in `worker.ts`           |
 | Cache lifetime                     | 30 days                                       | `CACHE_TTL_S` in `worker.ts`                   |
 
-`Quota.charge` adds tokens after each response arrives. Requests in flight
-can therefore take the day's total past `DAILY_TOKEN_BUDGET`.
+Requests in flight count against `DAILY_TOKEN_BUDGET` by their estimates. In
+the recordings, real usage is 1.25 to 3.4 bytes per token, so the estimate
+is above the real usage. `Quota.reserve` refuses a request once the total
+reaches the budget. The total can therefore pass the budget by at most the
+one request that crosses it, plus any request whose real usage exceeds its
+estimate.
 
 At Jev's $0.042 per million input tokens, the default budget is about $0.21
 a day. `GET /v1/stats` reports the day's usage.

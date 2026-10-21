@@ -7,10 +7,10 @@
  */
 import { DurableObject } from "cloudflare:workers";
 import {
-  charge,
   createTables,
   release,
   reserve,
+  settle,
   stats,
   type Allowance,
   type Reservation,
@@ -31,25 +31,25 @@ export class Quota extends DurableObject {
     this.#ready = true;
   }
 
-  /** Counts one model request for `install`, unless today's allowance is used up. */
-  async reserve(install: string, allowance: Allowance): Promise<Reservation> {
+  /** Counts one model request and its estimated input tokens, unless today's allowance is used up. */
+  async reserve(install: string, allowance: Allowance, estimate: number): Promise<Reservation> {
     this.#init();
-    const reservation = reserve(this.ctx.storage.sql, install, allowance);
+    const reservation = reserve(this.ctx.storage.sql, install, allowance, estimate);
     if (reservation.status === "ok" && (await this.ctx.storage.getAlarm()) === null)
       await this.ctx.storage.setAlarm(Date.now() + KEEP_MS);
     return reservation;
   }
 
-  /** Gives back a request that `reserve` counted, when the upstream call failed. */
-  release(install: string): void {
+  /** Gives back a request and its estimated tokens, when the upstream call failed. */
+  release(install: string, estimate: number): void {
     this.#init();
-    release(this.ctx.storage.sql, install);
+    release(this.ctx.storage.sql, install, estimate);
   }
 
-  /** Adds the input tokens that a forwarded request used. */
-  charge(tokens: number): void {
+  /** Replaces a request's estimated tokens with the input tokens it used. */
+  settle(estimate: number, used: number): void {
     this.#init();
-    charge(this.ctx.storage.sql, tokens);
+    settle(this.ctx.storage.sql, estimate, used);
   }
 
   /** Today's totals, for the operator. */
