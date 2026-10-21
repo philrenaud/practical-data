@@ -23,6 +23,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          # No step pushes, so the job keeps no Git credentials.
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 26
