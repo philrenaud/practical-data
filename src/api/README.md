@@ -66,7 +66,9 @@ the refusal.
 8. **Forward.** The Worker posts the request to `UPSTREAM_URL` with
    `TYPESAFE_API_KEY`. `validateAnswers` checks the answers against the
    questions. After the response, `ctx.waitUntil` caches the answers for 30
-   days and adds the input tokens to the day's total with `Quota.charge`.
+   days and adds the input tokens to the day's total with `Quota.charge`. If
+   the upstream call fails or times out, `Quota.release` gives the request
+   back to the install.
 
 Every response that spent from the allowance carries
 `X-Practical-Data-Remaining` and `X-Practical-Data-Limit`. Cache hits carry

@@ -24,6 +24,8 @@ import type { PageSnapshot } from "../src/core/types.ts";
 const PORT = 8799;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const INSTALL_LIMIT = 12;
+/** A page title that makes the stand-in for TypeSafe fail. */
+const FAIL_UPSTREAM = "smoke: fail upstream";
 // The hosted transport reads its origin from this global (esbuild defines it in builds), so
 // everything that imports model.ts is imported dynamically, after it is set.
 (globalThis as unknown as { PD_API_ORIGIN: string }).PD_API_ORIGIN = ORIGIN;
@@ -46,6 +48,7 @@ const upstream = createServer(async (req, res) => {
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
   assert.equal(req.headers.authorization, "Bearer test-key");
+  if (raw.includes(FAIL_UPSTREAM)) return void res.writeHead(500).end("stand-in failure");
   const recorded = await readFile(
     `fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`,
     "utf8",
@@ -235,6 +238,21 @@ try {
       assert.equal(viaClient.reason, "quota");
     },
   );
+
+  await check("a request that fails upstream doesn't spend the allowance", async () => {
+    const id = randomUUID();
+    const failed = await post(
+      { state: { page_title: `${FAIL_UPSTREAM} ${id}` }, questions: roleQuestion("Price") },
+      { "X-Practical-Data-Install": id },
+    );
+    assert.equal(failed.status, 503);
+    const ok = await post(
+      { state: { page_title: `after failure ${id}` }, questions: roleQuestion("Price") },
+      { "X-Practical-Data-Install": id },
+    );
+    assert.equal(ok.status, 200, await ok.clone().text());
+    assert.equal(ok.headers.get("x-practical-data-remaining"), String(INSTALL_LIMIT - 1));
+  });
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
     execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });

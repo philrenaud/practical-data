@@ -57,6 +57,11 @@ export const reserve = (sql: Sql, install: string, allowance: Allowance): Reserv
   return { status: "ok", remaining: left - 1 };
 };
 
+/** Gives back a request that `reserve` counted, when the upstream call failed. */
+export const release = (sql: Sql, install: string): void => {
+  sql.exec("UPDATE installs SET requests = requests - 1 WHERE id = ? AND requests > 0", install);
+};
+
 /**
  * Adds the input tokens that a forwarded request used. The Worker charges
  * tokens after the response arrives, so requests in flight can take the

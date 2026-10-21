@@ -6,7 +6,16 @@
  * two days after its first reservation. The SQL is in counts.ts.
  */
 import { DurableObject } from "cloudflare:workers";
-import { charge, createTables, reserve, stats, type Allowance, type Reservation, type Stats } from "./counts.ts";
+import {
+  charge,
+  createTables,
+  release,
+  reserve,
+  stats,
+  type Allowance,
+  type Reservation,
+  type Stats,
+} from "./counts.ts";
 
 export type { Allowance, Reservation } from "./counts.ts";
 
@@ -29,6 +38,12 @@ export class Quota extends DurableObject {
     if (reservation.status === "ok" && (await this.ctx.storage.getAlarm()) === null)
       await this.ctx.storage.setAlarm(Date.now() + KEEP_MS);
     return reservation;
+  }
+
+  /** Gives back a request that `reserve` counted, when the upstream call failed. */
+  release(install: string): void {
+    this.#init();
+    release(this.ctx.storage.sql, install);
   }
 
   /** Adds the input tokens that a forwarded request used. */

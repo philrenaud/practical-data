@@ -167,9 +167,11 @@ const ask = async (
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
+    await quota.release(caller.install);
     return { refusal: refuse(503, "upstream", "The model didn't answer in time.") };
   }
   if (!upstream.ok) {
+    await quota.release(caller.install);
     // Do not pass on the provider's error body. The status is enough for the client to decide whether to retry.
     const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");

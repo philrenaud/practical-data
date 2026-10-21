@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
-import { charge, createTables, reserve, stats, type Sql } from "../src/api/counts.ts";
+import { charge, createTables, release, reserve, stats, type Sql } from "../src/api/counts.ts";
 
 /** Durable Object SQL storage, backed by an in-memory node:sqlite database. */
 const memorySql = (): Sql => {
@@ -31,6 +31,16 @@ test("counts requests per install up to the daily limit", () => {
   );
   assert.deepEqual(reserve(sql, "b", allowance), { status: "ok", remaining: 2 });
   assert.deepEqual(stats(sql), { installs: 2, requests: 4, tokens: 0 });
+});
+
+test("gives back a request that failed upstream", () => {
+  const sql = memorySql();
+  for (let i = 0; i < 3; i++) reserve(sql, "a", allowance);
+  release(sql, "a");
+  assert.deepEqual(reserve(sql, "a", allowance), { status: "ok", remaining: 0 });
+  // A release with nothing reserved changes nothing.
+  release(sql, "b");
+  assert.deepEqual(stats(sql), { installs: 1, requests: 3, tokens: 0 });
 });
 
 test("refuses every install once the token budget is spent", () => {
