@@ -1,31 +1,133 @@
 # Practical Data
 
-Conditional formatting for every table on the web, with the direction figured
-out for you. A Chrome extension that shades the comparable columns of any HTML
-table, so the better and worse rows show without reading every cell.
+Practical Data is a Chrome extension that shades the comparable columns of
+HTML tables on any web page. A small decision model decides which columns to
+shade and which end of each column is better. Code does all of the parsing,
+arithmetic, and color work.
 
-**Demo:** https://practicaldata.dev ·
-**Chrome Web Store:** [Practical Data](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm)
+- Site and demo: https://practicaldata.dev
+- Chrome Web Store: [Practical Data](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm)
+- License: [MIT](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/hero-dark.png">
   <img src="docs/media/hero-light.png" alt="The same pricing table before and after: cheap prices shaded green, expensive ones red, model tiers shaded by rank, model names left plain">
 </picture>
 
-> **Free, no key.** Shading is judged by a small decision model,
-> [TypeSafe's Jev](https://typesafe.ai), through a free endpoint at
-> `api.practicaldata.dev` with a daily allowance per browser. For unlimited
-> use, add your own TypeSafe key (or Cloudflare's Clef): a page costs
-> 0.06–0.2¢ on the test corpus (15k–40k input tokens at Jev's $0.042 per
-> million), and unchanged tables aren't judged twice. **Table text leaves your
-> browser:** headers, sample values and a few rows of each table you scroll
-> near go to the endpoint or the provider you choose. Turn sites
-> off, or switch to "only sites I turn on", for pages with private data.
-> See the [privacy policy](PRIVACY.md).
+## What leaves your browser
 
-### Knows when a big number is bad
+The extension sends table text to a decision model. It sends text only for
+a table that comes within about one screen height of the viewport, on a site
+where the extension is on. For each such table, it sends these items:
 
-Price, ERA and errors are lower-is-better; wins and strikeouts are
+- The page title.
+- The table's caption or nearest heading, and its column headers.
+- Up to five sample values from each column, and the distinct labels in label
+  columns.
+- The first two and last two rows, to check whether they are totals.
+
+It does not send the page URL, cookies, form contents, or text outside
+tables. It sends nothing for tables that you never scroll near.
+
+The receiver is the provider that you select on the options page:
+
+- **Free** is the default from version 1.1.0. Requests go to
+  `api.practicaldata.dev`, a Cloudflare Worker that the author runs. The
+  Worker forwards the questions to TypeSafe's Jev model with the author's
+  key. It also receives a random install id and your IP address. It keeps
+  answers in Cloudflare's cache for 30 days, keyed by a hash of the request.
+  It keeps a daily request count for each install id and deletes it after
+  two days. It does not store the table text and does not log requests.
+- **Jev** sends requests from your browser to `api.typesafe.ai` with your
+  own TypeSafe key.
+- **Clef** sends requests from your browser to `api.cloudflare.com` with
+  your own Cloudflare account id and API token.
+
+With your own key, the author receives nothing. The extension has no
+analytics, telemetry, or crash reporting.
+
+To keep a page's tables private, turn the site off in the toolbar popup.
+You can also select **Only sites I turn on** on the options page, so that
+the extension does nothing until you turn a site on. A site can opt out for
+all users with `<meta name="practical-data" content="off">`.
+
+[PRIVACY.md](PRIVACY.md) is the full privacy policy. The Worker's code is
+in [src/api](src/api/README.md).
+
+## Permissions
+
+The manifest is [static/manifest.json](static/manifest.json). It asks for
+these permissions:
+
+- A content script on all `http` and `https` pages. The script reads tables
+  from the page and paints the shading. Chrome shows this as access to your
+  data on all websites.
+- `storage`, for settings, your API key, the install id, and cached answers.
+  All of these stay in the extension's storage on your device.
+- `activeTab`, so that the toolbar popup can read the current tab's address
+  and show the switch for that site.
+- Host access to `api.practicaldata.dev`, `api.typesafe.ai`, and
+  `api.cloudflare.com`, the three providers. The extension makes no other
+  network requests.
+
+Only the service worker and the extension's own pages read your API key.
+The content script never reads settings, and web pages cannot read extension
+storage. The service worker accepts messages only from this extension.
+
+## Install
+
+### From the Chrome Web Store
+
+Install from the
+[store listing](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm).
+
+Version 1.1.0 adds the free provider. It is submitted to the store and is
+waiting for review. Until the store approves it, the store serves version
+1.0.0, which needs your own key. To use 1.0.0, paste a TypeSafe API key on
+the options page and select **Test**.
+
+### From source
+
+You need Node.js and npm.
+
+```sh
+npm ci
+npm run build
+```
+
+1. Open `chrome://extensions` and turn on **Developer mode**.
+2. Select **Load unpacked** and choose the `dist/` folder.
+3. Optional: on the options page, select **Jev** or **Clef**, paste your
+   own key, and select **Test**.
+
+### Compare a build with the store copy
+
+The build does not minify the code, so you can read the installed copy.
+Each build writes the commit it came from into the manifest's
+`version_name`, for example `1.1.0 (eb73f40, 2026-10-21 03:15)`. The
+popup and the options page show this value as **Build**.
+
+To compare a build with the store copy:
+
+1. Read the commit hash from **Build** in the popup.
+2. Check out that commit, then run `npm ci` and `npm run build`.
+3. Compare `dist/` with the installed copy. Chrome keeps it in your
+   profile's `Extensions/oeoogiokpnkhimnepeepflkpmghiokgm/` folder.
+
+Two builds of one commit with the same `package-lock.json` give identical
+files, so the JavaScript, HTML, and CSS are the files to compare.
+`manifest.json` is different, because `version_name` holds the build time
+and the store adds its own fields.
+
+`npm run package` makes the store upload,
+`release/practical-data-<version>.zip`. It refuses to run if `src/`,
+`static/`, or the build script has uncommitted changes.
+
+## What it shades
+
+### Direction
+
+Price, ERA, and errors are lower-is-better. Wins and strikeouts are
 higher-is-better. When a column has a better direction, green is the better
 end.
 
@@ -34,191 +136,171 @@ end.
   <img src="docs/media/direction-light.png" alt="Pitching stats: low ERA and WHIP shaded green, high wins and SO9 shaded green, season and age left plain">
 </picture>
 
-### Reads messy cells
+### Messy cells
 
-Footnotes, quality flags, ranges, units, clock durations and placeholders are
-parsed, not skipped. Ranges are shaded by their midpoint; `2:59` reads as one
-less than `3:00`, while a `7:05` start time is left alone. (Example table.)
+The parser reads footnotes, quality flags, ranges, units, clock durations,
+and placeholders. A range is shaded at its midpoint. `2:59` reads as one
+second less than `3:00`, but a `7:05` start time stays plain. The table
+below is an example made for the README.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/messy-dark.png">
   <img src="docs/media/messy-light.png" alt="Cells with superscript flags, footnote markers, rent ranges and N/a placeholders, all shaded correctly">
 </picture>
 
-### Ranks words, not just numbers
+### Ranked labels
 
-Labels with a natural order are put in order and shaded: Low → Critical,
-XS → XL, Tropical storm → Category 5. (Example table.)
+Labels with a natural order are put in order and shaded. Examples are Low
+to Critical, XS to XL, and Tropical storm to Category 5. The table below is
+an example made for the README.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/words-dark.png">
   <img src="docs/media/words-light.png" alt="Priority, size and storm category columns shaded from lowest to highest">
 </picture>
 
-### Leaves identifiers alone
+### Identifiers stay plain
 
-Jersey numbers, years, zip codes and model names are numbers or labels, not
-amounts, so they stay plain. (Example table.)
+Jersey numbers, years, zip codes, and model names are not amounts, so they
+stay plain. The table below is an example made for the README.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/plain-dark.png">
   <img src="docs/media/plain-light.png" alt="A roster where jersey numbers, birth years and zip codes stay plain while height and scoring are shaded">
 </picture>
 
-### And
+### Other behavior
 
-- **Reads tables both ways**: when rows are the measures and columns the
-  items (benchmarks × models), each row gets its own scale.
-- **Shares scales across tables** when the same column appears in several of
-  them, so colors compare page-wide.
-- **Leaves totals out** of the scale ("World", "Total").
-- **Uses log scales** when values span orders of magnitude.
-- **Fits the page**: separate light and dark palettes, chosen from each cell's
-  real background (including `oklch()` colors), with text kept at 5:1
-  contrast or better.
-- **Shades only what the model is fairly sure about** (≥ 0.7), and judges
-  tables as they scroll into view. Unchanged tables aren't judged twice.
+- If the rows are the measures and the columns are the items, as in a
+  benchmark table, each row gets its own scale.
+- If the same column appears in several tables on a page, the tables share
+  one scale.
+- Totals and averages, such as "World" or "Total", are not part of the
+  scale.
+- If a column's values span a factor of 10 or more, the model decides
+  whether it gets a log scale.
+- Date columns shade from earliest to latest. Code reads the dates, so they
+  need no model request.
+- A rank column is shaded, unless it only counts the rows (1, 2, 3 down a
+  sorted table).
+- The palette comes from each cell's real background, including `oklch()`
+  colors. Light and dark pages get separate palettes. Text keeps a contrast
+  ratio of at least 5:1.
+- A column is shaded only when the model gives it a probability of 0.7 or
+  more.
 
-Hover a shaded header for its scale. Hover a table to switch it between
-columns and rows, or hide its shading; those choices last for the browser
-session. The toolbar popup turns a page or a whole site off; <kbd>⌥⇧H</kbd>
-toggles the current page.
+## Use it
 
-Sites that color their own tables can opt out with
-`<meta name="practical-data" content="off">`; the demo site does.
+- Hover a shaded header to see its scale.
+- Hover a table to switch it between columns and rows, or to hide its
+  shading. These choices last for the browser session.
+- Use the toolbar popup to turn the current page or site off.
+- Press <kbd>⌥⇧H</kbd> to turn shading on or off for the current page.
 
-## Install
+The options page sets the provider, the palette, and where to shade (every
+site, or only the sites you turn on). It also has a button that clears
+cached answers.
 
-**From the [Chrome Web Store](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm)**:
-version 1.0.0 needs a key: paste a TypeSafe API key on the options page and
-select **Test**. From 1.1.0 it works as soon as it's installed, and a key is
-optional.
+## Cost
 
-**Unpacked**, from source:
+The free provider has a daily limit of 400 model requests for each install,
+and a total daily budget for all installs. Answers in the shared cache do
+not count against the limit. When the limit runs out, the toolbar icon shows
+"!", and the popup says when the limit resets. To remove the limit, use your
+own key.
 
-```sh
-npm install
-npm run build
-```
+With your own key, you pay the provider. An offline replay of the test
+corpus sends 290 requests and 739,390 input tokens for 26 pages. At Jev's
+price of $0.042 per million input tokens, that is about $0.03. The extension
+caches answers, so it does not pay twice for an unchanged table.
 
-1. Open `chrome://extensions` and turn on **Developer mode**.
-2. Select **Load unpacked** and choose `dist/`.
-3. Optionally, on the options page, choose **Jev** or **Clef** and paste your
-   own key. Select **Test** to check it.
+## Known limitations
 
-## Verify
+- The extension reads only HTML `<table>` elements. It does not read canvas
+  charts or virtualized grids.
+- It judges at most 200 tables on a page.
+- Single-letter codes can get the wrong order. For card rarity (C, U, R, M),
+  Jev puts M (mythic) below U and R.
+- Heights written as `6-7` (feet and inches) are read as labels, not
+  numbers. The order is correct, but the steps are not to scale.
+- The model's answers can change between runs when a probability is near a
+  threshold.
+- With the free provider, the extension stops for the rest of the day when
+  your install or the total budget reaches its limit.
 
-| Command | What it proves | Network |
+## Development
+
+| Command | What it does | Network |
 | --- | --- | --- |
-| `npm test` | Parsing, profiling, ordering, color math, contrast, and judge composition against a scripted model | None |
-| `npm run eval` | Model judgments on 19 pages against hand labels in `fixtures/expectations.json` | Jev for new questions only; answers are recorded |
-| `npm run eval -- --offline --strict` | The same, replayed from `fixtures/recordings/`; fails on any undocumented mismatch | None |
-| `npm run e2e -- --offline` | The built extension in Chromium: every page finishes, tables below the fold wait until scrolled near, every column paints, text keeps 5:1 contrast, the better end is greener, header underlines render without changing column widths, collapsed tables get judged once opened, shading follows cells rewritten in place, hidden-table choices survive tables being inserted above, the page's own style changes survive turning shading off, `oklch()` dark backgrounds are read as dark, in-app navigation starts fresh, the per-table controls and popup work, and turning shading off restores the original markup | None (API calls are replayed) |
-| `npm run e2e -- --live` | The same against the real sites in `fixtures/live/sources.json`, with live Jev calls | Yes |
-| `npm run api:smoke` | The free endpoint under `wrangler dev`, against a stand-in for TypeSafe: a page judged through it matches Jev's own judgment, repeats come from the shared cache, foreign questions, web-page origins and missing install ids are refused, a spent allowance surfaces as "quota", and a fresh install with no settings shades a page | None (local only) |
-| `npm run check` | All offline gates in sequence | None |
+| `npm run build` | Builds the extension into `dist/` | None |
+| `npm run dev` | Rebuilds `dist/` on each change | None |
+| `npm test` | Unit tests: parsing, profiling, ordering, color math, contrast, and the judge against a scripted model | None |
+| `npm run eval` | Asks the model about 26 pages and compares the answers with the hand labels in `fixtures/expectations.json` | Jev, for new questions only |
+| `npm run eval -- --offline --strict` | Replays recorded answers from `fixtures/recordings/`. Fails on a mismatch not listed under `$known` | None |
+| `npm run e2e -- --offline` | Loads the built extension in Chromium and checks painting, contrast, controls, the popup, and clean removal | None. API calls are replayed |
+| `npm run e2e -- --live` | The same checks against the live sites in `fixtures/live/sources.json` | Jev |
+| `npm run api:smoke` | Runs the free endpoint under `wrangler dev` against a stand-in for TypeSafe | None |
+| `npm run check` | Runs format check, type check, unit tests, build, offline eval, and offline e2e | None |
+| `npm run package` | Builds the store zip into `release/` | None |
 
-Screenshots from each e2e run go to `artifacts/screens/`.
+[test/README.md](test/README.md) and [scripts/README.md](scripts/README.md)
+describe the tests and scripts. To see why a column on a page was or was not
+shaded, run `node scripts/explain-url.ts <url>`.
 
 ### What the scores mean
 
-`fixtures/expectations.json` holds hand labels for 155 columns on 19 pages,
-out of about 950 columns those pages contain. Unlabeled columns are mostly
-ones nobody would shade either way (names, notes, links) plus a few genuinely
-ambiguous ones. The labels and the confidence thresholds were written against
-these same pages, so the scores below are a **regression check**: they catch
-changes that break known-good behavior. They are not an accuracy estimate
-for pages the extension hasn't seen. The offline replay also tests the code
-against recorded answers, not the model itself; run `npm run eval` without
-`--offline` to ask the model again.
+`fixtures/expectations.json` holds hand labels for 285 columns on 26 pages.
+The labels and the thresholds were tuned on these same pages. The scores are
+therefore a regression check, not an accuracy estimate for new pages. The
+offline replay tests the code against recorded answers. It does not test
+the model. To ask the model again, run `npm run eval` without `--offline`.
 
-Current (Jev 1.13):
+Offline replay with Jev 1.13 at this commit:
 
 ```
-color / don't color   155 of 155 labeled columns
-direction              74 of 74
-log vs linear           5 of 5
-ordinal order          10 of 11
-rows vs columns         7 of 7 labeled tables
-aggregate rows          2 of 2
-shared scales           3 of 3
+color / don't color   284 of 285
+polarity              156 of 156
+log vs linear          23 of 23
+ordinal order          12 of 13
+aggregate rows          4 of 4
+shared scales          10 of 11
+rows vs columns         7 of 7
 ```
 
-The one miss is documented in `expectations.json` under `$known`: Scryfall's
-single-letter rarity codes (C/U/R/M). Jev ranks `M` (mythic) below `U` and `R`.
-Spelled-out rarities order correctly.
+Each miss is listed with its reason under `$known` in
+`fixtures/expectations.json`.
 
-To compare providers, run `node scripts/eval.ts --provider clef` with
-`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` set.
+To compare providers, set `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_API_TOKEN`, then run `node scripts/eval.ts --provider clef`.
 
-## Demo site
+### Site
 
-`web/` is the site (SvelteKit, prerendered to `site/`; see
-[web/README.md](web/README.md)). It shows real tables from the corpus,
-painted by the extension's own extractor and painter. Colors come from
-judgments the pipeline actually produced (`demo/data.json`), never from
-hand-written styles. `/palettes` compares every palette on the same tables in
-light and dark. `/tests` is the public test suite: every hand-labeled check by
-category, shown on the shaded table it is made on, with the questions sent
-and the probabilities returned.
+`web/` is the site at practicaldata.dev, a SvelteKit app. It shades real
+tables from the test corpus with the extension's own extractor and painter,
+and replays recorded answers. `/tests` shows each labeled check on its
+table. Each push to `main` deploys the site. [web/README.md](web/README.md)
+has the details.
 
-| Command | What it does |
+## Repository layout
+
+| Path | Contents |
 | --- | --- |
-| `npm run demo` | Builds the extension, regenerates `demo/data.json` (replaying recorded answers), and writes `site/` (the SvelteKit app in `web/`, prerendered) with a downloadable zip of the extension |
-| `npm run tests:data` | Writes the tests site's data (`demo/tests/`) from an offline replay: every eval check, the tables they are made on, and the unit tests as run |
-| `npm run web:dev` | The site with live reload at `localhost:5173`: edits to `web/` and the extension's own code show as you save |
-| `npm run web:check` | Type-checks the site (`svelte-check`) |
-| `npm run deploy` | Builds the demo and deploys `site/` to Cloudflare Workers static assets (`wrangler.jsonc`). Runs automatically on every push to `main` (`.github/workflows/site.yml`) |
-| `node scripts/readme-media.ts` | Regenerates the README images in `docs/media/` (light and dark) from `docs/media-src/cards.html` |
-| `node scripts/shoot-demo.ts [url]` | Screenshots the demo in light, dark, desktop, and phone, and reports page errors |
-| `npm run package` | Builds `release/practical-data-<version>.zip` for the Chrome Web Store |
+| [src/dom](src/dom/README.md) | Reads tables from the page and paints the shading |
+| [src/core](src/core/README.md) | Pure code: cell parsing, column profiles, ordering, color scales, contrast |
+| [src/decide](src/decide/README.md) | Questions for the model, the judge, and the provider transports |
+| [src/ext](src/ext/README.md) | Content script, service worker, popup, options page, and settings |
+| [src/api](src/api/README.md) | The free endpoint, a Cloudflare Worker |
+| [scripts](scripts/README.md) | Build, package, eval, e2e, and screenshot scripts |
+| [test](test/README.md) | Unit tests |
+| [web](web/README.md) | The site at practicaldata.dev |
+| `fixtures/` | Saved pages, hand labels, extractor snapshots, and recorded answers |
+| `static/` | Manifest, icons, fonts, and the popup and options HTML |
 
-To see why a column on any page was or wasn't colored, run
-`node scripts/explain-url.ts <url>`.
-
-## Fixtures
-
-- `fixtures/live/`: saved HTML from GitHub Docs, Baseball-Reference,
-  Wikipedia, Scryfall, and MTGGoldfish.
-- `fixtures/synthetic/`: handmade traps: jersey numbers, zip codes, birth
-  years, a totals row, rowspan and colspan headers, signed values, a dark
-  theme, and two tables that must share a scale.
-- `fixtures/snapshots/`: what the extractor sees on each page. Regenerate
-  with `npm run snapshot` after you change `src/dom/extract.ts`.
-- `fixtures/recordings/`: recorded model answers keyed by the SHA-256 of each
-  request body. A changed question produces a new key, so stale answers are
-  never replayed.
-
-## Layout
-
-```
-src/core/      Pure: cell parsing, column profiling, pairwise ordering, color scales, contrast-safe tints
-src/decide/    Effect: DecisionModel service (Jev, Clef), question builders, the judgePage program
-src/dom/       Table extraction (span-aware grid) and D3 painting
-src/ext/       Content script, service worker, options page, settings
-src/api/       The free endpoint: a Cloudflare Worker with a question allowlist, shared answer cache, daily quotas
-web/           practicaldata.dev: SvelteKit, prerendered to site/; tables shaded by src/dom's own painter
-scripts/       build, snapshot, eval, e2e, screenshot helpers, question-design probes
-```
-
-Tables are judged only once they come within about a screen of the
-viewport, up to 200 per page. Scrolling down a long page judges the rest as
-they approach.
-
-API keys live in `chrome.storage.local`. The extension's own pages (options,
-popup) and its service worker read them; content scripts never do, and web
-pages can't reach extension storage at all. The worker makes every model call
-from content-script requests: content scripts ask it whether a page is on,
-send it text snapshots of nearby tables, and receive judgments. Answers are
-cached in `chrome.storage.local` (capped, oldest evicted). Only the
-extension's own pages and content scripts can message the worker.
-
-The free endpoint is described in [docs/hosted-api.md](docs/hosted-api.md).
-See [docs/decisions.md](docs/decisions.md) for how the questions are designed
-and why.
+[docs/architecture.md](docs/architecture.md) is a one-page map of how a
+table goes from the page to the model and back.
 
 ## License
 
-[MIT](LICENSE). The pages saved in `fixtures/live/` belong to their
-publishers and are included, trimmed to their tables, only as test inputs;
-see [fixtures/NOTICE.md](fixtures/NOTICE.md).
+[MIT](LICENSE). The pages in `fixtures/live/` belong to their publishers.
+They are trimmed to their tables and included only as test inputs. See
+[fixtures/NOTICE.md](fixtures/NOTICE.md).
