@@ -112,7 +112,8 @@
 </nav>
 
 <main>
-  <section id="examples" class="examples" aria-label="Examples">
+  <section id="examples" class="examples" aria-labelledby="examples-title">
+    <h2 id="examples-title" class="sr-only">Examples</h2>
     {#each sections as section, i (section.section.id)}
       <Example {section} index={i} {palette} colored={view === "colored"} theme={applied} />
     {/each}
