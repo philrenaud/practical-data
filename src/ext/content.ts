@@ -317,6 +317,7 @@ chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => 
   }
   if (msg.type === "toggle") {
     enabled = msg.enabled && !optedOut();
+    setPolling(enabled);
     if (enabled) void run(true);
     else turnOff();
   } else if (msg.type === "repaint") {
@@ -337,6 +338,7 @@ const start = async () => {
   }));
   choices = config.choices;
   enabled = config.enabled && !optedOut();
+  setPolling(enabled);
   if (!enabled) {
     setStatus("off");
     return;
@@ -356,9 +358,23 @@ const onNavigate = () => {
   nearby.disconnect();
   void start();
 };
-(globalThis as { navigation?: EventTarget }).navigation?.addEventListener("navigatesuccess", onNavigate);
+const navigation = (globalThis as { navigation?: EventTarget }).navigation;
+// currententrychange fires for pushState, replaceState, and fragment changes.
+navigation?.addEventListener("currententrychange", onNavigate);
+navigation?.addEventListener("navigatesuccess", onNavigate);
 addEventListener("popstate", onNavigate);
-// Polling catches routers that the Navigation API doesn't report.
-setInterval(onNavigate, 1000);
+
+/**
+ * Polling catches routers that the Navigation API doesn't report. It runs only
+ * while the page is shaded, where a missed navigation would leave stale shading.
+ */
+let poll: ReturnType<typeof setInterval> | undefined;
+const setPolling = (on: boolean) => {
+  if (on && poll === undefined) poll = setInterval(onNavigate, 1000);
+  if (!on) {
+    clearInterval(poll);
+    poll = undefined;
+  }
+};
 
 void start();

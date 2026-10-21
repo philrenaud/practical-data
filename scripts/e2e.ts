@@ -650,6 +650,33 @@ const liveScenario = async (): Promise<string[]> => {
   return judges <= 6 ? [] : [`live: ${judges} judge requests in 16 seconds`];
 };
 
+// ── Navigation: an off page that navigates in-app to a page that is on ─────
+
+/** The content script polls for navigation only while shading is on, so an off page must hear navigation events. */
+const navigationScenario = async (): Promise<string[]> => {
+  const url = `${base}/synthetic/lifecycle.html`;
+  await worker.evaluate((page) => chrome.storage.session.set({ pausedPages: [page] }), url);
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const before = await waitForStatus(page);
+    if (before !== "off") return [`navigation: paused page has status ${before}`];
+    await page.click("#navigate");
+    const after = await waitForStatus(page);
+    return after === "done" ? [] : [`navigation: after pushState from a paused page, status ${after}`];
+  } finally {
+    await page.close();
+    await worker.evaluate(() => chrome.storage.session.remove("pausedPages"));
+  }
+};
+
+const navigationProblems = await navigationScenario();
+console.log(
+  `${navigationProblems.length === 0 ? "✓" : "✗"} navigation: an off page navigates in-app to one that is on`,
+);
+for (const p of navigationProblems) console.log(`    - ${p}`);
+if (navigationProblems.length > 0) failed++;
+
 const liveProblems = await liveScenario();
 console.log(`${liveProblems.length === 0 ? "✓" : "✗"} live: a table that changes every second backs off`);
 for (const p of liveProblems) console.log(`    - ${p}`);
@@ -687,7 +714,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // recorded; those runs fail harmlessly and the final full-set run replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 6 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 7 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();
