@@ -213,7 +213,7 @@ send it text snapshots of nearby tables, and receive judgments. Answers are
 cached in `chrome.storage.local` (capped, oldest evicted). Only the
 extension's own pages and content scripts can message the worker.
 
-The free endpoint is described in [docs/hosted-api.md](docs/hosted-api.md).
+The free endpoint is described in [src/api/README.md](src/api/README.md).
 See [docs/decisions.md](docs/decisions.md) for how the questions are designed
 and why.
 
