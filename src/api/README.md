@@ -8,8 +8,10 @@ The configuration is in `api/wrangler.jsonc`.
 | File              | Contents                                                                    |
 | ----------------- | --------------------------------------------------------------------------- |
 | `worker.ts`       | Routes, origin and install checks, the shared cache, and the upstream call. |
+| `admit.ts`        | `rateLimitKey`, which keys the per-IP rate limit.                           |
 | `allow.ts`        | The allowlist (`checkRequest`), `readBody`, and `readJudgeBody`.            |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
+| `counts.ts`       | The SQL that `Quota` runs, kept apart so that Node tests can load it.       |
 | `cloudflare.d.ts` | The Workers runtime types that this directory uses.                         |
 
 ## Routes
@@ -48,8 +50,9 @@ the refusal.
    lowercase hex. The extension makes one on first use (`getInstallId` in
    `src/ext/settings.ts`).
 3. **Rate limits.** The `RL_INSTALL` and `RL_IP` bindings limit requests per
-   minute by install id and by `CF-Connecting-IP`. A refusal is a 429 with
-   `Retry-After: 10`.
+   minute by install id and by `CF-Connecting-IP`. `rateLimitKey` counts an
+   IPv6 address by its /64 prefix, because one subscriber usually has a
+   whole /64. A refusal is a 429 with `Retry-After: 10`.
 4. **Body.** `readBody` stops reading past 256 KiB and parses the body as
    JSON.
 5. **Allowlist.** For `/v1/systemone`, `checkRequest` must accept the body.

@@ -27,6 +27,7 @@ import {
   validateAnswers,
   type Question,
 } from "../decide/model.ts";
+import { rateLimitKey } from "./admit.ts";
 import { checkRequest, LIMITS, readBody, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
@@ -91,7 +92,7 @@ const admit = async (request: Request, env: Env): Promise<Caller | Response> => 
     return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
   const install = request.headers.get("x-practical-data-install") ?? "";
   if (!INSTALL_ID.test(install)) return refuse(400, "install", "Missing or malformed install id.");
-  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const ip = rateLimitKey(request.headers.get("cf-connecting-ip") ?? "unknown");
   const [byInstall, byIp] = await Promise.all([env.RL_INSTALL.limit({ key: install }), env.RL_IP.limit({ key: ip })]);
   if (!byInstall.success || !byIp.success)
     return refuse(429, "rate_limited", "Too many requests; slow down.", { "Retry-After": "10" });
