@@ -148,8 +148,13 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
 
 // ── Turning it off ──────────────────────────────────────────────────────────
 
-// Content scripts read the per-page pause list from session storage.
-void chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" });
+/**
+ * Content scripts read and write per-table choices in storage.session. Chrome
+ * denies them access until this call completes, so pageConfig waits for it.
+ */
+const sessionShared = chrome.storage.session
+  .setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" })
+  .catch(() => undefined);
 
 const tell = (tabId: number, enabled: boolean) =>
   chrome.tabs.sendMessage(tabId, { type: "toggle", enabled } satisfies ToContent).catch(() => undefined);
@@ -168,7 +173,7 @@ const pageConfig = async (url: string): Promise<PageConfig> => {
   } catch {
     return { enabled: false };
   }
-  const [settings, paused] = await Promise.all([loadSettings(), isPagePaused(url)]);
+  const [settings, paused] = await Promise.all([loadSettings(), isPagePaused(url), sessionShared]);
   return { enabled: siteEnabled(settings, host) && !paused };
 };
 

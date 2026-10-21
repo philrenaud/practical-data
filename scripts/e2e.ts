@@ -18,7 +18,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { chromium, type BrowserContext, type Page } from "playwright";
+import { chromium, type BrowserContext, type Page, type Route } from "playwright";
 import { fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
@@ -36,16 +36,29 @@ if (!args.offline && apiKey === "") throw new Error("TYPESAFE_API_KEY is require
 const { url: base, server } = await serve("fixtures");
 await mkdir("artifacts/screens", { recursive: true });
 
-const context: BrowserContext = await chromium.launchPersistentContext("", {
-  channel: "chromium",
-  headless: !args.headed,
-  viewport: { width: 1360, height: 900 },
-  args: ["--disable-extensions-except=dist", "--load-extension=dist"],
-});
+/** Starts Chromium with dist/ loaded in a fresh profile. */
+const launch = async (): Promise<BrowserContext> => {
+  const context = await chromium.launchPersistentContext("", {
+    channel: "chromium",
+    headless: !args.headed,
+    viewport: { width: 1360, height: 900 },
+    args: ["--disable-extensions-except=dist", "--load-extension=dist"],
+  });
+  await context.route("**/*", routeRequest);
+  return context;
+};
+
+/** Settings for every run: the Jev provider, so offline runs replay fixtures/recordings. */
+const SETTINGS = {
+  provider: "jev",
+  typesafeApiKey: args.offline ? "offline" : apiKey,
+  palette: "classic",
+  disabledHosts: [],
+};
 
 // Fixture pages must not reach the internet; the decision API may (or is replayed).
 let replayMisses = 0;
-await context.route("**/*", async (route) => {
+const routeRequest = async (route: Route) => {
   const req = route.request();
   const url = req.url();
   if (url.startsWith(base) || url.startsWith("chrome-extension://")) return route.continue();
@@ -75,15 +88,11 @@ await context.route("**/*", async (route) => {
   // Live sites load unmodified: blocking their images trips ad-block walls that lock scrolling.
   if (args.live) return route.continue();
   return route.abort();
-});
+};
 
+const context = await launch();
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-await worker.evaluate((settings) => chrome.storage.local.set({ settings }), {
-  provider: "jev",
-  typesafeApiKey: args.offline ? "offline" : apiKey,
-  palette: "classic",
-  disabledHosts: [],
-});
+await worker.evaluate((settings) => chrome.storage.local.set({ settings }), SETTINGS);
 // The worker opens options on first install; close it.
 for (const p of context.pages()) if (p.url().includes("options.html")) await p.close();
 
@@ -543,6 +552,37 @@ const lifecycleScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Cold start: a page that loads as soon as the extension does ────────────
+
+/**
+ * Covers a fresh install, or a browser restart that restores tabs. The page
+ * loads while the service worker is still starting, so the worker may not yet
+ * have opened storage.session to content scripts.
+ */
+const coldStartScenario = async (): Promise<string[]> => {
+  const cold = await launch();
+  try {
+    const page = await cold.newPage();
+    const coldWorker = cold.serviceWorkers()[0] ?? (await cold.waitForEvent("serviceworker"));
+    // Don't wait for the settings write: an awaited round trip gives the worker time to finish starting.
+    await Promise.all([
+      coldWorker.evaluate((settings) => chrome.storage.local.set({ settings }), SETTINGS),
+      page.goto(`${base}/synthetic/dark-theme.html`, { waitUntil: "domcontentloaded" }),
+    ]);
+    const status = await waitForStatus(page);
+    if (status !== "done") return [`cold start: status ${status}`];
+    const painted = await page.evaluate(() => document.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length);
+    return painted > 0 ? [] : ["cold start: nothing painted"];
+  } finally {
+    await cold.close();
+  }
+};
+
+const coldStartProblems = await coldStartScenario();
+console.log(`${coldStartProblems.length === 0 ? "✓" : "✗"} cold start: page opened as the extension loads`);
+for (const p of coldStartProblems) console.log(`    - ${p}`);
+if (coldStartProblems.length > 0) failed++;
+
 const lifecycleProblems = await lifecycleScenario();
 console.log(
   `${lifecycleProblems.length === 0 ? "✓" : "✗"} lifecycle: in-place edits, inserted tables, page styles, oklch, navigation`,
@@ -565,7 +605,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // recorded; those runs fail harmlessly and the final full-set run replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 3 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 4 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

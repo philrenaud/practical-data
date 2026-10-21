@@ -305,16 +305,18 @@ chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => 
 const optedOut = () => document.querySelector('meta[name="practical-data"][content="off" i]') !== null;
 
 const start = async () => {
-  const [config, saved] = await Promise.all([
-    send<PageConfig>({ type: "pageConfig", url: location.href }).catch((): PageConfig => ({ enabled: false })),
-    loadTableChoices(location.href),
-  ]);
-  choices = saved;
-  enabled = config.enabled && !optedOut();
-  if (!enabled) {
+  const config = await send<PageConfig>({ type: "pageConfig", url: location.href }).catch((): PageConfig => ({
+    enabled: false,
+  }));
+  if (!config.enabled || optedOut()) {
+    enabled = false;
     setStatus("off");
     return;
   }
+  // Content scripts can read storage.session only after the worker grants access, which it does
+  // before it answers pageConfig. A failed read means no saved choices, not an unshaded page.
+  choices = await loadTableChoices(location.href).catch(() => ({}));
+  enabled = true;
   void run();
 };
 
