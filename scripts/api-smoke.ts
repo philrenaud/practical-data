@@ -24,8 +24,8 @@ import type { PageSnapshot } from "../src/core/types.ts";
 const PORT = 8799;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const INSTALL_LIMIT = 12;
-/** A page title that makes the stand-in for TypeSafe fail. */
-const FAIL_UPSTREAM = "smoke: fail upstream";
+/** A page title that makes the stand-in for TypeSafe fail with the status that follows it. */
+const FAIL_UPSTREAM = "smoke: fail upstream with";
 // The hosted transport reads its origin from this global (esbuild defines it in builds), so
 // everything that imports model.ts is imported dynamically, after it is set.
 (globalThis as unknown as { PD_API_ORIGIN: string }).PD_API_ORIGIN = ORIGIN;
@@ -48,7 +48,8 @@ const upstream = createServer(async (req, res) => {
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
   assert.equal(req.headers.authorization, "Bearer test-key");
-  if (raw.includes(FAIL_UPSTREAM)) return void res.writeHead(500).end("stand-in failure");
+  const failure = raw.match(new RegExp(`${FAIL_UPSTREAM} (\\d{3})`));
+  if (failure !== null) return void res.writeHead(Number(failure[1]), { "Retry-After": "5" }).end("stand-in failure");
   const recorded = await readFile(
     `fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`,
     "utf8",
@@ -239,13 +240,17 @@ try {
     },
   );
 
-  await check("a request that fails upstream doesn't spend the allowance", async () => {
+  await check("a request that fails upstream is a 503 and doesn't spend the allowance", async () => {
     const id = randomUUID();
-    const failed = await post(
-      { state: { page_title: `${FAIL_UPSTREAM} ${id}` }, questions: roleQuestion("Price") },
-      { "X-Practical-Data-Install": id },
-    );
-    assert.equal(failed.status, 503);
+    // An upstream 429 is not the endpoint's own rate limit, so the client must not read it as one.
+    for (const status of [500, 429]) {
+      const failed = await post(
+        { state: { page_title: `${FAIL_UPSTREAM} ${status} ${id}` }, questions: roleQuestion("Price") },
+        { "X-Practical-Data-Install": id },
+      );
+      assert.equal(failed.status, 503, `upstream ${status}`);
+      assert.equal(failed.headers.get("retry-after"), "5");
+    }
     const ok = await post(
       { state: { page_title: `after failure ${id}` }, questions: roleQuestion("Price") },
       { "X-Practical-Data-Install": id },

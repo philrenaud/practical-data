@@ -98,8 +98,11 @@ messages.
 - **Install ids are not proof of identity.** A client can make up a new id
   for each request. `INSTALL_DAILY_REQUESTS` limits ordinary heavy use.
   `DAILY_TOKEN_BUDGET` is the limit that holds against made-up ids.
-- **Provider errors stay on the server.** The client gets the upstream status
-  and `Retry-After`, never the provider's error body.
+- **Provider errors stay on the server.** The client gets a 503 for an
+  upstream 429 or 5xx, a 502 for any other upstream error, and the upstream
+  `Retry-After`. It never gets the provider's error body. An upstream 429 is
+  a 503 so that the client cannot mistake it for this endpoint's own rate
+  limit.
 
 ## What the Worker stores
 

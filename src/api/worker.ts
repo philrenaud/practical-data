@@ -177,7 +177,9 @@ const ask = async (
   if (!upstream.ok) {
     await quota.release(caller.install, estimate);
     // Do not pass on the provider's error body. The status is enough for the client to decide whether to retry.
-    const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
+    // An upstream 429 becomes a 503, because the client reads a 429 without a quota header as this
+    // endpoint's own rate limit and retries it several times.
+    const status = upstream.status === 429 || upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
     return {
       refusal: refuse(
