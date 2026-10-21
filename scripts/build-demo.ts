@@ -8,7 +8,7 @@ import { cp, mkdir } from "node:fs/promises";
 
 // The adapter empties site/ and writes every page; extras go in afterwards.
 execFileSync("npm", ["run", "build", "-w", "web"], { stdio: "inherit" });
-execFileSync("zip", ["-qr", "../site/practical-data-extension.zip", "."], { cwd: "dist" });
+execFileSync("zip", ["-qr", "../site/practical-data-extension.zip", ".", "-x", ".*", "*/.*"], { cwd: "dist" });
 // Launch videos, when present (rendered outside this repository), are published alongside.
 await mkdir("site/media", { recursive: true });
 for (const f of ["practical-data-reel.mp4", "practical-data-loop.mp4"])

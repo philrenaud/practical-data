@@ -21,5 +21,6 @@ const { version, version_name } = JSON.parse(await readFile("dist/manifest.json"
 await mkdir("release", { recursive: true });
 const out = `release/practical-data-${version}.zip`;
 execFileSync("rm", ["-f", out]);
-execFileSync("zip", ["-qr", `../${out}`, "."], { cwd: "dist" });
+// Finder can write .DS_Store into dist/ after the build, so the zip excludes dotfiles too.
+execFileSync("zip", ["-qr", `../${out}`, ".", "-x", ".*", "*/.*"], { cwd: "dist" });
 console.log(`${out}  (${version_name})`);

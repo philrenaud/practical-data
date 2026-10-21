@@ -5,12 +5,17 @@
  */
 import { execFileSync } from "node:child_process";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { basename } from "node:path";
 import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
-await cp("static", "dist", { recursive: true, filter: (src) => !src.endsWith(".svg") });
+// Skip dotfiles, such as Finder's .DS_Store, and the SVG icon source.
+await cp("static", "dist", {
+  recursive: true,
+  filter: (src) => !basename(src).startsWith(".") && !src.endsWith(".svg"),
+});
 
 // Stamp the build so a stale unpacked copy is obvious in chrome://extensions.
 const git = (...args: string[]) => {
