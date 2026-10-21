@@ -182,7 +182,7 @@ try {
 
   await check("questions the extension doesn't ask are refused", async () => {
     const r = await post(
-      { state: {}, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
+      { state: { page_title: "Inbox" }, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
       { "X-Practical-Data-Install": install },
     );
     assert.equal(r.status, 400);
@@ -208,7 +208,7 @@ try {
       for (; n <= INSTALL_LIMIT; n++) {
         // The run id keeps answers cached by earlier runs (persisted in artifacts/api-dev) from replaying.
         const r = await post(
-          { state: { n, run: id }, questions: role(`Price ${n}`) },
+          { state: { page_title: `Price ${n} ${id}` }, questions: role(`Price ${n}`) },
           { "X-Practical-Data-Install": id },
         );
         status = r.status;
@@ -228,7 +228,7 @@ try {
       assert.equal(status, 429);
       const viaClient = await Effect.runPromise(
         hosted(id)
-          .evaluate({ state: { n: 99 }, questions: role("Price 99") })
+          .evaluate({ state: { page_title: "Price 99" }, questions: role("Price 99") })
           .pipe(Effect.flip),
       );
       assert.ok(viaClient instanceof DecisionError);

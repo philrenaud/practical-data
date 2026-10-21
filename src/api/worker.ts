@@ -27,7 +27,7 @@ import {
   validateAnswers,
   type Question,
 } from "../decide/model.ts";
-import { checkQuestions, LIMITS, readBody, readJudgeBody } from "./allow.ts";
+import { checkRequest, LIMITS, readBody, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -200,7 +200,7 @@ const ask = async (
   return { response: decoded.value, remaining: reservation.remaining };
 };
 
-/** Handles POST /v1/systemone. Every question in the body must pass `checkQuestions`. */
+/** Handles POST /v1/systemone. The body must pass `checkRequest`. */
 const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const caller = await admit(request, env);
   if (caller instanceof Response) return caller;
@@ -211,7 +211,7 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
     return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
   }
   const { state, questions } = (body ?? {}) as { state?: unknown; questions?: unknown };
-  const problem = checkQuestions(questions);
+  const problem = checkRequest(body);
   if (problem !== null) return refuse(400, "questions", problem);
   const asked = await ask(env, ctx, caller, state, questions as Record<string, Question>);
   if ("refusal" in asked) return asked.refusal;

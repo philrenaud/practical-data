@@ -8,7 +8,7 @@ The configuration is in `api/wrangler.jsonc`.
 | File              | Contents                                                                    |
 | ----------------- | --------------------------------------------------------------------------- |
 | `worker.ts`       | Routes, origin and install checks, the shared cache, and the upstream call. |
-| `allow.ts`        | The question allowlist (`checkQuestions`), `readBody`, and `readJudgeBody`. |
+| `allow.ts`        | The allowlist (`checkRequest`), `readBody`, and `readJudgeBody`.            |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
 | `cloudflare.d.ts` | The Workers runtime types that this directory uses.                         |
 
@@ -52,9 +52,11 @@ the refusal.
    `Retry-After: 10`.
 4. **Body.** `readBody` stops reading past 256 KiB and parses the body as
    JSON.
-5. **Allowlist.** For `/v1/systemone`, `checkQuestions` must accept every
-   question. For `/v1/judge`, `readJudgeBody` checks the table's size and
-   shape.
+5. **Allowlist.** For `/v1/systemone`, `checkRequest` must accept the body.
+   Every question must match one that the extension asks. The state and the
+   table-data fields (`row`, `first_column`, and `columns`) must have the
+   shapes that the builders produce, within the size limits below. For
+   `/v1/judge`, `readJudgeBody` checks the table's size and shape.
 6. **Shared cache.** `ask` hashes `{ model, state, questions }` with SHA-256
    and looks up the hash in `caches.default`. A hit returns at once, with
    `X-Cache: hit`, and spends no allowance.
@@ -81,7 +83,7 @@ messages.
   builders in `src/decide/questions.ts` with placeholder values. A wording
   change in `questions.ts` therefore changes the allowlist in the same commit.
   `test/allow.test.ts` replays every recorded request from the eval pages
-  through `checkQuestions`, so a mismatch fails `npm test`.
+  through `checkRequest`, so a mismatch fails `npm test`.
 - **A cache key that is a hash of the request.** The same table produces the
   same request for every user, so one answer serves them all. The key holds
   only the hash, and the cached value holds only the answers. Neither holds
@@ -117,6 +119,11 @@ the code calls no `console` method.
 | Input tokens per day, all installs | 5,000,000                                     | `DAILY_TOKEN_BUDGET`                           |
 | Body size                          | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
 | Questions per request              | 200                                           | `LIMITS.questions`                             |
+| State                              | 32 KiB of JSON                                | `LIMITS.stateBytes`                            |
+| Each table-data field              | 16 KiB of JSON                                | `LIMITS.fieldBytes`                            |
+| State and table data together      | 64 KiB of JSON                                | `LIMITS.dataBytes`                             |
+| Each string in state or table data | 2,000 characters                              | `LIMITS.text`                                  |
+| Each list or row in state or data  | 200 items                                     | `LIMITS.items`                                 |
 | Each header or label in a question | 300 characters                                | `LIMITS.hole`                                  |
 | Table sent to `/v1/judge`          | 60 columns, 2,000 rows, 300 characters a cell | `LIMITS.columns`, `LIMITS.rows`, `LIMITS.cell` |
 | Upstream timeout                   | 20 seconds                                    | `UPSTREAM_TIMEOUT_MS` in `worker.ts`           |
