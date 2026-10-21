@@ -2,11 +2,18 @@
 import type { PageJudgment, PageSnapshot } from "../core/types.ts";
 import type { Orientation } from "../core/orient.ts";
 import type { Palette } from "../core/scale.ts";
+import type { TableChoice } from "./settings.ts";
 
 /** Messages to the service worker. */
 export type ToWorker =
-  /** Asks whether the extension is on for this page. Settings hold API keys, so only the worker reads them. */
+  /**
+   * Asks whether the extension is on for this page, and for the page's saved
+   * table choices. Content scripts can't read extension storage, so only the
+   * worker reads it.
+   */
   | { readonly type: "pageConfig"; readonly url: string }
+  /** Saves the page's table choices until the browser session ends. */
+  | { readonly type: "saveTableChoices"; readonly url: string; readonly choices: Readonly<Record<string, TableChoice>> }
   | {
       readonly type: "judge";
       readonly page: PageSnapshot;
@@ -41,4 +48,6 @@ export interface PageState {
 /** The worker's reply to `pageConfig`. */
 export interface PageConfig {
   readonly enabled: boolean;
+  /** The saved table choices for the page, keyed by table fingerprint. */
+  readonly choices: Readonly<Record<string, TableChoice>>;
 }

@@ -12,26 +12,24 @@ import {
   getInstallId,
   isPagePaused,
   loadSettings,
+  loadTableChoices,
   providerConfig,
   saveSettings,
+  saveTableChoices,
   setPagePaused,
   setSiteEnabledIn,
   siteEnabled,
 } from "./settings.ts";
 
 /**
- * storage.local holds API keys. Chrome opens it to content scripts by default,
- * and content.ts never reads it, so the worker closes it to them.
+ * Content scripts never read extension storage. They get what they need in
+ * the pageConfig reply. storage.local holds API keys, and Chrome opens it to
+ * content scripts by default, so the worker closes it. storage.session holds
+ * paused URLs and per-URL table choices. It is closed by default, and the
+ * worker closes it again in case an earlier version opened it this session.
  */
 void chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => undefined);
-
-/**
- * Content scripts read and write per-table choices in storage.session. Chrome
- * denies them access until this call completes, so pageConfig waits for it.
- */
-const sessionShared = chrome.storage.session
-  .setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" })
-  .catch(() => undefined);
+void chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => undefined);
 
 const ChromeAnswerCache = Layer.succeed(AnswerCache, answerCache(chrome.storage.local));
 
@@ -95,7 +93,16 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
   // Accept only this extension's pages and content scripts.
   if (sender.id !== chrome.runtime.id) return false;
   if (msg.type === "pageConfig") {
-    pageConfig(msg.url).then(sendResponse, () => sendResponse({ enabled: false } satisfies PageConfig));
+    if (!sameOrigin(msg.url, sender.url)) return false;
+    pageConfig(msg.url).then(sendResponse, () => sendResponse({ enabled: false, choices: {} } satisfies PageConfig));
+    return true;
+  }
+  if (msg.type === "saveTableChoices") {
+    if (!sameOrigin(msg.url, sender.url)) return false;
+    saveTableChoices(msg.url, msg.choices).then(
+      () => sendResponse(true),
+      () => sendResponse(false),
+    );
     return true;
   }
   // Only the popup sends the switches. A content script runs inside a web page, so the worker ignores its switches.
@@ -142,15 +149,22 @@ const pausePage = async (tabId: number, url: string, paused: boolean) => {
   if (paused) await chrome.action.setBadgeText({ tabId, text: "" });
 };
 
-const pageConfig = async (url: string): Promise<PageConfig> => {
-  let host: string;
+/**
+ * Returns true if `url` has the same origin as the sender. A content script
+ * can then read and write the session state of its own site only.
+ */
+const sameOrigin = (url: string, senderUrl: string | undefined): boolean => {
   try {
-    host = new URL(url).hostname;
+    return senderUrl !== undefined && new URL(url).origin === new URL(senderUrl).origin;
   } catch {
-    return { enabled: false };
+    return false;
   }
-  const [settings, paused] = await Promise.all([loadSettings(), isPagePaused(url), sessionShared]);
-  return { enabled: siteEnabled(settings, host) && !paused };
+};
+
+const pageConfig = async (url: string): Promise<PageConfig> => {
+  const host = new URL(url).hostname;
+  const [settings, paused, choices] = await Promise.all([loadSettings(), isPagePaused(url), loadTableChoices(url)]);
+  return { enabled: siteEnabled(settings, host) && !paused, choices };
 };
 
 const enableSite = async (tabId: number, host: string, enabled: boolean) => {

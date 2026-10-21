@@ -580,7 +580,7 @@ const coldStartScenario = async (): Promise<string[]> => {
 
 // ── Storage: what the content script's context can read ────────────────────
 
-/** Settings hold API keys, so the content script's isolated world must not read storage.local. */
+/** The content script's isolated world must read neither storage area: they hold API keys and visited URLs. */
 const storageScenario = async (): Promise<string[]> => {
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -603,7 +603,7 @@ const storageScenario = async (): Promise<string[]> => {
   const local = await read("local");
   if (local.startsWith("read")) problems.push(`storage: the content script can read storage.local (${local})`);
   const session = await read("session");
-  if (!session.startsWith("read")) problems.push(`storage: the content script can't read storage.session (${session})`);
+  if (session.startsWith("read")) problems.push(`storage: the content script can read storage.session (${session})`);
   // The popup's site switch, sent from the content script's world, must change nothing.
   await cdp.send("Runtime.evaluate", {
     contextId: world.id,
@@ -619,9 +619,7 @@ const storageScenario = async (): Promise<string[]> => {
 };
 
 const storageProblems = await storageScenario();
-console.log(
-  `${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read settings or flip switches`,
-);
+console.log(`${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read storage or flip switches`);
 for (const p of storageProblems) console.log(`    - ${p}`);
 if (storageProblems.length > 0) failed++;
 

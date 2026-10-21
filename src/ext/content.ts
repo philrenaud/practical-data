@@ -20,7 +20,7 @@ import { attachControls, detachControls } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { paintTable, unpaint } from "../dom/paint.ts";
 import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker } from "./messages.ts";
-import { loadTableChoices, saveTableChoices, type TableChoice } from "./settings.ts";
+import type { TableChoice } from "./settings.ts";
 
 /** The cap is high. Baseball-Reference player pages, the busiest seen so far, have fewer than 30 tables. */
 const MAX_TABLES = 200;
@@ -158,7 +158,7 @@ const choose = (table: HTMLTableElement, change: TableChoice) => {
   const key = keyOf.get(table);
   if (key === undefined) return;
   choices = { ...choices, [key]: { ...choices[key], ...change } };
-  void saveTableChoices(location.href, choices);
+  void send({ type: "saveTableChoices", url: location.href, choices }).catch(() => undefined);
   void run(true);
 };
 
@@ -308,16 +308,14 @@ const optedOut = () => document.querySelector('meta[name="practical-data"][conte
 const start = async () => {
   const config = await send<PageConfig>({ type: "pageConfig", url: location.href }).catch((): PageConfig => ({
     enabled: false,
+    choices: {},
   }));
-  if (!config.enabled || optedOut()) {
-    enabled = false;
+  choices = config.choices;
+  enabled = config.enabled && !optedOut();
+  if (!enabled) {
     setStatus("off");
     return;
   }
-  // Content scripts can read storage.session only after the worker grants access.
-  // The worker grants it before it answers pageConfig. A failed read means no saved choices.
-  choices = await loadTableChoices(location.href).catch(() => ({}));
-  enabled = true;
   void run();
 };
 
