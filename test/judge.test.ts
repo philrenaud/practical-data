@@ -417,3 +417,34 @@ test("date columns are shaded by code, never asked about, and never shared", asy
     ["Set"],
   );
 });
+
+test("a shared ordinal scale too wide to reorder leaves each table its own order", async () => {
+  // Seven grades per table and thirteen across both: more than the union order asks about.
+  const grades = Array.from({ length: 13 }, (_, i) => `G${String(i + 1).padStart(2, "0")}`);
+  const graded = (id: string, levels: readonly string[]) =>
+    pricing(
+      id,
+      ["Item", "Grade"],
+      levels.map((g, i) => [`${id}-${i}`, g]),
+    );
+  const model = scripted((id, req) => {
+    if (id.endsWith(".relation"))
+      return choice({ ordered_levels: 0.95, unordered_kinds: 0.05, workflow_states: 0, options: 0 });
+    if (id.endsWith(".polarity")) return choice({ higher_is_better: 0.9, lower_is_better: 0.05, neutral: 0.05 });
+    if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
+    if (/\.lt\d+_\d+$/.test(id)) {
+      const { a, b } = req.questions[id]!.instructions as { a: string; b: string };
+      return a < b ? choice({ a: 0.95, b: 0.05 }) : choice({ a: 0.05, b: 0.95 });
+    }
+    return { type: "noul", noul: 0 };
+  });
+  const tables = [graded("t0", grades.slice(0, 7)), graded("t1", grades.slice(6))];
+  const j = await Effect.runPromise(judgePage({ ...page, tables }).pipe(Effect.provide(model)));
+  const grade1 = j.tables[1]!.encodings.find((e) => e.header === "Grade");
+  assert.ok(grade1?.kind === "ordinal");
+  assert.deepEqual(
+    grade1.order,
+    grades.slice(6).map((g) => g.toLowerCase()),
+  );
+  assert.equal(grade1.group, null);
+});

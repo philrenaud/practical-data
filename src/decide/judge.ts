@@ -464,6 +464,8 @@ const shareAcrossTables = (page: PageSnapshot, planned: readonly Planned[], poli
           union !== undefined && union.labels.length > largest.order.length
             ? orderFromPairs(union.labels, union.read(response.answers)).order
             : largest.order;
+        // Without a union order, a label outside the largest table's order would lose its color.
+        if (!os.every((e) => e.order.every((l) => order.includes(l)))) return;
         const display = new Map(os.flatMap((e) => e.order.map((l, i) => [l, e.labels[i] ?? l] as const)));
         const labels = order.map((l) => display.get(l) ?? l);
         const polarity = sharedPolarity(os, policy);
