@@ -25,7 +25,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { chromium, type BrowserContext, type Page, type Route } from "playwright";
-import { fixturePages, serve } from "./serve.ts";
+import { EXTENSION_ARGS, fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -39,7 +39,7 @@ const { values: args } = parseArgs({
 const apiKey = process.env["TYPESAFE_API_KEY"] ?? "";
 if (!args.offline && apiKey === "") throw new Error("TYPESAFE_API_KEY is required unless --offline");
 
-const { url: base, server } = await serve("fixtures");
+const { pagesUrl: base, url: loopback, server } = await serve("fixtures");
 await mkdir("artifacts/screens", { recursive: true });
 
 /** Starts Chromium with dist/ loaded in a fresh profile. */
@@ -48,7 +48,7 @@ const launch = async (): Promise<BrowserContext> => {
     channel: "chromium",
     headless: !args.headed,
     viewport: { width: 1360, height: 900 },
-    args: ["--disable-extensions-except=dist", "--load-extension=dist"],
+    args: EXTENSION_ARGS,
   });
   await context.route("**/*", routeRequest);
   return context;
@@ -67,7 +67,8 @@ let replayMisses = 0;
 const routeRequest = async (route: Route) => {
   const req = route.request();
   const url = req.url();
-  if (url.startsWith(base) || url.startsWith("chrome-extension://")) return route.continue();
+  if (url.startsWith(base) || url.startsWith(loopback) || url.startsWith("chrome-extension://"))
+    return route.continue();
   if (url.startsWith("https://api.typesafe.ai/")) {
     // Use the AnswerCache key, the SHA-256 of the exact JSON body.
     const key = createHash("sha256")
@@ -407,6 +408,41 @@ const popupScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Private hosts ───────────────────────────────────────────────────────────
+
+/** A page on 127.0.0.1 is off until the user turns the site on, and sends nothing before that. */
+const privateHostScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const target = await context.newPage();
+  await target.goto(`${loopback}/synthetic/dark-theme.html`, { waitUntil: "domcontentloaded" });
+  await target.waitForTimeout(1500);
+  const status = () => target.evaluate(() => document.documentElement.dataset["pdStatus"]);
+  const judged = await target.evaluate(() => document.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length > 0);
+  if ((await status()) !== "off") problems.push(`private host: status ${await status()}, not off`);
+  if (judged) problems.push("private host: cells painted before the site was turned on");
+
+  const tabId = await worker.evaluate(async () =>
+    (await chrome.tabs.query({}))
+      .map((t) => t.id)
+      .filter((id) => id !== undefined)
+      .at(-1),
+  );
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html?tab=${tabId}`);
+  await popup.waitForTimeout(300);
+  const summary = (await popup.textContent("#summary")) ?? "";
+  if (!/private network/.test(summary)) problems.push(`private host: popup reads "${summary}"`);
+  await popup.click("label:has(#site)");
+  await target.reload({ waitUntil: "domcontentloaded" });
+  if ((await waitForStatus(target)) !== "done") problems.push("private host: turning the site on didn't shade it");
+  // Turn the site off again, so that the setting does not carry into other scenarios.
+  await popup.reload();
+  await popup.click("label:has(#site)");
+  await popup.close();
+  await target.close();
+  return problems;
+};
+
 // ── Per-table controls: rows/columns and hide ───────────────────────────────
 
 const controlsScenario = async (): Promise<string[]> => {
@@ -660,7 +696,7 @@ const storageScenario = async (): Promise<string[]> => {
   await cdp.send("Runtime.evaluate", {
     contextId: world.id,
     awaitPromise: true,
-    expression: `chrome.runtime.sendMessage({ type: "setSiteEnabled", tabId: 0, host: "127.0.0.1", enabled: false }).catch(() => undefined)`,
+    expression: `chrome.runtime.sendMessage({ type: "setSiteEnabled", tabId: 0, host: "fixtures.test", enabled: false }).catch(() => undefined)`,
   });
   const disabled = await worker.evaluate(
     async () => ((await chrome.storage.local.get("settings"))["settings"] as { disabledHosts: string[] }).disabledHosts,
@@ -756,6 +792,11 @@ console.log(`${controlsProblems.length === 0 ? "✓" : "✗"} controls: rows/col
 for (const p of controlsProblems) console.log(`    - ${p}`);
 if (controlsProblems.length > 0) failed++;
 
+const privateHostProblems = await privateHostScenario();
+console.log(`${privateHostProblems.length === 0 ? "✓" : "✗"} private host: off until the user turns it on`);
+for (const p of privateHostProblems) console.log(`    - ${p}`);
+if (privateHostProblems.length > 0) failed++;
+
 const popupProblems = await popupScenario();
 console.log(`${popupProblems.length === 0 ? "✓" : "✗"} popup: page and site switches`);
 for (const p of popupProblems) console.log(`    - ${p}`);
@@ -766,7 +807,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 8 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 9 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

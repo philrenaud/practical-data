@@ -86,7 +86,10 @@ A table is sent only if all of these are true:
 
 - The page is not opted out with `<meta name="practical-data" content="off">`.
 - `siteEnabled` is true for the host. In `"chosen"` mode, every host is off
-  until the user turns it on.
+  until the user turns it on. In `"everywhere"` mode, a private host
+  (`isPrivateHost`: localhost, a name with no dot, `.local`, `.internal`,
+  `.lan`, `.corp`, `.home.arpa`, or a private IP address) is off until the
+  user turns it on.
 - The user has not paused the page in this session.
 - The table has come within one viewport height of the screen. `content.ts`
   watches tables with an `IntersectionObserver` (`NEAR`) and extracts only
