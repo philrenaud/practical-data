@@ -97,9 +97,10 @@ questions. Cached answers are validated again when they are read.
   shipped code.
 - **Painting is reversible.** Turning shading off restores the page's
   original markup and inline styles.
-- **Plain async code, no runtime dependencies.** `judgePage` takes the
+- **Plain async code at the provider boundary.** `judgePage` takes the
   model as an argument, so tests pass a scripted model. Retries, response
   decoding, and bounded concurrency are small functions in `src/decide`.
+  The only runtime dependencies are five d3 modules.
 
 ## Folder READMEs
 
