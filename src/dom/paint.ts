@@ -292,6 +292,7 @@ const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
   header.addEventListener("pointercancel", up);
   header.dataset["pdLegend"] = legends.map((l) => l.title).join("|");
   detach.set(header, () => {
+    clearTimeout(timer);
     header.removeEventListener("pointerenter", enter);
     header.removeEventListener("pointerleave", leave);
     header.removeEventListener("pointerdown", down);
