@@ -15,7 +15,7 @@
     // Model requests per install per UTC day. Cache hits do not count.
     "INSTALL_DAILY_REQUESTS": "400",
     // Input tokens for all installs together per UTC day. 0 turns the free endpoint off.
-    "DAILY_TOKEN_BUDGET": "5000000",
+    "DAILY_TOKEN_BUDGET": "50000000",
   },
   "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
