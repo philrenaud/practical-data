@@ -9,11 +9,12 @@ decision logic, and the painting live in `src/dom`, `src/decide`, and
 | File | Runs in | Job |
 | --- | --- | --- |
 | `background.ts` | Service worker | Holds the credentials, calls the decision model, keeps the answer cache, and owns the page and site switches. |
-| `content.ts` | Every http and https page | Extracts tables near the viewport, sends them to the worker, and paints the reply. Never reads settings. |
+| `content.ts` | Every http and https page | Extracts tables near the viewport, sends them to the worker, and paints the reply. Never reads extension storage. |
 | `popup.ts` | Toolbar popup | Shows what is shaded on the current tab and has the page and site switches. |
 | `options.ts` | Options page | Edits the provider, credentials, palette, and site list. **Test** sends one built-in sample table to the model. |
-| `settings.ts` | Worker, popup, and options | Reads and writes `chrome.storage`. `content.ts` imports only `loadTableChoices` and `saveTableChoices`. |
+| `settings.ts` | Worker, popup, and options | Reads and writes `chrome.storage`. `content.ts` imports only the `TableChoice` type. |
 | `cache.ts` | Worker | The answer cache in `storage.local`. |
+| `pace.ts` | Content script | Limits the judge requests that page changes trigger. |
 | `allowance.ts` | Worker and popup | Merges the free endpoint's reported counts and builds the popup's allowance messages. |
 | `messages.ts` | All | The message types. |
 
@@ -25,7 +26,8 @@ extensions can't send them.
 
 | Message | From | To | Effect |
 | --- | --- | --- | --- |
-| `pageConfig` | content | worker | Returns `PageConfig`, which says whether the page is on. Sent at start-up and after in-app navigation. |
+| `pageConfig` | content | worker | Returns `PageConfig`, which says whether the page is on and carries its saved table choices. Sent at start-up and after in-app navigation. |
+| `saveTableChoices` | content | worker | Saves the page's table choices for the browser session. |
 | `judge` | content | worker | Returns `JudgeReply`, with the judgment and the palette or an error reason. |
 | `setPagePaused` | popup | worker | Pauses or resumes one page for the browser session. |
 | `setSiteEnabled` | popup | worker | Turns a host on or off in the saved settings. |
@@ -34,9 +36,11 @@ extensions can't send them.
 | `state` | popup | content | Returns `PageState`, with the URL, the status, and the counts of shaded tables and columns. |
 
 The worker's `onMessage` listener checks `sender.id`. It accepts `judge` only
-from a tab, and the two switches only from a sender URL under the extension's
-origin. A content script runs inside a web page, so the worker never takes a
-switch from one.
+from a tab. It accepts `pageConfig` and `saveTableChoices` only for a URL with
+the sender's origin, so a content script reaches only its own site's session
+state. It accepts the two switches only from a sender URL under the
+extension's origin. A content script runs inside a web page, so the worker
+never takes a switch from one.
 
 ## Permissions
 
@@ -53,18 +57,23 @@ The extension has no `scripting`, `tabs`, `cookies`, `webRequest`, or
 
 ## Storage
 
-`background.ts` sets the access level of each area when the worker starts.
+Only the worker and the extension pages read or write storage. The content
+script gets what it needs in the `pageConfig` reply and saves table choices
+with `saveTableChoices`.
 
-| Area | Access | Keys |
+| Area | Access level | Keys |
 | --- | --- | --- |
-| `storage.local` | `TRUSTED_CONTEXTS` (worker and extension pages) | `settings` (provider, keys, palette, mode, host lists), `installId`, `allowance`, `answers:v2:<sha-256>`, `answers:v2:index` |
-| `storage.session` | `TRUSTED_AND_UNTRUSTED_CONTEXTS` | `pausedPages` (URLs without fragments), `tables:<URL without fragment>` (per-table choices) |
+| `storage.local` | `TRUSTED_CONTEXTS` | `settings` (provider, keys, palette, mode, host lists), `installId`, `allowance`, `answers:v2:<sha-256>`, `answers:v2:index` |
+| `storage.session` | `TRUSTED_CONTEXTS` | `pausedPages` (URLs without fragments), `tables:<URL without fragment>` (per-table choices) |
 
-Chrome opens `storage.local` to content scripts by default. The worker closes
-it, because `settings` holds API keys. Content scripts need `storage.session`
-for per-table choices. Chrome grants that access only after
-`setAccessLevel` completes, so the worker waits for it before it answers
-`pageConfig`. Session storage is cleared when the browser closes.
+`TRUSTED_CONTEXTS` means the worker and the extension's own pages.
+`storage.session` has this level by default, and Chrome clears it when the
+browser closes. `storage.local` is open to content scripts by default.
+`background.ts` sets both areas to `TRUSTED_CONTEXTS` each time the worker
+starts. Whether Chrome keeps the `storage.local` level across a browser
+restart is unverified. If it does not, a content script that runs before the
+worker starts could read `storage.local` during that window. `content.ts`
+never reads it.
 
 ## What leaves the browser
 
@@ -94,7 +103,8 @@ that sends new text doubles the wait, up to `CHANGE_DELAY_MAX_MS` (5 minutes).
 After `CHANGE_RESET_MS` (1 minute) of quiet beyond the current wait, the wait
 starts over. A table that changes every second therefore sends at most about
 25 requests an hour, and its shading lags by up to 5 minutes. Scrolling a new
-table into view and the user's own actions are not paced.
+table into view and the per-table controls are not paced. A click on the
+page's own sorter or expander counts as a page change.
 
 The free provider adds the `X-Practical-Data-Install` header with the
 `installId`, a `crypto.randomUUID` value. The other providers send the user's
@@ -155,8 +165,10 @@ in `fixtures/`. It checks that each page reaches `data-pd-status="done"`, that
 painted text keeps a 4.5:1 contrast, and that turning shading off restores
 the original markup. It also runs these scenarios:
 
-- **storage**: the content script's world can't read `storage.local` or send
-  a site switch.
+- **navigation**: a paused page that navigates in-app to another page shades
+  the new page, without polling.
+- **storage**: the content script's world can read neither storage area and
+  can't send a site switch.
 - **live**: a table that changes every second sends at most 6 judge requests
   in 16 seconds.
 - **cold start**: a page that loads while the worker starts still shades.
@@ -172,14 +184,17 @@ Without `--offline`, API calls go live and need `TYPESAFE_API_KEY`. Use
 
 - **The worker holds the keys.** Content scripts run in pages, so they get
   judgments, not credentials.
-- **Content scripts can't read `storage.local`.** Chrome enforces the rule
-  above, so a compromised renderer can't read the keys.
+- **Content scripts can't read extension storage.** Chrome enforces the rule
+  above, with the restart caveat in [Storage](#storage). A compromised
+  renderer can't read the keys or the list of paused URLs.
 - **Tables are sent lazily.** Tables the user never scrolls near never leave
   the browser.
 - **No `tabs` permission.** The content script reports its own URL in
   `PageState`, so the popup needs only `activeTab`.
 - **Pauses and table choices live in `storage.session`.** They are meant for
   one sitting and are gone when the browser closes.
+- **Navigation polling runs only on shaded pages.** Off pages rely on the
+  Navigation API and `popstate`, so an off page costs no timer.
 - **Table choices are keyed by content.** `fingerprint` hashes the headers and
   the first row, so a choice stays with its table when the page inserts
   another table above it.
