@@ -1,6 +1,6 @@
 # Data: fixture pages, page snapshots, recorded model answers, and generated demo data.
 fixtures/
-demo/
+/demo/
 package-lock.json
 web/.svelte-kit/
 web/dev-fonts/
