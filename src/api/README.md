@@ -9,7 +9,7 @@ The configuration is in `api/wrangler.jsonc`.
 | ----------------- | --------------------------------------------------------------------------- |
 | `worker.ts`       | Routes, origin and install checks, the shared cache, and the upstream call. |
 | `admit.ts`        | `rateLimitKey`, which keys the per-IP rate limit.                           |
-| `allow.ts`        | The allowlist (`readRequest`), `readBody`, and `readJudgeBody`.             |
+| `allow.ts`        | The allowlist (`readRequest`) and `readBody`.                               |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
 | `counts.ts`       | The SQL that `Quota` runs, kept apart so that Node tests can load it.       |
 | `cloudflare.d.ts` | The Workers runtime types that this directory uses.                         |
@@ -19,34 +19,27 @@ The configuration is in `api/wrangler.jsonc`.
 | Route                | Body                                            | Response                                      |
 | -------------------- | ----------------------------------------------- | --------------------------------------------- |
 | `POST /v1/systemone` | `{ state, questions }`                          | A System One response.                        |
-| `POST /v1/judge`     | `{ title, table: { title, headers, rows } }`    | `{ table: TableJudgment \| null, usage }`     |
 | `GET /v1/health`     | None                                            | `{ ok: true }`                                |
 | `GET /v1/stats`      | None. Send `Authorization: Bearer STATS_TOKEN`. | Today's installs, requests, and input tokens. |
 
 The Worker sets the model from `MODEL`. It ignores a `model` field in the
 body.
 
-`/v1/judge` serves the Google Sheets add-on, which cannot run the judge in
-Apps Script. The add-on is not in this repository. The Worker builds the
-questions from the table with `judgePage` and sends them through the same
-`ask` function as `/v1/systemone`. Each upstream request that the route
-makes counts against the caller's allowance.
-
 Every refusal is JSON of the form `{ error, message }`. The `error` field is
 one of `origin`, `install`, `rate_limited`, `body`, `state`, `questions`,
-`data`, `table`, `install_limit`, `budget_spent`, `upstream`, `auth`, or
+`data`, `install_limit`, `budget_spent`, `upstream`, `auth`, or
 `not_found`.
 
 ## Request flow
 
-Both POST routes run these steps in order. The first step that fails sends
+`/v1/systemone` runs these steps in order. The first step that fails sends
 the refusal.
 
-1. **Origin.** `originAllowed` refuses any Origin that is not
-   `chrome-extension://`. A request with no Origin passes, because Apps Script
-   sends none. When `ALLOWED_ORIGINS` is set, an extension origin must be in
-   the list. The response has no CORS headers, so a web page cannot read it
-   either way.
+1. **Origin.** `originAllowed` refuses a request with no Origin and any
+   Origin that is not `chrome-extension://`. When `ALLOWED_ORIGINS` is set,
+   the origin must be in the list. The response has no CORS headers, so a
+   web page cannot read it either way. A client outside a browser can send
+   any Origin, so this step stops only web pages.
 2. **Install id.** The `X-Practical-Data-Install` header must be a UUID in
    lowercase hex. The extension makes one on first use (`getInstallId` in
    `src/ext/settings.ts`).
@@ -56,7 +49,7 @@ the refusal.
    whole /64. A refusal is a 429 with `Retry-After: 10`.
 4. **Body.** `readBody` stops reading past 256 KiB and parses the body as
    JSON.
-5. **Allowlist.** For `/v1/systemone`, `readRequest` reads the body. Every
+5. **Allowlist.** `readRequest` reads the body. Every
    question must match one that the extension asks. The state and the
    table-data fields (`row`, `first_column`, and `columns`) must have the
    shapes that the builders produce. A wrong shape is refused. A string that
@@ -64,8 +57,7 @@ the refusal.
    version 1.1.0 of the extension sends cells at full length. If the state
    and table data are still over 64 KiB, `readRequest` clips to 500, 100,
    and then 20 characters, and refuses with `data` only if they still do not
-   fit. The Worker forwards and caches the clipped body. For `/v1/judge`,
-   `readJudgeBody` checks the table's size and shape.
+   fit. The Worker forwards and caches the clipped body.
 6. **Shared cache.** `ask` hashes `{ model, state, questions }` with SHA-256
    and looks up the hash in `caches.default`. A hit returns at once and
    spends no allowance.
@@ -133,14 +125,13 @@ the code calls no `console` method.
 | Requests per install per minute      | 60                                            | `RL_INSTALL` in `api/wrangler.jsonc`           |
 | Requests per IP per minute           | 120                                           | `RL_IP` in `api/wrangler.jsonc`                |
 | Model requests per install per day   | 400                                           | `INSTALL_DAILY_REQUESTS`                       |
-| Input tokens per day, all installs   | 5,000,000                                     | `DAILY_TOKEN_BUDGET`                           |
+| Input tokens per day, all installs   | 50,000,000                                    | `DAILY_TOKEN_BUDGET`                           |
 | Body size                            | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
 | Questions per request                | 200                                           | `LIMITS.questions`                             |
 | State and table data, after clipping | 64 KiB of JSON                                | `LIMITS.dataBytes`                             |
 | Each string in state or table data   | 2,000 characters, then clipped                | `LIMITS.text`                                  |
 | Each list or row in state or data    | 200 items, then cut                           | `LIMITS.items`                                 |
 | Each header or label in a question   | 300 characters                                | `LIMITS.hole`                                  |
-| Table sent to `/v1/judge`            | 60 columns, 2,000 rows, 300 characters a cell | `LIMITS.columns`, `LIMITS.rows`, `LIMITS.cell` |
 | Upstream timeout                     | 20 seconds                                    | `UPSTREAM_TIMEOUT_MS` in `worker.ts`           |
 | Cache lifetime                       | 30 days                                       | `CACHE_TTL_S` in `worker.ts`                   |
 
@@ -151,13 +142,13 @@ reaches the budget. The total can therefore pass the budget by at most the
 one request that crosses it, plus any request whose real usage exceeds its
 estimate.
 
-At Jev's $0.042 per million input tokens, the default budget is about $0.21
-a day. `GET /v1/stats` reports the day's usage.
+At Jev's $0.042 per million input tokens, the default budget is about $2.10
+a day. A page that is not in the shared cache takes about 27,000 input
+tokens, so the budget covers about 1,800 such pages a day. `GET /v1/stats` reports the day's usage.
 
 ## Run and test locally
 
-`npm test` runs `test/allow.test.ts`, which covers the allowlist, `readBody`,
-and `readJudgeBody`.
+`npm test` runs `test/allow.test.ts`, which covers the allowlist and `readBody`.
 
 `npm run api:smoke` runs the Worker end to end without calling TypeSafe. It
 starts `wrangler dev` on port 8799 with a stand-in for TypeSafe that replays

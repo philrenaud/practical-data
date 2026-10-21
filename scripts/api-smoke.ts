@@ -3,10 +3,9 @@
  * the TypeSafe API that replays fixtures/recordings. It checks the following:
  *
  * - A page judged through the endpoint matches Jev's own judgment.
- * - A table sent to /v1/judge, the Sheets add-on's route, gets the same judgment.
  * - A repeated request is answered from the shared cache.
- * - The endpoint refuses unknown questions, web-page origins, and requests
- *   with no install id.
+ * - The endpoint refuses unknown questions, web-page origins, requests with
+ *   no Origin, and requests with no install id.
  * - A spent daily allowance returns the "quota" error.
  * - A fresh install, built against the local endpoint with no settings,
  *   shades a page.
@@ -121,8 +120,18 @@ let log = "";
 wrangler.stdout.on("data", (d) => (log += d));
 wrangler.stderr.on("data", (d) => (log += d));
 
+// Node sends no Origin, and the endpoint refuses a request without one. Requests from this
+// script to the endpoint get an extension origin, as the extension's requests do.
+const fetchWithoutOrigin = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  if (!String(input instanceof Request ? input.url : input).startsWith(ORIGIN)) return fetchWithoutOrigin(input, init);
+  const headers = new Headers(init?.headers);
+  if (!headers.has("origin")) headers.set("Origin", "chrome-extension://smoke");
+  return fetchWithoutOrigin(input, { ...init, headers });
+};
+
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  fetch(`${ORIGIN}/v1/${body !== null && typeof body === "object" && "table" in body ? "judge" : "systemone"}`, {
+  fetch(`${ORIGIN}/v1/systemone`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
@@ -179,25 +188,6 @@ try {
     assert.equal(upstreamCalls, calls, "upstream was called again");
   });
 
-  await check("a table sent whole to /v1/judge is judged as the extension would judge it", async () => {
-    const table = page.tables.find((t) => t.rows.length >= 3)!;
-    const r = await post(
-      { title: page.title, table: { title: table.title, headers: table.headers, rows: table.rows } },
-      { "X-Practical-Data-Install": install },
-    );
-    assert.equal(r.status, 200, await r.clone().text());
-    const { table: judged } = (await r.json()) as { table: import("../src/core/types.ts").TableJudgment };
-    const realFetch = globalThis.fetch;
-    globalThis.fetch = async () => new Response("offline", { status: 401 });
-    const direct = await Effect.runPromise(
-      judgePage({ url: "", title: page.title, tables: [{ ...table, id: "t0" }] }).pipe(
-        Effect.provide(Layer.merge(Layer.succeed(DecisionModel, jev("")), fileCache())),
-      ),
-    ).finally(() => (globalThis.fetch = realFetch));
-    assert.ok(judged.encodings.length > 0, "nothing judged");
-    assert.deepEqual(judged, direct.tables[0]);
-  });
-
   await check("questions the extension doesn't ask are refused", async () => {
     const r = await post(
       { state: { page_title: "Inbox" }, questions: { q: { type: "noul", instructions: "Is this email spam?" } } },
@@ -223,6 +213,15 @@ try {
 
   await check("web pages are refused", async () => {
     const r = await post({}, { "X-Practical-Data-Install": install, Origin: "https://example.com" });
+    assert.equal(r.status, 403);
+  });
+
+  await check("a request with no Origin is refused", async () => {
+    const r = await fetchWithoutOrigin(`${ORIGIN}/v1/systemone`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Practical-Data-Install": install },
+      body: "{}",
+    });
     assert.equal(r.status, 403);
   });
 
