@@ -61,8 +61,8 @@ the refusal.
    shapes that the builders produce, within the size limits below. For
    `/v1/judge`, `readJudgeBody` checks the table's size and shape.
 6. **Shared cache.** `ask` hashes `{ model, state, questions }` with SHA-256
-   and looks up the hash in `caches.default`. A hit returns at once, with
-   `X-Cache: hit`, and spends no allowance.
+   and looks up the hash in `caches.default`. A hit returns at once and
+   spends no allowance.
 7. **Daily quota.** `Quota.reserve` counts one request for the install. It
    also adds an estimate of the input tokens to the day's total. The
    estimate is one token per byte of the forwarded body. A refusal is a 429

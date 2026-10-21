@@ -228,7 +228,6 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   return new Response(JSON.stringify(asked.response), {
     headers: {
       "Content-Type": "application/json",
-      "X-Cache": asked.remaining === null ? "hit" : "miss",
       ...(asked.remaining === null ? {} : allowanceHeaders(env, asked.remaining)),
     },
   });
