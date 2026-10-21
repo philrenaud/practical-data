@@ -1,8 +1,6 @@
 <!--
-  One shared-scale check, on its data: each table's values of the column,
-  shaded by the extension's painter on the scale they were judged to share,
-  and each table's range drawn against that scale. On one shared scale, the
-  same color is the same value in every table.
+  One shared-scale check. For each table, shows the column's values shaded on
+  the judged scale, and the table's range on a common axis.
 -->
 <script lang="ts">
   import { DEFAULT_PALETTE } from "../../../../src/core/palettes.ts";
@@ -20,7 +18,7 @@
     return ends.length === 0 ? ([0, 1] as const) : ([Math.min(...ends), Math.max(...ends)] as const);
   });
   const at = (v: number) => (extent[1] === extent[0] ? 0 : ((v - extent[0]) / (extent[1] - extent[0])) * 100);
-  /** A number in the column's own format: "$39.00" from a sample like "$129.00". */
+  /** Formats a number like a sample cell. With the sample "$129.00", 39 becomes "$39.00". */
   const fmt = (v: number, sample: string) => {
     const m = /^([^\d.-]*)-?[\d,]*(\.(\d+))?(.*)$/.exec(sample.trim());
     const decimals = m?.[3]?.length ?? 0;
@@ -30,7 +28,7 @@
     g.members.every((m) => m.encoding?.group != null && m.encoding.group === g.members[0]!.encoding?.group),
   );
 
-  /** A two-column judgment for a member's excerpt: the row label, then the shared column, painted as judged. */
+  /** Returns a judgment for a member's two-column excerpt. Column 0 is the plain row label. Column 1 is the shared column. */
   const excerptJudgment = (m: Member): TableJudgment => ({
     id: `share-${m.key}`,
     orientation: "columns",

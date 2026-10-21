@@ -16,7 +16,7 @@ export const load = async ({ params }) => {
     total: checks.length,
     passed: checks.filter((c) => c.ok).length,
     known: checks.filter((c) => !c.ok && c.known !== null).length,
-    // Example questions only from tables this page shows.
+    // Show a sample question only if this page shows its table.
     samples: info.questions.flatMap((q) => {
       const s = index.samples[q];
       return s === undefined || (s.table !== null && !shown.has(`${s.page}:${s.table}`)) ? [] : [s];

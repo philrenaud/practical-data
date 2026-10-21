@@ -1,4 +1,4 @@
-<!-- One recorded example: its tables, shaded by the extension's painter, and how each column was read. -->
+<!-- One home page example. Shows its tables, shaded by the extension's painter, and the judgment on each column. -->
 <script lang="ts">
   import type { PaletteId } from "../../../src/core/palettes.ts";
   import type { ColumnEncoding, SkippedColumn } from "../../../src/core/types.ts";

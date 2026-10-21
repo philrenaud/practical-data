@@ -1,6 +1,6 @@
 /**
- * Reads the tests site's data at build time (prerender). The files come from
- * scripts/tests-data.ts; `npm run demo` and `npm run web:dev` write them first.
+ * Build-time readers for the tests site data in demo/tests/. The files come
+ * from scripts/tests-data.ts. `npm run demo` and `npm run web:dev` run it first.
  */
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -29,7 +29,7 @@ const read = async <T>(path: string): Promise<T> => {
   }
 };
 
-// Read once per build; in dev, on every request, so regenerated data shows without a restart.
+// Cache the index for the build. In dev, read it on each request so that regenerated data shows without a restart.
 let index: Promise<TestsIndex> | undefined;
 export const readIndex = (): Promise<TestsIndex> =>
   import.meta.env.DEV ? read<TestsIndex>("index.json") : (index ??= read<TestsIndex>("index.json"));
@@ -39,13 +39,14 @@ export const readRequests = (slug: string): Promise<PageRequests> =>
   /^[a-z0-9-]+$/.test(slug) ? read<PageRequests>(`requests/${slug}.json`) : error(404, "No such page");
 
 /**
- * The site shows checks on real pages only. Synthetic pages stay in the eval
- * as regression tests (CI runs them), but invented data proves nothing to a reader.
+ * Returns true if the page is a live fixture. The site shows only live pages.
+ * Synthetic pages stay in the eval, and CI runs them, but invented data proves
+ * nothing about real tables.
  */
 const isPublic = (index: TestsIndex, slug: string): boolean =>
   index.pages.find((p) => p.slug === slug)?.origin === "live";
 
-/** The checks the site shows, and totals over them by kind. */
+/** Returns the checks on live pages, their totals by kind, and the number of hidden checks. */
 export const publicChecks = (index: TestsIndex) => {
   const checks = index.checks.filter((c) => isPublic(index, c.page));
   const totals = Object.fromEntries(
@@ -65,9 +66,10 @@ export const publicChecks = (index: TestsIndex) => {
 };
 
 /**
- * The tables a check kind is made on, each with its own checks of that kind.
- * A shared-scale check names columns in several tables; each of those tables
- * carries it, under its own header. Tables with a failing check come first.
+ * Returns the tables that have checks of one kind, each with its checks of
+ * that kind. A shared-scale check names columns in several tables. Each of
+ * those tables gets a copy of the check with its own header. Tables with a
+ * failing check come first.
  */
 export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
   const index = await readIndex();
@@ -110,7 +112,7 @@ export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
         questions: t.requests.questions,
       });
     });
-    // Two shown tables with one title (a season table and a postseason table) are told apart by position on the page.
+    // If two tables have the same title, add each table's position on the page.
     for (const c of shown) {
       if (shown.filter((x) => x.title === c.title).length > 1)
         cases.push({ ...c, title: `${c.title}, table ${c.position} on the page` });
@@ -120,7 +122,7 @@ export const readCases = async (kind: CheckKind): Promise<CaseTable[]> => {
   return cases.sort((a, b) => Number(a.checks.every((c) => c.ok)) - Number(b.checks.every((c) => c.ok)));
 };
 
-/** Smallest and largest number in one column, as the parser reads its cells. */
+/** Returns the smallest and largest parsed value in a column, or null if no cell parses. */
 const rangeOf = (rows: readonly (readonly string[])[], col: number): [number, number] | null => {
   const values = rows
     .map((r) => parseNumber(r[col] ?? "")?.value)
@@ -128,7 +130,7 @@ const rangeOf = (rows: readonly (readonly string[])[], col: number): [number, nu
   return values.length === 0 ? null : [Math.min(...values), Math.max(...values)];
 };
 
-/** The column that says what each row is: the first one whose cells are mostly not numbers. */
+/** Returns the first column whose cells are mostly not numbers. That column names the rows. */
 const labelColumn = (t: CaseTable): number => {
   const i = t.snapshot.headers.findIndex(
     (_, c) => t.snapshot.rows.filter((r) => parseNumber(r[c] ?? "") === null).length > t.snapshot.rows.length / 2,
@@ -137,8 +139,8 @@ const labelColumn = (t: CaseTable): number => {
 };
 
 /**
- * One shared-scale check: the columns it names, each with its own range of
- * values, and the scale each was painted on (one domain when shared).
+ * Groups the shared-scale checks in `cases`. Each group lists the columns that
+ * its check names, with each column's range of values and painted scale.
  */
 export const sharedGroups = (cases: readonly CaseTable[]): ShareGroup[] => {
   const groups = new Map<string, { check: ScoredCheck; members: ShareGroup["members"][number][] }>();
@@ -154,7 +156,7 @@ export const sharedGroups = (cases: readonly CaseTable[]): ShareGroup[] => {
         header: c.column,
         range: col < 0 ? null : rangeOf(t.snapshot.rows, col),
         domain: e?.kind === "quantitative" ? e.domain : null,
-        // A single number, not a range: "59,488–62,013" would make every label a range.
+        // Use a cell with a single number. A range such as "59,488–62,013" would format every axis label as a range.
         format:
           col < 0
             ? ""
@@ -164,7 +166,7 @@ export const sharedGroups = (cases: readonly CaseTable[]): ShareGroup[] => {
               })?.[col] ?? ""),
         encoding: e ?? null,
         labelHeader: t.snapshot.headers[labelColumn(t)] ?? "",
-        // Each row as the reader sees it: what the row is, and its cell in the shared column.
+        // Each row's label and its cell in the shared column.
         rows:
           col < 0
             ? []

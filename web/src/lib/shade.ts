@@ -1,9 +1,9 @@
 /**
- * Shades a rendered table with the extension's own extractor and painter, so
- * the site shows exactly what the extension does. Repaints when any parameter
- * changes; `theme` is passed only so a page-theme switch repaints too (the
- * painter reads the backgrounds it lands on). An empty `theme` means the
- * page's theme isn't applied yet, so nothing is painted.
+ * A Svelte action that shades a table with the extension's extractor and
+ * painter from src/dom. It repaints when an option changes. The painter does
+ * not read `theme`. Pass it so that a theme switch repaints, because the
+ * painter blends over the page background. An empty `theme` means the page
+ * theme is not applied yet, and the action paints nothing.
  */
 import type { Action } from "svelte/action";
 import type { PaletteId } from "../../../src/core/palettes.ts";
@@ -25,8 +25,8 @@ export const shade: Action<HTMLTableElement, ShadeOptions> = (node, options) => 
   let extracted = extractTable(node, id, []);
   const paint = (o: ShadeOptions) => {
     unpaint(node);
-    // Svelte can reuse this element for a different table (client-side navigation between
-    // pages whose tables share ids); a new id means its cells were re-rendered, so read them again.
+    // After client-side navigation, Svelte can reuse this element for a different table.
+    // A new id means new cells, so extract the table again.
     if (o.id !== id) {
       id = o.id;
       extracted = extractTable(node, id, []);

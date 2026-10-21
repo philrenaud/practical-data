@@ -1,4 +1,4 @@
-<!-- practicaldata.dev home: recorded examples shaded by the extension's own painter. -->
+<!-- The home page. The extension's painter shades the recorded examples. -->
 <script lang="ts">
   import { DEFAULT_PALETTE, divergingStops, PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
   import { config } from "../../../../package.json";
@@ -12,11 +12,10 @@
   let palette = $state<PaletteId>(DEFAULT_PALETTE);
   let theme = $state<"auto" | "light" | "dark">("auto");
   let systemDark = $state(false);
-  // Swatches show the ramp the page will actually use; recomputed when the theme changes.
+  // Each swatch shows the ramp for the current theme. The theme effect recomputes them.
   let swatches = $state<Record<string, string>>({});
-  // The theme as applied to the page ("" until then). Tables paint once it is set and
-  // repaint when it changes, only after the page's colors have switched, since the
-  // painter blends over the backgrounds it finds.
+  // The theme applied to the page, or "" before the first apply. The tables paint only
+  // after it is set, so that the painter blends over the new background colors.
   let applied = $state("");
 
   const palettes = Object.entries(PALETTES) as [PaletteId, (typeof PALETTES)[PaletteId]][];
@@ -38,7 +37,7 @@
       palettes.map(([id]) => [id, `linear-gradient(90deg, ${divergingStops(id, dark, mid).join(", ")})`]),
     );
     applied = dark ? "dark" : "light";
-    // The page theme is this page's control; other pages open in Auto.
+    // The theme toggle applies only to this page. Remove it so that other pages open in Auto.
     return () => delete document.documentElement.dataset["theme"];
   });
 </script>

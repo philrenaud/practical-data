@@ -1,7 +1,7 @@
 <!--
-  One test table on a check page: the table as the extension shades it, a
-  strip under each column with every judgment made on it, and the checks of
-  this page's kind. Pointing at a check outlines its column.
+  One test table on a check page. Shows the shaded table, a strip with the
+  judgments on each column, and the table's checks of the page's kind.
+  Hovering a check outlines its column.
 -->
 <script lang="ts">
   import { isDateUnit } from "../../../../src/core/dates.ts";
@@ -35,7 +35,7 @@
     if (col < 0) return;
     const th = frame.querySelectorAll("thead th")[col];
     if (th === undefined) return;
-    // Measured against the frame: offsetLeft would be relative to the page.
+    // Measure against the frame, because offsetLeft is not relative to it.
     const right = th.getBoundingClientRect().right - frame.getBoundingClientRect().left;
     if (right > frame.clientWidth)
       frame.scrollLeft = th.getBoundingClientRect().left - frame.getBoundingClientRect().left - 48;
@@ -46,7 +46,7 @@
     lower_is_better: "lower is better",
     neutral: "no direction",
   };
-  /** Every judgment on one column, in two short lines. */
+  /** Returns the judgments on one column as a kind and a detail line. */
   const summary = (
     e: ColumnEncoding | undefined,
     s: SkippedColumn | undefined,
@@ -88,7 +88,7 @@
   );
   const totals = $derived(new Set(t.judgment.aggregateRows));
 
-  /** One line under the table: a check, or a column with no hand label of this kind (judged, not scored). */
+  /** One row of the results table. It is a check, or a judged column with no hand label of this kind, which is not scored. */
   interface Line {
     readonly kind: ScoredCheck["kind"];
     readonly column: string | null;
@@ -98,7 +98,7 @@
     readonly known: string | null;
   }
   const kind = $derived(t.checks[0]?.kind);
-  /** What the judgment says about a column, in the form a check of this kind records it; null if the kind doesn't apply. */
+  /** Returns the judgment on a column in the form that a check of kind `k` records. Returns null if the kind does not apply. */
   const judged = (k: ScoredCheck["kind"], header: string): string | null => {
     const e = t.judgment.encodings.find((x) => x.header === header);
     if (k === "detect") return e === undefined ? "none" : e.kind;
@@ -107,8 +107,8 @@
     if (k === "order") return e?.kind === "ordinal" ? e.order.join(" < ") : null;
     return null;
   };
-  // Lines follow the table: whole-table checks first, then every column left to right
-  // (for shade-or-ignore, all of them; for the other column checks, those the check applies to).
+  // Whole-table checks come first, then columns from left to right. Detect lists every
+  // column. The other column kinds list only the columns that the kind applies to.
   const lines = $derived.by((): Line[] => {
     const tableLevel = t.checks.filter((c) => c.column === null);
     const perColumn = kind === "detect" || kind === "polarity" || kind === "transform" || kind === "order";

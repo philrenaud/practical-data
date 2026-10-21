@@ -1,11 +1,11 @@
 /**
- * Plain definitions of every answer the model can give, by question kind.
- * The text sent to the model is longer (src/decide/questions.ts); these are
- * for readers, in Simplified Technical English.
+ * Plain definitions of each answer the model can give, by question kind. The
+ * text sent to the model is in src/decide/questions.ts and is longer. These
+ * definitions use Simplified Technical English.
  */
 
 export interface GlossaryEntry {
-  /** Question kind, as on the check pages: ids with numbers replaced by #. */
+  /** Question kinds, as on the check pages. Each is a question id with its numbers replaced by #. */
   readonly kinds: readonly string[];
   readonly question: string;
   readonly answers: Readonly<Record<string, string>>;
@@ -88,20 +88,20 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
   },
 ];
 
-/** The glossary entry for a question id ("n3.role" → the n#.role entry). */
+/** Returns the glossary entry for a question id. For example, "n3.role" returns the "n#.role" entry. */
 export const glossaryFor = (id: string): GlossaryEntry | undefined => {
   const kind = id.replace(/\d+/g, "#");
   return GLOSSARY.find((g) => g.kinds.includes(kind));
 };
 
-/** An answer key as words: "higher_is_better" → "higher is better". */
+/** Returns an answer key as words. For example, "higher_is_better" becomes "higher is better". */
 export const answerName = (key: string): string => key.replaceAll("_", " ");
 
-/** The anchor of one answer on the glossary page. */
+/** Returns the element id of one answer on the glossary page. */
 export const answerAnchor = (entry: GlossaryEntry, key: string): string =>
   `${entry.kinds[0]!.replace(/[#.]/g, "")}-${key}`;
 
-/** The table description sent with each request, field by field (src/decide/questions.ts, tableState). */
+/** The fields of the table description sent with each request (tableState in src/decide/questions.ts). */
 export const DESCRIPTION_FIELDS: readonly { readonly field: string; readonly text: string }[] = [
   { field: "page_title", text: "The title of the page." },
   { field: "table_title", text: "The caption of the table, or the nearest heading above it." },
@@ -125,7 +125,7 @@ export const DESCRIPTION_FIELDS: readonly { readonly field: string; readonly tex
   { field: "notes", text: "Hints about the form of the values. Code adds a note only when it applies." },
 ];
 
-/** Every spread code can send, and when. */
+/** Each `spread` value that code can send, and when code sends it. */
 export const SPREADS: readonly { readonly text: string; readonly when: string }[] = [
   {
     text: "values are within a factor of 2 of each other",
@@ -139,7 +139,7 @@ export const SPREADS: readonly { readonly text: string; readonly when: string }[
   { text: "includes zero or negative values", when: "A ratio is not possible, thus code does not calculate one." },
 ];
 
-/** Every note code can send, and when. */
+/** Each `notes` value that code can send, and when code sends it. */
 export const NOTES: readonly { readonly text: string; readonly when: string }[] = [
   {
     text: "the values are exactly 1, 2, 3, … in row order",
