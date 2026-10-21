@@ -1,6 +1,6 @@
 /** Minimal static server for fixtures; Playwright can't load extensions on file:// reliably. */
 import { createServer, type Server } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 
 const TYPES: Record<string, string> = {
@@ -36,7 +36,6 @@ export const serve = (root: string): Promise<{ url: string; server: Server }> =>
 
 /** Every fixture page as { slug, path } relative to fixtures/. */
 export const fixturePages = async (): Promise<{ slug: string; path: string }[]> => {
-  const { readdir } = await import("node:fs/promises");
   const out: { slug: string; path: string }[] = [];
   for (const dir of ["live", "synthetic"]) {
     for (const f of (await readdir(join("fixtures", dir)).catch(() => [])).sort()) {

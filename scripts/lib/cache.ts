@@ -7,7 +7,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { Effect, Layer } from "effect";
 import { AnswerCache, layerFromConfig, type DecisionResponse, type ProviderConfig } from "../../src/decide/model.ts";
 
-export const RECORDINGS = "fixtures/recordings";
+const RECORDINGS = "fixtures/recordings";
 
 export const fileCache = (dir = RECORDINGS) =>
   Layer.succeed(AnswerCache, {

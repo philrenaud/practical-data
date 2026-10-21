@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { describeColumn } from "../src/core/legend.ts";
+import { describeColumn, withUnit } from "../src/core/legend.ts";
 import type { ColumnEncoding } from "../src/core/types.ts";
 
 const evidence = {
@@ -74,8 +74,7 @@ test("ranked categories show their first and last level as extents", () => {
   );
 });
 
-test("duration extents read back as clock values", async () => {
-  const { withUnit } = await import("../src/core/legend.ts");
+test("duration extents read back as clock values", () => {
   assert.equal(withUnit(179, ":"), "2:59");
   assert.equal(withUnit(185, ":"), "3:05");
   assert.equal(withUnit(3723, ":"), "1:02:03");

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isMissing, parseNumber } from "../src/core/parse.ts";
+import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 
 const cases: ReadonlyArray<readonly [string, number | null, string | null, (readonly [number, number])?]> = [
   ["$0.25", 0.25, "$"],
@@ -67,8 +67,7 @@ test("isMissing recognizes placeholders", () => {
   for (const t of ["0", "$0.00", "None of the above"]) assert.equal(isMissing(t), false, t);
 });
 
-test("clock-like durations are numbers; times of day stay dates", async () => {
-  const { isDateLike } = await import("../src/core/parse.ts");
+test("clock-like durations are numbers; times of day stay dates", () => {
   assert.equal(isDateLike("2:59"), false);
   assert.equal(isDateLike("7:05 PM"), true);
   assert.equal(isDateLike("2024-01-02"), true);

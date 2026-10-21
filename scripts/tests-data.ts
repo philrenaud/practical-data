@@ -32,7 +32,7 @@ globalThis.fetch = async () => {
 };
 
 /** One request the judge sent, with the answers it got. */
-export interface Exchange {
+interface Exchange {
   readonly state: unknown;
   readonly questions: DecisionRequest["questions"];
   readonly answers: DecisionResponse["answers"];

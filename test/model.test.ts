@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateAnswers, type Question } from "../src/decide/model.ts";
+import { Effect } from "effect";
+import { hosted, validateAnswers, type Question } from "../src/decide/model.ts";
 
 const questions: Record<string, Question> = {
   role: { type: "choice", instructions: "?", criteria: { measure: null, identifier: null } },
@@ -44,8 +45,6 @@ test("rejects missing answers, wrong types, unknown options and out-of-range pro
 });
 
 test("a spent hosted allowance fails at once as quota, without waiting or retrying", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   let calls = 0;
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () => {
@@ -67,8 +66,6 @@ test("a spent hosted allowance fails at once as quota, without waiting or retryi
 });
 
 test("a spent allowance for everyone is told apart from this install's own", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () =>
     new Response('{"error":"budget_spent"}', {
@@ -92,8 +89,6 @@ test("a spent allowance for everyone is told apart from this install's own", asy
 });
 
 test("hosted responses report what's left of the allowance; cache hits report nothing", async () => {
-  const { Effect } = await import("effect");
-  const { hosted } = await import("../src/decide/model.ts");
   const heard: unknown[] = [];
   const realFetch = globalThis.fetch;
   let hit = false;
