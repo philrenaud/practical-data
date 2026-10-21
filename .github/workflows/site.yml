@@ -1,5 +1,6 @@
-# Builds the site at practicaldata.dev for pull requests, and builds and
-# deploys it on pushes to main. The API Worker (api/wrangler.jsonc) is deployed
+# Runs every offline check and builds the site at practicaldata.dev, for pull
+# requests and pushes to main. A push to main then deploys the site, only if
+# every earlier step passed. The API Worker (api/wrangler.jsonc) is deployed
 # by hand, because a deploy there changes behavior and cost for every user.
 name: Site
 
@@ -20,7 +21,7 @@ permissions:
 jobs:
   site:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -31,12 +32,12 @@ jobs:
           node-version: 26
           cache: npm
       - run: npm ci
-      - run: npm run format:check
-      - run: npm run typecheck
+      # The e2e loads the extension into Playwright's Chromium.
+      - run: npx --no playwright install --with-deps chromium
       - run: npm run web:check
-      - run: npm test
-      # The hand-labeled eval, replayed from recordings. It fails on any undocumented mismatch.
-      - run: npm run eval -- --offline --strict
+      # Every offline gate: format, types, unit tests, build, the hand-labeled eval replayed
+      # from recordings, and the e2e. No model key is needed.
+      - run: npm run check
       # Builds the extension, then the SvelteKit site (web/) from recorded judgments. No model key is needed.
       - run: npm run demo
       - name: Deploy

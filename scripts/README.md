@@ -40,8 +40,9 @@ Most scripts run offline. A script that calls the decision model needs
 
 `npm run check` runs every offline gate in order: `format:check`,
 `typecheck`, `test`, `build`, `eval -- --offline --strict`, and
-`e2e -- --offline`. CI (`.github/workflows/site.yml`) runs the same gates
-except the e2e, which needs a browser that can load an extension.
+`e2e -- --offline`. CI (`.github/workflows/site.yml`) runs `npm run check`
+and `npm run web:check` on every pull request and push to main. It deploys
+the site only on a push to main, after every check passes.
 
 ## Fixtures
 
