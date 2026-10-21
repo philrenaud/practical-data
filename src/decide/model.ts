@@ -149,6 +149,8 @@ interface Transport {
   readonly unwrap: (json: unknown) => unknown;
   /** Receives every response before its body is read. The hosted endpoint reports the allowance in headers. */
   readonly observe?: (response: Response) => void;
+  /** Retries after an `overloaded` error. Defaults to `MAX_RETRIES`. */
+  readonly overloadedRetries?: number;
 }
 
 const postJson = (url: string, token: string, body: unknown, signal: AbortSignal) =>
@@ -232,8 +234,14 @@ export const validateAnswers = (
   return null;
 };
 
-const sendOnce = (transport: Transport, body: unknown) =>
-  Effect.gen(function* () {
+/** Retries after a transient error. */
+const MAX_RETRIES = 4;
+
+const sendOnce = (transport: Transport, body: unknown) => {
+  let overloaded = 0;
+  const retryable = (e: DecisionError) =>
+    isTransient(e) && (e.reason !== "overloaded" || ++overloaded <= (transport.overloadedRetries ?? MAX_RETRIES));
+  return Effect.gen(function* () {
     const gate = limiters.get(transport.name) ?? limiter(MAX_IN_FLIGHT);
     limiters.set(transport.name, gate);
     const response = yield* Effect.tryPromise({
@@ -270,11 +278,12 @@ const sendOnce = (transport: Transport, body: unknown) =>
     );
   }).pipe(
     Effect.retry({
-      while: isTransient,
+      while: retryable,
       schedule: Schedule.exponential("250 millis").pipe(Schedule.jittered),
-      times: 4,
+      times: MAX_RETRIES,
     }),
   );
+};
 
 const makeModel = (transport: Transport) =>
   DecisionModel.of({
@@ -362,6 +371,9 @@ export const hosted = (installId: string, onAllowance?: (allowance: Allowance) =
   makeModel({
     name: "jev-hosted",
     maxQuestions: 200,
+    // The Worker reserves a request from the allowance before it calls Jev, so each
+    // retry of an upstream failure (503) spends one more.
+    overloadedRetries: 1,
     observe: (response) => {
       const allowance = allowanceOf(response);
       if (allowance !== null) onAllowance?.(allowance);
