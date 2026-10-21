@@ -87,6 +87,15 @@ A table is sent only if all of these are true:
 `content.ts` caps a page at `MAX_TABLES` (200). The worker caps each request
 at 200 tables and 10,000 rows per table, whatever the content script sends.
 
+A page that changes its own tables, such as a live score or a ticker, sends
+new text that misses the answer cache. `pace.ts` limits those requests. The
+first change waits `CHANGE_DELAY_MS` (600 ms). Each change-triggered request
+that sends new text doubles the wait, up to `CHANGE_DELAY_MAX_MS` (5 minutes).
+After `CHANGE_RESET_MS` (1 minute) of quiet beyond the current wait, the wait
+starts over. A table that changes every second therefore sends at most about
+25 requests an hour, and its shading lags by up to 5 minutes. Scrolling a new
+table into view and the user's own actions are not paced.
+
 The free provider adds the `X-Practical-Data-Install` header with the
 `installId`, a `crypto.randomUUID` value. The other providers send the user's
 key as a bearer token.
@@ -148,6 +157,8 @@ the original markup. It also runs these scenarios:
 
 - **storage**: the content script's world can't read `storage.local` or send
   a site switch.
+- **live**: a table that changes every second sends at most 6 judge requests
+  in 16 seconds.
 - **cold start**: a page that loads while the worker starts still shades.
 - **lifecycle**: in-place edits, inserted tables, page styles, and in-app
   navigation.

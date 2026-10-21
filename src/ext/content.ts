@@ -20,6 +20,7 @@ import { attachControls, detachControls } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { paintTable, unpaint } from "../dom/paint.ts";
 import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker } from "./messages.ts";
+import { afterSend, PACE_START, waitFor } from "./pace.ts";
 import type { TableChoice } from "./settings.ts";
 
 /** The cap is high. Baseball-Reference player pages, the busiest seen so far, have fewer than 30 tables. */
@@ -69,12 +70,16 @@ const isIntact = (t: ExtractedTable): boolean => {
   return sample === undefined || (sample.isConnected && sample.dataset["pdT"] !== undefined);
 };
 
-const run = async (force = false) => {
+/**
+ * Runs extraction and, if the tables changed, a judge request. `paced` marks a
+ * run that a page change triggered. Those runs follow pace.ts.
+ */
+const run = async (force = false, paced = false) => {
   if (!enabled) return;
   const gen = ++generation;
   mutations.disconnect();
   try {
-    await judgeAndPaint(gen, force);
+    await judgeAndPaint(gen, force, paced);
   } catch (e) {
     if (gen === generation) setStatus("error:internal");
     console.info("[practical-data]", e);
@@ -83,7 +88,7 @@ const run = async (force = false) => {
   }
 };
 
-const judgeAndPaint = async (gen: number, force: boolean) => {
+const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
   // extractPage extracts only the tables in `seen`. `nearby` watches the rest until they come near the viewport.
   const extracted = extractPage(document, (el) => seen.has(el));
   for (const el of extracted.elements) if (!seen.has(el)) nearby.observe(el);
@@ -108,6 +113,8 @@ const judgeAndPaint = async (gen: number, force: boolean) => {
   // The same text is not enough. Frameworks re-render tables or rows with the
   // same content, and the new elements have no paint.
   if (!force && key === painted && tables.every(isIntact)) return;
+  // Only new text costs model requests. A re-render with the same text hits the answer cache.
+  if (paced && key !== painted) pace = afterSend(pace, Date.now());
 
   setStatus("working");
   const reply = await send<JudgeReply>({ type: "judge", page, orientations });
@@ -201,6 +208,24 @@ const schedule = (delay: number) => {
   timer = setTimeout(() => void run(), delay);
 };
 
+/** Pacing for runs that page changes trigger. It lasts for the life of the document. */
+let pace = PACE_START;
+let changeTimer: ReturnType<typeof setTimeout> | undefined;
+/**
+ * Schedules a paced run after a page change. A pending run absorbs later
+ * changes, so a page that changes faster than the wait still gets shaded.
+ */
+const scheduleChange = () => {
+  if (changeTimer !== undefined) return;
+  changeTimer = setTimeout(
+    () => {
+      changeTimer = undefined;
+      void run(false, true);
+    },
+    waitFor(pace, Date.now()),
+  );
+};
+
 const nearby = new IntersectionObserver(
   (entries) => {
     let added = false;
@@ -241,7 +266,7 @@ const resized = new ResizeObserver((entries) => {
     lastHeight.set(entry.target, height);
     if (before !== undefined && Math.abs(height - before) > 24) changed = true;
   }
-  if (changed) schedule(250);
+  if (changed) scheduleChange();
 });
 
 const insideTable = (n: Node | null): boolean =>
@@ -261,7 +286,7 @@ const touchesTable = (m: MutationRecord): boolean => {
 };
 
 const mutations = new MutationObserver((records) => {
-  if (records.some(touchesTable)) schedule(600);
+  if (records.some(touchesTable)) scheduleChange();
 });
 const observeMutations = () =>
   mutations.observe(document.body, { childList: true, subtree: true, characterData: true });

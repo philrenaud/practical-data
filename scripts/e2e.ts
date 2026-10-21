@@ -618,6 +618,43 @@ const storageScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Live pages: a table that changes every second ──────────────────────────
+
+/** Changed text misses the answer cache, so judge requests from page changes must back off. */
+const liveScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  const url = `${base}/__ticker.html`;
+  await page.route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><title>Ticker</title><table id="t">
+        <thead><tr><th>Symbol</th><th>Price</th><th>Change</th></tr></thead>
+        <tbody>${["AAA", "BBB", "CCC", "DDD", "EEE", "FFF"].map((s, i) => `<tr><td>${s}</td><td>${10 + i}.00</td><td>${i - 3}%</td></tr>`).join("")}</tbody>
+      </table>
+      <script>
+        // Count judge requests: content.ts sets data-pd-status to "working" for each one.
+        window.judges = 0;
+        new MutationObserver(() => {
+          if (document.documentElement.dataset.pdStatus === "working") window.judges++;
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-pd-status"] });
+        let n = 0;
+        setInterval(() => { document.querySelector("#t tbody td:nth-child(2)").textContent = (20 + ++n / 100).toFixed(2); }, 1000);
+      </script>`,
+    }),
+  );
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(16_000);
+  const judges = await page.evaluate(() => (window as unknown as { judges: number }).judges);
+  await page.close();
+  // Unpaced, a change every second sends about 16. Paced, the waits are 0.6, 1.2, 2.4, 4.8, and 9.6 seconds.
+  return judges <= 6 ? [] : [`live: ${judges} judge requests in 16 seconds`];
+};
+
+const liveProblems = await liveScenario();
+console.log(`${liveProblems.length === 0 ? "✓" : "✗"} live: a table that changes every second backs off`);
+for (const p of liveProblems) console.log(`    - ${p}`);
+if (liveProblems.length > 0) failed++;
+
 const storageProblems = await storageScenario();
 console.log(`${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read storage or flip switches`);
 for (const p of storageProblems) console.log(`    - ${p}`);
@@ -650,7 +687,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // recorded; those runs fail harmlessly and the final full-set run replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 5 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 6 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();
