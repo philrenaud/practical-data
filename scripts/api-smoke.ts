@@ -46,11 +46,13 @@ const roleQuestion = (header: string) =>
 // ── Stand-in for TypeSafe ───────────────────────────────────────────────────
 
 let upstreamCalls = 0;
+/** Every Authorization header the endpoint sent upstream. A check below asserts on it. */
+const upstreamAuth = new Set<string>();
 const upstream = createServer(async (req, res) => {
   let raw = "";
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
-  assert.equal(req.headers.authorization, "Bearer test-key");
+  upstreamAuth.add(req.headers.authorization ?? "(none)");
   const recorded = await readFile(
     `fixtures/recordings/${createHash("sha256").update(raw).digest("hex")}.json`,
     "utf8",
@@ -241,6 +243,12 @@ try {
       assert.equal(viaClient.reason, "quota");
     },
   );
+
+  // Runs after the quota check, whose unique run ids always reach upstream.
+  await check("every upstream request carries the endpoint's TypeSafe key", async () => {
+    assert.ok(upstreamCalls > 0, "upstream was never called");
+    assert.deepEqual([...upstreamAuth], ["Bearer test-key"]);
+  });
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
     execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });
