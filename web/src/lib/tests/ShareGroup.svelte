@@ -73,7 +73,7 @@
   </div>
 
   {#if numeric && first.domain}
-    <div class="ranges" aria-label="Each table's values on the scale">
+    <div class="ranges" role="group" aria-label="Each table's values on the scale">
       <div class="axis"><span>{fmt(extent[0], first.format)}</span><span>{fmt(extent[1], first.format)}</span></div>
       {#each g.members as m (m.key)}
         <div class="row">
