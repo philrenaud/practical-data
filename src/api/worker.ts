@@ -8,7 +8,6 @@
  * directory.
  *
  *   POST /v1/systemone   { state, questions } → System One response
- *   POST /v1/judge       { title, table } → { table, usage }
  *   GET  /v1/health      → { ok: true }
  *   GET  /v1/stats       → today's counts, with Authorization: Bearer STATS_TOKEN
  *
@@ -18,17 +17,9 @@
  * each day's counts are deleted two days later.
  */
 import { Effect, Schema } from "effect";
-import { judgePage } from "../decide/judge.ts";
-import {
-  DecisionError,
-  DecisionModel,
-  DecisionResponse,
-  hashJson,
-  validateAnswers,
-  type Question,
-} from "../decide/model.ts";
+import { DecisionResponse, hashJson, validateAnswers, type Question } from "../decide/model.ts";
 import { rateLimitKey, sameSecret } from "./admit.ts";
-import { LIMITS, readBody, readJudgeBody, readRequest } from "./allow.ts";
+import { LIMITS, readBody, readRequest } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -63,14 +54,13 @@ const secondsToMidnightUtc = () => {
 };
 
 /**
- * Returns whether a request's Origin may use the endpoint. Web-page origins
- * are refused. A request with no Origin comes from a server, such as the
- * Sheets add-on's Apps Script, and passes. When ALLOWED_ORIGINS is set, an
- * extension origin must be in it.
+ * Returns whether a request's Origin may use the endpoint. Only extension
+ * origins pass, and when ALLOWED_ORIGINS is set, the origin must be in it.
+ * A client outside a browser can send any Origin, so this check stops only
+ * web pages. The install id and the rate limits apply to every caller.
  */
 const originAllowed = (origin: string | null, env: Env): boolean => {
-  if (origin === null) return true;
-  if (!origin.startsWith("chrome-extension://")) return false;
+  if (origin === null || !origin.startsWith("chrome-extension://")) return false;
   const allowed = env.ALLOWED_ORIGINS.split(",")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -89,7 +79,7 @@ interface Caller {
  */
 const admit = async (request: Request, env: Env): Promise<Caller | Response> => {
   if (!originAllowed(request.headers.get("origin"), env))
-    return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
+    return refuse(403, "origin", "This endpoint serves the Practical Data extension only.");
   const install = request.headers.get("x-practical-data-install") ?? "";
   if (!INSTALL_ID.test(install)) return refuse(400, "install", "Missing or malformed install id.");
   const ip = rateLimitKey(request.headers.get("cf-connecting-ip") ?? "unknown");
@@ -232,79 +222,10 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   });
 };
 
-/**
- * Handles POST /v1/judge. The body is one table, and the response is the
- * table's judgment. Clients that cannot run the judge, such as the Sheets
- * add-on, use this route. The Worker builds the questions from the table
- * with `judgePage`. The client sends only table text, so this route needs no
- * allowlist.
- *
- *   { title, table: { title, headers, rows } } → { table: TableJudgment | null, usage }
- */
-const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
-  const caller = await admit(request, env);
-  if (caller instanceof Response) return caller;
-  let body: unknown;
-  try {
-    body = await readBody(request);
-  } catch {
-    return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
-  }
-  const page = readJudgeBody(body);
-  if (typeof page === "string") return refuse(400, "table", page);
-
-  // The caller gets the first refusal, such as a spent allowance or an upstream failure.
-  let refusal: Response | null = null;
-  let remaining: number | null = null;
-  const model = DecisionModel.of({
-    name: env.MODEL,
-    evaluate: (req) =>
-      Effect.forEach(
-        chunk(Object.entries(req.questions), LIMITS.questions),
-        (entries) =>
-          Effect.promise(() => ask(env, ctx, caller, req.state, Object.fromEntries(entries))).pipe(
-            Effect.flatMap((asked) => {
-              if ("response" in asked) {
-                if (asked.remaining !== null) remaining = Math.min(remaining ?? Infinity, asked.remaining);
-                return Effect.succeed(asked.response);
-              }
-              refusal ??= asked.refusal;
-              const quota = asked.refusal.headers.get("x-practical-data-quota") !== null;
-              return Effect.fail(new DecisionError({ reason: quota ? "quota" : "network", message: "refused" }));
-            }),
-          ),
-        { concurrency: 4 },
-      ).pipe(
-        Effect.map((responses) => ({
-          model: env.MODEL,
-          answers: Object.assign({}, ...responses.map((r) => r.answers)),
-          usage: { input_tokens: responses.reduce((n, r) => n + r.usage.input_tokens, 0) },
-        })),
-      ),
-  });
-  const result = await Effect.runPromise(
-    Effect.result(judgePage(page).pipe(Effect.provideService(DecisionModel, model))),
-  );
-  if (result._tag === "Failure") return refusal ?? refuse(502, "upstream", "The table couldn't be judged.");
-  if (result.success.failed.length > 0 && refusal !== null) return refusal;
-  return json(
-    200,
-    { table: result.success.tables[0] ?? null, usage: result.success.usage },
-    remaining === null ? {} : allowanceHeaders(env, remaining),
-  );
-};
-
-const chunk = <A>(xs: readonly A[], size: number): A[][] => {
-  const out: A[][] = [];
-  for (let i = 0; i < xs.length; i += size) out.push(xs.slice(i, i + size));
-  return out;
-};
-
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url);
     if (pathname === "/v1/systemone" && request.method === "POST") return decide(request, env, ctx);
-    if (pathname === "/v1/judge" && request.method === "POST") return judge(request, env, ctx);
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
     if (pathname === "/v1/stats" && request.method === "GET") {
       if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
