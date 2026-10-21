@@ -62,7 +62,9 @@
           text. They show how much the endpoint is used and whether it is abused.
         </li>
       </ul>
-      Nothing is logged, and nothing is shared with anyone but TypeSafe.
+      Nothing is logged. The Worker, its cache, and the counts run on Cloudflare, under
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>. The table text goes to
+      TypeSafe and to no one else.
     </li>
     <li>
       <strong>TypeSafe</strong> (Jev, with your own key), at <code>api.typesafe.ai</code>, under

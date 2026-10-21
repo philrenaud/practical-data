@@ -47,7 +47,10 @@ Only the provider set in the extension's options:
     install id, IP address, location, or table text. They show how much the
     endpoint is used and whether it is abused.
 
-  Nothing is logged, and nothing is shared with anyone but TypeSafe.
+  Nothing is logged. The Worker, its cache, and the counts run on
+  Cloudflare, under
+  [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/).
+  The table text goes to TypeSafe and to no one else.
 - **TypeSafe** (Jev, with your own key), at `api.typesafe.ai`, under
   [TypeSafe's terms and privacy policy](https://typesafe.ai).
 - **Cloudflare** (Clef on Workers AI, with your own token), at
