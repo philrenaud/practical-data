@@ -1,18 +1,21 @@
 /**
- * The hosted endpoint, so the extension works without a key of the reader's
- * own. It accepts the same System One request the extension would send to
- * Jev, refuses anything the extension doesn't ask (allow.ts), answers repeats
- * from a shared cache, and forwards the rest to TypeSafe with the operator's
- * key, within per-install, per-IP and daily limits.
+ * The Cloudflare Worker behind api.practicaldata.dev. It lets the extension
+ * work without the user's own TypeSafe key. It accepts the System One
+ * requests that the extension sends and refuses questions that the extension
+ * does not ask (see allow.ts). It answers repeated requests from a shared
+ * cache and forwards the rest to TypeSafe with the operator's key.
+ * Per-install, per-IP, and daily limits apply. See README.md in this
+ * directory.
  *
- *   POST /v1/systemone   { model?, state, questions } → System One response
- *   POST /v1/judge       { title, table } → the table's judgment (for the Sheets add-on)
+ *   POST /v1/systemone   { state, questions } → System One response
+ *   POST /v1/judge       { title, table } → { table, usage }
  *   GET  /v1/health      → { ok: true }
- *   GET  /v1/stats       today's counts (Authorization: Bearer STATS_TOKEN)
+ *   GET  /v1/stats       → today's counts, with Authorization: Bearer STATS_TOKEN
  *
- * Nothing is logged. The cache holds answers keyed by a hash of the request,
- * never the request itself; the daily counts hold install ids, and are
- * deleted two days later.
+ * The Worker sets the model from MODEL and ignores a `model` in the body.
+ * The Worker writes no logs. The cache holds answers under a hash of the
+ * request, never the request itself. The daily counts hold install ids, and
+ * each day's counts are deleted two days later.
  */
 import { Effect, Schema } from "effect";
 import { judgePage } from "../decide/judge.ts";
@@ -24,7 +27,8 @@ import {
   validateAnswers,
   type Question,
 } from "../decide/model.ts";
-import { checkQuestions, LIMITS, readJudgeBody } from "./allow.ts";
+import { rateLimitKey, sameSecret } from "./admit.ts";
+import { LIMITS, readBody, readJudgeBody, readRequest } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -59,9 +63,10 @@ const secondsToMidnightUtc = () => {
 };
 
 /**
- * Never a web page. Requests with no Origin come from servers, such as the
- * Sheets add-on's Apps Script; extension origins must be listed when
- * ALLOWED_ORIGINS is set.
+ * Returns whether a request's Origin may use the endpoint. Web-page origins
+ * are refused. A request with no Origin comes from a server, such as the
+ * Sheets add-on's Apps Script, and passes. When ALLOWED_ORIGINS is set, an
+ * extension origin must be in it.
  */
 const originAllowed = (origin: string | null, env: Env): boolean => {
   if (origin === null) return true;
@@ -72,40 +77,39 @@ const originAllowed = (origin: string | null, env: Env): boolean => {
   return allowed.length === 0 || allowed.includes(origin);
 };
 
-const readBody = async (request: Request): Promise<unknown> => {
-  const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > LIMITS.bodyBytes) throw new Error("too large");
-  const text = await request.text();
-  if (text.length > LIMITS.bodyBytes) throw new Error("too large");
-  return JSON.parse(text);
-};
-
-/** Who is asking, once the origin, install id and rate limits have passed. */
+/** A request that passed `admit`. */
 interface Caller {
   readonly install: string;
 }
 
-/** Origin, install id and rate limits: shared by every route that spends the operator's key. */
+/**
+ * Checks the origin, the install id, and the rate limits. Every route that
+ * spends the operator's key calls it first. Returns the caller, or the
+ * refusal to send.
+ */
 const admit = async (request: Request, env: Env): Promise<Caller | Response> => {
   if (!originAllowed(request.headers.get("origin"), env))
     return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
   const install = request.headers.get("x-practical-data-install") ?? "";
   if (!INSTALL_ID.test(install)) return refuse(400, "install", "Missing or malformed install id.");
-  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const ip = rateLimitKey(request.headers.get("cf-connecting-ip") ?? "unknown");
   const [byInstall, byIp] = await Promise.all([env.RL_INSTALL.limit({ key: install }), env.RL_IP.limit({ key: ip })]);
   if (!byInstall.success || !byIp.success)
     return refuse(429, "rate_limited", "Too many requests; slow down.", { "Retry-After": "10" });
   return { install };
 };
 
-/** `remaining` is the caller's requests left today; unknown (null) on a cache hit, which doesn't spend any. */
+/**
+ * The result of `ask`. `remaining` is the number of requests the caller has
+ * left today. It is null on a cache hit, because a hit spends nothing.
+ */
 type Asked =
   { readonly response: DecisionResponse; readonly remaining: number | null } | { readonly refusal: Response };
 
 /**
- * What's left of the caller's daily allowance, on every response that spent
- * from it. Cache hits carry none: they cost nothing, so the client's last
- * count still holds.
+ * Headers that report the caller's daily allowance. Only responses that
+ * spent from the allowance carry them. A cache hit spends nothing, so the
+ * client keeps its last count.
  */
 const allowanceHeaders = (env: Env, remaining: number): Record<string, string> => ({
   "X-Practical-Data-Remaining": String(remaining),
@@ -113,9 +117,10 @@ const allowanceHeaders = (env: Env, remaining: number): Record<string, string> =
 });
 
 /**
- * One System One request: from the shared cache when anyone has asked it
- * before, otherwise forwarded upstream within the caller's daily allowance.
- * `questions` must already be known to be the extension's own.
+ * Answers one System One request. A request that any caller sent before
+ * comes from the shared cache. Any other request spends one request of the
+ * caller's daily allowance and goes to TypeSafe. The caller of `ask` must
+ * check `questions` against the allowlist first.
  */
 const ask = async (
   env: Env,
@@ -126,7 +131,7 @@ const ask = async (
 ): Promise<Asked> => {
   const forward = { model: env.MODEL, state: state ?? {}, questions };
 
-  // Shared answers: the same table on the same page asks the same questions for every reader.
+  // The same table produces the same request for every user, so one answer serves them all.
   const key = await Effect.runPromise(hashJson(forward));
   const cacheKey = new Request(`https://answers.practicaldata.dev/${key}`);
   const hit = await caches.default.match(cacheKey);
@@ -135,11 +140,15 @@ const ask = async (
     if (decoded._tag === "Some") return { response: decoded.value, remaining: null };
   }
 
+  const body = JSON.stringify(forward);
+  // In the recordings, every request uses fewer input tokens than its body has bytes.
+  const estimate = new TextEncoder().encode(body).byteLength;
   const quota = env.QUOTA.get(env.QUOTA.idFromName(today()));
-  const reservation = await quota.reserve(caller.install, {
-    installRequests: Number(env.INSTALL_DAILY_REQUESTS),
-    tokenBudget: Number(env.DAILY_TOKEN_BUDGET),
-  });
+  const reservation = await quota.reserve(
+    caller.install,
+    { installRequests: Number(env.INSTALL_DAILY_REQUESTS), tokenBudget: Number(env.DAILY_TOKEN_BUDGET) },
+    estimate,
+  );
   const allowance = allowanceHeaders(env, reservation.remaining);
   if (reservation.status !== "ok") {
     return {
@@ -159,15 +168,19 @@ const ask = async (
     upstream = await fetch(env.UPSTREAM_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.TYPESAFE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify(forward),
+      body,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
+    await quota.release(caller.install, estimate);
     return { refusal: refuse(503, "upstream", "The model didn't answer in time.") };
   }
   if (!upstream.ok) {
-    // The operator's key and the provider's messages stay here; the client learns only whether to retry.
-    const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
+    await quota.release(caller.install, estimate);
+    // Do not pass on the provider's error body. The status is enough for the client to decide whether to retry.
+    // An upstream 429 becomes a 503, because the client reads a 429 without a quota header as this
+    // endpoint's own rate limit and retries it several times.
+    const status = upstream.status === 429 || upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
     return {
       refusal: refuse(
@@ -180,11 +193,12 @@ const ask = async (
   }
   const decoded = Schema.decodeUnknownOption(DecisionResponse)(await upstream.json().catch(() => null));
   if (decoded._tag === "None" || validateAnswers(questions, decoded.value) !== null) {
+    // The model ran, so the request and its estimated tokens stay counted.
     return { refusal: refuse(502, "upstream", "The model's answer didn't match the questions.") };
   }
   ctx.waitUntil(
     Promise.all([
-      quota.charge(decoded.value.usage.input_tokens),
+      quota.settle(estimate, decoded.value.usage.input_tokens),
       caches.default.put(
         cacheKey,
         new Response(JSON.stringify(decoded.value), {
@@ -196,7 +210,7 @@ const ask = async (
   return { response: decoded.value, remaining: reservation.remaining };
 };
 
-/** POST /v1/systemone: the extension's own requests, checked against the allowlist. */
+/** Handles POST /v1/systemone. The Worker forwards the body as `readRequest` returns it. */
 const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const caller = await admit(request, env);
   if (caller instanceof Response) return caller;
@@ -206,24 +220,24 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   } catch {
     return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
   }
-  const { state, questions } = (body ?? {}) as { state?: unknown; questions?: unknown };
-  const problem = checkQuestions(questions);
-  if (problem !== null) return refuse(400, "questions", problem);
-  const asked = await ask(env, ctx, caller, state, questions as Record<string, Question>);
+  const read = readRequest(body);
+  if ("error" in read) return refuse(400, read.error, read.message);
+  const asked = await ask(env, ctx, caller, read.state, read.questions);
   if ("refusal" in asked) return asked.refusal;
   return new Response(JSON.stringify(asked.response), {
     headers: {
       "Content-Type": "application/json",
-      "X-Cache": asked.remaining === null ? "hit" : "miss",
       ...(asked.remaining === null ? {} : allowanceHeaders(env, asked.remaining)),
     },
   });
 };
 
 /**
- * POST /v1/judge: a whole table in, its judgment out. The questions are built
- * here from the table, so clients that can't run the judge themselves (the
- * Sheets add-on) need no allowlist, and can't send anything but table text.
+ * Handles POST /v1/judge. The body is one table, and the response is the
+ * table's judgment. Clients that cannot run the judge, such as the Sheets
+ * add-on, use this route. The Worker builds the questions from the table
+ * with `judgePage`. The client sends only table text, so this route needs no
+ * allowlist.
  *
  *   { title, table: { title, headers, rows } } → { table: TableJudgment | null, usage }
  */
@@ -239,7 +253,7 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
   const page = readJudgeBody(body);
   if (typeof page === "string") return refuse(400, "table", page);
 
-  // The first refusal (a spent allowance, an upstream failure) is what the caller sees.
+  // The caller gets the first refusal, such as a spent allowance or an upstream failure.
   let refusal: Response | null = null;
   let remaining: number | null = null;
   const model = DecisionModel.of({
@@ -293,8 +307,7 @@ export default {
     if (pathname === "/v1/judge" && request.method === "POST") return judge(request, env, ctx);
     if (pathname === "/v1/health" && request.method === "GET") return json(200, { ok: true });
     if (pathname === "/v1/stats" && request.method === "GET") {
-      const token = env.STATS_TOKEN ?? "";
-      if (token === "" || request.headers.get("authorization") !== `Bearer ${token}`)
+      if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
         return refuse(401, "auth", "Unauthorized.");
       return json(200, { day: today(), ...(await env.QUOTA.get(env.QUOTA.idFromName(today())).stats()) });
     }

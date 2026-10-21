@@ -1,4 +1,4 @@
-// The hosted endpoint (src/api/worker.ts). Deploy: see docs/hosted-api.md.
+// The free endpoint at api.practicaldata.dev. See src/api/README.md.
 {
   "name": "practical-data-api",
   "main": "../src/api/worker.ts",
@@ -10,13 +10,16 @@
   "vars": {
     "UPSTREAM_URL": "https://api.typesafe.ai/v1/systemone",
     "MODEL": "jev-latest",
-    // Set to the Web Store id once published, e.g. "chrome-extension://abcdefghijklmnopabcdefghijklmnop".
+    // Comma-separated chrome-extension:// origins. Empty accepts any extension.
     "ALLOWED_ORIGINS": "",
+    // Model requests per install per UTC day. Cache hits do not count.
     "INSTALL_DAILY_REQUESTS": "400",
+    // Input tokens for all installs together per UTC day. 0 turns the free endpoint off.
     "DAILY_TOKEN_BUDGET": "5000000",
   },
   "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
+  // Requests per minute, keyed by install id and by client IP.
   "ratelimits": [
     { "name": "RL_INSTALL", "namespace_id": "4101", "simple": { "limit": 60, "period": 60 } },
     { "name": "RL_IP", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } },

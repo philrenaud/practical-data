@@ -253,7 +253,9 @@ shaded, run `node scripts/explain-url.ts <url>`.
 The labels and the thresholds were tuned on these same pages. The scores are
 therefore a regression check, not an accuracy estimate for new pages. The
 offline replay tests the code against recorded answers. It does not test
-the model. To ask the model again, run `npm run eval` without `--offline`.
+the model. An online `npm run eval` also replays every recorded answer, so
+to measure model drift, follow the steps in
+[scripts/README.md](scripts/README.md).
 
 Offline replay with Jev 1.13 at this commit:
 
