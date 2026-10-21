@@ -119,13 +119,41 @@ the scores and the new recordings with the old ones.
    `--allow-dirty` skips this check.
 2. It runs `build.ts` without `PD_API_ORIGIN`, so the build always targets
    the production endpoint.
-3. It zips `dist/` into `release/practical-data-<version>.zip`, without
-   dotfiles.
+3. It sets the mtime of every file in `dist/` to the commit time.
+4. It zips a sorted list of the files, without dotfiles, into
+   `release/practical-data-<version>.zip`. It uses `zip -X -D` with
+   `TZ=UTC`, so the zip holds no owner ids, no directory entries, and no
+   local time zone.
+5. It prints the zip's SHA-256.
 
 `build.ts` sets the manifest's `version_name` to the version, the short
-commit SHA, and the build time. It appends `+dev` if `src/` or `static/` has
-uncommitted changes. Run `npm ci` before you package, so that `node_modules`
-matches the lockfile.
+commit SHA, and the commit time in UTC, for example
+`1.1.0 (475b7e9, 2026-10-21 03:24)`. The popup and the options page show it
+as the Build line. If `src/` or `static/` has uncommitted changes, the build
+appends `+dev` and uses the current time instead. Run `npm ci` before you
+package, so that `node_modules` matches the lockfile.
+
+### Verify a store build
+
+Two packages of one commit are byte-identical. To check that a store build
+matches the source, do these steps:
+
+1. In the extension's popup, read the commit SHA from the Build line.
+2. Check out that commit in a clean clone, and run `npm ci`.
+3. Run `npm run package`, and note the SHA-256 that it prints.
+4. Compare that SHA-256 with `shasum -a 256` of the zip that you want to
+   verify.
+
+The Web Store repackages uploads, so a copy installed from the store does
+not match the zip byte for byte. To check an installed copy, compare its
+files with the build output. Find the installed copy under the Chrome
+profile's `Extensions/<extension id>/<version>/` directory, then run
+`diff -r dist/ <that directory>`. Expect differences only in the store's
+`_metadata/` directory and in `manifest.json`, where the store adds fields
+such as `key` and `update_url`.
+
+The checksum can differ between machines if `zip` writes different file
+permissions. The file contents in `dist/` do not differ.
 
 ## Decisions
 
