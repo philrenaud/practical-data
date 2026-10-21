@@ -61,8 +61,8 @@ These results set the current design:
 ## Jev or Clef
 
 Jev and Clef take the same System One request and return the same answers,
-so each one is a transport in `src/decide/model.ts`. On the corpus in October
-2026:
+so each one is a transport in `src/decide/model.ts`. This comparison was
+measured in October 2026, on the 13 pages the corpus had then:
 
 |                          | Jev 1.13          | Clef                                          |
 | ------------------------ | ----------------- | --------------------------------------------- |
@@ -72,8 +72,13 @@ so each one is a transport in `src/decide/model.ts`. On the corpus in October
 | Price per M input tokens | $0.042            | $0.24                                         |
 | Questions per request    | no documented cap | 64, so requests are split                     |
 
-Jev is the default. The corpus had 13 pages then. A full run cost about 580k
-input tokens, or about $0.02.
+Jev is the default. The prices are the ones this repository uses throughout,
+including README.md and docs/hosted-api.md.
+
+The corpus now has 27 pages. `npm run eval -- --offline --strict` reports 290
+requests and 739,390 input tokens. Those are the recorded token counts, so a
+cold run costs the same. At $0.042 per million input tokens, a full cold run
+with Jev costs about $0.03.
 
 ## Color
 
