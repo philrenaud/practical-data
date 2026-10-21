@@ -97,8 +97,9 @@ questions. Cached answers are validated again when they are read.
   shipped code.
 - **Painting is reversible.** Turning shading off restores the page's
   original markup and inline styles.
-- **Effect at the provider boundary.** Typed errors, retries, and the cache
-  are services that tests can replace with a scripted model.
+- **Plain async code, no runtime dependencies.** `judgePage` takes the
+  model as an argument, so tests pass a scripted model. Retries, response
+  decoding, and bounded concurrency are small functions in `src/decide`.
 
 ## Folder READMEs
 

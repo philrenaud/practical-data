@@ -5,8 +5,8 @@ lists, for each table, the columns worth shading and how to shade them. Code
 measures the columns. A decision model answers fixed questions about what the
 columns mean, and code applies thresholds to the answers.
 
-The entry point is `judgePage(page, policy, orientations, now)` in `judge.ts`.
-It returns an Effect that needs a `DecisionModel` service from `model.ts`.
+The entry point is `judgePage(model, page, policy, orientations, now)` in
+`judge.ts`. It takes a `DecisionModel` from `model.ts` and returns a promise.
 
 ## Files
 
@@ -14,7 +14,8 @@ It returns an Effect that needs a `DecisionModel` service from `model.ts`.
 | --- | --- |
 | `questions.ts` | Builds the request state and the questions, and reads the answers into `NumericReading` and `CategoricalReading`. |
 | `judge.ts` | `judgePage`, `Policy`, and `DEFAULT_POLICY`. Sends the requests and applies the thresholds. Handles orientation, summary rows, date columns, and shared scales. |
-| `model.ts` | The `DecisionModel` service, the providers (`hosted`, `jev`, `clef`), retries, rate limiting, `validateAnswers`, and the `AnswerCache` hook. |
+| `model.ts` | The `DecisionModel` interface, the providers (`hosted`, `jev`, `clef`), retries, rate limiting, `decodeDecisionResponse`, `validateAnswers`, and the `AnswerCache` interface. |
+| `concurrency.ts` | `mapConcurrent`, a bounded map that stops at the first failure, and an abortable `sleep`. |
 
 Code in `src/core` does the parts that need no model: `profile.ts`,
 `parse.ts`, `dates.ts`, `order.ts`, and `orient.ts`.
@@ -119,8 +120,9 @@ If the share request fails, each table keeps its own scales.
 
 ## Provider layer
 
-`model.ts` defines `DecisionModel`, an Effect service with `name` and
-`evaluate(request)`. `makeModel` builds it from a `Transport`:
+`model.ts` defines `DecisionModel`, an interface with `name` and
+`evaluate(request, signal)`. `makeModel` builds it from a `Transport` and an
+`AnswerCache`:
 
 - `evaluate` splits the questions into chunks of `maxQuestions`: 200 for
   `jev` and `hosted`, and 64 for `clef`. Each chunk has the full state.
@@ -128,10 +130,16 @@ If the share request fails, each table keeps its own scales.
   `hashJson(body)`, the SHA-256 of its JSON.
 - On a cache hit, `validateAnswers` checks the stored response against the
   questions. A response that fails is fetched again.
-- `sendOnce` allows 8 requests in flight per provider, sets a 20 s timeout,
-  and retries `rate_limited`, `overloaded`, and `network` errors 4 times with
-  jittered exponential backoff. A `Retry-After` header adds a wait of up to
-  30 s. A response with an `x-practical-data-quota` header is never retried.
+- `sendOnce` allows 8 requests in flight per provider and sets a 20 s
+  timeout. `send` retries `rate_limited`, `overloaded`, and `network` errors
+  4 times. The waits start at 250 ms and double, with ±20% jitter. `hosted`
+  retries an `overloaded` error once. A `Retry-After` header adds a wait of
+  up to 30 s. A response with an `x-practical-data-quota` header is never
+  retried.
+- `decodeDecisionResponse` checks the shape of each response and keeps only
+  the known fields.
+- Chunks run 4 at a time. When one chunk fails, the others are aborted and
+  `evaluate` rejects with that failure.
 - Every fresh response must pass `validateAnswers` before it is cached.
 
 The providers:
@@ -143,12 +151,15 @@ The providers:
 - `clef` sends requests to Cloudflare Workers AI with the user's account id
   and token.
 
-`layerFromConfig` picks one from a `ProviderConfig`. `AnswerCache` caches
-nothing by default. The extension backs it with `chrome.storage.local`. The
-scripts back it with files in `fixtures/recordings` (`scripts/lib/cache.ts`).
+`modelFromConfig` picks one from a `ProviderConfig`. Each provider takes an
+optional `AnswerCache`. Without one, it uses `noCache`. The extension passes
+a cache backed by `chrome.storage.local`. The scripts pass a cache of files
+in `fixtures/recordings` (`scripts/lib/cache.ts`).
 
 `judgePage` judges each table on its own. A table whose requests fail goes in
-`failed`, and the other tables keep their results. `usage.requests` counts
+`failed`, and the other tables keep their results. Only a `DecisionError` is
+caught this way. Any other error rejects `judgePage`. Within one table, the
+first failed request aborts the table's other requests. `usage.requests` counts
 `evaluate` calls, including cache hits.
 
 ## Design decisions

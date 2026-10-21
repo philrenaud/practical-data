@@ -1,11 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
-import { Effect, Layer } from "effect";
 import type { PageSnapshot } from "../src/core/types.ts";
 import { readBody, readRequest } from "../src/api/allow.ts";
 import { judgePage } from "../src/decide/judge.ts";
-import { DecisionModel, jev, type DecisionRequest, type Question } from "../src/decide/model.ts";
+import { DecisionError, jev, type DecisionModel, type DecisionRequest, type Question } from "../src/decide/model.ts";
 import { aggregateQuestions, orientationQuestion, shareQuestion } from "../src/decide/questions.ts";
 import { fileCache } from "../scripts/lib/cache.ts";
 
@@ -21,20 +20,23 @@ const checkQuestions = (questions: unknown) => checkRequest({ state: { page_titl
 /** Collects every request that the judge sends for the fixture snapshots, replayed from recordings. */
 const realRequests = async (): Promise<DecisionRequest[]> => {
   const seen: DecisionRequest[] = [];
-  const recorded = jev("");
-  const capture = Layer.succeed(DecisionModel, {
+  const recorded = jev("", { cache: fileCache() });
+  const capture: DecisionModel = {
     name: recorded.name,
-    evaluate: (req) => {
+    evaluate: (req, signal) => {
       seen.push(req);
-      return recorded.evaluate(req);
+      return recorded.evaluate(req, signal);
     },
-  });
+  };
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("offline", { status: 401 });
   try {
     for (const f of await readdir("fixtures/snapshots")) {
       const page = JSON.parse(await readFile(`fixtures/snapshots/${f}`, "utf8")) as PageSnapshot;
-      await Effect.runPromise(judgePage(page).pipe(Effect.provide(Layer.merge(capture, fileCache())), Effect.result));
+      // A page whose every table fails still adds its requests to `seen`.
+      await judgePage(capture, page).catch((e: unknown) => {
+        if (!(e instanceof DecisionError)) throw e;
+      });
     }
   } finally {
     globalThis.fetch = realFetch;

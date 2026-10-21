@@ -16,7 +16,6 @@
  * request, never the request itself. The daily counts hold install ids, and
  * each day's counts are deleted two days later.
  */
-import { Effect } from "effect";
 import {
   decodeDecisionResponse,
   hashJson,
@@ -128,7 +127,7 @@ const ask = async (
   const forward = { model: env.MODEL, state: state ?? {}, questions };
 
   // The same table produces the same request for every user, so one answer serves them all.
-  const key = await Effect.runPromise(hashJson(forward));
+  const key = await hashJson(forward);
   const cacheKey = new Request(`https://answers.practicaldata.dev/${key}`);
   const hit = await caches.default.match(cacheKey);
   if (hit !== undefined) {

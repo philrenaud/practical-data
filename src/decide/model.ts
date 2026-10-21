@@ -4,7 +4,7 @@
  * same answers. Each provider is a `Transport` with a per-request question
  * limit. Code outside this file sees only decoded and validated answers.
  */
-import { Context, Data, Effect, Layer, Schedule } from "effect";
+import { mapConcurrent, sleep } from "./concurrency.ts";
 
 // ── Request ─────────────────────────────────────────────────────────────────
 
@@ -116,10 +116,14 @@ export type DecisionErrorReason =
   | "quota_everyone";
 
 /** A failed request. Requests that fail with `rate_limited`, `overloaded`, or `network` are retried. */
-export class DecisionError extends Data.TaggedError("DecisionError")<{
+export class DecisionError extends Error {
   readonly reason: DecisionErrorReason;
-  readonly message: string;
-}> {}
+  constructor({ reason, message }: { readonly reason: DecisionErrorReason; readonly message: string }) {
+    super(message);
+    this.name = "DecisionError";
+    this.reason = reason;
+  }
+}
 
 const isTransient = (e: DecisionError): boolean =>
   e.reason === "rate_limited" || e.reason === "overloaded" || e.reason === "network";
@@ -135,40 +139,40 @@ const reasonForStatus = (status: number): DecisionErrorReason =>
 
 // ── Service ─────────────────────────────────────────────────────────────────
 
-/** The decision model as an Effect service. */
-export class DecisionModel extends Context.Service<
-  DecisionModel,
-  {
-    /** The provider's model name, such as "jev-latest" or "clef". */
-    readonly name: string;
-    /** Asks every question in `request`. Splits them into requests of the provider's maximum size. */
-    readonly evaluate: (request: DecisionRequest) => Effect.Effect<DecisionResponse, DecisionError>;
-  }
->()("practical-data/DecisionModel") {}
+/** The decision model: one provider, with its cache. */
+export interface DecisionModel {
+  /** The provider's model name, such as "jev-latest" or "clef". */
+  readonly name: string;
+  /**
+   * Asks every question in `request`. Splits them into requests of the
+   * provider's maximum size. Rejects with a `DecisionError`. If `signal`
+   * aborts, requests in flight stop and no retries start.
+   */
+  readonly evaluate: (request: DecisionRequest, signal?: AbortSignal) => Promise<DecisionResponse>;
+}
 
 /**
- * A cache of responses, keyed by `hashJson` of the request body. The default
- * caches nothing. The extension keeps entries in chrome.storage. The scripts
- * keep them as files in fixtures/recordings, so offline runs replay recorded
- * answers.
+ * A cache of responses, keyed by `hashJson` of the request body. The
+ * extension keeps entries in chrome.storage. The scripts keep them as files
+ * in fixtures/recordings, so offline runs replay recorded answers.
  */
-export const AnswerCache = Context.Reference<{
-  readonly get: (key: string) => Effect.Effect<DecisionResponse | undefined>;
-  readonly set: (key: string, value: DecisionResponse) => Effect.Effect<void>;
-}>("practical-data/AnswerCache", {
-  defaultValue: () => ({
-    get: () => Effect.succeed(undefined),
-    set: () => Effect.void,
-  }),
-});
+export interface AnswerCache {
+  readonly get: (key: string) => Promise<DecisionResponse | undefined>;
+  readonly set: (key: string, value: DecisionResponse) => Promise<void>;
+}
+
+/** A cache that holds nothing. Providers use it when they get no cache. */
+export const noCache: AnswerCache = {
+  get: async () => undefined,
+  set: async () => undefined,
+};
 
 /** Returns the hex SHA-256 of `JSON.stringify(value)`. Runs in service workers and Node. */
-export const hashJson = (value: unknown): Effect.Effect<string> =>
-  Effect.promise(async () => {
-    const bytes = new TextEncoder().encode(JSON.stringify(value));
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  });
+export const hashJson = async (value: unknown): Promise<string> => {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
 
 const chunk = <A>(xs: readonly A[], size: number): A[][] => {
   const out: A[][] = [];
@@ -273,88 +277,104 @@ export const validateAnswers = (
 
 /** Retries after a transient error. */
 const MAX_RETRIES = 4;
+/** The wait before the first retry. Each later retry waits twice as long, with ±20% jitter. */
+const RETRY_BASE_MS = 250;
 
-const sendOnce = (transport: Transport, body: unknown) => {
-  let overloaded = 0;
-  const retryable = (e: DecisionError) =>
-    isTransient(e) && (e.reason !== "overloaded" || ++overloaded <= (transport.overloadedRetries ?? MAX_RETRIES));
-  return Effect.gen(function* () {
-    const gate = limiters.get(transport.name) ?? limiter(MAX_IN_FLIGHT);
-    limiters.set(transport.name, gate);
-    const response = yield* Effect.tryPromise({
-      try: async (signal) => {
-        await gate.acquire();
-        try {
-          return await transport.send(body, AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]));
-        } finally {
-          gate.release();
-        }
-      },
-      catch: (e) => new DecisionError({ reason: "network", message: String(e) }),
-    });
-    transport.observe?.(response);
-    if (!response.ok) {
-      const text = yield* Effect.promise(() => response.text().catch(() => ""));
-      // A spent daily allowance lasts until the reset, so do not wait or retry.
-      const spent = response.headers.get("x-practical-data-quota");
-      const quota = spent !== null;
-      // Wait for Retry-After before the retry schedule adds its own backoff.
-      const wait = !quota && (response.status === 429 || response.status === 529) ? retryAfterMs(response) : null;
-      if (wait !== null) yield* Effect.sleep(wait);
-      return yield* new DecisionError({
-        reason: spent === "budget_spent" ? "quota_everyone" : quota ? "quota" : reasonForStatus(response.status),
-        message: `${transport.name} ${response.status}: ${text.slice(0, 500)}`,
-      });
+/** Sends one request body and decodes the response. Does not retry. */
+const sendOnce = async (transport: Transport, body: unknown, signal?: AbortSignal): Promise<DecisionResponse> => {
+  const gate = limiters.get(transport.name) ?? limiter(MAX_IN_FLIGHT);
+  limiters.set(transport.name, gate);
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  let response: Response;
+  try {
+    await gate.acquire();
+    try {
+      response = await transport.send(body, signal === undefined ? timeout : AbortSignal.any([signal, timeout]));
+    } finally {
+      gate.release();
     }
-    const json = yield* Effect.tryPromise({
-      try: () => response.json() as Promise<unknown>,
-      catch: (e) => new DecisionError({ reason: "decode", message: String(e) }),
+  } catch (e) {
+    throw new DecisionError({ reason: "network", message: String(e) });
+  }
+  transport.observe?.(response);
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    // A spent daily allowance lasts until the reset, so do not wait or retry.
+    const spent = response.headers.get("x-practical-data-quota");
+    const quota = spent !== null;
+    // Wait for Retry-After before the retry backoff adds its own wait.
+    const wait = !quota && (response.status === 429 || response.status === 529) ? retryAfterMs(response) : null;
+    if (wait !== null) await sleep(wait, signal);
+    throw new DecisionError({
+      reason: spent === "budget_spent" ? "quota_everyone" : quota ? "quota" : reasonForStatus(response.status),
+      message: `${transport.name} ${response.status}: ${text.slice(0, 500)}`,
     });
-    const decoded = decodeDecisionResponse(transport.unwrap(json));
-    if (decoded === null) return yield* new DecisionError({ reason: "decode", message: "unexpected response shape" });
-    return decoded;
-  }).pipe(
-    Effect.retry({
-      while: retryable,
-      schedule: Schedule.exponential("250 millis").pipe(Schedule.jittered),
-      times: MAX_RETRIES,
-    }),
-  );
+  }
+  let json: unknown;
+  try {
+    json = await response.json();
+  } catch (e) {
+    throw new DecisionError({ reason: "decode", message: String(e) });
+  }
+  const decoded = decodeDecisionResponse(transport.unwrap(json));
+  if (decoded === null) throw new DecisionError({ reason: "decode", message: "unexpected response shape" });
+  return decoded;
 };
 
-const makeModel = (transport: Transport) =>
-  DecisionModel.of({
-    name: transport.name,
-    evaluate: (request) =>
-      Effect.gen(function* () {
-        const cache = yield* AnswerCache;
-        const parts = chunk(Object.entries(request.questions), transport.maxQuestions);
-        const responses = yield* Effect.forEach(
-          parts,
-          (entries) =>
-            Effect.gen(function* () {
-              const body = { model: transport.name, state: request.state, questions: Object.fromEntries(entries) };
-              const key = yield* hashJson(body);
-              const questions = Object.fromEntries(entries);
-              // Check cached answers again, because storage can hold entries from older code.
-              const raw = yield* cache.get(key);
-              const hit = raw === undefined ? null : decodeDecisionResponse(raw);
-              if (hit !== null && validateAnswers(questions, hit) === null) return hit;
-              const fresh = yield* sendOnce(transport, body);
-              const invalid = validateAnswers(questions, fresh);
-              if (invalid !== null) return yield* new DecisionError({ reason: "decode", message: invalid });
-              yield* cache.set(key, fresh);
-              return fresh;
-            }),
-          { concurrency: 4 },
-        );
-        return {
-          model: responses[0]?.model ?? transport.name,
-          answers: Object.assign({}, ...responses.map((r) => r.answers)),
-          usage: { input_tokens: responses.reduce((n, r) => n + r.usage.input_tokens, 0) },
-        } satisfies DecisionResponse;
-      }),
-  });
+/**
+ * Sends one request body and retries transient errors up to `MAX_RETRIES`
+ * times, with exponential backoff. An `overloaded` error is retried at most
+ * `transport.overloadedRetries` times. After `signal` aborts, it does not
+ * retry.
+ */
+const send = async (transport: Transport, body: unknown, signal?: AbortSignal): Promise<DecisionResponse> => {
+  let overloaded = 0;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await sendOnce(transport, body, signal);
+    } catch (e) {
+      if (!(e instanceof DecisionError) || signal?.aborted === true) throw e;
+      const retryable =
+        isTransient(e) && (e.reason !== "overloaded" || ++overloaded <= (transport.overloadedRetries ?? MAX_RETRIES));
+      if (!retryable || attempt > MAX_RETRIES) throw e;
+      const delay = RETRY_BASE_MS * 2 ** (attempt - 1);
+      const random = Math.random();
+      await sleep(delay * 0.8 * (1 - random) + delay * 1.2 * random, signal);
+    }
+  }
+};
+
+const makeModel = (transport: Transport, cache: AnswerCache = noCache): DecisionModel => ({
+  name: transport.name,
+  evaluate: async (request, signal) => {
+    const parts = chunk(Object.entries(request.questions), transport.maxQuestions);
+    const responses = await mapConcurrent(
+      parts,
+      4,
+      async (entries, partSignal) => {
+        const body = { model: transport.name, state: request.state, questions: Object.fromEntries(entries) };
+        const key = await hashJson(body);
+        const questions = Object.fromEntries(entries);
+        // Check cached answers again, because storage can hold entries from older code.
+        const raw = await cache.get(key);
+        partSignal.throwIfAborted();
+        const hit = raw === undefined ? null : decodeDecisionResponse(raw);
+        if (hit !== null && validateAnswers(questions, hit) === null) return hit;
+        const fresh = await send(transport, body, partSignal);
+        const invalid = validateAnswers(questions, fresh);
+        if (invalid !== null) throw new DecisionError({ reason: "decode", message: invalid });
+        await cache.set(key, fresh);
+        return fresh;
+      },
+      signal,
+    );
+    return {
+      model: responses[0]?.model ?? transport.name,
+      answers: Object.assign({}, ...responses.map((r) => r.answers)),
+      usage: { input_tokens: responses.reduce((n, r) => n + r.usage.input_tokens, 0) },
+    } satisfies DecisionResponse;
+  },
+});
 
 // ── Providers ───────────────────────────────────────────────────────────────
 
@@ -373,13 +393,19 @@ export type ProviderConfig =
  * TypeSafe's Jev. Requests are split into chunks of 200 questions. The
  * TypeSafe API reference states no question limit, and a body limit of 32 MiB.
  */
-export const jev = (apiKey: string, model = "jev-latest") =>
-  makeModel({
-    name: model,
-    maxQuestions: 200,
-    send: (body, signal) => postJson("https://api.typesafe.ai/v1/systemone", apiKey, body, signal),
-    unwrap: (json) => json,
-  });
+export const jev = (
+  apiKey: string,
+  options: { readonly model?: string | undefined; readonly cache?: AnswerCache | undefined } = {},
+) =>
+  makeModel(
+    {
+      name: options.model ?? "jev-latest",
+      maxQuestions: 200,
+      send: (body, signal) => postJson("https://api.typesafe.ai/v1/systemone", apiKey, body, signal),
+      unwrap: (json) => json,
+    },
+    options.cache,
+  );
 
 declare const PD_API_ORIGIN: string | undefined;
 
@@ -405,52 +431,66 @@ export const allowanceOf = (response: Response): Allowance | null => {
  * and the same 200-question chunks as Jev. `onAllowance` receives the
  * allowance from each response that reports one.
  */
-export const hosted = (installId: string, onAllowance?: (allowance: Allowance) => void) =>
-  makeModel({
-    name: "jev-hosted",
-    maxQuestions: 200,
-    // The Worker reserves a request from the allowance before it calls Jev, so each
-    // retry of an upstream failure (503) spends one more.
-    overloadedRetries: 1,
-    observe: (response) => {
-      const allowance = allowanceOf(response);
-      if (allowance !== null) onAllowance?.(allowance);
+export const hosted = (
+  installId: string,
+  options: {
+    readonly onAllowance?: ((allowance: Allowance) => void) | undefined;
+    readonly cache?: AnswerCache | undefined;
+  } = {},
+) =>
+  makeModel(
+    {
+      name: "jev-hosted",
+      maxQuestions: 200,
+      // The Worker reserves a request from the allowance before it calls Jev, so each
+      // retry of an upstream failure (503) spends one more.
+      overloadedRetries: 1,
+      observe: (response) => {
+        const allowance = allowanceOf(response);
+        if (allowance !== null) options.onAllowance?.(allowance);
+      },
+      send: (body, signal) =>
+        fetch(`${API_ORIGIN}/v1/systemone`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Practical-Data-Install": installId },
+          body: JSON.stringify(body),
+          signal,
+        }),
+      unwrap: (json) => json,
     },
-    send: (body, signal) =>
-      fetch(`${API_ORIGIN}/v1/systemone`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Practical-Data-Install": installId },
-        body: JSON.stringify(body),
-        signal,
-      }),
-    unwrap: (json) => json,
-  });
+    options.cache,
+  );
 
 /** Cloudflare's Clef on Workers AI. The API caps a request at 64 questions. */
-export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-flash" = "clef") => {
+export const clef = (
+  accountId: string,
+  apiToken: string,
+  options: { readonly model?: "clef" | "clef-flash" | undefined; readonly cache?: AnswerCache | undefined } = {},
+) => {
+  const model = options.model ?? "clef";
   // Account IDs are 32 hex characters. Encode anything else so that it cannot change the URL path.
   const account = /^[0-9a-f]{32}$/i.test(accountId) ? accountId : encodeURIComponent(accountId);
-  return makeModel({
-    name: model,
-    maxQuestions: 64,
-    send: (body, signal) =>
-      postJson(
-        `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/@cf/cloudflare/${model}`,
-        apiToken,
-        body,
-        signal,
-      ),
-    unwrap: (json) => (typeof json === "object" && json !== null && "result" in json ? json.result : json),
-  });
+  return makeModel(
+    {
+      name: model,
+      maxQuestions: 64,
+      send: (body, signal) =>
+        postJson(
+          `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/@cf/cloudflare/${model}`,
+          apiToken,
+          body,
+          signal,
+        ),
+      unwrap: (json) => (typeof json === "object" && json !== null && "result" in json ? json.result : json),
+    },
+    options.cache,
+  );
 };
 
-/** Returns a layer that provides the `DecisionModel` for `config`. */
-export const layerFromConfig = (config: ProviderConfig): Layer.Layer<DecisionModel> =>
-  Layer.succeed(
-    DecisionModel,
-    config.provider === "hosted"
-      ? hosted(config.installId, config.onAllowance)
-      : config.provider === "jev"
-        ? jev(config.apiKey, config.model)
-        : clef(config.accountId, config.apiToken, config.model),
-  );
+/** Returns the `DecisionModel` for `config`, with `cache` in front of the provider. */
+export const modelFromConfig = (config: ProviderConfig, cache?: AnswerCache): DecisionModel =>
+  config.provider === "hosted"
+    ? hosted(config.installId, { onAllowance: config.onAllowance, cache })
+    : config.provider === "jev"
+      ? jev(config.apiKey, { model: config.model, cache })
+      : clef(config.accountId, config.apiToken, { model: config.model, cache });

@@ -1,5 +1,4 @@
 /** The answer cache the service worker keeps in chrome.storage.local. */
-import { Effect } from "effect";
 import type { AnswerCache, DecisionResponse } from "../decide/model.ts";
 
 /** Versioned so a change in answer format never replays old entries. */
@@ -26,7 +25,7 @@ export interface Store {
  * each entry on read. Writes are best-effort, because a full or failing store
  * must not fail a judgment.
  */
-export const answerCache = (store: Store): typeof AnswerCache.Service => {
+export const answerCache = (store: Store): AnswerCache => {
   // Each write reads and rewrites the index. Concurrent writes would drop each
   // other's keys, and an entry missing from the index is never evicted.
   let writes = Promise.resolve();
@@ -43,16 +42,14 @@ export const answerCache = (store: Store): typeof AnswerCache.Service => {
     }
   };
   return {
-    get: (key) =>
-      Effect.promise(async () => {
-        const k = CACHE_PREFIX + key;
-        const hit = await store.get(k).catch(() => ({}) as Record<string, unknown>);
-        return hit[k] as DecisionResponse | undefined;
-      }),
-    set: (key, value) =>
-      Effect.promise(() => {
-        writes = writes.then(() => write(key, value));
-        return writes;
-      }),
+    get: async (key) => {
+      const k = CACHE_PREFIX + key;
+      const hit = await store.get(k).catch(() => ({}) as Record<string, unknown>);
+      return hit[k] as DecisionResponse | undefined;
+    },
+    set: (key, value) => {
+      writes = writes.then(() => write(key, value));
+      return writes;
+    },
   };
 };

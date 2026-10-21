@@ -1,23 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Effect, Layer } from "effect";
-import { DecisionError, DecisionModel, type Answer, type DecisionRequest } from "../src/decide/model.ts";
+import { DecisionError, type Answer, type DecisionModel, type DecisionRequest } from "../src/decide/model.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import { followsRows } from "../src/decide/questions.ts";
 import type { NumericProfile } from "../src/core/profile.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
 
 /** A fake model that answers by question id, so tests exercise judge composition, not inference. */
-const scripted = (answer: (id: string, req: DecisionRequest) => Answer) =>
-  Layer.succeed(DecisionModel, {
-    name: "scripted",
-    evaluate: (req) =>
-      Effect.succeed({
-        model: "scripted",
-        answers: Object.fromEntries(Object.keys(req.questions).map((id) => [id, answer(id, req)])),
-        usage: { input_tokens: 1 },
-      }),
-  });
+const scripted = (answer: (id: string, req: DecisionRequest) => Answer): DecisionModel => ({
+  name: "scripted",
+  evaluate: async (req) => ({
+    model: "scripted",
+    answers: Object.fromEntries(Object.keys(req.questions).map((id) => [id, answer(id, req)])),
+    usage: { input_tokens: 1 },
+  }),
+});
 
 const choice = (probabilities: Record<string, number>): Answer => {
   const [choice] = Object.entries(probabilities).sort((a, b) => b[1] - a[1])[0]!;
@@ -73,7 +70,7 @@ const answers = scripted((id, req) => {
 });
 
 test("judges price and category columns, sharing scales across tables", async () => {
-  const j = await Effect.runPromise(judgePage(page).pipe(Effect.provide(answers)));
+  const j = await judgePage(answers, page);
   const [t0, t1] = j.tables;
   const input0 = t0!.encodings.find((e) => e.header === "Input");
   const input1 = t1!.encodings.find((e) => e.header === "Input");
@@ -105,7 +102,7 @@ test("declines numeric columns the model calls identifiers", async () => {
         ? choice({ ordered_levels: 0.05, unordered_kinds: 0.9, workflow_states: 0.05, options: 0 })
         : { type: "noul", noul: 0 },
   );
-  const j = await Effect.runPromise(judgePage({ ...page, tables: [page.tables[0]!] }).pipe(Effect.provide(ids)));
+  const j = await judgePage(ids, { ...page, tables: [page.tables[0]!] });
   assert.deepEqual(j.tables[0]!.encodings, []);
   assert.deepEqual(
     j.tables[0]!.skipped.map((s) => [s.header, s.reason]),
@@ -132,7 +129,7 @@ test("drops two-level ordinals unless a shared scale widens them", async () => {
       ),
     ],
   };
-  const j = await Effect.runPromise(judgePage(tiers).pipe(Effect.provide(answers)));
+  const j = await judgePage(answers, tiers);
   assert.deepEqual(
     j.tables[0]!.encodings.map((e) => e.header),
     ["Input"],
@@ -140,22 +137,20 @@ test("drops two-level ordinals unless a shared scale widens them", async () => {
   assert.equal(j.tables[0]!.skipped.find((s) => s.header === "Tier")?.reason, "only two levels");
 
   // In the shared page, t1 has only Versatile and Powerful, but it keeps its color through t0's three-level scale.
-  const shared = await Effect.runPromise(judgePage(page).pipe(Effect.provide(answers)));
+  const shared = await judgePage(answers, page);
   assert.ok(shared.tables[1]!.encodings.some((e) => e.header === "Category"));
 });
 
 test("a failed share request keeps per-table scales instead of failing the page", async () => {
-  const flaky = Layer.succeed(DecisionModel, {
+  const flaky: DecisionModel = {
     name: "flaky",
-    evaluate: (req) =>
-      Object.keys(req.questions).some((id) => id.endsWith(".share"))
-        ? Effect.fail(new DecisionError({ reason: "overloaded", message: "529" }))
-        : Effect.gen(function* () {
-            const model = yield* DecisionModel;
-            return yield* model.evaluate(req);
-          }).pipe(Effect.provide(answers)),
-  });
-  const j = await Effect.runPromise(judgePage(page).pipe(Effect.provide(flaky)));
+    evaluate: async (req) => {
+      if (Object.keys(req.questions).some((id) => id.endsWith(".share")))
+        throw new DecisionError({ reason: "overloaded", message: "529" });
+      return answers.evaluate(req);
+    },
+  };
+  const j = await judgePage(flaky, page);
   const inputs = j.tables.map((t) => t.encodings.find((e) => e.header === "Input"));
   assert.ok(inputs.every((e) => e?.kind === "quantitative" && e.group === null));
   assert.deepEqual(
@@ -168,17 +163,15 @@ test("a failed share request keeps per-table scales instead of failing the page"
 });
 
 test("one table's failure leaves the other tables judged", async () => {
-  const failSecond = Layer.succeed(DecisionModel, {
+  const failSecond: DecisionModel = {
     name: "partial",
-    evaluate: (req) =>
-      JSON.stringify(req.state).includes('"F"') || JSON.stringify(req.state).includes("$30.00")
-        ? Effect.fail(new DecisionError({ reason: "overloaded", message: "529" }))
-        : Effect.gen(function* () {
-            const model = yield* DecisionModel;
-            return yield* model.evaluate(req);
-          }).pipe(Effect.provide(answers)),
-  });
-  const j = await Effect.runPromise(judgePage(page).pipe(Effect.provide(failSecond)));
+    evaluate: async (req) => {
+      if (JSON.stringify(req.state).includes('"F"') || JSON.stringify(req.state).includes("$30.00"))
+        throw new DecisionError({ reason: "overloaded", message: "529" });
+      return answers.evaluate(req);
+    },
+  };
+  const j = await judgePage(failSecond, page);
   assert.deepEqual(
     j.tables.map((t) => t.id),
     ["t0"],
@@ -188,11 +181,11 @@ test("one table's failure leaves the other tables judged", async () => {
 
 test("unordered label columns never send pairwise order questions", async () => {
   const asked: string[] = [];
-  const unordered = Layer.succeed(DecisionModel, {
+  const unordered: DecisionModel = {
     name: "unordered",
-    evaluate: (req) => {
+    evaluate: async (req) => {
       asked.push(...Object.keys(req.questions));
-      return Effect.succeed({
+      return {
         model: "unordered",
         answers: Object.fromEntries(
           Object.keys(req.questions).map((id) => [
@@ -214,10 +207,10 @@ test("unordered label columns never send pairwise order questions", async () => 
           ]),
         ),
         usage: { input_tokens: 1 },
-      });
+      };
     },
-  });
-  await Effect.runPromise(judgePage({ ...page, tables: [page.tables[0]!] }).pipe(Effect.provide(unordered)));
+  };
+  await judgePage(unordered, { ...page, tables: [page.tables[0]!] });
   assert.equal(asked.filter((id) => /\.lt\d+_\d+$/.test(id)).length, 0);
 });
 
@@ -251,7 +244,7 @@ test("never offers a share for same-named columns of different magnitude", async
     if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
     return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
   });
-  const j = await Effect.runPromise(judgePage({ ...page, tables: [games, seasons] }).pipe(Effect.provide(spy)));
+  const j = await judgePage(spy, { ...page, tables: [games, seasons] });
   const hr = j.tables.map((t) => t.encodings.find((e) => e.header === "HR"));
   assert.ok(hr[0]?.kind === "quantitative" && hr[1]?.kind === "quantitative");
   assert.equal(hr[0].group, null);
@@ -290,7 +283,7 @@ test("columns on one shared scale share one direction", async () => {
     if (id.endsWith(".share")) return { type: "noul", noul: 0.9 };
     return choice({ unordered_kinds: 0.9, ordered_levels: 0.1, workflow_states: 0, options: 0 });
   });
-  const j = await Effect.runPromise(judgePage({ ...page, tables: [a, b] }).pipe(Effect.provide(split)));
+  const j = await judgePage(split, { ...page, tables: [a, b] });
   const [p0, p1] = j.tables.map((t) => t.encodings.find((e) => e.header === "Price"));
   assert.ok(p0?.kind === "quantitative" && p1?.kind === "quantitative");
   assert.equal(p0.group, p1.group);
@@ -316,7 +309,7 @@ test("brackets that name the rows are ignored; brackets that are values are shad
     if (id.endsWith(".polarity")) return choice({ neutral: 0.9, higher_is_better: 0.05, lower_is_better: 0.05 });
     return { type: "noul", noul: 0 };
   });
-  const j = await Effect.runPromise(judgePage({ ...page, tables: [ages] }).pipe(Effect.provide(bins)));
+  const j = await judgePage(bins, { ...page, tables: [ages] });
   const shaded = j.tables[0]!.encodings.map((e) => e.header);
   assert.ok(!shaded.includes("Age group"), "row-naming brackets are ignored");
   assert.ok(shaded.includes("Median age"), "bracket values are shaded");
@@ -361,7 +354,7 @@ test("ranks in row order are ignored; ranks out of row order are shaded, on a li
     if (id.endsWith(".polarity")) return choice({ lower_is_better: 0.9, higher_is_better: 0.05, neutral: 0.05 });
     return { type: "noul", noul: 1 };
   });
-  const j = await Effect.runPromise(judgePage({ ...page, tables: [rankings] }).pipe(Effect.provide(ranks)));
+  const j = await judgePage(ranks, { ...page, tables: [rankings] });
   const t = j.tables[0]!;
   assert.deepEqual(
     t.encodings.map((e) => e.header),
@@ -398,13 +391,12 @@ test("date columns are shaded by code, never asked about, and never shared", asy
         ["Mirage", "3 days ago"],
       ],
     );
-  const j = await Effect.runPromise(
-    judgePage(
-      { url: "https://example.test", title: "Sets", tables: [releases("t0"), releases("t1")] },
-      undefined,
-      {},
-      now,
-    ).pipe(Effect.provide(model)),
+  const j = await judgePage(
+    model,
+    { url: "https://example.test", title: "Sets", tables: [releases("t0"), releases("t1")] },
+    undefined,
+    {},
+    now,
   );
   assert.deepEqual(asked, []);
   assert.equal(j.usage.requests, 0);
@@ -439,7 +431,7 @@ test("a shared ordinal scale too wide to reorder leaves each table its own order
     return { type: "noul", noul: 0 };
   });
   const tables = [graded("t0", grades.slice(0, 7)), graded("t1", grades.slice(6))];
-  const j = await Effect.runPromise(judgePage({ ...page, tables }).pipe(Effect.provide(model)));
+  const j = await judgePage(model, { ...page, tables });
   const grade1 = j.tables[1]!.encodings.find((e) => e.header === "Grade");
   assert.ok(grade1?.kind === "ordinal");
   assert.deepEqual(

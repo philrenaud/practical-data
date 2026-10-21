@@ -1,12 +1,11 @@
 /** The options page. It edits the provider credentials, the palette with a preview, and the per-site switches. */
 import { select } from "d3-selection";
-import { Effect } from "effect";
 import { DEFAULT_PALETTE, divergingStops, isPaletteId, PALETTES, type PaletteId as Palette } from "../core/palettes.ts";
 import { positions, schemeColor } from "../core/scale.ts";
 import { cellFill, isDark } from "../core/tint.ts";
-import type { ColumnEncoding, PageSnapshot, TableJudgment } from "../core/types.ts";
+import type { ColumnEncoding, PageJudgment, PageSnapshot, TableJudgment } from "../core/types.ts";
 import { judgePage } from "../decide/judge.ts";
-import { layerFromConfig } from "../decide/model.ts";
+import { DecisionError, modelFromConfig } from "../decide/model.ts";
 import {
   DEFAULT_SETTINGS,
   getInstallId,
@@ -253,18 +252,19 @@ const test = async () => {
   }
   setStatus("Asking the model…");
   const started = performance.now();
-  const result = await Effect.runPromise(
-    judgePage(SAMPLE).pipe(Effect.provide(layerFromConfig(config)), Effect.result),
-  );
-  if (result._tag === "Failure") {
-    setStatus(`${result.failure.reason}: ${result.failure.message}`, true);
+  let result: PageJudgment;
+  try {
+    result = await judgePage(modelFromConfig(config), SAMPLE);
+  } catch (e) {
+    if (!(e instanceof DecisionError)) throw e;
+    setStatus(`${e.reason}: ${e.message}`, true);
     return;
   }
-  judgment = result.success.tables[0]!;
+  judgment = result.tables[0]!;
   renderPreview();
   const ms = Math.round(performance.now() - started);
   setStatus(
-    `${result.success.model} judged ${judgment.encodings.length} of 5 columns in ${ms} ms (${result.success.usage.inputTokens} tokens).`,
+    `${result.model} judged ${judgment.encodings.length} of 5 columns in ${ms} ms (${result.usage.inputTokens} tokens).`,
   );
   document.querySelector("#preview-note")!.textContent = "Preview shows the model's live judgment.";
 };
