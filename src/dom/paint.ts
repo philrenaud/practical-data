@@ -4,7 +4,7 @@
  * Colored columns are marked by a gradient underline on the header cell; the
  * hover card lives in a shadow root so page CSS can't reach it.
  */
-import { select, selectAll } from "d3-selection";
+import { select } from "d3-selection";
 import { describeColumn, type Legend } from "../core/legend.ts";
 import { positions, schemeColor, type Palette } from "../core/scale.ts";
 import { cellFill, isDark, luminance } from "../core/tint.ts";
@@ -123,20 +123,26 @@ const paintColumn = (
     return [{ cell, t: ts[row] ?? null }];
   });
 
-  selectAll<HTMLTableCellElement, (typeof unique)[number]>(unique.map((u) => u.cell))
-    .data(unique)
-    .each(function (d) {
-      if (d.t === null) {
-        this.dataset["pdT"] = "";
-        return;
-      }
-      const base = effectiveBackground(this, rows);
-      const { color, weight } = schemeColor(encoding, palette, d.t, isDark(base));
-      const { fill, text } = cellFill(color, weight, base, resolveColor(getComputedStyle(this).color).rgb);
-      setStyle(this, "background-color", fill);
-      if (text !== null) setStyle(this, "color", text);
-      select(this).attr("data-pd-t", d.t.toFixed(3)).attr("data-pd-col", encoding.col);
-    });
+  // Read every computed style before the first write. A read after a write
+  // forces a style recalculation, so interleaving them makes painting
+  // quadratic in the row count.
+  const fills = unique.map(({ cell, t }) => {
+    if (t === null) return null;
+    const base = effectiveBackground(cell, rows);
+    const { color, weight } = schemeColor(encoding, palette, t, isDark(base));
+    return { t, ...cellFill(color, weight, base, resolveColor(getComputedStyle(cell).color).rgb) };
+  });
+  unique.forEach(({ cell }, i) => {
+    const paint = fills[i];
+    if (paint == null) {
+      cell.dataset["pdT"] = "";
+      return;
+    }
+    setStyle(cell, "background-color", paint.fill);
+    if (paint.text !== null) setStyle(cell, "color", paint.text);
+    cell.dataset["pdT"] = paint.t.toFixed(3);
+    cell.dataset["pdCol"] = String(encoding.col);
+  });
 };
 
 // ── Header underline + hover card ───────────────────────────────────────────
