@@ -1,26 +1,28 @@
 /**
  * Daily allowances for the hosted endpoint. One Durable Object per UTC day
- * holds that day's counts: requests per install, and input tokens spent in
- * total. A new day is a new object, so counts reset without a sweep; each
- * object deletes itself two days later.
+ * holds that day's counts. It counts the requests from each install and the
+ * input tokens that all installs spend. Each day uses a new object, so the
+ * counts reset with no cleanup job. An alarm deletes each object's storage
+ * two days after its first reservation.
  */
 import { DurableObject } from "cloudflare:workers";
 
 export interface Allowance {
-  /** Requests one install may send to the model per day (cache hits don't count). */
+  /** The number of model requests that one install may make per day. Cache hits do not count. */
   readonly installRequests: number;
-  /** Input tokens all installs together may spend per day. */
+  /** The number of input tokens that all installs together may spend per day. */
   readonly tokenBudget: number;
 }
 
 export interface Reservation {
   readonly status: "ok" | "install_limit" | "budget_spent";
-  /** Requests this install has left today, after this one. */
+  /** The number of requests this install has left today, after this one. */
   readonly remaining: number;
 }
 
 const KEEP_MS = 2 * 24 * 60 * 60 * 1000;
 
+/** The counts for one UTC day. */
 export class Quota extends DurableObject {
   #ready = false;
 
@@ -32,7 +34,11 @@ export class Quota extends DurableObject {
     this.#ready = true;
   }
 
-  /** Counts one model request for `install`, unless today's allowance is used up. */
+  /**
+   * Counts one model request for `install`, unless today's allowance is used
+   * up. The read and the write run with no await between them, so two
+   * concurrent calls cannot both take the last request.
+   */
   async reserve(install: string, allowance: Allowance): Promise<Reservation> {
     this.#init();
     const sql = this.ctx.storage.sql;
@@ -51,7 +57,11 @@ export class Quota extends DurableObject {
     return { status: "ok", remaining: left - 1 };
   }
 
-  /** Adds the input tokens a forwarded request actually used. */
+  /**
+   * Adds the input tokens that a forwarded request used. The Worker charges
+   * tokens after the response arrives, so requests in flight can take the
+   * total past the budget.
+   */
   charge(tokens: number): void {
     this.#init();
     if (!Number.isFinite(tokens) || tokens <= 0) return;
@@ -71,6 +81,7 @@ export class Quota extends DurableObject {
     return { installs: i.n, requests: i.r ?? 0, tokens };
   }
 
+  /** Deletes the day's counts. */
   async alarm(): Promise<void> {
     await this.ctx.storage.deleteAll();
   }

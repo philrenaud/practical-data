@@ -1,12 +1,14 @@
 /**
- * Which requests the hosted endpoint forwards: only questions the extension
- * itself asks. Each incoming question must match a reference built by the
- * extension's own question builders (questions.ts), with column headers,
- * labels and sample data as the only free parts. Anything else is refused,
- * so the endpoint can't be used as a general-purpose model.
+ * Checks what the hosted endpoint accepts. The endpoint forwards only the
+ * questions that the extension asks. Each question must match a reference
+ * question from the extension's own builders in src/decide/questions.ts.
+ * Column headers, labels, and table data are the only free parts. The
+ * endpoint refuses everything else, so it cannot serve as a general-purpose
+ * model.
  *
- * Built from the builders rather than copied text, so changing a question's
- * wording in questions.ts changes what the server accepts in the same commit.
+ * The references come from the builders, not from copied text. A wording
+ * change in questions.ts therefore changes what the server accepts in the
+ * same commit.
  */
 import type { CategoricalProfile, NumericProfile } from "../core/profile.ts";
 import type { PageSnapshot } from "../core/types.ts";
@@ -20,23 +22,23 @@ import {
   shareQuestion,
 } from "../decide/questions.ts";
 
-/** Limits on one request. The extension's largest real request is well inside these. */
+/** Size limits on one request. The extension's largest real requests are well inside them. */
 export const LIMITS = {
   bodyBytes: 256 * 1024,
   questions: 200,
-  /** A header, label or reference interpolated into a question. */
+  /** The longest header, label, or other text inserted into a question. */
   hole: 300,
-  /** A whole table sent to /v1/judge. */
+  /** Limits on the table sent to /v1/judge. */
   columns: 60,
   rows: 2000,
   cell: 300,
 } as const;
 
-/** Stands in for interpolated text (a header, a label) in a reference question. */
+/** Marks inserted text, such as a header or a label, in a reference question. */
 const HOLE = "\u0001";
-/** Stands in for a column index in `columns[k]`. */
+/** Marks a column index in `columns[k]`. */
 const INDEX = 7_654_321;
-/** Marks a field that carries table data rather than question text: any JSON value. */
+/** Marks a field that carries table data instead of question text. The field matches any JSON value. */
 const DATA = "\u0002";
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -45,7 +47,11 @@ const patternOf = (s: string) =>
 
 type Matcher = (value: unknown) => boolean;
 
-/** Compiles a reference value: strings become patterns, DATA accepts anything, objects match key for key. */
+/**
+ * Builds a matcher for a reference value. A string that contains HOLE or
+ * INDEX becomes a pattern. DATA matches any value. Arrays match element by
+ * element, and objects match key by key with no extra keys.
+ */
 const compile = (ref: unknown): Matcher => {
   if (ref === DATA) return () => true;
   if (typeof ref === "string") {
@@ -96,7 +102,7 @@ const withData = (q: Question, fields: readonly string[]): Question => ({
   instructions: { ...(q.instructions as Record<string, unknown>), ...Object.fromEntries(fields.map((f) => [f, DATA])) },
 });
 
-/** Question id pattern → the references a question with that id may match. */
+/** Maps a question id pattern to the references that a question with that id may match. */
 const RULES: readonly (readonly [RegExp, readonly Matcher[]])[] = [
   [/^n\d{1,4}\.role$/, [compile(numericRefs["n0.role"])]],
   [/^n\d{1,4}\.polarity$/, [compile(numericRefs["n0.polarity"])]],
@@ -115,7 +121,7 @@ const RULES: readonly (readonly [RegExp, readonly Matcher[]])[] = [
   ],
 ];
 
-/** Null when every question is one the extension asks; otherwise why not. */
+/** Returns null when every question is one that the extension asks. Otherwise returns the reason for the refusal. */
 export const checkQuestions = (questions: unknown): string | null => {
   if (typeof questions !== "object" || questions === null || Array.isArray(questions))
     return "questions must be an object";
@@ -159,8 +165,9 @@ export const readBody = async (request: Request): Promise<unknown> => {
 const isText = (v: unknown, max: number): v is string => typeof v === "string" && v.length <= max;
 
 /**
- * The body of a /v1/judge request, `{ title, table: { title, headers, rows } }`,
- * as a one-table page; or why it was refused.
+ * Reads the body of a /v1/judge request, `{ title, table: { title, headers,
+ * rows } }`, as a page with one table. Returns the reason as a string when
+ * the body is malformed or too large.
  */
 export const readJudgeBody = (body: unknown): PageSnapshot | string => {
   if (typeof body !== "object" || body === null) return "expected { title, table }";

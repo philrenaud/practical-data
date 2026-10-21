@@ -1,6 +1,6 @@
 /**
- * The few Workers runtime types the API uses, declared here instead of
- * depending on @cloudflare/workers-types.
+ * The Workers runtime types that src/api uses. They are declared here so the
+ * project does not depend on @cloudflare/workers-types.
  */
 
 declare module "cloudflare:workers" {

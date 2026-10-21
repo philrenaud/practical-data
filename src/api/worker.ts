@@ -1,18 +1,21 @@
 /**
- * The hosted endpoint, so the extension works without a key of the reader's
- * own. It accepts the same System One request the extension would send to
- * Jev, refuses anything the extension doesn't ask (allow.ts), answers repeats
- * from a shared cache, and forwards the rest to TypeSafe with the operator's
- * key, within per-install, per-IP and daily limits.
+ * The Cloudflare Worker behind api.practicaldata.dev. It lets the extension
+ * work without the user's own TypeSafe key. It accepts the System One
+ * requests that the extension sends and refuses questions that the extension
+ * does not ask (see allow.ts). It answers repeated requests from a shared
+ * cache and forwards the rest to TypeSafe with the operator's key.
+ * Per-install, per-IP, and daily limits apply. See README.md in this
+ * directory.
  *
- *   POST /v1/systemone   { model?, state, questions } → System One response
- *   POST /v1/judge       { title, table } → the table's judgment (for the Sheets add-on)
+ *   POST /v1/systemone   { state, questions } → System One response
+ *   POST /v1/judge       { title, table } → { table, usage }
  *   GET  /v1/health      → { ok: true }
- *   GET  /v1/stats       today's counts (Authorization: Bearer STATS_TOKEN)
+ *   GET  /v1/stats       → today's counts, with Authorization: Bearer STATS_TOKEN
  *
- * Nothing is logged. The cache holds answers keyed by a hash of the request,
- * never the request itself; the daily counts hold install ids, and are
- * deleted two days later.
+ * The Worker sets the model from MODEL and ignores a `model` in the body.
+ * The Worker writes no logs. The cache holds answers under a hash of the
+ * request, never the request itself. The daily counts hold install ids, and
+ * each day's counts are deleted two days later.
  */
 import { Effect, Schema } from "effect";
 import { judgePage } from "../decide/judge.ts";
@@ -59,9 +62,10 @@ const secondsToMidnightUtc = () => {
 };
 
 /**
- * Never a web page. Requests with no Origin come from servers, such as the
- * Sheets add-on's Apps Script; extension origins must be listed when
- * ALLOWED_ORIGINS is set.
+ * Returns whether a request's Origin may use the endpoint. Web-page origins
+ * are refused. A request with no Origin comes from a server, such as the
+ * Sheets add-on's Apps Script, and passes. When ALLOWED_ORIGINS is set, an
+ * extension origin must be in it.
  */
 const originAllowed = (origin: string | null, env: Env): boolean => {
   if (origin === null) return true;
@@ -72,12 +76,16 @@ const originAllowed = (origin: string | null, env: Env): boolean => {
   return allowed.length === 0 || allowed.includes(origin);
 };
 
-/** Who is asking, once the origin, install id and rate limits have passed. */
+/** A request that passed `admit`. */
 interface Caller {
   readonly install: string;
 }
 
-/** Origin, install id and rate limits: shared by every route that spends the operator's key. */
+/**
+ * Checks the origin, the install id, and the rate limits. Every route that
+ * spends the operator's key calls it first. Returns the caller, or the
+ * refusal to send.
+ */
 const admit = async (request: Request, env: Env): Promise<Caller | Response> => {
   if (!originAllowed(request.headers.get("origin"), env))
     return refuse(403, "origin", "This endpoint serves the Practical Data extension and add-on only.");
@@ -90,14 +98,17 @@ const admit = async (request: Request, env: Env): Promise<Caller | Response> => 
   return { install };
 };
 
-/** `remaining` is the caller's requests left today; unknown (null) on a cache hit, which doesn't spend any. */
+/**
+ * The result of `ask`. `remaining` is the number of requests the caller has
+ * left today. It is null on a cache hit, because a hit spends nothing.
+ */
 type Asked =
   { readonly response: DecisionResponse; readonly remaining: number | null } | { readonly refusal: Response };
 
 /**
- * What's left of the caller's daily allowance, on every response that spent
- * from it. Cache hits carry none: they cost nothing, so the client's last
- * count still holds.
+ * Headers that report the caller's daily allowance. Only responses that
+ * spent from the allowance carry them. A cache hit spends nothing, so the
+ * client keeps its last count.
  */
 const allowanceHeaders = (env: Env, remaining: number): Record<string, string> => ({
   "X-Practical-Data-Remaining": String(remaining),
@@ -105,9 +116,10 @@ const allowanceHeaders = (env: Env, remaining: number): Record<string, string> =
 });
 
 /**
- * One System One request: from the shared cache when anyone has asked it
- * before, otherwise forwarded upstream within the caller's daily allowance.
- * `questions` must already be known to be the extension's own.
+ * Answers one System One request. A request that any caller sent before
+ * comes from the shared cache. Any other request spends one request of the
+ * caller's daily allowance and goes to TypeSafe. The caller of `ask` must
+ * check `questions` against the allowlist first.
  */
 const ask = async (
   env: Env,
@@ -118,7 +130,7 @@ const ask = async (
 ): Promise<Asked> => {
   const forward = { model: env.MODEL, state: state ?? {}, questions };
 
-  // Shared answers: the same table on the same page asks the same questions for every reader.
+  // The same table produces the same request for every user, so one answer serves them all.
   const key = await Effect.runPromise(hashJson(forward));
   const cacheKey = new Request(`https://answers.practicaldata.dev/${key}`);
   const hit = await caches.default.match(cacheKey);
@@ -158,7 +170,7 @@ const ask = async (
     return { refusal: refuse(503, "upstream", "The model didn't answer in time.") };
   }
   if (!upstream.ok) {
-    // The operator's key and the provider's messages stay here; the client learns only whether to retry.
+    // Do not pass on the provider's error body. The status is enough for the client to decide whether to retry.
     const status = upstream.status === 429 ? 429 : upstream.status >= 500 ? 503 : 502;
     const retry = upstream.headers.get("retry-after");
     return {
@@ -188,7 +200,7 @@ const ask = async (
   return { response: decoded.value, remaining: reservation.remaining };
 };
 
-/** POST /v1/systemone: the extension's own requests, checked against the allowlist. */
+/** Handles POST /v1/systemone. Every question in the body must pass `checkQuestions`. */
 const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const caller = await admit(request, env);
   if (caller instanceof Response) return caller;
@@ -213,9 +225,11 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
 };
 
 /**
- * POST /v1/judge: a whole table in, its judgment out. The questions are built
- * here from the table, so clients that can't run the judge themselves (the
- * Sheets add-on) need no allowlist, and can't send anything but table text.
+ * Handles POST /v1/judge. The body is one table, and the response is the
+ * table's judgment. Clients that cannot run the judge, such as the Sheets
+ * add-on, use this route. The Worker builds the questions from the table
+ * with `judgePage`. The client sends only table text, so this route needs no
+ * allowlist.
  *
  *   { title, table: { title, headers, rows } } → { table: TableJudgment | null, usage }
  */
@@ -231,7 +245,7 @@ const judge = async (request: Request, env: Env, ctx: ExecutionContext): Promise
   const page = readJudgeBody(body);
   if (typeof page === "string") return refuse(400, "table", page);
 
-  // The first refusal (a spent allowance, an upstream failure) is what the caller sees.
+  // The caller gets the first refusal, such as a spent allowance or an upstream failure.
   let refusal: Response | null = null;
   let remaining: number | null = null;
   const model = DecisionModel.of({
