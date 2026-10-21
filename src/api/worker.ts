@@ -24,7 +24,7 @@ import {
   validateAnswers,
   type Question,
 } from "../decide/model.ts";
-import { checkQuestions, LIMITS, readJudgeBody } from "./allow.ts";
+import { checkQuestions, LIMITS, readBody, readJudgeBody } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -70,14 +70,6 @@ const originAllowed = (origin: string | null, env: Env): boolean => {
     .map((s) => s.trim())
     .filter(Boolean);
   return allowed.length === 0 || allowed.includes(origin);
-};
-
-const readBody = async (request: Request): Promise<unknown> => {
-  const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > LIMITS.bodyBytes) throw new Error("too large");
-  const text = await request.text();
-  if (text.length > LIMITS.bodyBytes) throw new Error("too large");
-  return JSON.parse(text);
 };
 
 /** Who is asking, once the origin, install id and rate limits have passed. */

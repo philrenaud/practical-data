@@ -130,6 +130,32 @@ export const checkQuestions = (questions: unknown): string | null => {
   return null;
 };
 
+/**
+ * Parses a request body as JSON. Throws a RangeError past `LIMITS.bodyBytes`
+ * bytes, and stops reading at that point even when the body has no
+ * Content-Length.
+ */
+export const readBody = async (request: Request): Promise<unknown> => {
+  const tooLarge = () => new RangeError(`body over ${LIMITS.bodyBytes} bytes`);
+  if (Number(request.headers.get("content-length") ?? "0") > LIMITS.bodyBytes) throw tooLarge();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const reader = request.body?.getReader();
+  while (reader !== undefined) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > LIMITS.bodyBytes) {
+      await reader.cancel();
+      throw tooLarge();
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  chunks.reduce((offset, c) => (bytes.set(c, offset), offset + c.byteLength), 0);
+  return JSON.parse(new TextDecoder().decode(bytes));
+};
+
 const isText = (v: unknown, max: number): v is string => typeof v === "string" && v.length <= max;
 
 /**

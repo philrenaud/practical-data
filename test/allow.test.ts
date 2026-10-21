@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { Effect, Layer } from "effect";
 import type { PageSnapshot } from "../src/core/types.ts";
-import { checkQuestions, readJudgeBody } from "../src/api/allow.ts";
+import { checkQuestions, readBody, readJudgeBody } from "../src/api/allow.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import { DecisionModel, jev, type DecisionRequest, type Question } from "../src/decide/model.ts";
 import { fileCache } from "../scripts/lib/cache.ts";
@@ -125,4 +125,12 @@ test("refuses tables that are malformed or too large", () => {
   assert.match(readJudgeBody({ table: { headers: ["A"], rows: [["x".repeat(301)]] } }) as string, /each row/);
   assert.match(readJudgeBody({ table: { headers: Array(61).fill("A"), rows: [] } }) as string, /headers/);
   assert.match(readJudgeBody({ table: { headers: ["A"], rows: Array(2001).fill(["1"]) } }) as string, /rows/);
+});
+
+test("reads a JSON body up to the byte limit", async () => {
+  const body = (text: string) => new Request("https://api.test/v1/systemone", { method: "POST", body: text });
+  assert.deepEqual(await readBody(body(JSON.stringify({ a: "é".repeat(1000) }))), { a: "é".repeat(1000) });
+  // 100,000 characters, but 300,000 bytes in UTF-8.
+  await assert.rejects(readBody(body(JSON.stringify("€".repeat(100_000)))), RangeError);
+  await assert.rejects(readBody(body("{")), SyntaxError);
 });
