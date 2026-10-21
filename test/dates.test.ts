@@ -174,3 +174,7 @@ test("notes in parentheses and ranges of days", () => {
   for (const raw of ["July 22–16, 2021", "No Pre-release Scheduled", "1997–98", "3 days ago – 2 days ago"])
     assert.equal(at(raw), null, raw);
 });
+
+test("words that name Object.prototype members are not dates", () => {
+  for (const raw of ["constructor", "__proto__", "Constructor"]) assert.equal(at(raw), null, raw);
+});

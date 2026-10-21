@@ -119,15 +119,14 @@ const profileNumeric = (col: number, header: string, cells: readonly string[]): 
 const profileCategorical = (col: number, header: string, cells: readonly string[]): CategoricalProfile | string => {
   const values = cells.map((c) => (isMissing(c) ? null : normalizeLabel(c)));
   const filled = values.filter((v) => v !== null);
-  const display: Record<string, string> = {};
-  const levels: string[] = [];
+  // A Map, not an object: labels such as "constructor" and "__proto__" are ordinary keys here.
+  const first = new Map<string, string>();
   cells.forEach((c, i) => {
     const v = values[i];
-    if (v != null && !(v in display)) {
-      display[v] = stripNoise(c);
-      levels.push(v);
-    }
+    if (v != null && !first.has(v)) first.set(v, stripNoise(c));
   });
+  const levels = [...first.keys()];
+  const display: Record<string, string> = Object.fromEntries(first);
   if (filled.length < MIN_FILLED) return "too few filled cells";
   if (levels.length < 2) return "single value";
   if (levels.length > MAX_ORDINAL_LEVELS) return "too many distinct values";

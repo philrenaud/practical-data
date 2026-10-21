@@ -144,7 +144,7 @@ const IN = /^in\s+(?:about\s+)?(\d+|an?|one|(?:a\s+)?few)\s*([a-z]+)$/;
 const LAST = /^last\s+(week|month|year)$/;
 
 const relative = (t: string, now: number): number | null => {
-  if (t in RELATIVE_WORDS) return now + RELATIVE_WORDS[t]!;
+  if (Object.hasOwn(RELATIVE_WORDS, t)) return now + RELATIVE_WORDS[t]!;
   const ago = AGO.exec(t) ?? IN.exec(t);
   if (ago !== null) {
     const span = spanOf(ago[2]!);

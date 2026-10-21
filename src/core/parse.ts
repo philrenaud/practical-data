@@ -161,7 +161,7 @@ const parseSingle = (input: string): ParsedNumber | null => {
   if (suffixRaw !== undefined) {
     const suffix = suffixRaw.trim();
     const lower = suffix.toLowerCase();
-    const magnitude = MAGNITUDE[lower];
+    const magnitude = Object.hasOwn(MAGNITUDE, lower) ? MAGNITUDE[lower] : undefined;
     if (magnitude !== undefined && (suffix !== "m" || unit !== null)) {
       // Bare lowercase "m" is meters unless a currency precedes it.
       scaled = value * magnitude;

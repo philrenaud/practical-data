@@ -70,7 +70,7 @@ export const PALETTES: Readonly<Record<PaletteId, PaletteSpec>> = {
 
 export const DEFAULT_PALETTE: PaletteId = "calm";
 
-export const isPaletteId = (v: unknown): v is PaletteId => typeof v === "string" && v in PALETTES;
+export const isPaletteId = (v: unknown): v is PaletteId => typeof v === "string" && Object.hasOwn(PALETTES, v);
 
 /**
  * Color for a position `t` (0 = worst, 1 = best) and how strongly to apply
