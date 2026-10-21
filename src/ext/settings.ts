@@ -1,20 +1,24 @@
-/** Extension settings, stored in chrome.storage.local. */
+/**
+ * Extension settings in chrome.storage.local, and per-page state in
+ * chrome.storage.session.
+ */
 import { DEFAULT_PALETTE, isPaletteId, type PaletteId as Palette } from "../core/palettes.ts";
 import type { ProviderConfig } from "../decide/model.ts";
 
+/** The user's settings, stored under the `settings` key. */
 export interface Settings {
-  /** "hosted": Jev through practicaldata.dev, no key needed. The others use the reader's own credentials. */
+  /** "hosted" is Jev through api.practicaldata.dev and needs no key. "jev" and "clef" use the user's own credentials. */
   readonly provider: "hosted" | "jev" | "clef";
   readonly typesafeApiKey: string;
   readonly cloudflareAccountId: string;
   readonly cloudflareApiToken: string;
   readonly clefModel: "clef" | "clef-flash";
   readonly palette: Palette;
-  /** "everywhere": on unless a site is turned off. "chosen": off unless a site is turned on. */
+  /** In "everywhere" mode, a site is on unless the user turns it off. In "chosen" mode, a site is off unless the user turns it on. */
   readonly mode: "everywhere" | "chosen";
-  /** Hostnames turned off (in "everywhere" mode). */
+  /** Hostnames turned off in "everywhere" mode. */
   readonly disabledHosts: readonly string[];
-  /** Hostnames turned on (in "chosen" mode). */
+  /** Hostnames turned on in "chosen" mode. */
   readonly enabledHosts: readonly string[];
 }
 
@@ -30,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   enabledHosts: [],
 };
 
+/** Returns the stored settings, with defaults for missing fields. */
 export const loadSettings = async (): Promise<Settings> => {
   const stored = await chrome.storage.local.get("settings");
   const merged = { ...DEFAULT_SETTINGS, ...(stored["settings"] as Partial<Settings> | undefined) };
@@ -39,9 +44,11 @@ export const loadSettings = async (): Promise<Settings> => {
 
 export const saveSettings = (s: Settings) => chrome.storage.local.set({ settings: s });
 
+/** Returns true if the extension is on for `host`. */
 export const siteEnabled = (s: Settings, host: string): boolean =>
   s.mode === "everywhere" ? !s.disabledHosts.includes(host) : s.enabledHosts.includes(host);
 
+/** Returns a copy of `s` with `host` turned on or off in the current mode. */
 export const setSiteEnabledIn = (s: Settings, host: string, enabled: boolean): Settings => {
   const without = (xs: readonly string[]) => xs.filter((h) => h !== host);
   return s.mode === "everywhere"
@@ -49,7 +56,7 @@ export const setSiteEnabledIn = (s: Settings, host: string, enabled: boolean): S
     : { ...s, enabledHosts: enabled ? [...without(s.enabledHosts), host] : without(s.enabledHosts) };
 };
 
-/** Null when the chosen provider is missing credentials. */
+/** Returns the config for the chosen provider, or null if its credentials are missing. */
 export const providerConfig = (s: Settings, installId: string): ProviderConfig | null => {
   if (s.provider === "hosted") return { provider: "hosted", installId };
   if (s.provider === "jev") return s.typesafeApiKey === "" ? null : { provider: "jev", apiKey: s.typesafeApiKey };
@@ -62,9 +69,10 @@ export const providerConfig = (s: Settings, installId: string): ProviderConfig |
 const INSTALL_ID = "installId";
 
 /**
- * A random id for this install, sent only to the hosted endpoint so it can
- * count each browser's daily allowance. Not derived from anything about the
- * reader; uninstalling discards it.
+ * Returns a random id for this install, and creates it on first use. Only the
+ * hosted endpoint receives it, to count each install's daily allowance. The id
+ * comes from crypto.randomUUID, not from the user or the browser. Uninstalling
+ * the extension deletes it.
  */
 export const getInstallId = async (): Promise<string> => {
   const stored = (await chrome.storage.local.get(INSTALL_ID))[INSTALL_ID];
@@ -78,14 +86,16 @@ export const getInstallId = async (): Promise<string> => {
 
 const PAUSED = "pausedPages";
 
-/** A page is its URL without the fragment: in-page anchors are the same page. */
+/** Returns the URL without its fragment, so in-page anchors count as the same page. */
 export const pageKey = (url: string): string => url.split("#")[0] ?? url;
 
+/** Returns true if the user paused this page in the current browser session. */
 export const isPagePaused = async (url: string): Promise<boolean> => {
   const stored = await chrome.storage.session.get(PAUSED);
   return ((stored[PAUSED] as string[] | undefined) ?? []).includes(pageKey(url));
 };
 
+/** Pauses or resumes a page for the current browser session. */
 export const setPagePaused = async (url: string, paused: boolean): Promise<void> => {
   const stored = await chrome.storage.session.get(PAUSED);
   const pages = new Set((stored[PAUSED] as string[] | undefined) ?? []);
@@ -96,7 +106,7 @@ export const setPagePaused = async (url: string, paused: boolean): Promise<void>
 
 // ── Per-table choices (session) ─────────────────────────────────────────────
 
-/** Reader's choices for one table: which way to compare, and whether to shade it at all. */
+/** The user's choices for one table. `orientation` is the direction to compare, and `hidden` turns off the shading. */
 export interface TableChoice {
   readonly orientation?: "columns" | "rows";
   readonly hidden?: boolean;
@@ -104,10 +114,12 @@ export interface TableChoice {
 
 const tablesKey = (url: string) => `tables:${pageKey(url)}`;
 
+/** Returns the saved table choices for a page, keyed by table fingerprint. */
 export const loadTableChoices = async (url: string): Promise<Record<string, TableChoice>> => {
   const stored = await chrome.storage.session.get(tablesKey(url));
   return (stored[tablesKey(url)] as Record<string, TableChoice> | undefined) ?? {};
 };
 
+/** Saves the table choices for a page until the browser session ends. */
 export const saveTableChoices = (url: string, choices: Record<string, TableChoice>) =>
   chrome.storage.session.set({ [tablesKey(url)]: choices });

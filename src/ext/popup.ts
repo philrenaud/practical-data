@@ -1,4 +1,4 @@
-/** Toolbar popup: what's colored here, and switches for this page and this site. */
+/** The toolbar popup. It shows what is shaded on the page and has switches for the page and the site. */
 import { lowAllowanceNote, quotaMessage, type StoredAllowance } from "./allowance.ts";
 import type { PageState, ToContent, ToWorker } from "./messages.ts";
 import { isPagePaused, loadSettings, siteEnabled } from "./settings.ts";
@@ -8,7 +8,7 @@ const allowanceNote = document.querySelector<HTMLParagraphElement>("#allowance")
 const page = document.querySelector<HTMLInputElement>("#page")!;
 const site = document.querySelector<HTMLInputElement>("#site")!;
 
-// `?tab=<id>` targets a specific tab; the e2e harness opens the popup as a page.
+// `?tab=<id>` targets a given tab. The e2e harness opens the popup as a page and uses it.
 const forced = Number(new URLSearchParams(location.search).get("tab"));
 const [tab] =
   Number.isInteger(forced) && forced > 0
@@ -53,7 +53,8 @@ const refresh = async () => {
   document.querySelector("#site-label")!.textContent =
     host === "" ? "Shade tables on this site" : `Shade tables on ${host}`;
   summary.textContent = describe(state, paused, siteOff);
-  // With the free provider, say when little of today's allowance is left (but not on top of "used up").
+  // With the free provider, show a note when little of today's allowance is left.
+  // Skip it when the summary already says the allowance is spent.
   const { allowance } = (await chrome.storage.local.get("allowance")) as { allowance?: StoredAllowance };
   const note =
     settings.provider === "hosted" && !state?.status.startsWith("error:quota")
@@ -88,8 +89,8 @@ document.querySelector("#shortcut")!.textContent = shortcut ? `${shortcut} toggl
 document.querySelector("#build")!.textContent =
   `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
 await refresh();
-// Flush styles so the initial state is applied without animating, then enable transitions.
+// Flush styles so the initial state appears without animation, then enable transitions.
 void document.body.offsetHeight;
 document.body.classList.add("ready");
-// The page may still be reading tables; refresh once more shortly after opening.
+// The page may still be reading tables, so refresh once more after opening.
 setTimeout(() => void refresh(), 1200);

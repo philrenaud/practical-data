@@ -24,7 +24,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { chromium, type BrowserContext, type Page } from "playwright";
+import { chromium, type BrowserContext, type Page, type Route } from "playwright";
 import { fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
@@ -42,16 +42,29 @@ if (!args.offline && apiKey === "") throw new Error("TYPESAFE_API_KEY is require
 const { url: base, server } = await serve("fixtures");
 await mkdir("artifacts/screens", { recursive: true });
 
-const context: BrowserContext = await chromium.launchPersistentContext("", {
-  channel: "chromium",
-  headless: !args.headed,
-  viewport: { width: 1360, height: 900 },
-  args: ["--disable-extensions-except=dist", "--load-extension=dist"],
-});
+/** Starts Chromium with dist/ loaded in a fresh profile. */
+const launch = async (): Promise<BrowserContext> => {
+  const context = await chromium.launchPersistentContext("", {
+    channel: "chromium",
+    headless: !args.headed,
+    viewport: { width: 1360, height: 900 },
+    args: ["--disable-extensions-except=dist", "--load-extension=dist"],
+  });
+  await context.route("**/*", routeRequest);
+  return context;
+};
+
+/** Settings for every run: the Jev provider, so offline runs replay fixtures/recordings. */
+const SETTINGS = {
+  provider: "jev",
+  typesafeApiKey: args.offline ? "offline" : apiKey,
+  palette: "classic",
+  disabledHosts: [],
+};
 
 // Fixture pages get no network access. Decision API calls go live or replay from recordings.
 let replayMisses = 0;
-await context.route("**/*", async (route) => {
+const routeRequest = async (route: Route) => {
   const req = route.request();
   const url = req.url();
   if (url.startsWith(base) || url.startsWith("chrome-extension://")) return route.continue();
@@ -81,15 +94,11 @@ await context.route("**/*", async (route) => {
   // Load live sites unmodified. Blocking their images triggers ad-block walls that lock scrolling.
   if (args.live) return route.continue();
   return route.abort();
-});
+};
 
+const context = await launch();
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-await worker.evaluate((settings) => chrome.storage.local.set({ settings }), {
-  provider: "jev",
-  typesafeApiKey: args.offline ? "offline" : apiKey,
-  palette: "classic",
-  disabledHosts: [],
-});
+await worker.evaluate((settings) => chrome.storage.local.set({ settings }), SETTINGS);
 // The worker opens the options page on first install. Close it.
 for (const p of context.pages()) if (p.url().includes("options.html")) await p.close();
 
@@ -595,6 +604,146 @@ console.log(`${malformedProblems.length === 0 ? "✓" : "✗"} extractor: a row 
 for (const p of malformedProblems) console.log(`    - ${p}`);
 if (malformedProblems.length > 0) failed++;
 
+// ── Cold start: a page that loads as soon as the extension does ────────────
+
+/**
+ * Covers a fresh install, or a browser restart that restores tabs. The page
+ * loads while the service worker is still starting, so the worker may not yet
+ * have opened storage.session to content scripts.
+ */
+const coldStartScenario = async (): Promise<string[]> => {
+  const cold = await launch();
+  try {
+    const page = await cold.newPage();
+    const coldWorker = cold.serviceWorkers()[0] ?? (await cold.waitForEvent("serviceworker"));
+    // Don't wait for the settings write: an awaited round trip gives the worker time to finish starting.
+    await Promise.all([
+      coldWorker.evaluate((settings) => chrome.storage.local.set({ settings }), SETTINGS),
+      page.goto(`${base}/synthetic/dark-theme.html`, { waitUntil: "domcontentloaded" }),
+    ]);
+    const status = await waitForStatus(page);
+    if (status !== "done") return [`cold start: status ${status}`];
+    const painted = await page.evaluate(() => document.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length);
+    return painted > 0 ? [] : ["cold start: nothing painted"];
+  } finally {
+    await cold.close();
+  }
+};
+
+// ── Storage: what the content script's context can read ────────────────────
+
+/** The content script's isolated world must read neither storage area: they hold API keys and visited URLs. */
+const storageScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  const cdp = await context.newCDPSession(page);
+  const worlds: { id: number; auxData?: { type?: string } }[] = [];
+  cdp.on("Runtime.executionContextCreated", (e) => worlds.push(e.context));
+  await cdp.send("Runtime.enable");
+  await page.goto(`${base}/synthetic/dark-theme.html`, { waitUntil: "domcontentloaded" });
+  await waitForStatus(page);
+  const world = worlds.findLast((w) => w.auxData?.type === "isolated");
+  if (world === undefined) return ["storage: found no content-script world"];
+  const read = async (area: string) =>
+    (
+      await cdp.send("Runtime.evaluate", {
+        contextId: world.id,
+        awaitPromise: true,
+        expression: `chrome.storage.${area}.get(null).then((items) => "read " + Object.keys(items).join(","), (e) => String(e))`,
+      })
+    ).result.value as string;
+  const problems: string[] = [];
+  const local = await read("local");
+  if (local.startsWith("read")) problems.push(`storage: the content script can read storage.local (${local})`);
+  const session = await read("session");
+  if (session.startsWith("read")) problems.push(`storage: the content script can read storage.session (${session})`);
+  // The popup's site switch, sent from the content script's world, must change nothing.
+  await cdp.send("Runtime.evaluate", {
+    contextId: world.id,
+    awaitPromise: true,
+    expression: `chrome.runtime.sendMessage({ type: "setSiteEnabled", tabId: 0, host: "127.0.0.1", enabled: false }).catch(() => undefined)`,
+  });
+  const disabled = await worker.evaluate(
+    async () => ((await chrome.storage.local.get("settings"))["settings"] as { disabledHosts: string[] }).disabledHosts,
+  );
+  if (disabled.length > 0) problems.push(`storage: a content script turned off ${disabled.join(", ")}`);
+  await page.close();
+  return problems;
+};
+
+// ── Live pages: a table that changes every second ──────────────────────────
+
+/** Changed text misses the answer cache, so judge requests from page changes must back off. */
+const liveScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  const url = `${base}/__ticker.html`;
+  await page.route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><title>Ticker</title><table id="t">
+        <thead><tr><th>Symbol</th><th>Price</th><th>Change</th></tr></thead>
+        <tbody>${["AAA", "BBB", "CCC", "DDD", "EEE", "FFF"].map((s, i) => `<tr><td>${s}</td><td>${10 + i}.00</td><td>${i - 3}%</td></tr>`).join("")}</tbody>
+      </table>
+      <script>
+        // Count judge requests: content.ts sets data-pd-status to "working" for each one.
+        window.judges = 0;
+        new MutationObserver(() => {
+          if (document.documentElement.dataset.pdStatus === "working") window.judges++;
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-pd-status"] });
+        let n = 0;
+        setInterval(() => { document.querySelector("#t tbody td:nth-child(2)").textContent = (20 + ++n / 100).toFixed(2); }, 1000);
+      </script>`,
+    }),
+  );
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(16_000);
+  const judges = await page.evaluate(() => (window as unknown as { judges: number }).judges);
+  await page.close();
+  // Unpaced, a change every second sends about 16. Paced, the waits are 0.6, 1.2, 2.4, 4.8, and 9.6 seconds.
+  return judges <= 6 ? [] : [`live: ${judges} judge requests in 16 seconds`];
+};
+
+// ── Navigation: an off page that navigates in-app to a page that is on ─────
+
+/** The content script polls for navigation only while shading is on, so an off page must hear navigation events. */
+const navigationScenario = async (): Promise<string[]> => {
+  const url = `${base}/synthetic/lifecycle.html`;
+  await worker.evaluate((page) => chrome.storage.session.set({ pausedPages: [page] }), url);
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const before = await waitForStatus(page);
+    if (before !== "off") return [`navigation: paused page has status ${before}`];
+    await page.click("#navigate");
+    const after = await waitForStatus(page);
+    return after === "done" ? [] : [`navigation: after pushState from a paused page, status ${after}`];
+  } finally {
+    await page.close();
+    await worker.evaluate(() => chrome.storage.session.remove("pausedPages"));
+  }
+};
+
+const navigationProblems = await navigationScenario();
+console.log(
+  `${navigationProblems.length === 0 ? "✓" : "✗"} navigation: an off page navigates in-app to one that is on`,
+);
+for (const p of navigationProblems) console.log(`    - ${p}`);
+if (navigationProblems.length > 0) failed++;
+
+const liveProblems = await liveScenario();
+console.log(`${liveProblems.length === 0 ? "✓" : "✗"} live: a table that changes every second backs off`);
+for (const p of liveProblems) console.log(`    - ${p}`);
+if (liveProblems.length > 0) failed++;
+
+const storageProblems = await storageScenario();
+console.log(`${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read storage or flip switches`);
+for (const p of storageProblems) console.log(`    - ${p}`);
+if (storageProblems.length > 0) failed++;
+
+const coldStartProblems = await coldStartScenario();
+console.log(`${coldStartProblems.length === 0 ? "✓" : "✗"} cold start: page opened as the extension loads`);
+for (const p of coldStartProblems) console.log(`    - ${p}`);
+if (coldStartProblems.length > 0) failed++;
+
 const lifecycleProblems = await lifecycleScenario();
 console.log(
   `${lifecycleProblems.length === 0 ? "✓" : "✗"} lifecycle: in-place edits, inserted tables, page styles, oklch, navigation`,
@@ -617,7 +766,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 4 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 8 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();
