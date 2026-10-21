@@ -431,6 +431,16 @@ const controlsScenario = async (): Promise<string[]> => {
     path: "artifacts/screens/controls.png",
     clip: { ...(await table.boundingBox())!, y: Math.max(0, (await table.boundingBox())!.y - 50), height: 200 },
   });
+  // Page rules that match the shadow hosts must not give them a box.
+  await page.addStyleTag({ content: "html > span { display: block !important; padding: 40px !important; }" });
+  const hostSizes = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-pd-controls], [data-pd-card]")].map((h) => {
+      const r = h.getBoundingClientRect();
+      return r.width * r.height;
+    }),
+  );
+  if (hostSizes.length === 0 || hostSizes.some((a) => a > 0))
+    problems.push(`controls: page CSS gave the shadow hosts a box (areas ${hostSizes.join(", ")})`);
   await click("Columns");
   if (!(await waitFor(async () => (await orientation()) === "columns")))
     problems.push("controls: 'Columns' didn't re-shade by column");

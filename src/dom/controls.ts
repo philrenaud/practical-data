@@ -48,6 +48,9 @@ const ensureBar = () => {
   if (bar !== null && bar.host.isConnected) return bar;
   const host = document.createElement("span");
   host.setAttribute("data-pd-controls", "");
+  // Page rules that match the host (`span { display: block }`) outrank `:host`.
+  // An important inline declaration outranks them, so the host takes no space.
+  host.style.setProperty("all", "initial", "important");
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `<style>${CSS}</style><div class="bar" role="toolbar" aria-label="Table shading"></div>`;
   document.documentElement.append(host);

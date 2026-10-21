@@ -219,6 +219,9 @@ const ensureCard = () => {
   if (card !== null && card.host.isConnected) return card;
   const host = document.createElement("span");
   host.setAttribute("data-pd-card", "");
+  // Page rules that match the host (`span { display: block }`) outrank `:host`.
+  // An important inline declaration outranks them, so the host takes no space.
+  host.style.setProperty("all", "initial", "important");
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `<style>${CARD_CSS}</style><div class="card" role="tooltip"></div>`;
   document.documentElement.append(host);
