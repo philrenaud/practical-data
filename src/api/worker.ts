@@ -28,7 +28,7 @@ import {
   type Question,
 } from "../decide/model.ts";
 import { rateLimitKey, sameSecret } from "./admit.ts";
-import { checkRequest, LIMITS, readBody, readJudgeBody } from "./allow.ts";
+import { LIMITS, readBody, readJudgeBody, readRequest } from "./allow.ts";
 import type { Quota } from "./quota.ts";
 
 export { Quota } from "./quota.ts";
@@ -210,7 +210,7 @@ const ask = async (
   return { response: decoded.value, remaining: reservation.remaining };
 };
 
-/** Handles POST /v1/systemone. The body must pass `checkRequest`. */
+/** Handles POST /v1/systemone. The Worker forwards the body as `readRequest` returns it. */
 const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const caller = await admit(request, env);
   if (caller instanceof Response) return caller;
@@ -220,10 +220,9 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   } catch {
     return refuse(400, "body", `Expected a JSON body under ${LIMITS.bodyBytes} bytes.`);
   }
-  const { state, questions } = (body ?? {}) as { state?: unknown; questions?: unknown };
-  const problem = checkRequest(body);
-  if (problem !== null) return refuse(400, "questions", problem);
-  const asked = await ask(env, ctx, caller, state, questions as Record<string, Question>);
+  const read = readRequest(body);
+  if ("error" in read) return refuse(400, read.error, read.message);
+  const asked = await ask(env, ctx, caller, read.state, read.questions);
   if ("refusal" in asked) return asked.refusal;
   return new Response(JSON.stringify(asked.response), {
     headers: {

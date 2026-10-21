@@ -32,7 +32,7 @@ const FAIL_UPSTREAM = "smoke: fail upstream with";
 const { DecisionError, DecisionModel, hosted, jev } = await import("../src/decide/model.ts");
 const { judgePage } = await import("../src/decide/judge.ts");
 const { fileCache } = await import("./lib/cache.ts");
-const { numericQuestions } = await import("../src/decide/questions.ts");
+const { aggregateQuestions, numericQuestions } = await import("../src/decide/questions.ts");
 type Question = import("../src/decide/model.ts").Question;
 type NumericProfile = import("../src/core/profile.ts").NumericProfile;
 
@@ -43,10 +43,13 @@ const roleQuestion = (header: string) =>
 // ── Stand-in for TypeSafe ───────────────────────────────────────────────────
 
 let upstreamCalls = 0;
+/** The last request body that reached the stand-in for TypeSafe. */
+let upstreamBody = "";
 const upstream = createServer(async (req, res) => {
   let raw = "";
   for await (const chunk of req) raw += chunk;
   upstreamCalls++;
+  upstreamBody = raw;
   assert.equal(req.headers.authorization, "Bearer test-key");
   const failure = raw.match(new RegExp(`${FAIL_UPSTREAM} (\\d{3})`));
   if (failure !== null) return void res.writeHead(Number(failure[1]), { "Retry-After": "5" }).end("stand-in failure");
@@ -193,6 +196,20 @@ try {
     );
     assert.equal(r.status, 400);
     assert.equal(((await r.json()) as { error: string }).error, "questions");
+  });
+
+  await check("a 10,000-character cell is forwarded clipped to 2,000 characters", async () => {
+    const id = randomUUID();
+    const rows = Array.from({ length: 5 }, () => ["Total", "x".repeat(10_000)]);
+    const r = await post(
+      { state: { page_title: `Long cell ${id}` }, questions: aggregateQuestions(["Name", "Notes"], rows).questions },
+      { "X-Practical-Data-Install": id },
+    );
+    assert.equal(r.status, 200, await r.clone().text());
+    const sent = JSON.parse(upstreamBody) as {
+      questions: Record<string, { instructions: { row: { Notes: string } } }>;
+    };
+    assert.equal(sent.questions["row0.aggregate"]!.instructions.row.Notes, "x".repeat(2000));
   });
 
   await check("web pages are refused", async () => {

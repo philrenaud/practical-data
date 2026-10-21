@@ -9,7 +9,7 @@ The configuration is in `api/wrangler.jsonc`.
 | ----------------- | --------------------------------------------------------------------------- |
 | `worker.ts`       | Routes, origin and install checks, the shared cache, and the upstream call. |
 | `admit.ts`        | `rateLimitKey`, which keys the per-IP rate limit.                           |
-| `allow.ts`        | The allowlist (`checkRequest`), `readBody`, and `readJudgeBody`.            |
+| `allow.ts`        | The allowlist (`readRequest`), `readBody`, and `readJudgeBody`.             |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
 | `counts.ts`       | The SQL that `Quota` runs, kept apart so that Node tests can load it.       |
 | `cloudflare.d.ts` | The Workers runtime types that this directory uses.                         |
@@ -33,8 +33,9 @@ questions from the table with `judgePage` and sends them through the same
 makes counts against the caller's allowance.
 
 Every refusal is JSON of the form `{ error, message }`. The `error` field is
-one of `origin`, `install`, `rate_limited`, `body`, `questions`, `table`,
-`install_limit`, `budget_spent`, `upstream`, `auth`, or `not_found`.
+one of `origin`, `install`, `rate_limited`, `body`, `state`, `questions`,
+`data`, `table`, `install_limit`, `budget_spent`, `upstream`, `auth`, or
+`not_found`.
 
 ## Request flow
 
@@ -55,11 +56,16 @@ the refusal.
    whole /64. A refusal is a 429 with `Retry-After: 10`.
 4. **Body.** `readBody` stops reading past 256 KiB and parses the body as
    JSON.
-5. **Allowlist.** For `/v1/systemone`, `checkRequest` must accept the body.
-   Every question must match one that the extension asks. The state and the
+5. **Allowlist.** For `/v1/systemone`, `readRequest` reads the body. Every
+   question must match one that the extension asks. The state and the
    table-data fields (`row`, `first_column`, and `columns`) must have the
-   shapes that the builders produce, within the size limits below. For
-   `/v1/judge`, `readJudgeBody` checks the table's size and shape.
+   shapes that the builders produce. A wrong shape is refused. A string that
+   is too long is clipped, and a list that is too long is cut, because
+   version 1.1.0 of the extension sends cells at full length. If the state
+   and table data are still over 64 KiB, `readRequest` clips to 500, 100,
+   and then 20 characters, and refuses with `data` only if they still do not
+   fit. The Worker forwards and caches the clipped body. For `/v1/judge`,
+   `readJudgeBody` checks the table's size and shape.
 6. **Shared cache.** `ask` hashes `{ model, state, questions }` with SHA-256
    and looks up the hash in `caches.default`. A hit returns at once and
    spends no allowance.
@@ -90,7 +96,8 @@ messages.
   builders in `src/decide/questions.ts` with placeholder values. A wording
   change in `questions.ts` therefore changes the allowlist in the same commit.
   `test/allow.test.ts` replays every recorded request from the eval pages
-  through `checkRequest`, so a mismatch fails `npm test`.
+  through `readRequest` and requires it to return each request unchanged,
+  so a mismatch fails `npm test`.
 - **A cache key that is a hash of the request.** The same table produces the
   same request for every user, so one answer serves them all. The key holds
   only the hash, and the cached value holds only the answers. Neither holds
@@ -121,23 +128,21 @@ the code calls no `console` method.
 
 ## Limits
 
-| Limit                              | Value                                         | Set by                                         |
-| ---------------------------------- | --------------------------------------------- | ---------------------------------------------- |
-| Requests per install per minute    | 60                                            | `RL_INSTALL` in `api/wrangler.jsonc`           |
-| Requests per IP per minute         | 120                                           | `RL_IP` in `api/wrangler.jsonc`                |
-| Model requests per install per day | 400                                           | `INSTALL_DAILY_REQUESTS`                       |
-| Input tokens per day, all installs | 5,000,000                                     | `DAILY_TOKEN_BUDGET`                           |
-| Body size                          | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
-| Questions per request              | 200                                           | `LIMITS.questions`                             |
-| State                              | 32 KiB of JSON                                | `LIMITS.stateBytes`                            |
-| Each table-data field              | 16 KiB of JSON                                | `LIMITS.fieldBytes`                            |
-| State and table data together      | 64 KiB of JSON                                | `LIMITS.dataBytes`                             |
-| Each string in state or table data | 2,000 characters                              | `LIMITS.text`                                  |
-| Each list or row in state or data  | 200 items                                     | `LIMITS.items`                                 |
-| Each header or label in a question | 300 characters                                | `LIMITS.hole`                                  |
-| Table sent to `/v1/judge`          | 60 columns, 2,000 rows, 300 characters a cell | `LIMITS.columns`, `LIMITS.rows`, `LIMITS.cell` |
-| Upstream timeout                   | 20 seconds                                    | `UPSTREAM_TIMEOUT_MS` in `worker.ts`           |
-| Cache lifetime                     | 30 days                                       | `CACHE_TTL_S` in `worker.ts`                   |
+| Limit                                | Value                                         | Set by                                         |
+| ------------------------------------ | --------------------------------------------- | ---------------------------------------------- |
+| Requests per install per minute      | 60                                            | `RL_INSTALL` in `api/wrangler.jsonc`           |
+| Requests per IP per minute           | 120                                           | `RL_IP` in `api/wrangler.jsonc`                |
+| Model requests per install per day   | 400                                           | `INSTALL_DAILY_REQUESTS`                       |
+| Input tokens per day, all installs   | 5,000,000                                     | `DAILY_TOKEN_BUDGET`                           |
+| Body size                            | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
+| Questions per request                | 200                                           | `LIMITS.questions`                             |
+| State and table data, after clipping | 64 KiB of JSON                                | `LIMITS.dataBytes`                             |
+| Each string in state or table data   | 2,000 characters, then clipped                | `LIMITS.text`                                  |
+| Each list or row in state or data    | 200 items, then cut                           | `LIMITS.items`                                 |
+| Each header or label in a question   | 300 characters                                | `LIMITS.hole`                                  |
+| Table sent to `/v1/judge`            | 60 columns, 2,000 rows, 300 characters a cell | `LIMITS.columns`, `LIMITS.rows`, `LIMITS.cell` |
+| Upstream timeout                     | 20 seconds                                    | `UPSTREAM_TIMEOUT_MS` in `worker.ts`           |
+| Cache lifetime                       | 30 days                                       | `CACHE_TTL_S` in `worker.ts`                   |
 
 Requests in flight count against `DAILY_TOKEN_BUDGET` by their estimates. In
 the recordings, real usage is 1.25 to 3.4 bytes per token, so the estimate
