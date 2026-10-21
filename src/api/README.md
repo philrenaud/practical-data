@@ -12,6 +12,7 @@ The configuration is in `api/wrangler.jsonc`.
 | `allow.ts`        | The allowlist (`readRequest`) and `readBody`.                               |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
 | `counts.ts`       | The SQL that `Quota` runs, kept apart so that Node tests can load it.       |
+| `usage.ts`        | The anonymous data point for each response.                                 |
 | `cloudflare.d.ts` | The Workers runtime types that this directory uses.                         |
 
 ## Routes
@@ -114,6 +115,13 @@ messages.
   the day's input-token total. The alarm deletes it two days later.
 - The rate-limit bindings hold counters by install id and by IP for one
   minute.
+- The `USAGE` Analytics Engine dataset (`practical_data_api`) gets one data
+  point for each response except `/v1/health`: the route, the outcome
+  (`cache`, `model`, `ok`, or the refusal's error code), the HTTP status,
+  the input tokens, and the install's model requests that day. It has no
+  install id, IP address, location, or request text. `usage.ts` builds the
+  point after the response is sent. Cloudflare keeps the data for three
+  months.
 
 The Worker writes no logs. `observability` is off in `api/wrangler.jsonc`, and
 the code calls no `console` method.
@@ -149,6 +157,11 @@ tokens, so the budget covers about 1,800 such pages a day. `GET /v1/stats` repor
 ## Run and test locally
 
 `npm test` runs `test/allow.test.ts`, which covers the allowlist and `readBody`.
+
+`npm run api:usage [days]` prints the usage data points per day: outcomes,
+input tokens, how many installs reached 100, 200, and 400 requests, and
+requests to other routes. It reads `PD_CF_ANALYTICS_TOKEN` (an API token
+with Account Analytics Read), or uses wrangler's login.
 
 `npm run api:smoke` runs the Worker end to end without calling TypeSafe. It
 starts `wrangler dev` on port 8799 with a stand-in for TypeSafe that replays
