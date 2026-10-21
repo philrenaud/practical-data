@@ -28,7 +28,11 @@ const git = (...args: string[]) => {
 const sha = git("rev-parse", "--short", "HEAD") || "nogit";
 const dirty = git("status", "--porcelain", "--", "src", "static") === "" ? "" : "+dev";
 const manifest = JSON.parse(await readFile("dist/manifest.json", "utf8")) as Record<string, unknown>;
-const built = new Date().toISOString().slice(0, 16).replace("T", " ");
+// A clean build takes its time from the commit, so two builds of one commit are identical.
+// A build with local changes takes the current time.
+const committed = Number(git("log", "-1", "--format=%ct"));
+const stamp = dirty === "" && committed > 0 ? new Date(committed * 1000) : new Date();
+const built = stamp.toISOString().slice(0, 16).replace("T", " ");
 manifest["version_name"] = `${String(manifest["version"])} (${sha}${dirty}, ${built})`;
 // A local endpoint needs its own host permission, as api.practicaldata.dev has in the manifest.
 const apiOrigin = process.env["PD_API_ORIGIN"];
