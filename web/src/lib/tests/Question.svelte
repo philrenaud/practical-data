@@ -151,8 +151,6 @@
   }
   .answers td:first-child {
     padding-right: 20px;
-  }
-  .answers td:first-child {
     color: var(--muted);
   }
   .answers td:first-child a {

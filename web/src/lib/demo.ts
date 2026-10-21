@@ -48,7 +48,7 @@ const REASONS: Readonly<Record<string, string>> = {
   constant: "every value is the same",
 };
 
-const POLARITY: Readonly<Record<ColumnEncoding["polarity"], string>> = {
+export const POLARITY: Readonly<Record<ColumnEncoding["polarity"], string>> = {
   higher_is_better: "higher is better",
   lower_is_better: "lower is better",
   neutral: "no better direction",

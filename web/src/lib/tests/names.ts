@@ -1,15 +1,12 @@
 import { isDateUnit } from "../../../../src/core/dates.ts";
 import type { TableJudgment } from "../../../../src/core/types.ts";
-import { plainReason } from "../demo.ts";
+import { plainReason, POLARITY } from "../demo.ts";
 import type { Check } from "./types.ts";
 
-export const pct = (ok: number, total: number) => (total === 0 ? "n/a" : `${Math.round((100 * ok) / total)}%`);
+// Check values carry polarity names as plain strings.
+const DIRECTIONS: Readonly<Record<string, string>> = POLARITY;
 
-const POLARITY: Readonly<Record<string, string>> = {
-  higher_is_better: "higher is better",
-  lower_is_better: "lower is better",
-  neutral: "no better direction",
-};
+export const pct = (ok: number, total: number) => (total === 0 ? "n/a" : `${Math.round((100 * ok) / total)}%`);
 
 /** A check's expected or actual value, in words: "none" → "ignored", "lower_is_better/log" → "lower is better · log". */
 export const plain = (value: string): string => {
@@ -18,15 +15,15 @@ export const plain = (value: string): string => {
   if (value === "ordinal") return "ordered labels";
   if (value.startsWith("ordinal[")) return `ordered labels: ${value.slice(8, -1)}`;
   const [polarity, transform] = value.split("/");
-  if (polarity !== undefined && polarity in POLARITY)
-    return `${POLARITY[polarity]}${transform === undefined ? "" : ` · ${transform}`}`;
+  if (polarity !== undefined && polarity in DIRECTIONS)
+    return `${DIRECTIONS[polarity]}${transform === undefined ? "" : ` · ${transform}`}`;
   return value
     .split("|")
-    .map((v) => POLARITY[v] ?? v)
+    .map((v) => DIRECTIONS[v] ?? v)
     .join(" or ");
 };
 
-/** A check's expected or actual value in words, aware of what the check is about. */
+/** A check's expected or actual value in DIRECTIONS, aware of what the check is about. */
 export const describeValue = (kind: string, value: string): string => {
   if (kind === "aggregates") {
     const rows = JSON.parse(value) as number[];

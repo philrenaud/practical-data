@@ -33,7 +33,7 @@ const read = async <T>(path: string): Promise<T> => {
 let index: Promise<TestsIndex> | undefined;
 export const readIndex = (): Promise<TestsIndex> =>
   import.meta.env.DEV ? read<TestsIndex>("index.json") : (index ??= read<TestsIndex>("index.json"));
-export const readPage = (slug: string): Promise<TestPage> =>
+const readPage = (slug: string): Promise<TestPage> =>
   /^[a-z0-9-]+$/.test(slug) ? read<TestPage>(`pages/${slug}.json`) : error(404, "No such page");
 export const readRequests = (slug: string): Promise<PageRequests> =>
   /^[a-z0-9-]+$/.test(slug) ? read<PageRequests>(`requests/${slug}.json`) : error(404, "No such page");
@@ -42,7 +42,7 @@ export const readRequests = (slug: string): Promise<PageRequests> =>
  * The site shows checks on real pages only. Synthetic pages stay in the eval
  * as regression tests (CI runs them), but invented data proves nothing to a reader.
  */
-export const isPublic = (index: TestsIndex, slug: string): boolean =>
+const isPublic = (index: TestsIndex, slug: string): boolean =>
   index.pages.find((p) => p.slug === slug)?.origin === "live";
 
 /** The checks the site shows, and totals over them by kind. */
