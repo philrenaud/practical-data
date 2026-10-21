@@ -1,19 +1,19 @@
 /**
- * Content script. Extracts tables, asks the service worker for judgments, and
- * shades them. Re-runs when tables appear, change, or expand, and when a
- * single-page app navigates.
+ * The content script. It extracts tables, asks the service worker for
+ * judgments, and shades the tables. It runs again when tables appear, change,
+ * or expand, and when a single-page app navigates.
  *
- * Only tables that have come within about a screen of the viewport are
- * extracted and sent, at most MAX_TABLES per page. Each request carries every
- * table seen so far: earlier tables hit the answer cache, and cross-table scale
- * sharing still sees the whole set.
+ * The script extracts and sends only tables that have come within about one
+ * screen of the viewport, and at most MAX_TABLES per page. Each request
+ * carries every table seen so far. Earlier tables hit the answer cache, and
+ * the scales shared across tables still see the whole set.
  *
- * Never reads extension settings (they hold API keys); the worker answers
- * whether this page is on.
+ * The script never reads the extension settings, because they hold API keys.
+ * The worker says whether the page is on.
  *
- * Status for tests and debugging is on <html data-pd-status>:
- * "working" → "done" | "error:<reason>" | "off" | "none" | "idle" (tables
- * exist but none are near the viewport yet).
+ * The status for tests and debugging is in `<html data-pd-status>`. It starts
+ * as "working" and ends as "done", "error:<reason>", "off", "none", or "idle".
+ * "idle" means the page has tables but none is near the viewport yet.
  */
 import type { Orientation } from "../core/orient.ts";
 import { attachControls, detachControls } from "../dom/controls.ts";
@@ -22,11 +22,11 @@ import { paintTable, unpaint } from "../dom/paint.ts";
 import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker } from "./messages.ts";
 import { loadTableChoices, saveTableChoices, type TableChoice } from "./settings.ts";
 
-/** Generous: Baseball-Reference player pages, the busiest seen so far, have under 30. */
+/** The cap is high. Baseball-Reference player pages, the busiest seen so far, have fewer than 30 tables. */
 const MAX_TABLES = 200;
 /** How far outside the viewport a table counts as "near". */
 const NEAR = "100% 0px";
-/** A judgment that takes longer than this (worker restarted, network hung) is abandoned. */
+/** The script abandons a judgment that takes longer than this, for example after a worker restart. */
 const REPLY_TIMEOUT_MS = 60_000;
 
 const root = document.documentElement;
@@ -36,11 +36,11 @@ const setStatus = (s: string) => {
 
 let enabled = false;
 let generation = 0;
-/** Generation of the reply currently on screen; older replies are dropped. */
+/** The generation of the reply on screen. Replies older than this are dropped. */
 let paintedGeneration = 0;
-/** Snapshot JSON of what is currently shaded, to skip no-op mutation rounds. */
+/** The snapshot JSON of what is shaded now. A mutation round with the same snapshot does nothing. */
 let painted = "";
-/** One painted cell per table: if the page re-renders rows, it disappears. */
+/** One painted cell per table. If the page re-renders the rows, this cell leaves the document. */
 let sampleCell = new WeakMap<HTMLTableElement, HTMLElement>();
 
 let seen = new WeakSet<HTMLTableElement>();
@@ -55,7 +55,7 @@ const send = <T>(msg: ToWorker): Promise<T> =>
     ),
   ]);
 
-/** Same table, same choice, wherever it sits on the page: keyed by its content, not its position. */
+/** Keys a table by its content, not its position, so a choice stays with the table when the page moves it. */
 const fingerprint = (t: ExtractedTable): string => {
   const text = `${t.snapshot.headers.join("␟")}␞${(t.snapshot.rows[0] ?? []).join("␟")}`;
   let h = 5381;
@@ -84,7 +84,7 @@ const run = async (force = false) => {
 };
 
 const judgeAndPaint = async (gen: number, force: boolean) => {
-  // Only tables near the viewport are extracted; the rest are just watched.
+  // extractPage extracts only the tables in `seen`. `nearby` watches the rest until they come near the viewport.
   const extracted = extractPage(document, (el) => seen.has(el));
   for (const el of extracted.elements) if (!seen.has(el)) nearby.observe(el);
   if (extracted.elements.length === 0) {
@@ -96,7 +96,7 @@ const judgeAndPaint = async (gen: number, force: boolean) => {
     setStatus("idle");
     return;
   }
-  // Tables the reader hid are not sent; the rest carry their chosen orientation.
+  // Hidden tables are not sent. The others carry the orientation the user chose.
   const tables = nearbyTables.filter((t) => choices[fingerprint(t)]?.hidden !== true);
   const orientations: Record<string, Orientation> = {};
   for (const t of tables) {
@@ -105,14 +105,14 @@ const judgeAndPaint = async (gen: number, force: boolean) => {
   }
   const page = { ...extracted.page, tables: tables.map((t) => t.snapshot) };
   const key = JSON.stringify([page.tables, orientations]);
-  // Same text is not enough: frameworks re-render tables (or just their rows)
-  // with identical content, dropping our paint.
+  // The same text is not enough. Frameworks re-render tables or rows with the
+  // same content, and the new elements have no paint.
   if (!force && key === painted && tables.every(isIntact)) return;
 
   setStatus("working");
   const reply = await send<JudgeReply>({ type: "judge", page, orientations });
-  // A newer reply may already be on screen; while scrolling, older ones still
-  // paint so tables don't wait for the user to stop.
+  // Drop a reply if a newer one is on screen. An older reply that arrives before
+  // the newest still paints, so tables shade while the user scrolls.
   if (gen < paintedGeneration || !enabled) return;
   if (!reply.ok) {
     if (gen === generation) setStatus(`error:${reply.reason}`);
@@ -134,7 +134,7 @@ const judgeAndPaint = async (gen: number, force: boolean) => {
     if (sample !== null) sampleCell.set(table.element, sample);
     control(table, { orientation: t.orientation, hidden: false });
   }
-  // Tables the judge skipped (too small) count as handled, so mutations don't re-send them forever.
+  // Mark tables the judge skipped as handled, so that mutations don't send them again.
   for (const t of tables) if (t.element.dataset["pdTable"] === undefined) t.element.dataset["pdTable"] = "";
   for (const table of nearbyTables) {
     const c = choices[fingerprint(table)];
@@ -149,7 +149,7 @@ const judgeAndPaint = async (gen: number, force: boolean) => {
 
 // ── Per-table controls ──────────────────────────────────────────────────────
 
-/** The reader's per-table choices for this page, kept for the browser session. */
+/** The user's per-table choices for this page, kept until the browser session ends. */
 let choices: Record<string, TableChoice> = {};
 const keyOf = new WeakMap<HTMLTableElement, string>();
 const controlled = new Set<HTMLTableElement>();
@@ -167,7 +167,7 @@ const handlers = {
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
 };
 
-/** Rows vs columns only means something with several value columns and a modest number of rows. */
+/** Comparing by rows makes sense only for a table with several value columns and few rows. */
 const MAX_ROWS_FOR_ROWS = 40;
 
 const control = (table: ExtractedTable, state: { orientation: Orientation; hidden: boolean }) => {
@@ -219,18 +219,18 @@ const nearby = new IntersectionObserver(
       resized.observe(table);
       added = true;
     }
-    // Short delay batches the tables a single scroll reveals.
+    // The short delay batches the tables that one scroll reveals.
     if (added) schedule(150);
   },
   { rootMargin: NEAR },
 );
 
 /**
- * Collapsed tables (Wikipedia's [show]) and tables in inactive tabs have a
- * visible header, so they get judged while their rows are hidden. Expanding
- * them changes only classes and styles, which the mutation observer ignores;
- * their size is the signal. Re-extraction is free unless the visible text
- * actually changed.
+ * Collapsed tables, such as Wikipedia's [show] tables, and tables in inactive
+ * tabs have a visible header. The script judges them while their rows are
+ * hidden. Expanding them changes only classes and styles, which the mutation
+ * observer ignores, so a change in height triggers a new run. The new run
+ * sends nothing unless the visible text changed.
  */
 const lastHeight = new WeakMap<Element, number>();
 const resized = new ResizeObserver((entries) => {
@@ -248,8 +248,9 @@ const insideTable = (n: Node | null): boolean =>
   n !== null && (n instanceof Element ? n : n.parentElement)?.closest("table") != null;
 
 /**
- * A table was added or removed, or text inside one changed: sorters and live
- * tables rewrite cells in place, which adds Text nodes, not elements.
+ * Returns true if a mutation added or removed a table, or changed text inside
+ * one. Sorters and live tables rewrite cells in place, which adds Text nodes,
+ * not elements.
  */
 const touchesTable = (m: MutationRecord): boolean => {
   if (m.type === "characterData") return insideTable(m.target);
@@ -301,7 +302,7 @@ chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => 
 
 // ── Start, and restart on single-page-app navigation ────────────────────────
 
-/** Pages can opt out: <meta name="practical-data" content="off"> (the demo site shades itself). */
+/** A page opts out with `<meta name="practical-data" content="off">`. The demo site uses it, because it shades itself. */
 const optedOut = () => document.querySelector('meta[name="practical-data"][content="off" i]') !== null;
 
 const start = async () => {
@@ -313,8 +314,8 @@ const start = async () => {
     setStatus("off");
     return;
   }
-  // Content scripts can read storage.session only after the worker grants access, which it does
-  // before it answers pageConfig. A failed read means no saved choices, not an unshaded page.
+  // Content scripts can read storage.session only after the worker grants access.
+  // The worker grants it before it answers pageConfig. A failed read means no saved choices.
   choices = await loadTableChoices(location.href).catch(() => ({}));
   enabled = true;
   void run();
@@ -324,7 +325,7 @@ let lastHref = location.href;
 const onNavigate = () => {
   if (location.href === lastHref) return;
   lastHref = location.href;
-  // A new page in the same document: forget the old page's tables and choices.
+  // The same document shows a new page, so forget the old page's tables and choices.
   turnOff();
   seen = new WeakSet();
   seenCount = 0;
@@ -334,7 +335,7 @@ const onNavigate = () => {
 };
 (globalThis as { navigation?: EventTarget }).navigation?.addEventListener("navigatesuccess", onNavigate);
 addEventListener("popstate", onNavigate);
-// Fallback for routers the Navigation API doesn't report.
+// Polling catches routers that the Navigation API doesn't report.
 setInterval(onNavigate, 1000);
 
 void start();
