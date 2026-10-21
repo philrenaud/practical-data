@@ -23,7 +23,7 @@ import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { Effect, Layer } from "effect";
 import { chromium } from "playwright";
-import { fixturePages, serve } from "./serve.ts";
+import { EXTENSION_ARGS, fixturePages, serve } from "./serve.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
 
 const PORT = 8799;
@@ -305,11 +305,11 @@ try {
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
     execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });
-    const { url: base, server } = await serve("fixtures");
+    const { pagesUrl: base, server } = await serve("fixtures");
     const context = await chromium.launchPersistentContext("", {
       channel: "chromium",
       headless: true,
-      args: ["--disable-extensions-except=dist", "--load-extension=dist"],
+      args: EXTENSION_ARGS,
     });
     try {
       const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));

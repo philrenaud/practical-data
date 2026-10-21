@@ -4,15 +4,15 @@
  * model. Needs TYPESAFE_API_KEY.
  */
 import { chromium } from "playwright";
-import { serve } from "./serve.ts";
+import { EXTENSION_ARGS, serve } from "./serve.ts";
 
 const apiKey = process.env["TYPESAFE_API_KEY"] ?? "";
-const { url, server } = await serve("fixtures");
+const { pagesUrl: url, server } = await serve("fixtures");
 const context = await chromium.launchPersistentContext("", {
   channel: "chromium",
   headless: true,
   viewport: { width: 1200, height: 800 },
-  args: ["--disable-extensions-except=dist", "--load-extension=dist"],
+  args: EXTENSION_ARGS,
 });
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
 await worker.evaluate(
