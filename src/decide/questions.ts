@@ -1,25 +1,34 @@
 /**
- * Question builders. Each builder returns the questions it needs plus a
- * reader that turns the answers back into a typed result, so question ids
- * never leak past this file.
+ * Builds the questions sent to the decision model and reads the answers.
+ * Each builder returns its questions and a `read` function that turns the
+ * answers into a typed result.
  *
- * Division of labor (per Jev's documented jaggedness): code computes every
- * number — extents, spread, sequence detection — and hands the model words.
- * The model judges meaning: is this an amount, which direction is good, does
- * the quantity behave multiplicatively, what order do these labels follow.
+ * Jev is weak at arithmetic and counting. Code computes every number, such as
+ * extents, spread, and sequence detection, and describes it to the model in
+ * words. The model judges meaning: whether a column is an amount, which
+ * direction is better, whether ratios matter, and what order labels follow.
+ *
+ * Every string here is part of a request body. Recordings in
+ * fixtures/recordings are keyed by a hash of that body. src/api/allow.ts
+ * builds the hosted endpoint's allowlist from these builders, so the deployed
+ * Worker accepts only the wording it was built with. A wording change needs
+ * new recordings and a Worker deploy.
  */
 import type { CategoricalProfile, ColumnProfile, NumericProfile, TextProfile } from "../core/profile.ts";
 import { describeSpread } from "../core/profile.ts";
 import type { Polarity } from "../core/types.ts";
 import type { Answer, Question } from "./model.ts";
 
+/** Answers by question id. */
 export type Answers = Readonly<Record<string, Answer>>;
 
+/** Returns the Noul probability for question `id`, or 0 when there is no Noul answer. */
 export const noul = (answers: Answers, id: string): number => {
   const a = answers[id];
   return a?.type === "noul" ? a.noul : 0;
 };
 
+/** Returns the option probabilities for question `id`, or an empty record when there are none. */
 export const probabilities = (answers: Answers, id: string): Readonly<Record<string, number>> => {
   const a = answers[id];
   return a !== undefined && a.type !== "noul" ? a.probabilities : {};
@@ -27,12 +36,13 @@ export const probabilities = (answers: Answers, id: string): Readonly<Record<str
 
 // ── State ───────────────────────────────────────────────────────────────────
 
+/** The page and table titles that go in each request's state. */
 export interface TableContext {
   readonly page: string;
   readonly table: string | null;
 }
 
-/** The JSON a column is described as. `columns[k]` in prose points into this. */
+/** Describes one column as JSON for the state. Question text refers to it as `columns[k]` or `column`. */
 const describeColumn = (p: NumericProfile | CategoricalProfile) => {
   if (p.kind === "numeric") {
     const notes: string[] = [];
@@ -62,10 +72,14 @@ const describeColumn = (p: NumericProfile | CategoricalProfile) => {
   return { header: p.header, kind: "label", values: p.levels.map((l) => p.display[l] ?? l) };
 };
 
-/** First text column: tells the model what each row *is* (players, models, countries). */
+/**
+ * Returns the first text column whose values are all different. Its samples
+ * tell the model what each row is, such as players, models, or countries.
+ */
 const rowLabelColumn = (profiles: readonly ColumnProfile[]): TextProfile | undefined =>
   profiles.find((p): p is TextProfile => p.kind === "text" && p.reason === "every value is unique");
 
+/** Returns the state for a table request: the titles, the row labels, and the candidate columns. */
 export const tableState = (
   ctx: TableContext,
   profiles: readonly ColumnProfile[],
@@ -83,9 +97,10 @@ export const tableState = (
 // ── Orientation ─────────────────────────────────────────────────────────────
 
 /**
- * Whether values compare down columns (each column is one measure) or across
- * rows (each row is one measure, each column one item). Asked speculatively
- * in the table request; a "rows" answer triggers a transposed second pass.
+ * Asks whether values compare down each column or across each row. In the
+ * second case, each row is one measure and each column is one item. The
+ * question goes in the table request, before the answer is needed. `read`
+ * returns P(rows).
  */
 export const orientationQuestion = (firstColumn: { header: string; examples: readonly string[] }) => {
   const id = "table.orientation";
@@ -117,6 +132,7 @@ const POLARITY_CRITERIA: Readonly<Record<Polarity, string>> = {
     "Neither direction is generally preferable; larger is just different (for example height, population, year, weight, count of items).",
 };
 
+/** A missing polarity answer reads as neutral. */
 const readPolarity = (answers: Answers, id: string): Record<Polarity, number> => {
   const p = probabilities(answers, id);
   return {
@@ -128,8 +144,11 @@ const readPolarity = (answers: Answers, id: string): Record<Polarity, number> =>
 
 // ── Numeric columns ─────────────────────────────────────────────────────────
 
+/** The answers about one numeric column. */
 export interface NumericReading {
+  /** P(the column is an amount worth shading). Bins and ranks count unless they repeat the rows. */
   readonly measure: number;
+  /** The most likely role, such as "measure" or "identifier". */
   readonly role: string;
   readonly polarity: Record<Polarity, number>;
   /** Null when the spread is too small for a log scale to matter. */
@@ -137,21 +156,22 @@ export interface NumericReading {
 }
 
 /**
- * Brackets in a table's first column, each one different (0–4, 5–9, 10–14),
- * name the rows the way years do: in order down the table, so shading them
- * says nothing. Brackets elsewhere ("Median age: 35–39") are values.
+ * Returns true when the column is the table's first column and every value is
+ * different. Brackets there, such as 0-4, 5-9, and 10-14, name the rows in
+ * order, the way years do. Shading them adds nothing. Brackets in other
+ * columns, such as a median age of 35-39, are values.
  */
 export const namesRows = (p: NumericProfile): boolean =>
   p.col === 0 && p.distinct === p.values.filter((v) => v !== null).length;
 
 /**
- * Ranks that count the rows (1, 2, 3, or 51, 52, 53 on a second page, with
- * ties as 1, 1, 3) repeat the row order, so shading them says nothing. Other
- * ranks, such as one outlet's ranking beside the table's own, or each team's
- * lowest rank, are worth comparing. Either direction counts.
+ * Returns true when the values count the rows, up or down. Examples are 1, 2,
+ * 3, or 51, 52, 53 on a second page, with ties such as 1, 1, 3. Such ranks
+ * repeat the row order, so shading them adds nothing. Other ranks, such as
+ * one outlet's ranking beside the table's own, are worth comparing.
  */
 export const followsRows = (p: NumericProfile): boolean => {
-  // Row positions are kept: a blank cell is a tie written once (1, 2, "", 4).
+  // Keep each value's row position. A blank cell is a tie written once (1, 2, "", 4).
   const rows = p.values.flatMap((v, i) => (v === null ? [] : [{ v, i }]));
   const counts = (dir: 1 | -1) =>
     rows.every(
@@ -161,9 +181,14 @@ export const followsRows = (p: NumericProfile): boolean => {
   return counts(1) || counts(-1);
 };
 
-/** Only ask about log scales when the data could plausibly use one. */
+/** Returns true when the values span at least one order of magnitude, so a log scale could matter. */
 export const logEligible = (p: NumericProfile): boolean => p.decades !== null && p.decades >= 1;
 
+/**
+ * Returns the role and polarity questions for numeric column `p`, and a log
+ * question when `logEligible` is true. `k` is the column's index in the
+ * table state's `columns`.
+ */
 export const numericQuestions = (k: number, p: NumericProfile) => {
   const ref = `the column \`columns[${k}]\` ("${p.header}")`;
   const id = (q: string) => `n${p.col}.${q}`;
@@ -201,7 +226,8 @@ export const numericQuestions = (k: number, p: NumericProfile) => {
     const role = probabilities(answers, id("role"));
     const roleAnswer = answers[id("role")];
     return {
-      // Brackets are shaded like amounts, by their midpoints, unless they name the rows; ranks, unless they follow them.
+      // Bins count as amounts, shaded by their midpoints, unless they name the rows.
+      // Ranks count unless they follow the rows.
       measure:
         (role["measure"] ?? 0) + (namesRows(p) ? 0 : (role["bins"] ?? 0)) + (followsRows(p) ? 0 : (role["rank"] ?? 0)),
       role: roleAnswer?.type === "choice" ? roleAnswer.choice : "unknown",
@@ -214,21 +240,25 @@ export const numericQuestions = (k: number, p: NumericProfile) => {
 
 // ── Categorical columns ─────────────────────────────────────────────────────
 
+/** The answers about one categorical column. */
 export interface CategoricalReading {
   /** P(the labels are ordered levels of one property). */
   readonly ordinal: number;
+  /** The most likely relation, such as "ordered_levels" or "unordered_kinds". */
   readonly relation: string;
   readonly polarity: Record<Polarity, number>;
-  /** P(labels[i] is the lower grade than labels[j]), for i < j. */
+  /** P(labels[i] is a lower grade than labels[j]), for i < j. 0.5 when the pair was not asked. */
   readonly lower: (i: number, j: number) => number;
 }
 
 /**
- * One Choice per pair of labels: which is the lower grade. Pairwise questions
- * beat "what position is X" once there are more than three levels, and the
- * direction must be anchored in the criteria; "earlier" alone flips on
- * catalogs that list the flagship first. Each pair is asked in both
- * orientations and averaged, which cancels a preference for slot `a`.
+ * Returns one Choice per ordered pair of labels that asks which label is the
+ * lower grade. For more than three levels, pairwise questions did better
+ * than asking for each label's position. The criteria fix the direction with
+ * words such as smaller and cheaper. With "earlier" alone, the order flipped
+ * on catalogs that list the flagship first. Each pair is asked in both
+ * orders, and `read` averages the two. The average cancels a preference for
+ * slot `a`.
  */
 export const pairQuestions = (prefix: string, ref: string, labels: readonly string[]) => {
   const ask = (a: string, b: string): Question => ({
@@ -261,27 +291,33 @@ export const pairQuestions = (prefix: string, ref: string, labels: readonly stri
 };
 
 /**
- * Categorical columns get their own request with only that column's values in
- * state (in the full-table state, pairwise orders degraded: C < M < U < R),
- * plus the sibling headers for context.
+ * Returns the state for one categorical column's request: the titles, the
+ * column's labels, and the other headers. The full table is left out. With
+ * it in the state, pairwise orders got worse, such as C < M < U < R.
  */
 export const categoricalState = (ctx: TableContext, p: CategoricalProfile, siblings: readonly string[]) => ({
   page_title: ctx.page,
   table_title: ctx.table,
   column: describeColumn(p),
-  // The other headers say what the table is about ("Input", "Output" → model tiers), which
-  // lifted the ordered-levels call for Lightweight/Versatile/Powerful from 0.67 to 0.85.
+  // The other headers tell the model what the table is about. Headers such as Input and
+  // Output raised P(ordered levels) for Lightweight, Versatile, Powerful from 0.67 to 0.85.
   other_columns: siblings,
 });
 
+/**
+ * Returns the relation and polarity questions for categorical column `p`.
+ * The pairwise order questions, n(n-1) for n labels, are in `pairQuestions`.
+ * `judgeColumns` sends them in a second request, and only when `ordinalOf`
+ * says the labels might be ordered.
+ */
 export const categoricalQuestions = (p: CategoricalProfile) => {
   const ref = `the column \`column\` ("${p.header}")`;
   const id = (q: string) => `c${p.col}.${q}`;
   const labels = p.levels.map((l) => p.display[l] ?? l);
   const pairs = pairQuestions(`c${p.col}`, ref, labels);
   const questions: Record<string, Question> = {
-    // A Choice, not a Noul: naming the alternatives (statuses, options) is
-    // what keeps "GA / Preview" and "Default / Long context" out.
+    // A Choice rather than a Noul. The named alternatives, such as statuses and
+    // options, keep "GA / Preview" and "Default / Long context" from reading as ordered.
     [id("relation")]: {
       type: "choice",
       instructions: `How do the values of ${ref} relate to each other?`,
@@ -312,10 +348,6 @@ export const categoricalQuestions = (p: CategoricalProfile) => {
       lower: pairs.read(answers),
     };
   };
-  /**
-   * Relation and polarity first; the pairwise questions (n² for n levels) go
-   * in a second request, only when the labels might be ordered.
-   */
   return {
     questions,
     pairQuestions: pairs.questions,
@@ -327,12 +359,17 @@ export const categoricalQuestions = (p: CategoricalProfile) => {
 // ── Aggregate rows ──────────────────────────────────────────────────────────
 
 /**
- * Totals and averages sit at the top or bottom of a table. Asking about the
- * first and last two rows covers "World", "Total", "League average", "Career".
+ * Returns the rows to ask about as possible summary rows: the first two and
+ * the last two. A table with fewer than five rows gets none. Rows such as
+ * World, Total, League average, and Career sit at the top or the bottom.
  */
 export const aggregateCandidates = (rowCount: number): number[] =>
   rowCount < 5 ? [] : [...new Set([0, 1, rowCount - 2, rowCount - 1])];
 
+/**
+ * Returns one Noul per candidate row that asks whether the row summarizes the
+ * other rows. `read` returns the rows at or above `threshold`.
+ */
 export const aggregateQuestions = (headers: readonly string[], rows: readonly (readonly string[])[]) => {
   const candidates = aggregateCandidates(rows.length);
   const questions: Record<string, Question> = Object.fromEntries(
@@ -355,6 +392,7 @@ export const aggregateQuestions = (headers: readonly string[], rows: readonly (r
 
 // ── Cross-table groups ──────────────────────────────────────────────────────
 
+/** One column in a share question. For an ordinal column, `examples` are its labels in order. */
 export interface GroupMember {
   readonly table: string | null;
   readonly header: string;
@@ -362,6 +400,7 @@ export interface GroupMember {
   readonly examples: readonly string[];
 }
 
+/** Returns a Noul that asks whether columns from different tables can share one color scale. */
 export const shareQuestion = (kind: "quantitative" | "ordinal", members: readonly GroupMember[]): Question => ({
   type: "noul",
   instructions: {

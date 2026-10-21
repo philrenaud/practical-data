@@ -106,3 +106,31 @@ test("hosted responses report what's left of the allowance; cache hits report no
     globalThis.fetch = realFetch;
   }
 });
+
+/** Counts the fetch calls that one evaluate makes when every response is a 503. */
+const callsOn503 = async (provider: "hosted" | "jev"): Promise<number> => {
+  const { Effect } = await import("effect");
+  const { hosted, jev } = await import("../src/decide/model.ts");
+  let calls = 0;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    calls++;
+    return new Response('{"error":"upstream"}', { status: 503 });
+  };
+  try {
+    const model = provider === "hosted" ? hosted("id") : jev("key");
+    const error = await Effect.runPromise(model.evaluate({ state: {}, questions }).pipe(Effect.flip));
+    assert.equal(error.reason, "overloaded");
+    return calls;
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+};
+
+test("the hosted endpoint retries a 503 only once, because each attempt spends from the allowance", async () => {
+  assert.equal(await callsOn503("hosted"), 2);
+});
+
+test("Jev retries a 503 four times", async () => {
+  assert.equal(await callsOn503("jev"), 5);
+});

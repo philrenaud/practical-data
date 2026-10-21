@@ -1,15 +1,17 @@
 /**
- * The decision-model boundary. Jev (TypeSafe) and Clef (Cloudflare Workers AI)
- * share one request/answer contract, so each provider is just a transport plus
- * a question-count limit. Everything past this file sees decoded, typed answers.
+ * The provider layer for the decision model. The hosted endpoint, TypeSafe's
+ * Jev, and Cloudflare's Clef take the same System One request and return the
+ * same answers. Each provider is a `Transport` with a per-request question
+ * limit. Code outside this file sees only decoded and validated answers.
  */
 import { Context, Data, Effect, Layer, Schedule, Schema } from "effect";
 
 // ── Request ─────────────────────────────────────────────────────────────────
 
-/** Instructions and criteria accept strings or JSON structure (see TypeSafe "Advanced: structure"). */
+/** Question text: a string, or JSON structure. See "Advanced: structure" in the TypeSafe docs. */
 export type Prose = string | Readonly<Record<string, unknown>> | readonly unknown[];
 
+/** One question in a System One request. */
 export type Question =
   | {
       readonly type: "noul";
@@ -23,6 +25,7 @@ export type Question =
     }
   | { readonly type: "score"; readonly instructions: Prose; readonly criteria: readonly Prose[] };
 
+/** The state, and the questions to ask about it, keyed by question id. */
 export interface DecisionRequest {
   readonly state: unknown;
   readonly questions: Readonly<Record<string, Question>>;
@@ -32,6 +35,7 @@ export interface DecisionRequest {
 
 const Probabilities = Schema.Record(Schema.String, Schema.Number);
 
+/** The answer to one question. */
 export const Answer = Schema.Union([
   Schema.Struct({ type: Schema.Literal("noul"), noul: Schema.Number }),
   Schema.Struct({
@@ -49,6 +53,7 @@ export const Answer = Schema.Union([
 ]);
 export type Answer = typeof Answer.Type;
 
+/** A System One response: the model version, the answers by question id, and the input tokens. */
 export const DecisionResponse = Schema.Struct({
   model: Schema.String,
   answers: Schema.Record(Schema.String, Answer),
@@ -71,6 +76,7 @@ export type DecisionErrorReason =
   /** The hosted endpoint's allowance for everyone is spent for the day. */
   | "quota_everyone";
 
+/** A failed request. Requests that fail with `rate_limited`, `overloaded`, or `network` are retried. */
 export class DecisionError extends Data.TaggedError("DecisionError")<{
   readonly reason: DecisionErrorReason;
   readonly message: string;
@@ -84,26 +90,28 @@ const reasonForStatus = (status: number): DecisionErrorReason =>
     ? "auth"
     : status === 429
       ? "rate_limited"
-      : status === 529 || status >= 500
+      : status >= 500
         ? "overloaded"
         : "bad_request";
 
 // ── Service ─────────────────────────────────────────────────────────────────
 
+/** The decision model as an Effect service. */
 export class DecisionModel extends Context.Service<
   DecisionModel,
   {
-    /** Provider/model label, e.g. "jev-latest" or "clef". */
+    /** The provider's model name, such as "jev-latest" or "clef". */
     readonly name: string;
-    /** Evaluates any number of questions; chunks to the provider's per-request limit. */
+    /** Asks every question in `request`. Splits them into requests of the provider's maximum size. */
     readonly evaluate: (request: DecisionRequest) => Effect.Effect<DecisionResponse, DecisionError>;
   }
 >()("practical-data/DecisionModel") {}
 
 /**
- * Optional persistent cache of raw answers keyed by request hash. Defaults to
- * no caching. The extension backs it with chrome.storage; the eval harness
- * backs it with files on disk so test runs are reproducible offline.
+ * A cache of responses, keyed by `hashJson` of the request body. The default
+ * caches nothing. The extension keeps entries in chrome.storage. The scripts
+ * keep them as files in fixtures/recordings, so offline runs replay recorded
+ * answers.
  */
 export const AnswerCache = Context.Reference<{
   readonly get: (key: string) => Effect.Effect<DecisionResponse | undefined>;
@@ -115,7 +123,7 @@ export const AnswerCache = Context.Reference<{
   }),
 });
 
-/** sha-256 of a JSON value, hex encoded. Works in service workers and Node. */
+/** Returns the hex SHA-256 of `JSON.stringify(value)`. Runs in service workers and Node. */
 export const hashJson = (value: unknown): Effect.Effect<string> =>
   Effect.promise(async () => {
     const bytes = new TextEncoder().encode(JSON.stringify(value));
@@ -131,15 +139,18 @@ const chunk = <A>(xs: readonly A[], size: number): A[][] => {
 
 const decode = Schema.decodeUnknownEffect(DecisionResponse);
 
-/** A provider: how to send one request body and get back the System One JSON. */
+/** How one provider sends a request body and returns System One JSON. */
 interface Transport {
   readonly name: string;
+  /** The most questions in one request. Larger requests are split. */
   readonly maxQuestions: number;
   readonly send: (body: unknown, signal: AbortSignal) => Promise<Response>;
-  /** Unwraps the provider envelope (Workers AI nests the answer under `result`). */
+  /** Removes the provider's envelope. Workers AI puts the answer under `result`. */
   readonly unwrap: (json: unknown) => unknown;
-  /** Sees every response before it is read; the hosted endpoint reports the allowance in headers. */
+  /** Receives every response before its body is read. The hosted endpoint reports the allowance in headers. */
   readonly observe?: (response: Response) => void;
+  /** Retries after an `overloaded` error. Defaults to `MAX_RETRIES`. */
+  readonly overloadedRetries?: number;
 }
 
 const postJson = (url: string, token: string, body: unknown, signal: AbortSignal) =>
@@ -150,14 +161,16 @@ const postJson = (url: string, token: string, body: unknown, signal: AbortSignal
     signal,
   });
 
-/** Per-request time limit. A hung connection fails as a (retryable) network error. */
+/** The time limit for one HTTP request. A request that times out fails as a network error and is retried. */
 const REQUEST_TIMEOUT_MS = 20_000;
-/** Longest Retry-After the client will honor before giving up on that attempt. */
+/** The longest wait that a Retry-After header can cause. Longer values are cut to this. */
 const MAX_RETRY_AFTER_MS = 30_000;
 
 /**
- * Shared cap on in-flight requests per provider, across every tab: page fan-out
- * (tables × label columns × chunks) can otherwise exceed the rate limit at once.
+ * Limits the requests in flight per provider. In the extension, the
+ * background service worker sends every tab's requests, so the limit covers
+ * all tabs. Without it, one page can send a request per table, per label
+ * column, and per chunk at once, and exceed the rate limit.
  */
 const limiter = (max: number) => {
   let active = 0;
@@ -194,9 +207,10 @@ const retryAfterMs = (response: Response): number | null => {
 const inUnit = (p: number) => Number.isFinite(p) && p >= 0 && p <= 1;
 
 /**
- * Checks the answers against the questions asked: every id present, the
- * right type, choice keys drawn from the criteria, probabilities in [0, 1].
- * Typed output guarantees a shape, not that the shape matches the request.
+ * Checks a response against the questions asked. Returns null when every
+ * question has an answer of the right type, with options from its criteria
+ * and probabilities in [0, 1]. Otherwise returns the first problem found.
+ * The schema checks the response's shape, not that it matches the request.
  */
 export const validateAnswers = (
   questions: Readonly<Record<string, Question>>,
@@ -220,8 +234,14 @@ export const validateAnswers = (
   return null;
 };
 
-const sendOnce = (transport: Transport, body: unknown) =>
-  Effect.gen(function* () {
+/** Retries after a transient error. */
+const MAX_RETRIES = 4;
+
+const sendOnce = (transport: Transport, body: unknown) => {
+  let overloaded = 0;
+  const retryable = (e: DecisionError) =>
+    isTransient(e) && (e.reason !== "overloaded" || ++overloaded <= (transport.overloadedRetries ?? MAX_RETRIES));
+  return Effect.gen(function* () {
     const gate = limiters.get(transport.name) ?? limiter(MAX_IN_FLIGHT);
     limiters.set(transport.name, gate);
     const response = yield* Effect.tryPromise({
@@ -238,10 +258,10 @@ const sendOnce = (transport: Transport, body: unknown) =>
     transport.observe?.(response);
     if (!response.ok) {
       const text = yield* Effect.promise(() => response.text().catch(() => ""));
-      // A spent daily allowance is final for the day: no waiting, no retries.
+      // A spent daily allowance lasts until the reset, so do not wait or retry.
       const spent = response.headers.get("x-practical-data-quota");
       const quota = spent !== null;
-      // Honor the server's pacing before the retry schedule's own backoff.
+      // Wait for Retry-After before the retry schedule adds its own backoff.
       const wait = !quota && (response.status === 429 || response.status === 529) ? retryAfterMs(response) : null;
       if (wait !== null) yield* Effect.sleep(wait);
       return yield* new DecisionError({
@@ -258,11 +278,12 @@ const sendOnce = (transport: Transport, body: unknown) =>
     );
   }).pipe(
     Effect.retry({
-      while: isTransient,
+      while: retryable,
       schedule: Schedule.exponential("250 millis").pipe(Schedule.jittered),
-      times: 4,
+      times: MAX_RETRIES,
     }),
   );
+};
 
 const makeModel = (transport: Transport) =>
   DecisionModel.of({
@@ -278,7 +299,7 @@ const makeModel = (transport: Transport) =>
               const body = { model: transport.name, state: request.state, questions: Object.fromEntries(entries) };
               const key = yield* hashJson(body);
               const questions = Object.fromEntries(entries);
-              // Cached answers are re-checked: storage can hold entries from older code.
+              // Check cached answers again, because storage can hold entries from older code.
               const raw = yield* cache.get(key);
               const hit = raw === undefined ? undefined : Schema.decodeUnknownOption(DecisionResponse)(raw);
               if (hit !== undefined && hit._tag === "Some" && validateAnswers(questions, hit.value) === null) {
@@ -302,6 +323,7 @@ const makeModel = (transport: Transport) =>
 
 // ── Providers ───────────────────────────────────────────────────────────────
 
+/** The settings that select a provider and its credentials. */
 export type ProviderConfig =
   | { readonly provider: "hosted"; readonly installId: string; readonly onAllowance?: (allowance: Allowance) => void }
   | { readonly provider: "jev"; readonly apiKey: string; readonly model?: string }
@@ -312,7 +334,10 @@ export type ProviderConfig =
       readonly model?: "clef" | "clef-flash";
     };
 
-/** TypeSafe's Jev. No documented question cap; 200 keeps requests well inside the 64k budget. */
+/**
+ * TypeSafe's Jev. Requests are split into chunks of 200 questions. The
+ * TypeSafe API reference states no question limit, and a body limit of 32 MiB.
+ */
 export const jev = (apiKey: string, model = "jev-latest") =>
   makeModel({
     name: model,
@@ -323,16 +348,16 @@ export const jev = (apiKey: string, model = "jev-latest") =>
 
 declare const PD_API_ORIGIN: string | undefined;
 
-/** The hosted endpoint's origin; builds can point it at a local `wrangler dev`. */
+/** The hosted endpoint's origin. A build can set `PD_API_ORIGIN` to use a local `wrangler dev`. */
 export const API_ORIGIN = typeof PD_API_ORIGIN === "string" ? PD_API_ORIGIN : "https://api.practicaldata.dev";
 
-/** What's left of an install's daily allowance on the hosted endpoint. */
+/** The remaining and total daily allowance of one install on the hosted endpoint. */
 export interface Allowance {
   readonly remaining: number;
   readonly limit: number;
 }
 
-/** The allowance a hosted response reports, if any (cache hits report none). */
+/** Reads the allowance from a hosted response's headers. Returns null when the headers are missing or invalid. */
 export const allowanceOf = (response: Response): Allowance | null => {
   const remaining = Number(response.headers.get("x-practical-data-remaining") ?? NaN);
   const limit = Number(response.headers.get("x-practical-data-limit") ?? NaN);
@@ -340,15 +365,18 @@ export const allowanceOf = (response: Response): Allowance | null => {
 };
 
 /**
- * Jev through practicaldata.dev's hosted endpoint: no key of the reader's own,
- * within daily limits per install. The endpoint uses the same request shape
- * and the same 200-question chunks as Jev itself. `onAllowance` hears what's
- * left after each request that spent from it.
+ * Jev through the hosted endpoint at api.practicaldata.dev. It needs no API
+ * key and has a daily allowance per install. It takes the same request body
+ * and the same 200-question chunks as Jev. `onAllowance` receives the
+ * allowance from each response that reports one.
  */
 export const hosted = (installId: string, onAllowance?: (allowance: Allowance) => void) =>
   makeModel({
     name: "jev-hosted",
     maxQuestions: 200,
+    // The Worker reserves a request from the allowance before it calls Jev, so each
+    // retry of an upstream failure (503) spends one more.
+    overloadedRetries: 1,
     observe: (response) => {
       const allowance = allowanceOf(response);
       if (allowance !== null) onAllowance?.(allowance);
@@ -365,7 +393,7 @@ export const hosted = (installId: string, onAllowance?: (allowance: Allowance) =
 
 /** Cloudflare's Clef on Workers AI. The API caps a request at 64 questions. */
 export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-flash" = "clef") => {
-  // Account IDs are 32 hex characters; anything else would end up in the URL path.
+  // Account IDs are 32 hex characters. Encode anything else so that it cannot change the URL path.
   const account = /^[0-9a-f]{32}$/i.test(accountId) ? accountId : encodeURIComponent(accountId);
   return makeModel({
     name: model,
@@ -381,6 +409,7 @@ export const clef = (accountId: string, apiToken: string, model: "clef" | "clef-
   });
 };
 
+/** Returns a layer that provides the `DecisionModel` for `config`. */
 export const layerFromConfig = (config: ProviderConfig): Layer.Layer<DecisionModel> =>
   Layer.succeed(
     DecisionModel,
