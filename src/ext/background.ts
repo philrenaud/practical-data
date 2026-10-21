@@ -19,6 +19,20 @@ import {
   siteEnabled,
 } from "./settings.ts";
 
+/**
+ * storage.local holds API keys. Chrome opens it to content scripts by default,
+ * and content.ts never reads it, so the worker closes it to them.
+ */
+void chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => undefined);
+
+/**
+ * Content scripts read and write per-table choices in storage.session. Chrome
+ * denies them access until this call completes, so pageConfig waits for it.
+ */
+const sessionShared = chrome.storage.session
+  .setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" })
+  .catch(() => undefined);
+
 const ChromeAnswerCache = Layer.succeed(AnswerCache, answerCache(chrome.storage.local));
 
 /** After rate limiting or overload, stop sending for a while instead of retrying on every scroll. */
@@ -113,14 +127,6 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
 });
 
 // ── Turning it off ──────────────────────────────────────────────────────────
-
-/**
- * Content scripts read and write per-table choices in storage.session. Chrome
- * denies them access until this call completes, so pageConfig waits for it.
- */
-const sessionShared = chrome.storage.session
-  .setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" })
-  .catch(() => undefined);
 
 const tell = (tabId: number, enabled: boolean) =>
   chrome.tabs.sendMessage(tabId, { type: "toggle", enabled } satisfies ToContent).catch(() => undefined);

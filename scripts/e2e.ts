@@ -578,6 +578,41 @@ const coldStartScenario = async (): Promise<string[]> => {
   }
 };
 
+// ── Storage: what the content script's context can read ────────────────────
+
+/** Settings hold API keys, so the content script's isolated world must not read storage.local. */
+const storageScenario = async (): Promise<string[]> => {
+  const page = await context.newPage();
+  const cdp = await context.newCDPSession(page);
+  const worlds: { id: number; auxData?: { type?: string } }[] = [];
+  cdp.on("Runtime.executionContextCreated", (e) => worlds.push(e.context));
+  await cdp.send("Runtime.enable");
+  await page.goto(`${base}/synthetic/dark-theme.html`, { waitUntil: "domcontentloaded" });
+  await waitForStatus(page);
+  const world = worlds.findLast((w) => w.auxData?.type === "isolated");
+  if (world === undefined) return ["storage: found no content-script world"];
+  const read = async (area: string) =>
+    (
+      await cdp.send("Runtime.evaluate", {
+        contextId: world.id,
+        awaitPromise: true,
+        expression: `chrome.storage.${area}.get(null).then((items) => "read " + Object.keys(items).join(","), (e) => String(e))`,
+      })
+    ).result.value as string;
+  const problems: string[] = [];
+  const local = await read("local");
+  if (local.startsWith("read")) problems.push(`storage: the content script can read storage.local (${local})`);
+  const session = await read("session");
+  if (!session.startsWith("read")) problems.push(`storage: the content script can't read storage.session (${session})`);
+  await page.close();
+  return problems;
+};
+
+const storageProblems = await storageScenario();
+console.log(`${storageProblems.length === 0 ? "✓" : "✗"} storage: content scripts can't read settings`);
+for (const p of storageProblems) console.log(`    - ${p}`);
+if (storageProblems.length > 0) failed++;
+
 const coldStartProblems = await coldStartScenario();
 console.log(`${coldStartProblems.length === 0 ? "✓" : "✗"} cold start: page opened as the extension loads`);
 for (const p of coldStartProblems) console.log(`    - ${p}`);
@@ -605,7 +640,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // recorded; those runs fail harmlessly and the final full-set run replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 4 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 5 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();
