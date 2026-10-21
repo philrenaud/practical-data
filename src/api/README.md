@@ -97,7 +97,7 @@ messages.
   the table text.
 - **One Durable Object per UTC day.** Each day starts with empty counts, and
   no job resets them. An alarm deletes each day's storage two days after its
-  first reservation.
+  first use, including a call that only reads `/v1/stats`.
 - **Install ids are not proof of identity.** A client can make up a new id
   for each request. `INSTALL_DAILY_REQUESTS` limits ordinary heavy use.
   `DAILY_TOKEN_BUDGET` is the limit that holds against made-up ids.
