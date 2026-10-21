@@ -334,7 +334,10 @@ export type ProviderConfig =
       readonly model?: "clef" | "clef-flash";
     };
 
-/** TypeSafe's Jev. Jev documents no question limit. Chunks of 200 keep a request well inside the 64k budget. */
+/**
+ * TypeSafe's Jev. Requests are split into chunks of 200 questions. The
+ * TypeSafe API reference states no question limit, and a body limit of 32 MiB.
+ */
 export const jev = (apiKey: string, model = "jev-latest") =>
   makeModel({
     name: model,
