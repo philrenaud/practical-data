@@ -2,6 +2,7 @@
 import type { PageJudgment, PageSnapshot } from "../core/types.ts";
 import type { Orientation } from "../core/orient.ts";
 import type { Palette } from "../core/scale.ts";
+import type { FlagCapture } from "./flags.ts";
 import type { TableChoice } from "./settings.ts";
 
 /** Messages to the service worker. */
@@ -23,7 +24,9 @@ export type ToWorker =
   /** Pauses or resumes one page until the browser session ends. Popup only. */
   | { readonly type: "setPagePaused"; readonly tabId: number; readonly url: string; readonly paused: boolean }
   /** Turns a host on or off and saves it in the settings. Popup only. */
-  | { readonly type: "setSiteEnabled"; readonly tabId: number; readonly host: string; readonly enabled: boolean };
+  | { readonly type: "setSiteEnabled"; readonly tabId: number; readonly host: string; readonly enabled: boolean }
+  /** Files a flag for a table. Dev build only; the worker adds a screenshot. Replies with a `FlagReply`. */
+  | { readonly type: "flag"; readonly capture: FlagCapture };
 
 /** The worker's reply to `judge`. */
 export type JudgeReply =
@@ -32,7 +35,11 @@ export type JudgeReply =
 
 /** Messages to the content script. Only the worker and the popup send them. */
 export type ToContent =
-  { readonly type: "toggle"; readonly enabled: boolean } | { readonly type: "repaint" } | { readonly type: "state" };
+  | { readonly type: "toggle"; readonly enabled: boolean }
+  | { readonly type: "repaint" }
+  | { readonly type: "state" }
+  /** Flags the table under the last right-click. Dev build only. */
+  | { readonly type: "flagAt" };
 
 /** The content script's reply to `state`, for the popup. */
 export interface PageState {

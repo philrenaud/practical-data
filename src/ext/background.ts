@@ -6,6 +6,7 @@ import { DEFAULT_POLICY, judgePage } from "../decide/judge.ts";
 import { DecisionError, modelFromConfig, type Allowance } from "../decide/model.ts";
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
 import { answerCache } from "./cache.ts";
+import { fileFlag, flagId, type FlagCapture, type FlagContext, type FlagReply } from "./flags.ts";
 import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
 import {
   getInstallId,
@@ -120,6 +121,14 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
     enableSite(msg.tabId, msg.host, msg.enabled).then(() => sendResponse(true));
     return true;
   }
+  if (PD_FLAGS_REPO !== null && msg.type === "flag") {
+    const tab = sender.tab;
+    if (tab?.id === undefined) return false;
+    flag(msg.capture, tab, PD_FLAGS_REPO).then(sendResponse, (e: unknown) =>
+      sendResponse({ ok: false, message: String(e) } satisfies FlagReply),
+    );
+    return true;
+  }
   if (msg.type !== "judge" || sender.tab === undefined) return false;
   judge(msg).then(
     (reply) => {
@@ -181,6 +190,42 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
   if (command !== "toggle-page" || tab?.id === undefined || tab.url === undefined) return;
   await pausePage(tab.id, tab.url, !(await isPagePaused(tab.url)));
 });
+
+// ── Flags (dev build only) ──────────────────────────────────────────────────
+
+/** Files a flag. The screenshot comes first, while the page shows what the user flagged. */
+const flag = async (capture: FlagCapture, tab: chrome.tabs.Tab, repo: string): Promise<FlagReply> => {
+  const png = await chrome.tabs
+    .captureVisibleTab(tab.windowId, { format: "png" })
+    .then((url) => url.slice(url.indexOf(",") + 1))
+    .catch(() => null);
+  const { flagToken } = (await chrome.storage.local.get("flagToken")) as { flagToken?: string };
+  if (!flagToken) return { ok: false, message: "add a GitHub token on the options page." };
+  const now = new Date();
+  const manifest = chrome.runtime.getManifest();
+  const context: FlagContext = {
+    ...capture,
+    id: flagId(now),
+    flaggedAt: now.toISOString(),
+    build: manifest.version_name ?? manifest.version,
+    provider: (await loadSettings()).provider,
+  };
+  return { ok: true, issue: await fileFlag(context, png, flagToken, repo) };
+};
+
+if (PD_FLAGS_REPO !== null) {
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({ id: "pd-flag", title: "Flag this table as wrong", contexts: ["all"] }, () => {
+      void chrome.runtime.lastError;
+    });
+  });
+  chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId !== "pd-flag" || tab?.id === undefined) return;
+    void chrome.tabs
+      .sendMessage(tab.id, { type: "flagAt" } satisfies ToContent, { frameId: info.frameId ?? 0 })
+      .catch(() => undefined);
+  });
+}
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   if (reason === "install" && providerConfig(await loadSettings(), await getInstallId()) === null) {

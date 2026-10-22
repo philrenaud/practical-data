@@ -16,7 +16,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.ts",
-    "dev": "node scripts/build.ts --watch",
+    "dev": "node scripts/build.ts --watch --dev",
+    "build:dev": "node scripts/build.ts --dev",
+    "flags": "node scripts/flags.ts",
     "typecheck": "tsc -p .",
     "test": "node --test \"test/**/*.test.ts\"",
     "snapshot": "node scripts/snapshot.ts",
