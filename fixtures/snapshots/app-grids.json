@@ -1,0 +1,123 @@
+{
+ "url": "fixture://synthetic/app-grids.html",
+ "title": "Practical Data: app grids",
+ "tables": [
+  {
+   "id": "t1",
+   "title": "League standings",
+   "headers": [
+    "Team",
+    "Played",
+    "Points",
+    "Goal difference",
+    "Last match"
+   ],
+   "rows": [
+    [
+     "Harbor City",
+     "12",
+     "29",
+     "+14",
+     "Oct 18, 2026"
+    ],
+    [
+     "North Vale",
+     "12",
+     "25",
+     "+9",
+     "Oct 18, 2026"
+    ],
+    [
+     "Westbrook",
+     "12",
+     "21",
+     "+3",
+     "Oct 19, 2026"
+    ],
+    [
+     "Elm Park",
+     "12",
+     "16",
+     "-2",
+     "Oct 18, 2026"
+    ],
+    [
+     "Southgate",
+     "12",
+     "11",
+     "-8",
+     "Oct 19, 2026"
+    ],
+    [
+     "Riverside",
+     "12",
+     "7",
+     "-16",
+     "Oct 19, 2026"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Servers",
+   "headers": [
+    "",
+    "Server",
+    "CPU %",
+    "Memory (GB)",
+    "Latency (ms)",
+    "Last deploy"
+   ],
+   "rows": [
+    [
+     "",
+     "web-1",
+     "72",
+     "11.2",
+     "38",
+     "2026-10-21"
+    ],
+    [
+     "",
+     "web-2",
+     "64",
+     "10.8",
+     "41",
+     "2026-10-21"
+    ],
+    [
+     "",
+     "api-1",
+     "91",
+     "14.6",
+     "120",
+     "2026-10-19"
+    ],
+    [
+     "",
+     "api-2",
+     "47",
+     "9.1",
+     "55",
+     "2026-10-19"
+    ],
+    [
+     "",
+     "db-1",
+     "33",
+     "28.4",
+     "6",
+     "2026-10-02"
+    ],
+    [
+     "",
+     "cache-1",
+     "12",
+     "3.9",
+     "2",
+     "2026-09-28"
+    ]
+   ]
+  }
+ ]
+}

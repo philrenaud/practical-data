@@ -464,5 +464,17 @@
       "Finish": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
       "Points": { "kind": "quantitative", "polarity": ["higher_is_better"] }
     }
+  },
+  "app-grids": {
+    "t1": {
+      "Team": "none",
+      "Points": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Goal difference": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t2": {
+      "Server": "none",
+      "CPU %": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
+      "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    }
   }
 }

@@ -17,6 +17,7 @@
  * - Painting changes no column width.
  * - A collapsed table is judged after it expands.
  * - Turning shading off restores the original markup exactly.
+ * - A table marked `data-e2e-skip` (an app list) is not judged.
  *
  * Then it runs three scenarios: page lifecycle, per-table controls, and the
  * popup. Screenshots go to artifacts/screens/.
@@ -183,6 +184,10 @@ const inspect = () => {
         problems.push(`${id}: header "${h.innerText.slice(0, 20)}" has no underline`);
     }
   }
+  // Fixture tables marked data-e2e-skip are app lists, which the extractor must skip.
+  for (const t of document.querySelectorAll<HTMLTableElement>("table[data-e2e-skip]")) {
+    if (t.hasAttribute("data-pd-table")) problems.push(`#${t.id}: an app list was judged`);
+  }
   return {
     tables: tables.length,
     columns,
@@ -273,7 +278,8 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     if (unpaintedExpanded > 0) report.problems.push(`${unpaintedExpanded} expanded table(s) never got painted`);
     const first = page.locator("table[data-pd-table]").first();
     await first.scrollIntoViewIfNeeded().catch(() => undefined);
-    await page.screenshot({ path: `artifacts/screens/${name}.png` });
+    // Playwright hides the caret with an inline style on each input and leaves style="", which the restore check would catch.
+    await page.screenshot({ path: `artifacts/screens/${name}.png`, caret: "initial" });
     // Toggle off through the same message the toolbar button sends.
     const thWidths = () =>
       page.evaluate(() => [...document.querySelectorAll("th")].map((h) => h.getBoundingClientRect().width));
