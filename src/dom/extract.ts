@@ -182,13 +182,33 @@ const precedingHeading = (table: Element, headings: readonly Element[]): string 
   return best === null ? null : cellText(best as HTMLElement) || null;
 };
 
+/** Elements that make a row something to act on: select, star, open. */
+const ROW_CONTROLS = "input[type=checkbox], [role=checkbox], button, [role=button], [role=switch]";
+
+/**
+ * True for an app's list of items built as a table, such as a mail inbox. It
+ * is marked as a grid, every row has a control, and no row is a header. All
+ * three must hold. Many data tables have no header row, and some data grids
+ * have a checkbox in every row, but those have headers.
+ */
+const isAppList = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]): boolean => {
+  const role = table.getAttribute("role");
+  if (role !== "grid" && role !== "treegrid") return false;
+  if (rows.some(isHeaderRow)) return false;
+  return rows.every((r) => r.querySelector(ROW_CONTROLS) !== null);
+};
+
 /**
  * True for tables that the extractor skips. Presentation tables and tables
  * that contain tables are layout. Tables in an editable region are skipped
- * because an editor saves the painted inline styles with the document.
+ * because an editor saves the painted inline styles with the document. App
+ * lists (see isAppList) are not data to compare.
  */
-const isLayoutTable = (table: HTMLTableElement): boolean =>
-  table.getAttribute("role") === "presentation" || table.querySelector("table") !== null || table.isContentEditable;
+const isLayoutTable = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]): boolean =>
+  table.getAttribute("role") === "presentation" ||
+  table.querySelector("table") !== null ||
+  table.isContentEditable ||
+  isAppList(table, rows);
 
 /** Reads one table. Returns null for a layout table, or a table with fewer than two rows or columns or no data rows. */
 export const extractTable = (
@@ -196,9 +216,9 @@ export const extractTable = (
   id: string,
   headings: readonly Element[],
 ): ExtractedTable | null => {
-  if (isLayoutTable(table)) return null;
   // Rows with no cells (StatCan puts one between header and body) carry nothing.
   const rows = Array.from(table.rows).filter((r) => r.closest("table") === table && r.cells.length > 0);
+  if (isLayoutTable(table, rows)) return null;
   if (rows.length < 2) return null;
   const grid = buildGrid(rows);
   const width = modalWidth(grid);

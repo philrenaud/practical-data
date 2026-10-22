@@ -13,6 +13,8 @@
       "The judge, with answers supplied by code. Code ignores identifiers and two-level labels. Shared scales. One failed table does not stop the other tables.",
     "dates.test.ts":
       "Cell text to dates: calendar dates, months, times with offsets, and relative times such as 3 days ago. Day and month order for numeric dates. The text that must not become a date.",
+    "flags.test.ts":
+      "Flags from the dev build: the issue that a flag files, and the order of the calls to GitHub. The store build has no flags.",
     "legend.test.ts":
       "The card that shows when you put the pointer on a header: ranges and units for shared, log, ranked, and duration columns, and the totals that are not on the scale.",
     "model.test.ts": "Validation of answers, and the quota and allowance values from the free endpoint.",
@@ -42,6 +44,22 @@
   this site.
 </p>
 <p class="score"><strong>{total - failed} of {total}</strong> unit tests pass.</p>
+
+<h2>Tables the extension skips</h2>
+<p>
+  Before any question goes to the model, code drops tables that are not data. The model never sees these tables, thus no
+  check above covers them. The browser tests check each rule on a synthetic page.
+</p>
+<ul>
+  <li>Tables marked <code>role="presentation"</code>, and tables that contain other tables: page layout.</li>
+  <li>Tables in an editable region, because an editor would save the shading with the document.</li>
+  <li>
+    App lists, such as a mail inbox. Such a table is marked <code>role="grid"</code>, has a checkbox or button in every
+    row, and has no header row. All three must be true. A data grid with a header row is still shaded, even with a
+    checkbox in every row.
+  </li>
+  <li>Tables with fewer than two rows or two columns.</li>
+</ul>
 
 <h2>Parsing</h2>
 <p>

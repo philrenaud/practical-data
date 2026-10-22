@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: app grids</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  tbody tr:nth-child(even) td { background: #f4f4f4; }
+  [role=checkbox], [role=button] { display: inline-block; width: 14px; height: 14px; border: 1px solid #888; }
+</style>
+</head>
+<body>
+<h1>App grids</h1>
+<p>
+  A web app can build a list of items as a table: an inbox, a file list, a
+  notification feed. The extension skips a table that is marked as a grid,
+  has a control in every row, and has no header row. The other two tables
+  each lack one of these, so the extension still shades them.
+</p>
+
+<h2>Inbox</h2>
+<!-- Shaped like a mail client's message list. The extension must skip it. -->
+<table id="inbox" role="grid" aria-readonly="true" data-e2e-skip>
+  <tbody>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Not starred"></span></td><td role="gridcell">Ada Byron</td><td role="gridcell">Lunch on Thursday? Let me know what works.</td><td role="gridcell">10:40 AM</td></tr>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Not starred"></span></td><td role="gridcell">Billing</td><td role="gridcell">Your receipt for October</td><td role="gridcell">9:00 AM</td></tr>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Starred"></span></td><td role="gridcell">Grace Hopper</td><td role="gridcell">Notes from the design review</td><td role="gridcell">Oct 17</td></tr>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Not starred"></span></td><td role="gridcell">Alan Turing</td><td role="gridcell">Re: the assignment</td><td role="gridcell">Oct 15</td></tr>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Not starred"></span></td><td role="gridcell">Travel desk</td><td role="gridcell">Your itinerary has changed</td><td role="gridcell">Oct 9</td></tr>
+    <tr role="row"><td role="gridcell"><div role="checkbox" aria-checked="false" tabindex="-1"></div></td><td role="gridcell"><span role="button" aria-label="Not starred"></span></td><td role="gridcell">Bank</td><td role="gridcell">Your statement is ready</td><td role="gridcell">Sep 24</td></tr>
+  </tbody>
+</table>
+
+<h2>League standings</h2>
+<!-- A data table marked as a grid, with a header row and no controls. The extension shades it. -->
+<table id="standings" role="grid">
+  <thead><tr role="row"><th role="columnheader">Team</th><th role="columnheader">Played</th><th role="columnheader">Points</th><th role="columnheader">Goal difference</th><th role="columnheader">Last match</th></tr></thead>
+  <tbody>
+    <tr role="row"><td role="gridcell">Harbor City</td><td role="gridcell">12</td><td role="gridcell">29</td><td role="gridcell">+14</td><td role="gridcell">Oct 18, 2026</td></tr>
+    <tr role="row"><td role="gridcell">North Vale</td><td role="gridcell">12</td><td role="gridcell">25</td><td role="gridcell">+9</td><td role="gridcell">Oct 18, 2026</td></tr>
+    <tr role="row"><td role="gridcell">Westbrook</td><td role="gridcell">12</td><td role="gridcell">21</td><td role="gridcell">+3</td><td role="gridcell">Oct 19, 2026</td></tr>
+    <tr role="row"><td role="gridcell">Elm Park</td><td role="gridcell">12</td><td role="gridcell">16</td><td role="gridcell">-2</td><td role="gridcell">Oct 18, 2026</td></tr>
+    <tr role="row"><td role="gridcell">Southgate</td><td role="gridcell">12</td><td role="gridcell">11</td><td role="gridcell">-8</td><td role="gridcell">Oct 19, 2026</td></tr>
+    <tr role="row"><td role="gridcell">Riverside</td><td role="gridcell">12</td><td role="gridcell">7</td><td role="gridcell">-16</td><td role="gridcell">Oct 19, 2026</td></tr>
+  </tbody>
+</table>
+
+<h2>Servers</h2>
+<!-- A dashboard with a checkbox in every row and a header row. The extension shades it. -->
+<table id="servers" role="grid">
+  <thead><tr role="row"><th role="columnheader"><input type="checkbox" aria-label="Select all"></th><th role="columnheader">Server</th><th role="columnheader">CPU %</th><th role="columnheader">Memory (GB)</th><th role="columnheader">Latency (ms)</th><th role="columnheader">Last deploy</th></tr></thead>
+  <tbody>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select web-1"></td><td role="gridcell">web-1</td><td role="gridcell">72</td><td role="gridcell">11.2</td><td role="gridcell">38</td><td role="gridcell">2026-10-21</td></tr>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select web-2"></td><td role="gridcell">web-2</td><td role="gridcell">64</td><td role="gridcell">10.8</td><td role="gridcell">41</td><td role="gridcell">2026-10-21</td></tr>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select api-1"></td><td role="gridcell">api-1</td><td role="gridcell">91</td><td role="gridcell">14.6</td><td role="gridcell">120</td><td role="gridcell">2026-10-19</td></tr>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select api-2"></td><td role="gridcell">api-2</td><td role="gridcell">47</td><td role="gridcell">9.1</td><td role="gridcell">55</td><td role="gridcell">2026-10-19</td></tr>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select db-1"></td><td role="gridcell">db-1</td><td role="gridcell">33</td><td role="gridcell">28.4</td><td role="gridcell">6</td><td role="gridcell">2026-10-02</td></tr>
+    <tr role="row"><td role="gridcell"><input type="checkbox" aria-label="Select cache-1"></td><td role="gridcell">cache-1</td><td role="gridcell">12</td><td role="gridcell">3.9</td><td role="gridcell">2</td><td role="gridcell">2026-09-28</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
