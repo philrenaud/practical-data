@@ -81,10 +81,7 @@ storage. The service worker accepts messages only from this extension.
 Install from the
 [store listing](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm).
 
-Version 1.1.0 adds the free provider. It is submitted to the store and is
-waiting for review. Until the store approves it, the store serves version
-1.0.0, which needs your own key. To use 1.0.0, paste a TypeSafe API key on
-the options page and select **Test**.
+The store serves version 1.1.0, which works without a key.
 
 ### From source
 
@@ -97,8 +94,9 @@ npm run build
 
 1. Open `chrome://extensions` and turn on **Developer mode**.
 2. Select **Load unpacked** and choose the `dist/` folder.
-3. Optional: on the options page, select **Jev** or **Clef**, paste your
-   own key, and select **Test**.
+3. On the options page, select **Jev** or **Clef**, paste your own key,
+   and select **Test**. The free endpoint accepts only the store build, so
+   an unpacked build needs a key.
 
 ### Compare a build with the store copy
 

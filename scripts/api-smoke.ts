@@ -112,6 +112,9 @@ const wrangler = spawn(
     `INSTALL_DAILY_REQUESTS:${INSTALL_LIMIT}`,
     "--var",
     "STATS_TOKEN:smoke-stats",
+    // The unpacked extension's id is not the store id.
+    "--var",
+    "ALLOWED_ORIGINS:",
   ],
   { stdio: ["ignore", "pipe", "pipe"] },
 );

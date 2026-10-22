@@ -11,7 +11,8 @@
     "UPSTREAM_URL": "https://api.typesafe.ai/v1/systemone",
     "MODEL": "jev-latest",
     // Comma-separated chrome-extension:// origins. Empty accepts any extension.
-    "ALLOWED_ORIGINS": "",
+    // The store build only. Unpacked builds have other ids and use their own key.
+    "ALLOWED_ORIGINS": "chrome-extension://oeoogiokpnkhimnepeepflkpmghiokgm",
     // Model requests per install per UTC day. Cache hits do not count.
     "INSTALL_DAILY_REQUESTS": "400",
     // Input tokens for all installs together per UTC day. 0 turns the free endpoint off.
