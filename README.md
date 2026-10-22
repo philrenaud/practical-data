@@ -98,6 +98,9 @@ npm run build
    and select **Test**. The free endpoint accepts only the store build, so
    an unpacked build needs a key.
 
+For field testing, `npm run build:dev` builds a copy that can flag tables
+it gets wrong. See [src/ext/README.md](src/ext/README.md#flags-dev-build-only).
+
 ### Compare a build with the store copy
 
 The build does not minify the code, so you can read the installed copy.

@@ -287,6 +287,35 @@ document.querySelector("#clear")!.addEventListener("click", async () => {
 
 document.querySelector("#build")!.textContent =
   `Build ${chrome.runtime.getManifest().version_name ?? chrome.runtime.getManifest().version}`;
+/**
+ * The dev build's flag token. It is a GitHub fine-grained token with Contents
+ * and Issues write access to PD_FLAGS_REPO only. It is saved as soon as it changes.
+ */
+if (PD_FLAGS_REPO !== null) {
+  const section = document.createElement("section");
+  section.innerHTML = `
+    <h2>Flags <small>dev build</small></h2>
+    <label class="field">
+      <span>GitHub token for <code></code></span>
+      <input type="password" name="flagToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+    </label>
+    <p class="note">
+      A fine-grained token with Contents and Issues write access to this repository only. Hover a shaded table and
+      select <b>Flag as wrong</b>, or right-click any table and select <b>Flag this table as wrong</b>.
+    </p>`;
+  section.querySelector("code")!.textContent = PD_FLAGS_REPO;
+  const input = section.querySelector<HTMLInputElement>("input")!;
+  const { flagToken } = (await chrome.storage.local.get("flagToken")) as { flagToken?: string };
+  input.value = flagToken ?? "";
+  // The form's change listener saves settings; this field is not a setting.
+  input.addEventListener("change", async (e) => {
+    e.stopPropagation();
+    await chrome.storage.local.set({ flagToken: input.value.trim() });
+    setStatus("Saved the flag token.");
+  });
+  form.querySelector("footer")!.before(section);
+}
+
 renderPalettes();
 write(await loadSettings().catch(() => DEFAULT_SETTINGS));
 renderPreview();

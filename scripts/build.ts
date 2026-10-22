@@ -1,5 +1,7 @@
 /**
- * Bundles the extension into dist/. `--watch` rebuilds on change.
+ * Bundles the extension into dist/. `--watch` rebuilds on change. `--dev`
+ * builds the field-test copy: it files flags to FLAGS_REPO (src/ext/flags.ts)
+ * and needs extra permissions. Never upload a `--dev` build to the store.
  * Also emits dist-probe/probe.js, an IIFE that exposes the extractor on
  * `globalThis.__practicalData` so scripts can snapshot pages with Playwright.
  */
@@ -9,6 +11,8 @@ import { basename } from "node:path";
 import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
+const dev = process.argv.includes("--dev");
+const FLAGS_REPO = "philrenaud/practical-data-flags";
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 // Skip dotfiles, such as Finder's .DS_Store, and the SVG icon source.
@@ -37,7 +41,19 @@ manifest["version_name"] = `${String(manifest["version"])} (${sha}${dirty}, ${bu
 // A local endpoint needs its own host permission, as api.practicaldata.dev has in the manifest.
 const apiOrigin = process.env["PD_API_ORIGIN"];
 if (apiOrigin !== undefined) (manifest["host_permissions"] as string[]).push(`${apiOrigin}/*`);
+if (dev) {
+  manifest["name"] = `${String(manifest["name"])} (dev)`;
+  // A flag needs a menu item, a screenshot of any tab, and the GitHub API.
+  (manifest["permissions"] as string[]).push("contextMenus");
+  (manifest["host_permissions"] as string[]).push("<all_urls>");
+}
 await writeFile("dist/manifest.json", JSON.stringify(manifest, null, 2));
+
+const define: Record<string, string> = {};
+// PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
+if (apiOrigin !== undefined) define["PD_API_ORIGIN"] = JSON.stringify(apiOrigin);
+// The store build defines it as null, and the bundler drops the flag code.
+define["PD_FLAGS_REPO"] = dev ? JSON.stringify(FLAGS_REPO) : "null";
 
 const common = {
   bundle: true,
@@ -47,9 +63,7 @@ const common = {
   // The bundle is not minified, so Web Store reviewers and anyone who audits the extension can read it.
   minify: false,
   sourcemap: watch ? "inline" : false,
-  // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
-  define:
-    process.env["PD_API_ORIGIN"] === undefined ? {} : { PD_API_ORIGIN: JSON.stringify(process.env["PD_API_ORIGIN"]) },
+  define,
 } as const satisfies esbuild.BuildOptions;
 
 const builds: esbuild.BuildOptions[] = [

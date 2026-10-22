@@ -17,6 +17,7 @@ decision logic, and the painting live in `src/dom`, `src/decide`, and
 | `pace.ts` | Content script | Limits the judge requests that page changes trigger. |
 | `allowance.ts` | Worker and popup | Merges the free endpoint's reported counts and builds the popup's allowance messages. |
 | `messages.ts` | All | The message types. |
+| `flags.ts` | Worker and content script, dev build only | Captures a flagged table and files it as an issue. See [Flags](#flags-dev-build-only). |
 
 ## Messages
 
@@ -34,6 +35,8 @@ extensions can't send them.
 | `toggle` | worker | content | Turns shading on or off now. |
 | `repaint` | worker | content | Runs the page again with `force`, after a settings change. |
 | `state` | popup | content | Returns `PageState`, with the URL, the status, and the counts of shaded tables and columns. |
+| `flag` | content | worker | Dev build only. Files a flag and returns `FlagReply`. |
+| `flagAt` | worker | content | Dev build only. Flags the table under the last right-click. |
 
 The worker's `onMessage` listener checks `sender.id`. It accepts `judge` only
 from a tab. It accepts `pageConfig` and `saveTableChoices` only for a URL with
@@ -53,7 +56,8 @@ never takes a switch from one.
 | `commands.toggle-page` | <kbd>Alt+Shift+H</kbd> pauses or resumes the current page. |
 
 The extension has no `scripting`, `tabs`, `cookies`, `webRequest`, or
-`<all_urls>` host permission.
+`<all_urls>` host permission. The dev build adds `contextMenus` and
+`<all_urls>`; see [Flags](#flags-dev-build-only).
 
 ## Storage
 
@@ -204,3 +208,29 @@ Without `--offline`, API calls go live and need `TYPESAFE_API_KEY`. Use
 - **The build is not minified.** Reviewers can read what runs.
 - **Fonts ship in `static/fonts`.** The options page makes no third-party
   requests.
+
+## Flags (dev build only)
+
+`npm run build:dev` (or `npm run dev`, which watches) builds a field-test
+copy named "Practical Data (dev)". It adds a **Flag as wrong** button to the
+table controls and a **Flag this table as wrong** item to the right-click
+menu. A flag files an issue in the private repository
+`philrenaud/practical-data-flags` with:
+
+- the table as the extractor reads it, and its outerHTML;
+- the judgment that painted it, with the model's probabilities;
+- the provider, the model, and the build;
+- a screenshot of the visible tab.
+
+The token is a GitHub fine-grained token with Contents and Issues write
+access to that repository only. The options page of the dev build has a
+field for it, which saves it in `storage.local` as `flagToken`.
+
+The build defines `PD_FLAGS_REPO`. It is `null` in the store build, so the
+bundler drops the GitHub code, and only inert `if (false)` blocks remain.
+The dev build needs `contextMenus`, and `<all_urls>` so that the toolbar
+button can take a screenshot without a user gesture on the extension. Never
+upload a dev build to the store.
+
+`npm run flags` pulls the open flags into `artifacts/flags/<id>/`. Flags
+hold real page content, so they never go into `fixtures/` or this repository.

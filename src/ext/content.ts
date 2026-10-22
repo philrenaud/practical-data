@@ -19,6 +19,9 @@ import type { Orientation } from "../core/orient.ts";
 import { attachControls, detachControls } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { paintTable, unpaint } from "../dom/paint.ts";
+import { toast } from "../dom/toast.ts";
+import type { TableJudgment } from "../core/types.ts";
+import { MAX_HTML, type FlagCapture, type FlagReply } from "./flags.ts";
 import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker } from "./messages.ts";
 import { afterSend, PACE_START, waitFor } from "./pace.ts";
 import type { TableChoice } from "./settings.ts";
@@ -43,6 +46,9 @@ let paintedGeneration = 0;
 let painted = "";
 /** One painted cell per table. If the page re-renders the rows, this cell leaves the document. */
 let sampleCell = new WeakMap<HTMLTableElement, HTMLElement>();
+/** The judgment that painted each table, and the model that made it. Flags report them. */
+let judged = new WeakMap<HTMLTableElement, TableJudgment>();
+let judgedBy = "";
 
 let seen = new WeakSet<HTMLTableElement>();
 let seenCount = 0;
@@ -128,6 +134,8 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
   }
   unpaint();
   sampleCell = new WeakMap();
+  judged = new WeakMap();
+  judgedBy = reply.judgment.model;
   const byId = new Map<string, ExtractedTable>(tables.map((t) => [t.snapshot.id, t]));
   const groupSizes = new Map<string, number>();
   for (const t of reply.judgment.tables) {
@@ -137,6 +145,7 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     const table = byId.get(t.id);
     if (!table?.element.isConnected) continue;
     paintTable(t.orientation === "rows" ? transposeExtracted(table) : table, t, reply.palette, groupSizes);
+    judged.set(table.element, t);
     const sample = table.element.querySelector<HTMLElement>("[data-pd-t]:not([data-pd-t=''])");
     if (sample !== null) sampleCell.set(table.element, sample);
     control(table, { orientation: t.orientation, hidden: false });
@@ -172,7 +181,62 @@ const choose = (table: HTMLTableElement, change: TableChoice) => {
 const handlers = {
   orient: (table: HTMLTableElement, orientation: Orientation) => choose(table, { orientation }),
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
+  ...(PD_FLAGS_REPO === null ? {} : { flag: (table: HTMLTableElement) => void flag(table) }),
 };
+
+// ── Flags (dev build only) ──────────────────────────────────────────────────
+
+/** Reads what the extension sees and decided for one table. */
+const capture = (table: HTMLTableElement): FlagCapture => {
+  const now = extractPage(document, (el) => el === table).tables[0] ?? null;
+  const judgment = judged.get(table) ?? null;
+  const html = table.outerHTML;
+  return {
+    kind: judgment !== null && (table.dataset["pdEncoded"] ?? "") !== "" ? "shaded" : "unshaded",
+    url: location.href,
+    pageTitle: document.title,
+    status: root.dataset["pdStatus"] ?? "none",
+    table: now?.snapshot ?? null,
+    judgment,
+    model: judgment === null ? null : judgedBy,
+    html: html.slice(0, MAX_HTML),
+    htmlTruncated: html.length > MAX_HTML,
+    viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+  };
+};
+
+const flag = async (table: HTMLTableElement) => {
+  const reply = send<FlagReply>({ type: "flag", capture: capture(table) });
+  // The worker takes the screenshot as soon as the message arrives. The notice
+  // waits, so it is not in the screenshot.
+  const pending = setTimeout(() => toast("Flagging…"), 400);
+  try {
+    const r = await reply;
+    clearTimeout(pending);
+    if (r.ok)
+      toast(`Flagged as #${r.issue}.`, {
+        href: `https://github.com/${PD_FLAGS_REPO}/issues/${r.issue}`,
+        label: "Open",
+      });
+    else toast(`Flag not filed: ${r.message}`);
+  } catch (e) {
+    clearTimeout(pending);
+    toast(`Flag not filed: ${String(e)}`);
+  }
+};
+
+/** The element under the last right-click, for the "Flag this table" menu item. */
+let rightClicked: Element | null = null;
+if (PD_FLAGS_REPO !== null) {
+  addEventListener(
+    "contextmenu",
+    (e) => {
+      const target = e.composedPath()[0];
+      rightClicked = target instanceof Element ? target : null;
+    },
+    { capture: true },
+  );
+}
 
 /** Comparing by rows makes sense only for a table with several value columns and few rows. */
 const MAX_ROWS_FOR_ROWS = 40;
@@ -322,6 +386,10 @@ chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => 
     else turnOff();
   } else if (msg.type === "repaint") {
     void run(true);
+  } else if (PD_FLAGS_REPO !== null && msg.type === "flagAt") {
+    const table = rightClicked?.closest("table");
+    if (table == null) toast("Right-click inside a table to flag it.");
+    else void flag(table);
   }
   return false;
 });

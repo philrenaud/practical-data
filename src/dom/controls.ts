@@ -17,6 +17,8 @@ export interface TableControlState {
 export interface TableControlHandlers {
   readonly orient: (table: HTMLTableElement, orientation: Orientation) => void;
   readonly hide: (table: HTMLTableElement, hidden: boolean) => void;
+  /** Flags the table as judged wrongly. Only the dev build has it. */
+  readonly flag?: (table: HTMLTableElement) => void;
 }
 
 const CSS = `
@@ -100,6 +102,15 @@ const render = () => {
     el.append(label, seg, sep);
   }
   el.append(button(state.hidden ? "Show shading" : "Hide shading", null, () => handlers.hide(table, !state.hidden)));
+  const { flag } = handlers;
+  if (flag !== undefined) {
+    const sep = document.createElement("span");
+    sep.className = "sep";
+    el.append(
+      sep,
+      button("Flag as wrong", null, () => flag(table)),
+    );
+  }
 };
 
 const place = (table: HTMLTableElement) => {
