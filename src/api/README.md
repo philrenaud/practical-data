@@ -190,8 +190,9 @@ npm run api:deploy
 curl https://api.practicaldata.dev/v1/health
 ```
 
-To accept only the store build, set `ALLOWED_ORIGINS` to
-`chrome-extension://<store id>`, and add the unpacked id while you test. To
+`ALLOWED_ORIGINS` is the store build's origin, so the endpoint refuses
+unpacked builds. To test an unpacked build against the deployed Worker, add
+its origin to the list and deploy. `npm run api:smoke` clears the list. To
 turn the free endpoint off, set `DAILY_TOKEN_BUDGET` to `0`. Every request
 then gets the `budget_spent` refusal, and the extension points users to
 their own key.

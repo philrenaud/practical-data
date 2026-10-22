@@ -189,11 +189,11 @@
         </p>
       </li>
       <li>
-        <h3>Your key, or soon none at all</h3>
+        <h3>No key needed</h3>
         <p>
-          With your own key, table text goes straight to your provider and nothing passes through the author. From
-          1.1.0, a free endpoint judges tables without a key and keeps only the answers and anonymous counts. The
-          extension has no analytics or telemetry. <a href="/privacy">Privacy policy</a>
+          A free endpoint judges tables without a key and keeps only the answers and anonymous counts. With your own
+          key, table text goes straight to your provider and nothing passes through the author. The extension has no
+          analytics or telemetry. <a href="/privacy">Privacy policy</a>
         </p>
       </li>
       <li>
@@ -234,16 +234,16 @@
     <ol>
       <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
       <li>
-        Paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options page, which opens when it's installed. The
-        next version, 1.1.0, works without a key.
+        It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options
+        page.
       </li>
     </ol>
     <p class="note">
       Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is
-      sent to be judged, straight to your own provider (or, from 1.1.0, through the free endpoint); nothing is sent for
-      sites you turn off. A typical page costs about a tenth of a cent on your own key. From 1.1.0, the free endpoint
-      has a daily allowance per browser, and a key gives unlimited use. The toolbar popup turns a page or a whole site
-      off, and ⌥⇧H toggles the current page.
+      sent to be judged, through the free endpoint or straight to your own provider; nothing is sent for sites you turn
+      off. The free endpoint has a daily allowance per browser. A key gives unlimited use, and a typical page costs
+      about a tenth of a cent on it. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current
+      page.
     </p>
   </section>
 </main>
