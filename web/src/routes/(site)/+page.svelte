@@ -191,9 +191,9 @@
       <li>
         <h3>No key needed</h3>
         <p>
-          A free endpoint judges tables without a key and keeps only the answers and anonymous counts. With your
-          own key, table text goes straight to your provider and nothing passes through the author. The extension has
-          no analytics or telemetry. <a href="/privacy">Privacy policy</a>
+          A free endpoint judges tables without a key and keeps only the answers and anonymous counts. With your own
+          key, table text goes straight to your provider and nothing passes through the author. The extension has no
+          analytics or telemetry. <a href="/privacy">Privacy policy</a>
         </p>
       </li>
       <li>
@@ -234,16 +234,16 @@
     <ol>
       <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
       <li>
-        It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> API key on
-        the options page.
+        It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options
+        page.
       </li>
     </ol>
     <p class="note">
       Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is
       sent to be judged, through the free endpoint or straight to your own provider; nothing is sent for sites you turn
       off. The free endpoint has a daily allowance per browser. A key gives unlimited use, and a typical page costs
-      about a tenth of a cent on it. The toolbar popup turns a page or a whole site
-      off, and ⌥⇧H toggles the current page.
+      about a tenth of a cent on it. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current
+      page.
     </p>
   </section>
 </main>
