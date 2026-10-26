@@ -477,6 +477,20 @@
       "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
   },
+  "number-buttons": {
+    "t0": {
+      "Region": "none",
+      "Storage": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Egress": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Archive": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    },
+    "t1": {
+      "Runner": "none",
+      "Queue time (s)": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Jobs today": { "kind": "quantitative" },
+      "Actions": "none"
+    }
+  },
   "hidden-text": {
     "t0": {
       "Description": "none",

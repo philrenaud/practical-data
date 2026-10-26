@@ -102,13 +102,20 @@ const isHiddenCell = (cell: HTMLElement): boolean =>
   !cell.checkVisibility() &&
   cell.parentElement?.checkVisibility() === true;
 
+/**
+ * True for a button whose whole text is a number, such as a price that opens
+ * a popover with its terms. The number is the cell's value, not a control.
+ */
+const holdsValue = (el: HTMLElement): boolean =>
+  el.matches("button, [role=button]") && parseNumber(el.textContent ?? "") !== null;
+
 const cellText = (cell: HTMLElement): string => {
   if (isHiddenCell(cell)) return "";
   const noise =
     cell.firstElementChild === null
       ? []
       : [
-          ...cell.querySelectorAll<HTMLElement>(CONTROLS),
+          ...[...cell.querySelectorAll<HTMLElement>(CONTROLS)].filter((el) => !holdsValue(el)),
           ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation),
           ...[...cell.querySelectorAll<HTMLElement>(SCREEN_READER_ONLY)].filter(isScreenReaderOnly),
         ];
