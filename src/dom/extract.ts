@@ -72,13 +72,52 @@ const textSkipping = (cell: HTMLElement, skip: ReadonlySet<Element>): string => 
   return out;
 };
 
+/** Class names that sites use for text meant only for screen readers. */
+const SCREEN_READER_ONLY =
+  '[class*="sr-only"], [class*="visually-hidden"], [class*="visuallyhidden" i], [class*="screen-reader"], [class*="offscreen" i]';
+
+/**
+ * True for text kept for screen readers and clipped out of view, such as
+ * "This row is clickable" after a balance. innerText keeps it, because it is
+ * rendered. It needs the class name and a box of a pixel or less, which is how
+ * such classes hide text.
+ */
+const isScreenReaderOnly = (el: HTMLElement): boolean => {
+  if (!el.isConnected) return false;
+  const position = getComputedStyle(el).position;
+  if (position !== "absolute" && position !== "fixed") return false;
+  const box = el.getBoundingClientRect();
+  return box.width <= 1 && box.height <= 1;
+};
+
+/**
+ * True for a cell the page hides while its row shows, such as a column kept
+ * for narrow screens. innerText returns the text of an element that is not
+ * rendered, so the hidden column would read as data. A collapsed table hides
+ * whole rows, which this leaves alone.
+ */
+const isHiddenCell = (cell: HTMLElement): boolean =>
+  (cell.tagName === "TD" || cell.tagName === "TH") &&
+  cell.isConnected &&
+  !cell.checkVisibility() &&
+  cell.parentElement?.checkVisibility() === true;
+
+/**
+ * True for a button whose whole text is a number, such as a price that opens
+ * a popover with its terms. The number is the cell's value, not a control.
+ */
+const holdsValue = (el: HTMLElement): boolean =>
+  el.matches("button, [role=button]") && parseNumber(el.textContent ?? "") !== null;
+
 const cellText = (cell: HTMLElement): string => {
+  if (isHiddenCell(cell)) return "";
   const noise =
     cell.firstElementChild === null
       ? []
       : [
-          ...cell.querySelectorAll<HTMLElement>(CONTROLS),
+          ...[...cell.querySelectorAll<HTMLElement>(CONTROLS)].filter((el) => !holdsValue(el)),
           ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation),
+          ...[...cell.querySelectorAll<HTMLElement>(SCREEN_READER_ONLY)].filter(isScreenReaderOnly),
         ];
   const text = noise.length === 0 ? textOf(cell) : textSkipping(cell, new Set(noise));
   return text.replace(/\s+/g, " ").trim();

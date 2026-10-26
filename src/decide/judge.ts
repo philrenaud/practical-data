@@ -36,6 +36,7 @@ import {
   pairQuestions,
   shareQuestion,
   categoricalState,
+  sumRows,
   orientationQuestion,
   tableState,
 } from "./questions.ts";
@@ -252,7 +253,10 @@ const judgeColumns = async (
     (ask, signal) => ask(signal),
   );
   const answers = tableAnswers!.answers;
-  const aggregateRows = aggregates.read(answers, policy.aggregate);
+  // A row whose numbers add up to the other rows is a total, whatever the model says about its label.
+  const aggregateRows = [
+    ...new Set([...aggregates.read(answers, policy.aggregate), ...sumRows(numeric, table.rows.length)]),
+  ].sort((a, b) => a - b);
   const excluded = new Set(aggregateRows);
   const plans = [
     ...numericPlans.map((plan) => ({ kind: "numeric" as const, ...plan, answers })),
