@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: numbers in buttons</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td button { font: inherit; border: 0; padding: 0; background: none; text-decoration: underline dotted; cursor: help; }
+  .unit { color: #777; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<h1>Numbers in buttons</h1>
+<p>
+  A price list can make a price a button that opens a popover with its terms.
+  The number in the button is the cell's value, so the extension reads it.
+  Buttons that are controls, such as Edit or show, are still left out.
+</p>
+
+<h2>Storage plans</h2>
+<!-- Some prices and units are popover buttons. Every price in Archive is a button. -->
+<table id="plans">
+  <thead><tr><th>Plan</th><th>Storage</th><th>Egress</th><th>Archive</th></tr></thead>
+  <tbody>
+    <tr><td>Starter</td><td>$4 <span class="unit">/ <button type="button" aria-haspopup="dialog">TB</button></span></td><td>$9 <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$0.40</button> <span class="unit">/ TB</span></td></tr>
+    <tr><td>Team</td><td>$6 <span class="unit">/ TB</span></td><td>$7 <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$0.60</button> <span class="unit">/ TB</span></td></tr>
+    <tr><td>Business</td><td>$10 <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$5</button> <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$1</button> <span class="unit">/ TB</span></td></tr>
+    <tr><td>Scale</td><td>$15 <span class="unit">/ TB</span></td><td>$4 <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$1.50</button> <span class="unit">/ TB</span></td></tr>
+    <tr><td>Enterprise</td><td>$24 <span class="unit">/ TB</span></td><td>$2 <span class="unit">/ TB</span></td><td><button type="button" aria-haspopup="dialog">$2.40</button> <span class="unit">/ TB</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Build runners</h2>
+<!-- Buttons here are controls. Their text must not reach the snapshot. -->
+<table id="runners">
+  <thead><tr><th>Runner</th><th>Queue time (s)</th><th>Jobs today</th><th>Actions</th></tr></thead>
+  <tbody>
+    <tr><td>linux-small</td><td>4 <button type="button">show</button></td><td>1,204</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>linux-large</td><td>11 <button type="button">show</button></td><td>388</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>mac-arm</td><td>36 <button type="button">show</button></td><td>142</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>windows</td><td>58 <button type="button">show</button></td><td>97</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>gpu</td><td>140 <button type="button">show</button></td><td>12</td><td><button type="button">Edit</button></td></tr>
+  </tbody>
+</table>
+</body>
+</html>
