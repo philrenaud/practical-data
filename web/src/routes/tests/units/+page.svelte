@@ -10,7 +10,7 @@
     "allowance.test.ts":
       "The free daily allowance as the reader sees it: the requests that remain, the reset time, and the text.",
     "judge.test.ts":
-      "The judge, with answers supplied by code. Code ignores identifiers and two-level labels. Shared scales. One failed table does not stop the other tables.",
+      "The judge, with answers supplied by code. Code ignores identifiers and two-level labels. Shared scales. Rows that sum the other rows are totals. One failed table does not stop the other tables.",
     "dates.test.ts":
       "Cell text to dates: calendar dates, months, times with offsets, and relative times such as 3 days ago. Day and month order for numeric dates. The text that must not become a date.",
     "flags.test.ts":
