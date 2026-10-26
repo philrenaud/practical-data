@@ -72,12 +72,19 @@ const textSkipping = (cell: HTMLElement, skip: ReadonlySet<Element>): string => 
   return out;
 };
 
+/**
+ * True for a button whose whole text is a number, such as a price that opens
+ * a popover with its terms. The number is the cell's value, not a control.
+ */
+const holdsValue = (el: HTMLElement): boolean =>
+  el.matches("button, [role=button]") && parseNumber(el.textContent ?? "") !== null;
+
 const cellText = (cell: HTMLElement): string => {
   const noise =
     cell.firstElementChild === null
       ? []
       : [
-          ...cell.querySelectorAll<HTMLElement>(CONTROLS),
+          ...[...cell.querySelectorAll<HTMLElement>(CONTROLS)].filter((el) => !holdsValue(el)),
           ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation),
         ];
   const text = noise.length === 0 ? textOf(cell) : textSkipping(cell, new Set(noise));
