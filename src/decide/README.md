@@ -98,7 +98,9 @@ A user's choice in `orientations` skips the question. Tables with more than
 filled cells look like dates. These columns never go to the model. `dateEncodings` parses them with
 `parseDateColumn` and encodes them as quantitative, neutral, and linear, from
 earliest to latest. Relative dates such as "3 days ago" count back from
-`now`. Date columns are never offered for shared scales.
+`now`. A weekday with a clock time and no date ("Sun 1:00 PM") is a time in
+a week, and the column's week starts after its longest gap, so a Thursday to
+Monday schedule reads in order. Date columns are never offered for shared scales.
 
 ## Shared scales
 

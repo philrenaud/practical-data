@@ -1,0 +1,180 @@
+{
+ "url": "fixture://synthetic/weekday-times.html",
+ "title": "Practical Data: weekday times",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Week 3 schedule",
+   "headers": [
+    "Time",
+    "Away",
+    "",
+    "@",
+    "",
+    "Home"
+   ],
+   "rows": [
+    [
+     "Sun 08:20PM",
+     "HBR",
+     "3",
+     "@",
+     "13",
+     "QRY"
+    ],
+    [
+     "Sun 09:30AM",
+     "FOX",
+     "16",
+     "@",
+     "10",
+     "OWL"
+    ],
+    [
+     "Sun 01:00PM",
+     "MIL",
+     "20",
+     "@",
+     "29",
+     "LNT"
+    ],
+    [
+     "Sun 01:00PM",
+     "GLS",
+     "27",
+     "@",
+     "24",
+     "WST"
+    ],
+    [
+     "Sun 01:00PM",
+     "FRN",
+     "10",
+     "@",
+     "16",
+     "PIK"
+    ],
+    [
+     "Sun 01:00PM",
+     "SLT",
+     "28",
+     "@",
+     "25",
+     "CPR"
+    ],
+    [
+     "Sun 01:00PM",
+     "NTH",
+     "43",
+     "@",
+     "13",
+     "BRM"
+    ],
+    [
+     "Sun 01:00PM",
+     "KST",
+     "35",
+     "@",
+     "13",
+     "ELM"
+    ],
+    [
+     "Sun 01:00PM",
+     "RVR",
+     "27",
+     "@",
+     "21",
+     "HLW"
+    ],
+    [
+     "Sun 04:05PM",
+     "BAY",
+     "30",
+     "@",
+     "16",
+     "MRS"
+    ],
+    [
+     "Sun 04:25PM",
+     "GTE",
+     "17",
+     "@",
+     "20",
+     "FRG"
+    ],
+    [
+     "Sun 04:25PM",
+     "STN",
+     "35",
+     "@",
+     "21",
+     "ASH"
+    ],
+    [
+     "Thu 08:15PM",
+     "OAK",
+     "24",
+     "@",
+     "30",
+     "WLF"
+    ],
+    [
+     "Mon 08:15PM",
+     "TDE",
+     "0",
+     "@",
+     "0",
+     "CLF"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Loading log",
+   "headers": [
+    "Logged",
+    "Bay",
+    "Pickup",
+    "Load time"
+   ],
+   "rows": [
+    [
+     "Mon, Feb 6, 2023, 3:04 PM",
+     "Dock A",
+     "7:05 PM",
+     "2:59"
+    ],
+    [
+     "Tue, Feb 7, 2023, 9:12 AM",
+     "Dock B",
+     "1:10 PM",
+     "3:41"
+    ],
+    [
+     "Wed, Feb 8, 2023, 11:30 AM",
+     "Dock A",
+     "6:40 PM",
+     "1:58"
+    ],
+    [
+     "Thu, Feb 9, 2023, 4:45 PM",
+     "Yard",
+     "12:35 PM",
+     "4:20"
+    ],
+    [
+     "Fri, Feb 10, 2023, 8:05 AM",
+     "Dock C",
+     "7:10 PM",
+     "2:15"
+    ],
+    [
+     "Sat, Feb 11, 2023, 2:20 PM",
+     "Yard",
+     "4:05 PM",
+     "3:02"
+    ]
+   ]
+  }
+ ]
+}

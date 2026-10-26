@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: weekday times</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<h1>Weekday times</h1>
+<p>
+  A league's weekly schedule can give each game a weekday and a kickoff time,
+  as in "Sun 1:00PM", without a date. The extension reads these as times in a
+  week and shades them from earliest to latest. The week starts after its
+  longest gap, so a Thursday game comes before the Sunday games and the Monday
+  game comes last.
+</p>
+
+<h2>Week 3 schedule</h2>
+<!-- Scores sit in two columns without headers, either side of "@". -->
+<table id="schedule">
+  <thead><tr><th align="left">Time</th><th align="center">Away</th><th align="right"></th><th align="center">@</th><th align="left"></th><th align="center">Home</th></tr></thead>
+  <tbody>
+    <tr><td>Sun 08:20PM</td><td>HBR</td><td>3</td><td>@</td><td>13</td><td>QRY</td></tr>
+    <tr><td>Sun 09:30AM</td><td>FOX</td><td>16</td><td>@</td><td>10</td><td>OWL</td></tr>
+    <tr><td>Sun 01:00PM</td><td>MIL</td><td>20</td><td>@</td><td>29</td><td>LNT</td></tr>
+    <tr><td>Sun 01:00PM</td><td>GLS</td><td>27</td><td>@</td><td>24</td><td>WST</td></tr>
+    <tr><td>Sun 01:00PM</td><td>FRN</td><td>10</td><td>@</td><td>16</td><td>PIK</td></tr>
+    <tr><td>Sun 01:00PM</td><td>SLT</td><td>28</td><td>@</td><td>25</td><td>CPR</td></tr>
+    <tr><td>Sun 01:00PM</td><td>NTH</td><td>43</td><td>@</td><td>13</td><td>BRM</td></tr>
+    <tr><td>Sun 01:00PM</td><td>KST</td><td>35</td><td>@</td><td>13</td><td>ELM</td></tr>
+    <tr><td>Sun 01:00PM</td><td>RVR</td><td>27</td><td>@</td><td>21</td><td>HLW</td></tr>
+    <tr><td>Sun 04:05PM</td><td>BAY</td><td>30</td><td>@</td><td>16</td><td>MRS</td></tr>
+    <tr><td>Sun 04:25PM</td><td>GTE</td><td>17</td><td>@</td><td>20</td><td>FRG</td></tr>
+    <tr><td>Sun 04:25PM</td><td>STN</td><td>35</td><td>@</td><td>21</td><td>ASH</td></tr>
+    <tr><td>Thu 08:15PM</td><td>OAK</td><td>24</td><td>@</td><td>30</td><td>WLF</td></tr>
+    <tr><td>Mon 08:15PM</td><td>TDE</td><td>0</td><td>@</td><td>0</td><td>CLF</td></tr>
+  </tbody>
+</table>
+
+<h2>Loading log</h2>
+<!-- Full dates with a weekday stay dates, and a clock time alone is not shaded. -->
+<table id="log">
+  <thead><tr><th>Logged</th><th>Bay</th><th>Pickup</th><th>Load time</th></tr></thead>
+  <tbody>
+    <tr><td>Mon, Feb 6, 2023, 3:04 PM</td><td>Dock A</td><td>7:05 PM</td><td>2:59</td></tr>
+    <tr><td>Tue, Feb 7, 2023, 9:12 AM</td><td>Dock B</td><td>1:10 PM</td><td>3:41</td></tr>
+    <tr><td>Wed, Feb 8, 2023, 11:30 AM</td><td>Dock A</td><td>6:40 PM</td><td>1:58</td></tr>
+    <tr><td>Thu, Feb 9, 2023, 4:45 PM</td><td>Yard</td><td>12:35 PM</td><td>4:20</td></tr>
+    <tr><td>Fri, Feb 10, 2023, 8:05 AM</td><td>Dock C</td><td>7:10 PM</td><td>2:15</td></tr>
+    <tr><td>Sat, Feb 11, 2023, 2:20 PM</td><td>Yard</td><td>4:05 PM</td><td>3:02</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
