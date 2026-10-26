@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: hidden text</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 960px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td.num { text-align: right; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .narrow-only { display: none; }
+  @media (max-width: 600px) { .narrow-only { display: table-cell; } .wide-only { display: none; } }
+  .badge { position: absolute; margin-left: 4px; font-size: 0.75em; color: #a40; }
+  td.rel { position: relative; }
+</style>
+</head>
+<body>
+<h1>Hidden text</h1>
+<p>
+  An account page can keep text for screen readers in each row ("This row is
+  clickable") and a column that only narrow screens show. The extension reads
+  what the page shows, so neither reaches the snapshot. Text that is visible,
+  even in a small positioned badge, is still read.
+</p>
+
+<h2>Card account</h2>
+<!-- A ledger: one column for narrow screens, and a clipped label in every balance cell. -->
+<table id="ledger">
+  <thead><tr><th>Date</th><th>Description</th><th class="narrow-only">Details</th><th class="wide-only">Withdrawals</th><th class="wide-only">Deposits</th><th class="narrow-only">Amount</th><th>Balance</th></tr></thead>
+  <tbody>
+    <tr><td>Oct 24, 2026</td><td>Grocery market</td><td class="narrow-only">Grocery market Oct 24, 2026</td><td class="num wide-only">$84.10</td><td class="num wide-only"></td><td class="narrow-only">-$84.10 $1,915.90</td><td class="num">$1,915.90<span class="visually-hidden">Open this row for details</span></td></tr>
+    <tr><td>Oct 22, 2026</td><td>Payroll deposit</td><td class="narrow-only">Payroll deposit Oct 22, 2026</td><td class="num wide-only"></td><td class="num wide-only">$2,400.00</td><td class="narrow-only">$2,400.00 $2,000.00</td><td class="num">$2,000.00<span class="visually-hidden">Open this row for details</span></td></tr>
+    <tr><td>Oct 20, 2026</td><td>Transit pass</td><td class="narrow-only">Transit pass Oct 20, 2026</td><td class="num wide-only">$120.00</td><td class="num wide-only"></td><td class="narrow-only">-$120.00 -$400.00</td><td class="num">-$400.00<span class="visually-hidden">Open this row for details</span></td></tr>
+    <tr><td>Oct 17, 2026</td><td>Rent</td><td class="narrow-only">Rent Oct 17, 2026</td><td class="num wide-only">$1,350.00</td><td class="num wide-only"></td><td class="narrow-only">-$1,350.00 -$280.00</td><td class="num">-$280.00<span class="visually-hidden">Open this row for details</span></td></tr>
+    <tr><td>Oct 15, 2026</td><td>Hardware store</td><td class="narrow-only">Hardware store Oct 15, 2026</td><td class="num wide-only">$46.75</td><td class="num wide-only"></td><td class="narrow-only">-$46.75 $1,070.00</td><td class="num">$1,070.00<span class="visually-hidden">Open this row for details</span></td></tr>
+    <tr><td>Oct 13, 2026</td><td>Refund</td><td class="narrow-only">Refund Oct 13, 2026</td><td class="num wide-only"></td><td class="num wide-only">$32.50</td><td class="narrow-only">$32.50 $1,116.75</td><td class="num">$1,116.75<span class="visually-hidden">Open this row for details</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Reading list</h2>
+<!-- A visible badge with position: absolute stays in the text. Nothing here is hidden. -->
+<table id="reading">
+  <thead><tr><th>Title</th><th>Pages</th><th>Rating</th></tr></thead>
+  <tbody>
+    <tr><td class="rel">The Salt Road<span class="badge">new</span></td><td>312</td><td>4.1</td></tr>
+    <tr><td>Quiet Engines</td><td>208</td><td>3.6</td></tr>
+    <tr><td>North of the River</td><td>455</td><td>4.4</td></tr>
+    <tr><td>Glass Harbor</td><td>176</td><td>3.2</td></tr>
+    <tr><td>The Long Field</td><td>389</td><td>4.0</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
