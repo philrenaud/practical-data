@@ -366,6 +366,37 @@ export const categoricalQuestions = (p: CategoricalProfile) => {
 export const aggregateCandidates = (rowCount: number): number[] =>
   rowCount < 5 ? [] : [...new Set([0, 1, rowCount - 2, rowCount - 1])];
 
+/** The fewest numeric columns whose sums must check out before code calls a row a total. */
+const MIN_SUM_COLUMNS = 2;
+
+/**
+ * Returns the first or the last row when its numbers are the sums of the
+ * other rows. A box score's team row often has no label that names it a
+ * total, but its numbers do. A column counts when the row and at least two
+ * other rows have values and the others do not sum to zero. At least
+ * `MIN_SUM_COLUMNS` columns must match, and they must be at least two thirds
+ * of the columns that count, so a jersey number or an average in one column
+ * does not hide the total.
+ */
+export const sumRows = (numeric: readonly NumericProfile[], rowCount: number): number[] =>
+  aggregateCandidates(rowCount)
+    .filter((r) => r === 0 || r === rowCount - 1)
+    .filter((r) => {
+      let matched = 0;
+      let counted = 0;
+      for (const p of numeric) {
+        const total = p.values[r];
+        const others = p.values.filter((v, i): v is number => i !== r && v !== null);
+        if (total === null || total === undefined || others.length < 2) continue;
+        const sum = others.reduce((a, b) => a + b, 0);
+        if (sum === 0) continue;
+        counted++;
+        // Cells are rounded for display, so allow half a percent.
+        if (Math.abs(total - sum) <= Math.max(1e-9, 0.005 * Math.abs(sum))) matched++;
+      }
+      return matched >= MIN_SUM_COLUMNS && matched * 3 >= counted * 2;
+    });
+
 /**
  * Returns one Noul per candidate row that asks whether the row summarizes the
  * other rows. `read` returns the rows at or above `threshold`.

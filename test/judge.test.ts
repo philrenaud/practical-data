@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DecisionError, type Answer, type DecisionModel, type DecisionRequest } from "../src/decide/model.ts";
 import { judgePage } from "../src/decide/judge.ts";
-import { followsRows } from "../src/decide/questions.ts";
+import { followsRows, sumRows } from "../src/decide/questions.ts";
 import type { NumericProfile } from "../src/core/profile.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
 
@@ -439,4 +439,45 @@ test("a shared ordinal scale too wide to reorder leaves each table its own order
     grades.slice(6).map((g) => g.toLowerCase()),
   );
   assert.equal(grade1.group, null);
+});
+
+test("a row whose numbers add up to the other rows is a total", () => {
+  const columns = (...cols: (number | null)[][]) => cols.map((values) => ({ values }) as unknown as NumericProfile);
+  // A box score: the last row sums each column, with no label to say so.
+  assert.deepEqual(sumRows(columns([5, 3, 2, 1, 11], [2, 1, 1, 0, 4], [0, 0, 1, 0, 1]), 5), [4]);
+  assert.deepEqual(sumRows(columns([11, 5, 3, 2, 1], [4, 2, 1, 1, 0]), 5), [0], "a total on top");
+  assert.deepEqual(
+    sumRows(columns([5, 3, 2, 1, 11], [2, 1, 1, 0, 4], [12, 7, 33, 81, 0]), 5),
+    [4],
+    "a jersey number does not hide the total",
+  );
+  assert.deepEqual(sumRows(columns([0.33, 0.33, 0.34, 1]), 4), [], "too few rows to ask about");
+  assert.deepEqual(sumRows(columns([1, 0, 0, 0, 1], [9, 7, 4, 2, 1]), 5), [], "one column adding up by chance");
+  assert.deepEqual(sumRows(columns([5, 3, 2, 1, 11], [2, 1, 1, 0, 1]), 5), [], "one column of two is not enough");
+  assert.deepEqual(sumRows(columns([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]), 5), [], "zeros prove nothing");
+});
+
+test("a total found by code is left out of the domain even when the model calls it an entry", async () => {
+  const box = pricing(
+    "t0",
+    ["Tackles", "Solo"],
+    [
+      ["9", "5"],
+      ["7", "4"],
+      ["4", "2"],
+      ["3", "1"],
+      ["1", "1"],
+      ["24", "13"],
+    ],
+  );
+  const model = scripted((id) => {
+    if (id.endsWith(".role")) return choice({ measure: 0.95, identifier: 0.05 });
+    if (id.endsWith(".polarity")) return choice({ higher_is_better: 0.9, neutral: 0.05, lower_is_better: 0.05 });
+    return { type: "noul", noul: 0 };
+  });
+  const t = (await judgePage(model, { ...page, tables: [box] })).tables[0]!;
+  assert.deepEqual(t.aggregateRows, [5]);
+  const tackles = t.encodings.find((e) => e.header === "Tackles");
+  assert.ok(tackles?.kind === "quantitative");
+  assert.deepEqual(tackles.domain, [1, 9]);
 });
