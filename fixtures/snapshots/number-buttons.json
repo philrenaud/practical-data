@@ -4,40 +4,40 @@
  "tables": [
   {
    "id": "t0",
-   "title": "Storage plans",
+   "title": "Storage by region",
    "headers": [
-    "Plan",
+    "Region",
     "Storage",
     "Egress",
     "Archive"
    ],
    "rows": [
     [
-     "Starter",
+     "Frankfurt",
      "$4 /",
      "$9 / TB",
      "$0.40 / TB"
     ],
     [
-     "Team",
+     "Oregon",
      "$6 / TB",
      "$7 / TB",
      "$0.60 / TB"
     ],
     [
-     "Business",
+     "Tokyo",
      "$10 / TB",
      "$5 / TB",
      "$1 / TB"
     ],
     [
-     "Scale",
+     "Sydney",
      "$15 / TB",
      "$4 / TB",
      "$1.50 / TB"
     ],
     [
-     "Enterprise",
+     "São Paulo",
      "$24 / TB",
      "$2 / TB",
      "$2.40 / TB"
