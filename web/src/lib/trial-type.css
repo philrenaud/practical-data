@@ -1,0 +1,181 @@
+/*
+ * Trial typography: Cambridge (Hoodzpah). Loaded only by the dev server, which
+ * serves the git-ignored trial files at /dev-fonts/ (see vite.config.ts).
+ * Builds and deploys never load this file and keep the tokens in app.css.
+ * When the font is licensed, move these rules into app.css and the files into
+ * static/ as woff2.
+ */
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-LightItalic.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-MediumItalic.otf") format("opentype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-SemiboldItalic.otf") format("opentype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge";
+  src: url("/dev-fonts/CambridgeTest-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedLight.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedRegular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedMedium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedSemibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cambridge Condensed";
+  src: url("/dev-fonts/CambridgeTest-CondensedBold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-text: "Cambridge", Georgia, serif;
+  --font-display: "Cambridge", Georgia, serif;
+  --font-label: "Cambridge Condensed", "Cambridge", Georgia, serif;
+}
+
+/*
+ * The static cuts stop at 700, and the site's grotesque weights (620-760) would
+ * all resolve to Bold. A serif needs less weight and less negative tracking.
+ */
+body {
+  font-size: 17px;
+  /* Cambridge defaults to old-style figures. Numbers on a data site should line up. */
+  font-variant-numeric: lining-nums;
+}
+h1 {
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.example h3,
+.steps h3,
+.open-points h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.stats dt {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.eyebrow,
+.segmented span,
+.why .col,
+.palettes label {
+  font-weight: 500;
+}
+.button,
+.text-button,
+.proof strong {
+  font-weight: 600;
+}
+.example caption {
+  font-size: 15px;
+}
+.example th {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.docs-main h1 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.docs-main h2 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}

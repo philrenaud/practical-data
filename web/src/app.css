@@ -10,6 +10,10 @@
   --hero: #16151a;
   --hero-ink: #f4f0e8;
   --radius: 14px;
+  /* Type. Display is for headings; label is for table captions and headers. */
+  --font-text: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-label: "Bricolage Grotesque", ui-sans-serif, sans-serif;
   color-scheme: light;
 }
 /* Dark theme when the system prefers dark and the toggle is not light, or when the toggle is dark. */
@@ -50,10 +54,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font:
-    16px/1.55 "Bricolage Grotesque",
-    ui-sans-serif,
-    sans-serif;
+  font: 16px/1.55 var(--font-text);
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
@@ -114,6 +115,11 @@ code {
     monospace;
   letter-spacing: 0;
   color: #a7a196;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 h1 {
   margin: 0;
@@ -333,9 +339,7 @@ main {
   caption-side: top;
   text-align: left;
   padding: 0 0 8px;
-  font:
-    600 14px "Bricolage Grotesque",
-    sans-serif;
+  font: 600 14px var(--font-label);
   color: var(--muted);
 }
 .example th,
@@ -347,9 +351,7 @@ main {
   vertical-align: top;
 }
 .example th {
-  font:
-    620 12.5px "Bricolage Grotesque",
-    sans-serif;
+  font: 620 12.5px var(--font-label);
   letter-spacing: 0.02em;
   color: var(--muted);
   background: var(--paper);
