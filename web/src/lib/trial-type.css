@@ -1,7 +1,8 @@
 /*
  * Trial typography: Cambridge (Hoodzpah). Loaded only by the dev server, which
  * serves the git-ignored trial files at /dev-fonts/ (see vite.config.ts).
- * Builds and deploys never load this file and keep the tokens in app.css.
+ * The font stacks in app.css name Cambridge first; without these @font-face
+ * rules, a build falls back to Bricolage Grotesque.
  * When the font is licensed, move these rules into app.css and the files into
  * static/ as woff2.
  */
@@ -116,12 +117,6 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-}
-
-:root {
-  --font-text: "Cambridge", Georgia, serif;
-  --font-display: "Cambridge", Georgia, serif;
-  --font-label: "Cambridge Condensed", "Cambridge", Georgia, serif;
 }
 
 /*

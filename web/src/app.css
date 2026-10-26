@@ -10,10 +10,16 @@
   --hero: #16151a;
   --hero-ink: #f4f0e8;
   --radius: 14px;
-  /* Type. Display is for headings; label is for table captions and headers. */
-  --font-text: "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-label: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  /*
+   * Type. Display is for headings; label is for table captions and headers;
+   * mono is for numbers, code, and the example tables. Cambridge is a trial:
+   * only the dev server loads its files (lib/trial-type.css), so a deploy
+   * falls back to Bricolage Grotesque until the font is licensed.
+   */
+  --font-text: "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-display: "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-label: "Cambridge Condensed", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: light;
 }
 /* Dark theme when the system prefers dark and the toggle is not light, or when the toggle is dark. */
@@ -64,10 +70,7 @@ a {
   text-underline-offset: 3px;
 }
 code {
-  font:
-    0.86em "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 0.86em var(--font-mono);
   background: color-mix(in srgb, var(--line) 60%, transparent);
   padding: 1px 5px;
   border-radius: 5px;
@@ -110,9 +113,7 @@ code {
   padding: 3px 9px;
   border-radius: 999px;
   border: 1px solid #3a3842;
-  font:
-    500 12px "IBM Plex Mono",
-    monospace;
+  font: 500 12px var(--font-mono);
   letter-spacing: 0;
   color: #a7a196;
 }
@@ -292,9 +293,7 @@ main {
   gap: 14px;
 }
 .index {
-  font:
-    500 13px "IBM Plex Mono",
-    monospace;
+  font: 500 13px var(--font-mono);
   color: var(--faint);
 }
 .example h3 {
@@ -311,9 +310,7 @@ main {
 .source {
   display: inline-block;
   margin-bottom: 18px;
-  font:
-    13px "IBM Plex Mono",
-    monospace;
+  font: 13px var(--font-mono);
   color: var(--faint);
 }
 
@@ -327,10 +324,7 @@ main {
   border-collapse: collapse;
   min-width: 100%;
   background: var(--paper);
-  font:
-    14px/1.4 "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 14px/1.4 var(--font-mono);
   font-variant-numeric: tabular-nums;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -406,9 +400,7 @@ main {
   white-space: nowrap;
 }
 .why .conf {
-  font:
-    12px "IBM Plex Mono",
-    monospace;
+  font: 12px var(--font-mono);
   color: var(--faint);
 }
 .why .agg {
@@ -446,9 +438,7 @@ h2 {
 }
 .steps > li::before {
   content: "0" counter(step);
-  font:
-    500 13px "IBM Plex Mono",
-    monospace;
+  font: 500 13px var(--font-mono);
   color: var(--faint);
 }
 .steps h3 {
@@ -562,10 +552,7 @@ h2 {
 .terminal code {
   background: none;
   padding: 0;
-  font:
-    14px/1.75 "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 14px/1.75 var(--font-mono);
   color: #e8e4dc;
 }
 .terminal .prompt {

@@ -3,7 +3,7 @@
   --pass: #2a7d57;
   --known: #9a5f0c;
   --fail: #b8323f;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --mono: var(--font-mono);
   --sans: var(--font-label);
   min-height: 100vh;
 }
