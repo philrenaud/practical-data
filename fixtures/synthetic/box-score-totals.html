@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: box score totals</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  .split { display: flex; gap: 0; align-items: flex-start; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .split td, .split th { height: 22px; }
+  .stats td { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Box score totals</h1>
+<p>
+  A box score can put the player names in one table and the numbers in a
+  second table beside it. The last row of the numbers is the team total, with
+  no label in that table. Its numbers add up to the rows above, so the
+  extension leaves it out of the color scale. The standings below end with an
+  ordinary row, which stays on the scale.
+</p>
+
+<h2>Harbor City defense</h2>
+<div class="split">
+  <!-- The names, laid out beside the numbers. -->
+  <table id="names">
+    <thead><tr><th>Player</th></tr></thead>
+    <tbody>
+      <tr><td>R. Okafor LB</td></tr>
+      <tr><td>D. Lindqvist S</td></tr>
+      <tr><td>T. Marsh CB</td></tr>
+      <tr><td>J. Abara DE</td></tr>
+      <tr><td>K. Whitfield LB</td></tr>
+      <tr><td>P. Novak DT</td></tr>
+      <tr><td>A. Reyes CB</td></tr>
+      <tr><td>TEAM</td></tr>
+    </tbody>
+  </table>
+  <!-- The numbers. The last row is the sum of the rows above it. -->
+  <table id="defense" class="stats">
+    <thead><tr><th colspan="3">Tackles</th><th colspan="2">Misc</th></tr><tr><th>TOT</th><th>SOLO</th><th>SACKS</th><th>PD</th><th>QB HTS</th></tr></thead>
+    <tbody>
+      <tr><td>12</td><td>7</td><td>0</td><td>1</td><td>0</td></tr>
+      <tr><td>9</td><td>6</td><td>0</td><td>2</td><td>0</td></tr>
+      <tr><td>6</td><td>5</td><td>0</td><td>3</td><td>0</td></tr>
+      <tr><td>5</td><td>3</td><td>2</td><td>0</td><td>3</td></tr>
+      <tr><td>4</td><td>2</td><td>0</td><td>0</td><td>1</td></tr>
+      <tr><td>3</td><td>1</td><td>1</td><td>0</td><td>2</td></tr>
+      <tr><td>2</td><td>2</td><td>0</td><td>1</td><td>0</td></tr>
+      <tr><td>41</td><td>26</td><td>3</td><td>7</td><td>6</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Division standings</h2>
+<!-- The last row is a team, not a total. It must stay on the scale. -->
+<table id="standings">
+  <thead><tr><th>Team</th><th>W</th><th>L</th><th>Points for</th><th>Points against</th></tr></thead>
+  <tbody>
+    <tr><td>Harbor City</td><td>6</td><td>1</td><td>184</td><td>121</td></tr>
+    <tr><td>North Vale</td><td>5</td><td>2</td><td>170</td><td>139</td></tr>
+    <tr><td>Westbrook</td><td>3</td><td>4</td><td>142</td><td>150</td></tr>
+    <tr><td>Elm Park</td><td>2</td><td>5</td><td>131</td><td>176</td></tr>
+    <tr><td>Southgate</td><td>1</td><td>6</td><td>110</td><td>201</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

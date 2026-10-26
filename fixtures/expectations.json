@@ -491,6 +491,19 @@
       "Actions": "none"
     }
   },
+  "box-score-totals": {
+    "t1": {
+      "aggregateRows": [7],
+      "Tackles: TOT": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Tackles: SOLO": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t2": {
+      "aggregateRows": [],
+      "Team": "none",
+      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    }
+  },
   "hidden-text": {
     "t0": {
       "Description": "none",
