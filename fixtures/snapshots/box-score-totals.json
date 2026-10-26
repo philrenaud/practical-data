@@ -1,0 +1,123 @@
+{
+ "url": "fixture://synthetic/box-score-totals.html",
+ "title": "Practical Data: box score totals",
+ "tables": [
+  {
+   "id": "t1",
+   "title": "Harbor City defense",
+   "headers": [
+    "Tackles: TOT",
+    "Tackles: SOLO",
+    "Tackles: SACKS",
+    "Misc: PD",
+    "Misc: QB HTS"
+   ],
+   "rows": [
+    [
+     "12",
+     "7",
+     "0",
+     "1",
+     "0"
+    ],
+    [
+     "9",
+     "6",
+     "0",
+     "2",
+     "0"
+    ],
+    [
+     "6",
+     "5",
+     "0",
+     "3",
+     "0"
+    ],
+    [
+     "5",
+     "3",
+     "2",
+     "0",
+     "3"
+    ],
+    [
+     "4",
+     "2",
+     "0",
+     "0",
+     "1"
+    ],
+    [
+     "3",
+     "1",
+     "1",
+     "0",
+     "2"
+    ],
+    [
+     "2",
+     "2",
+     "0",
+     "1",
+     "0"
+    ],
+    [
+     "41",
+     "26",
+     "3",
+     "7",
+     "6"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Division standings",
+   "headers": [
+    "Team",
+    "W",
+    "L",
+    "Points for",
+    "Points against"
+   ],
+   "rows": [
+    [
+     "Harbor City",
+     "6",
+     "1",
+     "184",
+     "121"
+    ],
+    [
+     "North Vale",
+     "5",
+     "2",
+     "170",
+     "139"
+    ],
+    [
+     "Westbrook",
+     "3",
+     "4",
+     "142",
+     "150"
+    ],
+    [
+     "Elm Park",
+     "2",
+     "5",
+     "131",
+     "176"
+    ],
+    [
+     "Southgate",
+     "1",
+     "6",
+     "110",
+     "201"
+    ]
+   ]
+  }
+ ]
+}
