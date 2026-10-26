@@ -206,9 +206,15 @@ const parseRange = (text: string): ParsedNumber | null => {
   return null;
 };
 
+/** A signed change after a value, as in "740 (-16)" or "2.4% (+0.3%)". The sign is required. */
+const CHANGE_RE = /^(.*\S)\s+\(\s*[+\-−±]\s*\d[\d,.]*\s*%?\s*\)$/;
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
+  // A value followed by its change: the value is the cell's number.
+  const change = CHANGE_RE.exec(text);
+  if (change?.[1] !== undefined) return parseNumber(change[1]);
   // Open-ended bins: "65+".
   const plus = /^(.*\d)\s*\+$/.exec(text);
   if (plus?.[1] !== undefined) {

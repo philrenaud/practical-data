@@ -1,0 +1,114 @@
+{
+ "url": "fixture://synthetic/value-with-change.html",
+ "title": "Practical Data: values with a change",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Club ladder",
+   "headers": [
+    "Rank",
+    "Club",
+    "Captain",
+    "Rating (+-)"
+   ],
+   "rows": [
+    [
+     "1",
+     "Harbor Owls",
+     "Imogen",
+     "812 (-11)"
+    ],
+    [
+     "2",
+     "Copper Foxes",
+     "Teodor",
+     "790 (+24)"
+    ],
+    [
+     "3",
+     "Lantern Bay",
+     "Priya",
+     "744 (+3)"
+    ],
+    [
+     "4",
+     "North Quarry",
+     "Malik",
+     "731 (-18)"
+    ],
+    [
+     "5",
+     "Saltmarsh",
+     "Ottilie",
+     "702 (+6)"
+    ],
+    [
+     "6",
+     "Glass Street",
+     "Ren",
+     "671 (-2)"
+    ],
+    [
+     "7",
+     "Pike & Reed",
+     "Bettina",
+     "655 (+12)"
+    ],
+    [
+     "8",
+     "Old Mill",
+     "Casimir",
+     "630 (-7)"
+    ],
+    [
+     "9",
+     "Westgate",
+     "Noor",
+     "604 (+1)"
+    ],
+    [
+     "10",
+     "Fernhill",
+     "Duncan",
+     "577 (-9)"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Shelter intake",
+   "headers": [
+    "Shelter",
+    "Animals (of which puppies)",
+    "Adoptions this month"
+   ],
+   "rows": [
+    [
+     "Riverside",
+     "42 (6)",
+     "18"
+    ],
+    [
+     "Elm Park",
+     "35 (11)",
+     "9"
+    ],
+    [
+     "Hollow Lane",
+     "28 (2)",
+     "14"
+    ],
+    [
+     "Kestrel Road",
+     "51 (9)",
+     "22"
+    ],
+    [
+     "Bramble Court",
+     "19 (4)",
+     "6"
+    ]
+   ]
+  }
+ ]
+}

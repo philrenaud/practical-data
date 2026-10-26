@@ -76,3 +76,13 @@ test("clock-like durations are numbers; times of day stay dates", () => {
 test("a unit that names an Object.prototype member is a unit, not a magnitude", () => {
   assert.deepEqual(parseNumber("5 constructor"), { value: 5, unit: "constructor", bound: false, range: null });
 });
+
+test("a value followed by a signed change parses as the value", () => {
+  assert.deepEqual(parseNumber("740 (-16)"), { value: 740, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("683 (+47)"), { value: 683, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("2.4% (+0.3%)"), { value: 2.4, unit: "%", bound: false, range: null });
+  // Without a sign the parenthesis is not a change, and accounting negatives still parse.
+  assert.equal(parseNumber("45 (12)"), null);
+  assert.equal(parseNumber("Team (+3)"), null);
+  assert.deepEqual(parseNumber("($3.00)"), { value: -3, unit: "$", bound: false, range: null });
+});
