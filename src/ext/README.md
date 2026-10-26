@@ -185,7 +185,11 @@ the original markup. It also runs these scenarios:
 - **popup**: the page and site switches.
 
 Without `--offline`, API calls go live and need `TYPESAFE_API_KEY`. Use
-`--headed` to watch, and `--only <name>` to run matching pages.
+`--headed` to watch, and `--only <name>` to run matching pages. When
+`HTTPS_PROXY` is set, as in a sandbox that adds the key in a proxy,
+Chromium sends live calls through it; Chromium does not read that variable
+itself. Node's `fetch` in `npm run eval` needs `NODE_USE_ENV_PROXY=1` for
+the same reason.
 
 ## Design decisions
 

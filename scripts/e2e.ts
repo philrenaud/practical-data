@@ -26,7 +26,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { chromium, type BrowserContext, type Page, type Route } from "playwright";
-import { EXTENSION_ARGS, fixturePages, serve } from "./serve.ts";
+import { EXTENSION_ARGS, PAGE_HOST, fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -43,6 +43,16 @@ if (!args.offline && apiKey === "") throw new Error("TYPESAFE_API_KEY is require
 const { pagesUrl: base, url: loopback, server } = await serve("fixtures");
 await mkdir("artifacts/screens", { recursive: true });
 
+/**
+ * The proxy for live API calls, when the environment sets one. Chromium ignores
+ * HTTPS_PROXY, so `route.fetch()` would skip a proxy that a sandbox requires.
+ * The fixture server stays direct.
+ */
+const proxy =
+  process.env["HTTPS_PROXY"] === undefined || process.env["HTTPS_PROXY"] === ""
+    ? undefined
+    : { server: process.env["HTTPS_PROXY"], bypass: `127.0.0.1,localhost,${PAGE_HOST}` };
+
 /** Starts Chromium with dist/ loaded in a fresh profile. */
 const launch = async (): Promise<BrowserContext> => {
   const context = await chromium.launchPersistentContext("", {
@@ -50,6 +60,7 @@ const launch = async (): Promise<BrowserContext> => {
     headless: !args.headed,
     viewport: { width: 1360, height: 900 },
     args: EXTENSION_ARGS,
+    ...(proxy === undefined ? {} : { proxy }),
   });
   await context.route("**/*", routeRequest);
   return context;
