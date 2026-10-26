@@ -1,0 +1,111 @@
+{
+ "url": "fixture://synthetic/hidden-text.html",
+ "title": "Practical Data: hidden text",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Card account",
+   "headers": [
+    "Date",
+    "Description",
+    "",
+    "Withdrawals",
+    "Deposits",
+    "",
+    "Balance"
+   ],
+   "rows": [
+    [
+     "Oct 24, 2026",
+     "Grocery market",
+     "",
+     "$84.10",
+     "",
+     "",
+     "$1,915.90"
+    ],
+    [
+     "Oct 22, 2026",
+     "Payroll deposit",
+     "",
+     "",
+     "$2,400.00",
+     "",
+     "$2,000.00"
+    ],
+    [
+     "Oct 20, 2026",
+     "Transit pass",
+     "",
+     "$120.00",
+     "",
+     "",
+     "-$400.00"
+    ],
+    [
+     "Oct 17, 2026",
+     "Rent",
+     "",
+     "$1,350.00",
+     "",
+     "",
+     "-$280.00"
+    ],
+    [
+     "Oct 15, 2026",
+     "Hardware store",
+     "",
+     "$46.75",
+     "",
+     "",
+     "$1,070.00"
+    ],
+    [
+     "Oct 13, 2026",
+     "Refund",
+     "",
+     "",
+     "$32.50",
+     "",
+     "$1,116.75"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Reading list",
+   "headers": [
+    "Title",
+    "Pages",
+    "Rating"
+   ],
+   "rows": [
+    [
+     "The Salt Road new",
+     "312",
+     "4.1"
+    ],
+    [
+     "Quiet Engines",
+     "208",
+     "3.6"
+    ],
+    [
+     "North of the River",
+     "455",
+     "4.4"
+    ],
+    [
+     "Glass Harbor",
+     "176",
+     "3.2"
+    ],
+    [
+     "The Long Field",
+     "389",
+     "4.0"
+    ]
+   ]
+  }
+ ]
+}
