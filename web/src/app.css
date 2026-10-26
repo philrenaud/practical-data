@@ -1,3 +1,38 @@
+/*
+ * Digits: IBM Plex Mono's 0-9, first in the text stacks, so every numeral on
+ * the site is set in Plex without wrapping it in an element. unicode-range
+ * limits the face to digits; every other character falls through to the next
+ * font. The files are unmodified Plex Mono (OFL, static/fonts/).
+ */
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-300.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
 :root {
   --bg: #f4f0e8;
   --paper: #fffdf8;
@@ -16,9 +51,9 @@
    * only the dev server loads its files (lib/trial-type.css), so a deploy
    * falls back to Bricolage Grotesque until the font is licensed.
    */
-  --font-text: "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-display: "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-label: "Cambridge Condensed", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-text: "Digits", "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-display: "Digits", "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-label: "Digits", "Cambridge Condensed", "Bricolage Grotesque", ui-sans-serif, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: light;
 }

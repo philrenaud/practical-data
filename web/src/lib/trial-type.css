@@ -123,25 +123,27 @@
  * The static cuts stop at 700, and the site's grotesque weights (620-760) would
  * all resolve to Bold. A serif needs less weight and less negative tracking.
  */
+/* Cambridge Regular reads light in running text; Medium holds up on both themes. */
 body {
   font-size: 17px;
-  /* Cambridge defaults to old-style figures. Numbers on a data site should line up. */
-  font-variant-numeric: lining-nums;
+  font-weight: 500;
 }
-h1 {
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-}
-h2 {
-  font-weight: 600;
-  letter-spacing: -0.015em;
-}
+h1,
+h2,
+h3,
 .example h3,
 .steps h3,
-.open-points h3 {
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.open h2,
+.open-points h3,
+.docs-main h1,
+.docs-main h2 {
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  /* Tight tracking closes word spaces too; give them back. */
+  word-spacing: 0.08em;
+}
+h1 {
+  line-height: 1.02;
 }
 .stats dt {
   font-weight: 600;
@@ -165,12 +167,4 @@ h2 {
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.01em;
-}
-.docs-main h1 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.docs-main h2 {
-  font-weight: 600;
-  letter-spacing: -0.01em;
 }
