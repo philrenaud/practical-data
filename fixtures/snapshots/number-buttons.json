@@ -1,0 +1,90 @@
+{
+ "url": "fixture://synthetic/number-buttons.html",
+ "title": "Practical Data: numbers in buttons",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Storage by region",
+   "headers": [
+    "Region",
+    "Storage",
+    "Egress",
+    "Archive"
+   ],
+   "rows": [
+    [
+     "Frankfurt",
+     "$4 /",
+     "$9 / TB",
+     "$0.40 / TB"
+    ],
+    [
+     "Oregon",
+     "$6 / TB",
+     "$7 / TB",
+     "$0.60 / TB"
+    ],
+    [
+     "Tokyo",
+     "$10 / TB",
+     "$5 / TB",
+     "$1 / TB"
+    ],
+    [
+     "Sydney",
+     "$15 / TB",
+     "$4 / TB",
+     "$1.50 / TB"
+    ],
+    [
+     "São Paulo",
+     "$24 / TB",
+     "$2 / TB",
+     "$2.40 / TB"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Build runners",
+   "headers": [
+    "Runner",
+    "Queue time (s)",
+    "Jobs today",
+    "Actions"
+   ],
+   "rows": [
+    [
+     "linux-small",
+     "4",
+     "1,204",
+     ""
+    ],
+    [
+     "linux-large",
+     "11",
+     "388",
+     ""
+    ],
+    [
+     "mac-arm",
+     "36",
+     "142",
+     ""
+    ],
+    [
+     "windows",
+     "58",
+     "97",
+     ""
+    ],
+    [
+     "gpu",
+     "140",
+     "12",
+     ""
+    ]
+   ]
+  }
+ ]
+}
