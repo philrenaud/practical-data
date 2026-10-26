@@ -476,5 +476,17 @@
       "CPU %": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
       "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
+  },
+  "hidden-text": {
+    "t0": {
+      "Description": "none",
+      "Withdrawals": { "kind": "quantitative" },
+      "Balance": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    },
+    "t1": {
+      "Title": "none",
+      "Pages": { "kind": "quantitative" },
+      "Rating": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    }
   }
 }
