@@ -101,3 +101,26 @@ test("a date column reads as dates, earliest to latest", () => {
   const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
   assert.deepEqual({ status, lo, hi }, { status: "Dates · Earliest to latest", lo: "Dec 1993", hi: "Jun 2001" });
 });
+
+test("a column of times without dates reads as times", () => {
+  const MONDAY = 4 * 86_400_000;
+  const e: ColumnEncoding = {
+    kind: "quantitative",
+    col: 0,
+    header: "Kickoff",
+    polarity: "neutral",
+    transform: "linear",
+    unit: "weektime",
+    domain: [MONDAY + 3 * 86_400_000 + 20.25 * 3_600_000, MONDAY + 7 * 86_400_000 + 20.25 * 3_600_000],
+    values: [],
+    group: null,
+    evidence: {
+      comparable: 1,
+      polarity: { higher_is_better: 0, lower_is_better: 0, neutral: 1 },
+      log: null,
+      orderConfidence: null,
+    },
+  };
+  const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
+  assert.deepEqual({ status, lo, hi }, { status: "Times · Earliest to latest", lo: "Thu 8:15 PM", hi: "Mon 8:15 PM" });
+});

@@ -69,7 +69,7 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
     const [lo, hi] = e.domain;
     const log = e.transform === "log" && lo > 0;
     status = isDateUnit(e.unit)
-      ? "Dates · Earliest to latest"
+      ? `${e.unit === "weektime" ? "Times" : "Dates"} · Earliest to latest`
       : `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
   } else {

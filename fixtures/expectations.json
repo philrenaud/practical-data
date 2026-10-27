@@ -515,5 +515,18 @@
       "Pages": { "kind": "quantitative" },
       "Rating": { "kind": "quantitative", "polarity": ["higher_is_better"] }
     }
+  },
+  "weekday-times": {
+    "t0": {
+      "Time": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Away": "none",
+      "@": "none",
+      "Home": "none"
+    },
+    "t1": {
+      "Logged": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Bay": "none",
+      "Pickup": "none"
+    }
   }
 }
