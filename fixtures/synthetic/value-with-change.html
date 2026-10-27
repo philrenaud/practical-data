@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: values with a change</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .delta { color: #777; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<h1>Values with a change</h1>
+<p>
+  A league table can print a rating with its change since last week, as in
+  "712 (+9)". The number before the parenthesis is the cell's value, so the
+  extension reads it. A parenthesis without a sign is not a change and stays text.
+</p>
+
+<h2>Club ladder</h2>
+<!-- Rating cells carry a signed weekly change in parentheses. -->
+<table id="ladder">
+  <thead><tr><th>Rank</th><th>Club</th><th>Captain</th><th>Rating (+-)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Harbor Owls</td><td>Imogen</td><td>812 <span class="delta">(-11)</span></td></tr>
+    <tr><td>2</td><td>Copper Foxes</td><td>Teodor</td><td>790 <span class="delta">(+24)</span></td></tr>
+    <tr><td>3</td><td>Lantern Bay</td><td>Priya</td><td>744 <span class="delta">(+3)</span></td></tr>
+    <tr><td>4</td><td>North Quarry</td><td>Malik</td><td>731 <span class="delta">(-18)</span></td></tr>
+    <tr><td>5</td><td>Saltmarsh</td><td>Ottilie</td><td>702 <span class="delta">(+6)</span></td></tr>
+    <tr><td>6</td><td>Glass Street</td><td>Ren</td><td>671 <span class="delta">(-2)</span></td></tr>
+    <tr><td>7</td><td>Pike &amp; Reed</td><td>Bettina</td><td>655 <span class="delta">(+12)</span></td></tr>
+    <tr><td>8</td><td>Old Mill</td><td>Casimir</td><td>630 <span class="delta">(-7)</span></td></tr>
+    <tr><td>9</td><td>Westgate</td><td>Noor</td><td>604 <span class="delta">(+1)</span></td></tr>
+    <tr><td>10</td><td>Fernhill</td><td>Duncan</td><td>577 <span class="delta">(-9)</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Shelter intake</h2>
+<!-- Unsigned parentheses are counts of something else, not a change. The Animals column stays text. -->
+<table id="intake">
+  <thead><tr><th>Shelter</th><th>Animals (of which puppies)</th><th>Adoptions this month</th></tr></thead>
+  <tbody>
+    <tr><td>Riverside</td><td>42 (6)</td><td>18</td></tr>
+    <tr><td>Elm Park</td><td>35 (11)</td><td>9</td></tr>
+    <tr><td>Hollow Lane</td><td>28 (2)</td><td>14</td></tr>
+    <tr><td>Kestrel Road</td><td>51 (9)</td><td>22</td></tr>
+    <tr><td>Bramble Court</td><td>19 (4)</td><td>6</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

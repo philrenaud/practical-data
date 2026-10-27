@@ -477,6 +477,19 @@
       "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
   },
+  "value-with-change": {
+    "t0": {
+      "Rank": "none",
+      "Club": "none",
+      "Captain": "none",
+      "Rating (+-)": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t1": {
+      "Shelter": "none",
+      "Animals (of which puppies)": "none",
+      "Adoptions this month": { "kind": "quantitative" }
+    }
+  },
   "number-buttons": {
     "t0": {
       "Region": "none",
