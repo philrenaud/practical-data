@@ -207,6 +207,25 @@ const looksLikeData = (grid: readonly (readonly HTMLTableCellElement[])[], width
   return true;
 };
 
+/**
+ * True when one cell spans the row, or all of it but a leading empty cell.
+ * Each slot must hold a cell, and the spanning cell must have text.
+ */
+const isSpanningLabel = (row: readonly (HTMLTableCellElement | undefined)[], width: number): boolean => {
+  const cells = [...new Set(row.slice(0, width))];
+  if (cells.length === 1) return true;
+  const [first, label] = cells;
+  return (
+    cells.length === 2 &&
+    first !== undefined &&
+    label !== undefined &&
+    row[0] === first &&
+    first.colSpan <= 1 &&
+    cellText(first) === "" &&
+    cellText(label) !== ""
+  );
+};
+
 const isHeaderRow = (row: HTMLTableRowElement): boolean =>
   row.parentElement?.tagName === "THEAD" ||
   (row.cells.length > 0 && Array.from(row.cells).every((c) => c.tagName === "TH"));
@@ -302,8 +321,10 @@ export const extractTable = (
     const row = rows[r]!;
     const g = grid[r]!;
     if (row.parentElement?.tagName === "TFOOT") continue;
-    // Skip section labels, which are one cell that spans the row.
-    if (new Set(g).size === 1 && width > 2) continue;
+    // Skip section labels, which are one cell that spans the row. Wikipedia's
+    // election boxes end with a note ("Party hold") that spans all but an
+    // empty color swatch.
+    if (width > 2 && isSpanningLabel(g, width)) continue;
     if (!isFull(g, width)) continue;
     const cellsInRow = g.slice(0, width);
     const text = cellsInRow.map((cell) => cellText(cell));

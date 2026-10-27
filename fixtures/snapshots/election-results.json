@@ -1,0 +1,100 @@
+{
+ "url": "fixture://synthetic/election-results.html",
+ "title": "Practical Data: election results",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Lakeshore's 3rd district, 2022",
+   "headers": [
+    "Party",
+    "Party",
+    "Candidate",
+    "Votes",
+    "%"
+   ],
+   "rows": [
+    [
+     "",
+     "Harbor",
+     "Mara Velasquez",
+     "142,318",
+     "58.42%"
+    ],
+    [
+     "",
+     "Ridge",
+     "Tobias Kern",
+     "101,284",
+     "41.58%"
+    ],
+    [
+     "Total votes",
+     "Total votes",
+     "Total votes",
+     "243,602",
+     "100%"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Lakeshore's 3rd district, 2024",
+   "headers": [
+    "Primary election: Party",
+    "Primary election: Party",
+    "Primary election: Candidate",
+    "Primary election: Votes",
+    "Primary election: %"
+   ],
+   "rows": [
+    [
+     "",
+     "Harbor",
+     "Mara Velasquez (incumbent)",
+     "28,740",
+     "64.18%"
+    ],
+    [
+     "",
+     "Harbor",
+     "Odile Brandt",
+     "16,040",
+     "35.82%"
+    ],
+    [
+     "Total votes",
+     "Total votes",
+     "Total votes",
+     "44,780",
+     "100%"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Plans",
+   "headers": [
+    "Plan",
+    "Seats",
+    "Price per month ($)"
+   ],
+   "rows": [
+    [
+     "Starter",
+     "3",
+     "12"
+    ],
+    [
+     "Team",
+     "10",
+     "29"
+    ],
+    [
+     "Business",
+     "25",
+     "79"
+    ]
+   ]
+  }
+ ]
+}
