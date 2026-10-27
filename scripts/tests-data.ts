@@ -326,6 +326,7 @@ const PARSE_EXAMPLES = [
   "July 16–22, 2021",
   "Jan 15, 1967 (1966)",
   "7:05 PM",
+  "Sun 8:20 PM",
 ];
 const DATE_FORM: Readonly<Record<DatePrecision, DateUnit>> = {
   month: "month",
@@ -341,7 +342,10 @@ const parsing = PARSE_EXAMPLES.map((input) => {
     input,
     missing: isMissing(input),
     date: date !== null || isDateLike(input),
-    when: date === null ? null : formatDate(date.time, date.yearless ? "monthday" : DATE_FORM[date.precision], now),
+    when:
+      date === null
+        ? null
+        : formatDate(date.time, date.weekly ? "weektime" : date.yearless ? "monthday" : DATE_FORM[date.precision], now),
     // A date is never also a number ("3 days ago" is not 3 days).
     parsed: date === null && !isDateLike(input) ? parseNumber(input) : null,
   };

@@ -5,7 +5,9 @@
  * times ("3 days ago", "yesterday") both become instants, so a column can
  * shade from earliest to latest. Like parse.ts, the parser is conservative. A
  * year alone or a season ("2010-11") returns null. A month and day without a
- * year ("Feb 6") gets its year from the column (see parseDateColumn).
+ * year ("Feb 6") gets its year from the column (see parseDateColumn). A clock
+ * time after a weekday ("Sun 8:20 PM") is a time in a week. A clock time
+ * alone ("7:05 PM") returns null.
  *
  * Times without an offset are read as UTC. Every cell in a column is read the
  * same way, so the order of the cells is still correct.
@@ -20,12 +22,14 @@ export interface ParsedDate {
   readonly precision: DatePrecision;
   /** True when written without a year ("Feb 6"). Then `time` is in `DateOptions.year`. */
   readonly yearless?: true;
+  /** True for a weekday and a time without a date ("Sun 8:20 PM"). Then `time` is in the week of Monday, Jan 5, 1970. */
+  readonly weekly?: true;
 }
 
 /** The legend format of a date column. It is the coarsest format that tells every value apart. */
-export type DateUnit = "month" | "date" | "monthday" | "datetime" | "ago";
+export type DateUnit = "month" | "date" | "monthday" | "datetime" | "ago" | "weektime";
 
-export const DATE_UNITS: readonly DateUnit[] = ["month", "date", "monthday", "datetime", "ago"];
+export const DATE_UNITS: readonly DateUnit[] = ["month", "date", "monthday", "datetime", "ago", "weektime"];
 export const isDateUnit = (unit: string | null): unit is DateUnit => DATE_UNITS.includes(unit as DateUnit);
 
 /** Day and month order for numeric dates ("9/10/2026"). */
@@ -44,6 +48,9 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+const WEEK = 7 * DAY;
+/** Monday, Jan 5, 1970. A weekday time counts from it, so a legend can format it as a date. */
+const MONDAY = 4 * DAY;
 /** Mean Gregorian lengths. "1 month ago" is a span, not a calendar step. */
 const YEAR = 365.2425 * DAY;
 const MONTH_SPAN = YEAR / 12;
@@ -69,6 +76,25 @@ const monthOf = (word: string): number | null => {
   if (w.length < 3) return null;
   const i = MONTHS.findIndex((m) => m.startsWith(w) || (w === "sept" && m === "september"));
   return i === -1 ? null : i + 1;
+};
+
+const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+/** The 0-based weekday, from Monday, of "Sun", "Thurs", or "tuesday". Null for any other word ("Sunny"). */
+const weekdayOf = (word: string): number | null => {
+  if (word.length < 3) return null;
+  const i = WEEKDAYS.findIndex((d) => d.startsWith(word));
+  return i === -1 ? null : i;
+};
+
+/** The 24-hour hour of a clock reading, or null when it names no hour ("13 pm", "25:00"). */
+const hourOf = (hh: string, meridiem: string | undefined): number | null => {
+  let h = Number(hh);
+  if (meridiem !== undefined) {
+    if (h < 1 || h > 12) return null;
+    h = (h % 12) + (meridiem.startsWith("p") ? 12 : 0);
+  }
+  return h > 23 ? null : h;
 };
 
 /** UTC instant, or null when the parts name no real day (Feb 30). */
@@ -114,6 +140,8 @@ const NUMERIC = /^(\d{1,2})([/.])(\d{1,2})\2(\d{2}|\d{4})$|^(\d{1,2})-(\d{1,2})-
 const TIME =
   /(?:,\s*|\s+at\s+|\s+)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?:\s*(z|utc|gmt|[+-]\d{2}:?\d{2}))?$/;
 const WEEKDAY = /^(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\.?,?\s+/;
+/** A weekday and a clock time without a date: "Sun 08:20PM", "thurs. 19:30". */
+const WEEKDAY_TIME = /^([a-z]+)\.?,?\s+(\d{1,2}):([0-5]\d)(?::([0-5]\d))?\s*(am|pm|a\.m\.|p\.m\.)?$/;
 
 const UNIT_SPAN: readonly (readonly [RegExp, number])[] = [
   [/^(?:s|secs?|seconds?)$/, SECOND],
@@ -187,7 +215,7 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
     const leftMonth = [...left.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
     const end =
       parseOne(right, options) ?? (leftMonth === undefined ? null : parseOne(`${leftMonth} ${right}`, options));
-    if (end === null || end.precision === "relative") continue;
+    if (end === null || end.precision === "relative" || end.weekly) continue;
     const rightMonth = [...right.matchAll(MONTH_IN)].map((w) => w[0]).find((w) => monthOf(w) !== null);
     // Try the end's year first. In a column, "July 16" alone would get the column's placeholder year.
     const candidates = [
@@ -196,7 +224,9 @@ const parseRange = (t: string, options: DateOptions): ParsedDate | null => {
         : [`${left}, ${year}`, ...(rightMonth === undefined ? [] : [`${left} ${rightMonth} ${year}`])]),
       left,
     ];
-    const start = candidates.map((c) => parseOne(c, options)).find((d) => d !== null && d.precision !== "relative");
+    const start = candidates
+      .map((c) => parseOne(c, options))
+      .find((d) => d !== null && d.precision !== "relative" && !d.weekly);
     if (start === undefined || start === null || start.time > end.time) continue;
     return {
       time: (start.time + end.time) / 2,
@@ -228,18 +258,27 @@ const parseOne = (t: string, options: DateOptions): ParsedDate | null => {
     return { time: base - offsetMinutes(zone) * MINUTE, precision: h === undefined ? "day" : "minute" };
   }
 
+  const weekTime = WEEKDAY_TIME.exec(t);
+  if (weekTime !== null) {
+    const [, word, hh, mm, ss, meridiem] = weekTime;
+    const day = weekdayOf(word!);
+    const h = hourOf(hh!, meridiem);
+    if (day === null || h === null) return null;
+    return {
+      time: MONDAY + day * DAY + h * HOUR + Number(mm) * MINUTE + Number(ss ?? 0) * SECOND,
+      precision: "minute",
+      weekly: true,
+    };
+  }
+
   // Split off a weekday and a clock time. The rest is the date.
   let rest = t.replace(WEEKDAY, "");
   let clock: { h: number; min: number; s: number; zone: string | undefined } | null = null;
   const time = TIME.exec(rest);
   if (time !== null) {
     const [, hh, mm, ss, meridiem, zone] = time;
-    let h = Number(hh);
-    if (meridiem !== undefined) {
-      if (h < 1 || h > 12) return null;
-      h = (h % 12) + (meridiem.startsWith("p") ? 12 : 0);
-    }
-    if (h > 23) return null;
+    const h = hourOf(hh!, meridiem);
+    if (h === null) return null;
     clock = { h, min: Number(mm), s: Number(ss ?? 0), zone };
     rest = rest.slice(0, time.index).trim();
   }
@@ -318,6 +357,24 @@ const unwrapYear = (
   return Math.max(...times) - Math.min(...times) < 365 * DAY ? shifted : [...parsed];
 };
 
+/**
+ * Starts a column's week after its longest gap, so its times cover the
+ * shortest stretch of the week. A football week runs Thursday to Monday:
+ * "Thu 8:15 PM" comes before "Sun 1:00 PM", and "Mon 8:15 PM" comes last.
+ * When no gap is longer than the one from the last time back round to the
+ * first, the week starts on Monday.
+ */
+const startWeek = (parsed: readonly (ParsedDate | null)[]): (ParsedDate | null)[] => {
+  const times = [...new Set(parsed.flatMap((p) => (p === null ? [] : [p.time])))].sort((a, b) => a - b);
+  let start = times[0]!;
+  let longest = times[0]! + WEEK - times.at(-1)!;
+  for (let i = 1; i < times.length; i++) {
+    const gap = times[i]! - times[i - 1]!;
+    if (gap > longest) [start, longest] = [times[i]!, gap];
+  }
+  return parsed.map((p) => (p === null || p.time >= start ? p : { ...p, time: p.time + WEEK }));
+};
+
 /** The share of filled cells that must parse. profile.ts uses the same share for numbers. */
 const DATE_SHARE = 0.8;
 const MIN_DATES = 3;
@@ -359,6 +416,10 @@ export const parseDateColumn = (
   const filled = cells.filter((c) => !isMissing(c)).length;
   let dates = parsed.filter((p) => p !== null);
   if (dates.length < MIN_DATES || dates.length / filled < DATE_SHARE) return null;
+  // Weekday times have no order beside dates.
+  const weekly = dates.every((d) => d.weekly);
+  if (!weekly && dates.some((d) => d.weekly)) return null;
+  if (weekly) parsed = startWeek(parsed);
   const yearless = dates.every((d) => d.yearless);
   if (yearless) parsed = unwrapYear(cells, parsed, parseIn);
   // Beside dates with years, "Mar 3" means this year, as on GitHub.
@@ -366,15 +427,17 @@ export const parseDateColumn = (
   dates = parsed.filter((p) => p !== null);
   if (new Set(dates.map((d) => d.time)).size < 2) return null;
   const has = (p: DatePrecision) => dates.some((d) => d.precision === p);
-  const unit: DateUnit = has("relative")
-    ? "ago"
-    : dates.every((d) => d.precision === "month")
-      ? "month"
-      : has("minute")
-        ? "datetime"
-        : yearless
-          ? "monthday"
-          : "date";
+  const unit: DateUnit = weekly
+    ? "weektime"
+    : has("relative")
+      ? "ago"
+      : dates.every((d) => d.precision === "month")
+        ? "month"
+        : has("minute")
+          ? "datetime"
+          : yearless
+            ? "monthday"
+            : "date";
   return { values: parsed.map((p) => p?.time ?? null), unit };
 };
 
@@ -383,6 +446,7 @@ const FORMATS: Readonly<Record<Exclude<DateUnit, "ago">, Intl.DateTimeFormatOpti
   date: { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" },
   monthday: { month: "short", day: "numeric", timeZone: "UTC" },
   datetime: { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "UTC" },
+  weektime: { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "UTC" },
 };
 
 const RELATIVE_STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [

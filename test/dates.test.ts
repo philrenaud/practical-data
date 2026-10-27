@@ -194,3 +194,35 @@ test("a date with a long trailing note still parses", () => {
   assert.equal(at(`Jan 15, 1967 (${"note ".repeat(30)})`)?.time, Date.UTC(1967, 0, 15));
   assert.equal(at("Jan 15, 1967   (1966 AFL/1966 NFL)")?.time, Date.UTC(1967, 0, 15));
 });
+
+test("a weekday and a clock time without a date is a time in a week", () => {
+  const HOUR = 3_600_000;
+  const MONDAY = 4 * DAY;
+  assert.deepEqual(at("Sun 08:20PM"), {
+    time: MONDAY + 6 * DAY + 20 * HOUR + 1_200_000,
+    precision: "minute",
+    weekly: true,
+  });
+  assert.equal(at("Thurs. 19:30")?.time, MONDAY + 3 * DAY + 19.5 * HOUR);
+  // A clock time alone stays null, and a word that is not a weekday is not a date.
+  assert.equal(at("7:05 PM"), null);
+  assert.equal(at("Sunny 8:20 PM"), null);
+  assert.equal(at("Sun 13:05 pm"), null);
+  // A range of weekday times has no midpoint here.
+  assert.equal(at("Sun 1:00 PM – Sun 3:00 PM"), null);
+  // Weekday times beside dates have no order.
+  assert.equal(parseDateColumn(["Sun 1:10 PM", "Mon 6:40 PM", "Feb 6, 2023", "Feb 7, 2023"], NOW), null);
+});
+
+test("a column of weekday times starts its week after its longest gap", () => {
+  // A football week runs Thursday to Monday.
+  const week = parseDateColumn(["Sun 8:20 PM", "Sun 1:00 PM", "Thu 8:15 PM", "Mon 8:15 PM"], NOW)!;
+  assert.equal(week.unit, "weektime");
+  const [sunNight, sun, thu, mon] = week.values as number[];
+  assert.ok(thu! < sun! && sun! < sunNight! && sunNight! < mon!);
+  assert.equal(formatDate(mon!, "weektime", NOW), "Mon 8:15 PM");
+  // Spread evenly over the whole week, it starts on Monday.
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `${d} 9:00 AM`);
+  const full = parseDateColumn(days, NOW)!.values as number[];
+  assert.ok(full.every((v, i) => i === 0 || v > full[i - 1]!));
+});
