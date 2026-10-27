@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: election results</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  caption { font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>Election results</h1>
+<p>
+  An encyclopedia lays out each election as a small table: a color swatch and
+  a party, the candidate, votes, and percent. A total row follows, with its
+  label spanning the first three columns, and the general election ends with
+  a note that spans the row after the swatch. The total and the note are not
+  candidates, so the extension leaves them off the scale. The price table at
+  the bottom is small too, but its last row is an ordinary entry.
+</p>
+
+<h2>General election</h2>
+<!-- The total row sums the candidates. The "hold" note is not a data row. -->
+<table class="wikitable">
+<caption>Lakeshore's 3rd district, 2022</caption>
+<tbody><tr>
+<th scope="col" colspan="2">Party</th>
+<th scope="col">Candidate</th>
+<th scope="col">Votes</th>
+<th scope="col">%</th></tr>
+<tr class="vcard">
+<td style="background-color:#3a6fd8;width:5px"></td>
+<td class="org"><b><a href="#">Harbor</a></b></td>
+<th scope="row" style="text-align:left;font-weight:normal" class="fn"><b>Mara Velasquez</b></th>
+<td style="text-align:right"><b>142,318</b></td>
+<td style="text-align:right"><b>58.42%</b></td></tr>
+<tr class="vcard">
+<td style="background-color:#d8463a;width:2px"></td>
+<td class="org"><a href="#">Ridge</a></td>
+<th scope="row" style="text-align:left;font-weight:normal" class="fn">Tobias Kern</th>
+<td style="text-align:right">101,284</td>
+<td style="text-align:right">41.58%</td></tr>
+<tr>
+<th scope="row" colspan="3" style="text-align:right">Total votes</th>
+<td style="text-align:right"><b>243,602</b></td>
+<td style="text-align:right"><b>100%</b></td></tr>
+<tr style="background-color:#f6f6f6">
+<td style="background-color:#3a6fd8"></td>
+<th scope="row" colspan="4" style="text-align:left;font-weight:normal"><a href="#">Harbor</a> <b>hold</b></th></tr>
+</tbody>
+</table>
+
+<h2>Primary election</h2>
+<!-- A group header row over the columns, two candidates, and a total. -->
+<table class="wikitable">
+<caption>Lakeshore's 3rd district, 2024</caption>
+<tbody><tr>
+<th scope="colgroup" colspan="5">Primary election</th></tr>
+<tr>
+<th scope="col" colspan="2">Party</th>
+<th scope="col">Candidate</th>
+<th scope="col">Votes</th>
+<th scope="col">%</th></tr>
+<tr class="vcard">
+<td style="background-color:#3a6fd8;width:5px"></td>
+<td class="org"><b><a href="#">Harbor</a></b></td>
+<th scope="row" style="text-align:left;font-weight:normal" class="fn"><b>Mara Velasquez (incumbent)</b></th>
+<td style="text-align:right"><b>28,740</b></td>
+<td style="text-align:right"><b>64.18%</b></td></tr>
+<tr class="vcard">
+<td style="background-color:#3a6fd8;width:2px"></td>
+<td class="org"><a href="#">Harbor</a></td>
+<th scope="row" style="text-align:left;font-weight:normal" class="fn">Odile Brandt</th>
+<td style="text-align:right">16,040</td>
+<td style="text-align:right">35.82%</td></tr>
+<tr>
+<th scope="row" colspan="3" style="text-align:right">Total votes</th>
+<td style="text-align:right"><b>44,780</b></td>
+<td style="text-align:right"><b>100%</b></td></tr>
+</tbody>
+</table>
+
+<h2>Plans</h2>
+<!-- Three rows and no total. The last row stays on the scale. -->
+<table>
+<thead><tr><th>Plan</th><th>Seats</th><th>Price per month ($)</th></tr></thead>
+<tbody>
+<tr><td>Starter</td><td>3</td><td>12</td></tr>
+<tr><td>Team</td><td>10</td><td>29</td></tr>
+<tr><td>Business</td><td>25</td><td>79</td></tr>
+</tbody>
+</table>
+</body>
+</html>

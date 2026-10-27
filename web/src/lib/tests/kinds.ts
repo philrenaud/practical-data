@@ -81,10 +81,11 @@ export const KINDS: readonly KindInfo[] = [
       "A Total row or an Average row can make the scale too wide. Then all other rows look small.",
       "Code finds the rows that can be totals and asks the model about them. Code ignores total rows: they are not on the scale and not shaded.",
       "A first or last row whose numbers are the sums of the other rows is a total without a question, such as a box score's team row that has no label.",
+      "Code asks the model only about tables of five or more rows. In a smaller table, such as an election result with two candidates and a total, only the sums can mark a total, and every numeric column must add up.",
     ],
     questions: ["row#.aggregate"],
     rule: (p) =>
-      `Remove a row from the scale when P(total) is ${p.aggregate} or more, or when it sums the other rows in at least two columns and in two thirds of the numeric columns.`,
+      `Remove a row from the scale when P(total) is ${p.aggregate} or more, or when it sums the other rows in at least two columns and in two thirds of the numeric columns (in every numeric column when the table has three or four rows).`,
   },
   {
     kind: "shared",

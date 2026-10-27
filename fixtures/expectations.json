@@ -517,6 +517,25 @@
       "L": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
   },
+  "election-results": {
+    "t0": {
+      "aggregateRows": [2],
+      "Candidate": "none",
+      "Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "%": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    },
+    "t1": {
+      "aggregateRows": [2],
+      "Primary election: Candidate": "none",
+      "Primary election: Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Primary election: %": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    },
+    "t2": {
+      "aggregateRows": [],
+      "Seats": { "kind": "quantitative" },
+      "Price per month ($)": { "kind": "quantitative" }
+    }
+  },
   "hidden-text": {
     "t0": {
       "Description": "none",

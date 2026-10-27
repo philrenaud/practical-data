@@ -451,7 +451,14 @@ test("a row whose numbers add up to the other rows is a total", () => {
     [4],
     "a jersey number does not hide the total",
   );
-  assert.deepEqual(sumRows(columns([0.33, 0.33, 0.34, 1]), 4), [], "too few rows to ask about");
+  assert.deepEqual(sumRows(columns([0.33, 0.33, 0.34, 1]), 4), [], "one column of a small table is not enough");
+  assert.deepEqual(sumRows(columns([620, 380, 1000], [62, 38, 100]), 3), [2], "an election result's total");
+  assert.deepEqual(
+    sumRows(columns([620, 380, 1000], [62, 38, 100], [4, 2, 1]), 3),
+    [],
+    "a small table needs every column to add up",
+  );
+  assert.deepEqual(sumRows(columns([2, 1], [2, 1]), 2), [], "two rows cannot hold a total");
   assert.deepEqual(sumRows(columns([1, 0, 0, 0, 1], [9, 7, 4, 2, 1]), 5), [], "one column adding up by chance");
   assert.deepEqual(sumRows(columns([5, 3, 2, 1, 11], [2, 1, 1, 0, 1]), 5), [], "one column of two is not enough");
   assert.deepEqual(sumRows(columns([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]), 5), [], "zeros prove nothing");
