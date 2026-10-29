@@ -79,7 +79,7 @@
     background: var(--bg);
     color: var(--ink);
     font:
-      15px/1.5 "Bricolage Grotesque",
+      15px/1.5 var(--font-text),
       sans-serif;
   }
   header {
@@ -165,7 +165,7 @@
   }
   th {
     font:
-      600 11.5px "Bricolage Grotesque",
+      600 11.5px var(--font-label),
       sans-serif;
   }
   @media (max-width: 900px) {

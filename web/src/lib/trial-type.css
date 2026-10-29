@@ -2,7 +2,7 @@
  * Trial typography: Cambridge (Hoodzpah). Loaded only by the dev server, which
  * serves the git-ignored trial files at /dev-fonts/ (see vite.config.ts).
  * The font stacks in app.css name Cambridge first; without these @font-face
- * rules, a build falls back to Bricolage Grotesque.
+ * rules, a build falls back to the body serif.
  * When the font is licensed, move these rules into app.css and the files into
  * static/ as woff2.
  */
@@ -123,7 +123,7 @@
  * The static cuts stop at 700, and the site's grotesque weights (620-760) would
  * all resolve to Bold. A serif needs less weight and less negative tracking.
  */
-/* Body copy is Bricolage (the sans pairing); Cambridge carries display and the hero lede. */
+/* Body copy is Prociono; Cambridge carries display and the hero lede. */
 .hero .lede {
   font-family: var(--font-display);
 }

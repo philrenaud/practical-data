@@ -48,12 +48,12 @@
   /*
    * Type. Display is for headings; label is for table captions and headers;
    * mono is for numbers, code, and the example tables. Cambridge is a trial:
-   * only the dev server loads its files (lib/trial-type.css), so a deploy
-   * falls back to Bricolage Grotesque until the font is licensed.
+   * only the dev server loads its files (lib/trial-type.css); body copy is
+   * Prociono (OFL, one weight), loaded in app.html.
    */
-  --font-text: "Digits", "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-display: "Digits", "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-label: "Digits", "Cambridge Condensed", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-text: "Digits", "Prociono", georgia, serif;
+  --font-display: "Digits", "Cambridge", georgia, serif;
+  --font-label: "Digits", "Cambridge Condensed", "Prociono", georgia, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: light;
 }
