@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: season places and fractions</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .frac { white-space: nowrap; }
+  .frac .num, .frac .den { font-size: 80%; line-height: 0; vertical-align: super; }
+  .frac .den { vertical-align: sub; }
+  .sr-only { border: 0; clip: rect(0,0,0,0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+</style>
+</head>
+<body>
+<h1>Season places and fractions</h1>
+<p>
+  An encyclopedia's season table writes games behind with a fraction template:
+  a whole number, a plus sign kept for screen readers, and a fraction with the
+  fraction slash ("8 + 1⁄2"). It writes finishing places as 3rd, 14th, or
+  7th (tie). The extension reads the fractions as numbers and orders the
+  places from their numbers.
+</p>
+
+<h2>Season-by-season records</h2>
+<!-- Games behind uses fraction markup with a screen-reader plus. League and Division are places that do not follow the rows. -->
+<table id="seasons">
+  <thead>
+    <tr><th rowspan="2">Season</th><th colspan="5">Regular season</th><th rowspan="2">Affiliate</th></tr>
+    <tr><th>Record</th><th>Win %</th><th>League</th><th>Division</th><th>GB</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>2019</td><td>71–69</td><td>.507</td><td>9th (tie)</td><td>3rd (tie)</td><td>6</td><td>Harbor Owls</td></tr>
+    <tr><td>2020</td><td>79–61</td><td>.564</td><td>4th</td><td>2nd</td><td><span class="frac">2<span class="sr-only">+</span><span class="num">1</span>⁄<span class="den">2</span></span></td><td>Harbor Owls</td></tr>
+    <tr><td>2021</td><td>60–80</td><td>.429</td><td>16th</td><td>6th</td><td><span class="frac">20<span class="sr-only">+</span><span class="num">1</span>⁄<span class="den">2</span></span></td><td>Harbor Owls</td></tr>
+    <tr><td>2022</td><td>84–56</td><td>.600</td><td>2nd</td><td>1st</td><td>—</td><td>Harbor Owls</td></tr>
+    <tr><td>2023</td><td>66–74</td><td>.471</td><td>13th</td><td>5th</td><td><span class="frac">14<span class="sr-only">+</span><span class="num">1</span>⁄<span class="den">2</span></span></td><td>Harbor Owls</td></tr>
+    <tr><td>2024</td><td>73–67</td><td>.521</td><td>7th</td><td>3rd</td><td>9</td><td>Harbor Owls</td></tr>
+  </tbody>
+</table>
+
+<h2>Relay final</h2>
+<!-- Places that count down the rows repeat the row order, so Place must stay unshaded. Time is shaded. -->
+<table id="relay">
+  <thead><tr><th>Place</th><th>Club</th><th>Anchor</th><th>Time</th></tr></thead>
+  <tbody>
+    <tr><td>1st</td><td>Copper Foxes</td><td>Imogen</td><td>3:21</td></tr>
+    <tr><td>2nd</td><td>Lantern Bay</td><td>Teodor</td><td>3:22</td></tr>
+    <tr><td>3rd</td><td>North Quarry</td><td>Priya</td><td>3:22</td></tr>
+    <tr><td>4th</td><td>Saltmarsh</td><td>Malik</td><td>3:24</td></tr>
+    <tr><td>5th</td><td>Glass Street</td><td>Ottilie</td><td>3:25</td></tr>
+    <tr><td>6th</td><td>Old Mill</td><td>Ren</td><td>3:27</td></tr>
+  </tbody>
+</table>
+
+<h2>Recipe scaling</h2>
+<!-- A fraction with the space lost ("31⁄2") is ambiguous: it must not read as the number 15.5. Cups is unscored; the model may order the labels. -->
+<table id="recipe">
+  <thead><tr><th>Ingredient</th><th>Cups</th><th>Grams</th></tr></thead>
+  <tbody>
+    <tr><td>Flour</td><td>31⁄2</td><td>440</td></tr>
+    <tr><td>Oats</td><td>21⁄4</td><td>200</td></tr>
+    <tr><td>Sugar</td><td>11⁄3</td><td>265</td></tr>
+    <tr><td>Raisins</td><td>13⁄4</td><td>250</td></tr>
+    <tr><td>Walnuts</td><td>11⁄2</td><td>175</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

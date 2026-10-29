@@ -123,6 +123,14 @@ const VULGAR: Readonly<Record<string, number>> = {
 };
 const VULGAR_RE = /^(\d*)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/;
 
+/**
+ * Fractions written with the fraction slash (U+2044), as in "8 1⁄2" from an
+ * encyclopedia's fraction template. The numerator must be smaller than the
+ * denominator, so "81⁄2" with the space lost stays text instead of reading
+ * as 40.5.
+ */
+const FRACTION_RE = /^(?:(\d+)\s+)?(\d+)\s*\u2044\s*(\d+)$/;
+
 /** Parses one number. parseRange handles ranges. */
 const parseSingle = (input: string): ParsedNumber | null => {
   let text = input;
@@ -142,6 +150,13 @@ const parseSingle = (input: string): ParsedNumber | null => {
   const half = VULGAR_RE.exec(text);
   if (half !== null) {
     const value = Number(half[1] || 0) + VULGAR[half[2]!]!;
+    return { value: negative ? -value : value, unit: null, bound: false, range: null };
+  }
+  const fraction = FRACTION_RE.exec(text);
+  if (fraction !== null) {
+    const [, whole = "0", num = "0", den = "0"] = fraction;
+    if (!(Number(num) < Number(den))) return null;
+    const value = Number(whole) + Number(num) / Number(den);
     return { value: negative ? -value : value, unit: null, bound: false, range: null };
   }
   const feet = FEET_INCHES_RE.exec(text);

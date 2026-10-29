@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { orderFromPairs } from "../src/core/order.ts";
+import { orderFromPairs, placeOrder } from "../src/core/order.ts";
 
 const fromTruth =
   (labels: string[], truth: string[], noise: Record<string, number> = {}) =>
@@ -23,4 +23,20 @@ test("a contradictory non-adjacent comparison does not flip the order", () => {
   const got = orderFromPairs(labels, fromTruth(labels, labels, { "c<r": 0.3 }));
   assert.deepEqual(got.order, ["c", "u", "r", "m"]);
   assert.ok(got.confidence < 0.95);
+});
+
+test("places are ordered by their numbers, worst first", () => {
+  assert.deepEqual(placeOrder(["7th (tie)", "6th", "14th", "3rd", "15th"]), [
+    "15th",
+    "14th",
+    "7th (tie)",
+    "6th",
+    "3rd",
+  ]);
+  assert.deepEqual(placeOrder(["1st", "t-2nd", "22nd"]), ["22nd", "t-2nd", "1st"]);
+});
+
+test("labels that are not all places get no code order", () => {
+  assert.equal(placeOrder(["1st", "2nd", "Relegated"]), null);
+  assert.equal(placeOrder(["First", "Second", "Third"]), null);
 });

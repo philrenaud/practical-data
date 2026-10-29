@@ -10,7 +10,7 @@
  * 4. One page request asks whether same-named columns in different tables
  *    share a scale. Shared columns get one domain or one order.
  */
-import { orderFromPairs } from "../core/order.ts";
+import { orderFromPairs, placeNumber, placeOrder } from "../core/order.ts";
 import { isDateUnit, parseDateColumn } from "../core/dates.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import type { CategoricalProfile, ColumnProfile, NumericProfile } from "../core/profile.ts";
@@ -36,6 +36,7 @@ import {
   pairQuestions,
   shareQuestion,
   categoricalState,
+  followsRows,
   sumRows,
   orientationQuestion,
   tableState,
@@ -244,7 +245,8 @@ const judgeColumns = async (
         const first = await model.evaluate({ state, questions: q.questions }, signal);
         // Send the pairwise order questions only when the labels might be ordered.
         // A column of 12 team names would otherwise send 132 of them.
-        if (q.ordinalOf(first.answers) < policy.ordinalWithStrongOrder) return first;
+        // Places such as 3rd and 14th are ordered by code.
+        if (q.ordinalOf(first.answers) < policy.ordinalWithStrongOrder || placeOrder(p.levels) !== null) return first;
         const pairs = await model.evaluate({ state, questions: q.pairQuestions }, signal);
         return { ...first, answers: { ...first.answers, ...pairs.answers } };
       }),
@@ -297,7 +299,14 @@ const judgeColumns = async (
     } else {
       const p = plan.profile;
       const r = plan.read(plan.answers);
-      const { order, confidence } = orderFromPairs(p.levels, r.lower);
+      const places = placeOrder(p.levels);
+      // Places that count the rows (1st, 2nd, 3rd in row order) repeat the row order, like ranks.
+      if (places !== null && followsRows({ values: p.values.map((v) => (v === null ? null : placeNumber(v))) })) {
+        skipped.push({ col: p.col, header: p.header, reason: "places follow the rows", comparable: r.ordinal });
+        continue;
+      }
+      const { order, confidence } =
+        places === null ? orderFromPairs(p.levels, r.lower) : { order: places, confidence: 1 };
       const ordered =
         (r.ordinal >= policy.ordinal && confidence >= policy.orderConfidence) ||
         (r.ordinal >= policy.ordinalWithStrongOrder && confidence >= policy.strongOrder);
