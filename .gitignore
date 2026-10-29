@@ -4,7 +4,7 @@ dist/
 .env
 artifacts/
 dist-probe/
-site/
+/site/
 .wrangler/
 launch/
 .impeccable/
@@ -19,5 +19,9 @@ demo/tests/
 # Local only: trial fonts, the built Sheets add-on, agent worktrees.
 demo/fonts/
 web/dev-fonts/
+# Licensed web font: the Hoodzpah EULA forbids redistributing the files,
+# and this repository is public. Deploys get them from private storage.
+web/static/fonts/Cambridge-*
+static/fonts/HoodFonts*
 dist-sheets/
 .claude/

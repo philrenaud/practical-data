@@ -4,7 +4,7 @@
  * The site never calls a model.
  */
 import { isDateUnit } from "../../../src/core/dates.ts";
-import type { ColumnEncoding, PageJudgment, PageSnapshot } from "../../../src/core/types.ts";
+import type { ColumnEncoding, PageJudgment, PageSnapshot, SkippedColumn } from "../../../src/core/types.ts";
 import data from "../../../demo/data.json";
 
 export interface DemoSection {
@@ -63,6 +63,23 @@ export const describeEncoding = (e: ColumnEncoding): string =>
     : e.kind === "quantitative"
       ? `${POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
       : `ordered: ${e.order.join(" → ")}`;
+
+/** One column of a table's footer strip: the judged kind, and how it reads. */
+export const columnSummary = (
+  e: ColumnEncoding | undefined,
+  s: SkippedColumn | undefined,
+): { kind: string; detail: string; on: boolean } =>
+  e === undefined
+    ? { kind: "Ignored", detail: plainReason(s?.reason), on: false }
+    : e.kind === "quantitative" && isDateUnit(e.unit)
+      ? { kind: "Dates", detail: "earliest to latest", on: true }
+      : e.kind === "quantitative"
+        ? {
+            kind: "Amount",
+            detail: `${POLARITY[e.polarity]} · ${e.transform === "log" ? "log scale" : "linear"}${e.group === null ? "" : " · shared scale"}`,
+            on: true,
+          }
+        : { kind: "Ordered labels", detail: e.order.join(" → "), on: true };
 
 export const confidenceOf = (e: ColumnEncoding): string =>
   e.kind === "quantitative" && isDateUnit(e.unit)

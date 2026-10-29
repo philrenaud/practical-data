@@ -4,7 +4,6 @@
   --known: #9a5f0c;
   --fail: #b8323f;
   --mono: var(--font-mono);
-  --sans: var(--font-label);
   min-height: 100vh;
 }
 @media (prefers-color-scheme: dark) {
