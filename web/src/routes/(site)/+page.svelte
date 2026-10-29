@@ -191,9 +191,10 @@
       <li>
         <h3>No key needed</h3>
         <p>
-          A free endpoint judges tables without a key and keeps only the answers and anonymous counts. With your own
-          key, table text goes straight to your provider and nothing passes through the author. The extension has no
-          analytics or telemetry. <a href="/privacy">Privacy policy</a>
+          A free endpoint judges tables without a key and keeps only the answers and
+          <a href="https://github.com/philrenaud/practical-data/blob/main/src/api/usage.ts">anonymous counts</a>. With
+          your own key, table text goes straight to your provider and nothing passes through the author. The extension
+          has no analytics or telemetry. <a href="/privacy">Privacy policy</a>
         </p>
       </li>
       <li>

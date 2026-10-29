@@ -54,6 +54,11 @@ const heavy = await sql<{ day: string; reached: string; installs: string }>(
    FROM ${DATASET} WHERE ${since} AND blob2 = 'model' AND (double3 = 100 OR double3 = 200 OR double3 = 400)
    GROUP BY day, reached ORDER BY day, reached`,
 );
+const upstreams = await sql<{ day: string; status: string; n: string }>(
+  `SELECT ${day} AS day, double4 AS status, SUM(_sample_interval) AS n
+   FROM ${DATASET} WHERE ${since} AND blob2 = 'upstream' AND double4 != 0
+   GROUP BY day, status ORDER BY day, status`,
+);
 const probes = await sql<{ day: string; route: string; outcome: string; n: string }>(
   `SELECT ${day} AS day, blob1 AS route, blob2 AS outcome, SUM(_sample_interval) AS n
    FROM ${DATASET} WHERE ${since} AND blob1 != 'systemone'
@@ -70,6 +75,7 @@ for (const o of outcomes) {
 }
 for (const a of actives) line(a.day, `active installs (first model request): ${a.installs}`);
 for (const h of heavy) line(h.day, `installs that reached ${h.reached} requests: ${h.installs}`);
+for (const u of upstreams) line(u.day, `upstream: the model returned ${u.status}: ${u.n}`);
 for (const p of probes) line(p.day, `${p.route}/${p.outcome}: ${p.n}`);
 if (byDay.size === 0) console.log(`No data points in the last ${days} days.`);
 for (const [d, lines] of [...byDay].sort()) console.log(`${d}\n  ${lines.join("\n  ")}`);
