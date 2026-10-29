@@ -224,12 +224,23 @@ const parseRange = (text: string): ParsedNumber | null => {
 /** A signed change after a value, as in "740 (-16)" or "2.4% (+0.3%)". The sign is required. */
 const CHANGE_RE = /^(.*\S)\s+\(\s*[+\-−±]\s*\d[\d,.]*\s*%?\s*\)$/;
 
+/**
+ * A value followed by the condition it holds under, as in "$0.10 / MTok for
+ * prompts up to 100,000 tokens". The condition starts with a lowercase word
+ * from a short list and then a word, so a batting line ("2 for 4") or bowling
+ * figures ("3 for 45") stay text.
+ */
+const CONDITION_RE = /^(.*?\S)\s+(?:for|when|if|until|after|before)\s+\p{L}/u;
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
   // A value followed by its change: the value is the cell's number.
   const change = CHANGE_RE.exec(text);
   if (change?.[1] !== undefined) return parseNumber(change[1]);
+  // A value with its condition: the value is the cell's number.
+  const condition = CONDITION_RE.exec(text);
+  if (condition?.[1] !== undefined) return parseNumber(condition[1]);
   // Open-ended bins: "65+".
   const plus = /^(.*\d)\s*\+$/.exec(text);
   if (plus?.[1] !== undefined) {

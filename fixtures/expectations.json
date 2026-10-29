@@ -511,6 +511,20 @@
       "Adoptions this month": { "kind": "quantitative" }
     }
   },
+  "conditional-prices": {
+    "t0": {
+      "Service": "none",
+      "Base units: Input": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Base units: Output": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Storage: Hot": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Storage: Cold": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    },
+    "t1": {
+      "Bowler": "none",
+      "Wickets": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Economy": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    }
+  },
   "number-buttons": {
     "t0": {
       "Region": "none",

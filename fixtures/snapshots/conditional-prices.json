@@ -1,0 +1,116 @@
+{
+ "url": "fixture://synthetic/conditional-prices.html",
+ "title": "Practical Data: prices with a condition",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Service pricing",
+   "headers": [
+    "Service",
+    "Base units: Input",
+    "Base units: Output",
+    "Storage: Hot",
+    "Storage: Cold"
+   ],
+   "rows": [
+    [
+     "Osprey 3 For long batch jobs and deep analysis",
+     "$12 / MU",
+     "$48 / MU",
+     "$9 / GB",
+     "$1.20 / GB"
+    ],
+    [
+     "Kestrel 3 For everyday workloads",
+     "$3 / MU",
+     "$15 / MU",
+     "$4 / GB",
+     "$0.60 / GB"
+    ],
+    [
+     "Harrier 3 For high-volume, quick requests such as tagging and sorting",
+     "$0.20 / MU for requests up to 100,000 units",
+     "$0.80 / MU",
+     "$1 / GB",
+     "$0.15 / GB"
+    ],
+    [
+     "Harrier 3 For high-volume, quick requests such as tagging and sorting",
+     "$0.60 / MU for requests over 100,000 units",
+     "$2.40 / MU",
+     "$2 / GB",
+     "$0.30 / GB"
+    ],
+    [
+     "Osprey 2",
+     "$15 / MU",
+     "$60 / MU",
+     "$10 / GB",
+     "$1.50 / GB"
+    ],
+    [
+     "Kestrel 2",
+     "$4 / MU",
+     "$20 / MU",
+     "$5 / GB",
+     "$0.80 / GB"
+    ],
+    [
+     "Harrier 2",
+     "$1 / MU",
+     "$4 / MU",
+     "$1.50 / GB",
+     "$0.25 / GB"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Bowling",
+   "headers": [
+    "Bowler",
+    "Overs",
+    "Wickets",
+    "Economy",
+    "Best"
+   ],
+   "rows": [
+    [
+     "A. Fenwick",
+     "38.2",
+     "11",
+     "4.12",
+     "4 for 31"
+    ],
+    [
+     "R. Lindqvist",
+     "41.0",
+     "9",
+     "4.85",
+     "3 for 45"
+    ],
+    [
+     "T. Okafor",
+     "29.4",
+     "7",
+     "5.30",
+     "3 for 22"
+    ],
+    [
+     "M. Duarte",
+     "33.0",
+     "6",
+     "4.48",
+     "2 for 18"
+    ],
+    [
+     "J. Whitcombe",
+     "22.1",
+     "4",
+     "6.02",
+     "2 for 40"
+    ]
+   ]
+  }
+ ]
+}
