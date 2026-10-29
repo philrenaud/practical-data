@@ -123,10 +123,9 @@
  * The static cuts stop at 700, and the site's grotesque weights (620-760) would
  * all resolve to Bold. A serif needs less weight and less negative tracking.
  */
-/* Cambridge Regular reads light in running text; Medium holds up on both themes. */
-body {
-  font-size: 17px;
-  font-weight: 500;
+/* Body copy is Bricolage (the sans pairing); Cambridge carries display and the hero lede. */
+.hero .lede {
+  font-family: var(--font-display);
 }
 h1,
 h2,
@@ -135,8 +134,11 @@ h3,
 .steps h3,
 .open h2,
 .open-points h3,
-.docs-main h1,
-.docs-main h2 {
+/* .docs doubles the specificity: docs.css loads with the /tests route chunk,
+   after this file, and would win the tie with its 700-range weights. */
+.docs .docs-main h1,
+.docs .docs-main h2 {
+  font-family: var(--font-display);
   font-weight: 300;
   letter-spacing: -0.05em;
   /* Tight tracking closes word spaces too; give them back. */

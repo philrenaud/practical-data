@@ -51,7 +51,7 @@
    * only the dev server loads its files (lib/trial-type.css), so a deploy
    * falls back to Bricolage Grotesque until the font is licensed.
    */
-  --font-text: "Digits", "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-text: "Digits", "Bricolage Grotesque", ui-sans-serif, sans-serif;
   --font-display: "Digits", "Cambridge", "Bricolage Grotesque", ui-sans-serif, sans-serif;
   --font-label: "Digits", "Cambridge Condensed", "Bricolage Grotesque", ui-sans-serif, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
