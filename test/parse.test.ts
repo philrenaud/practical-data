@@ -8,6 +8,11 @@ const cases: ReadonlyArray<readonly [string, number | null, string | null, (read
   ["6½", 6.5, null],
   ["½", 0.5, null],
   ["51½", 51.5, null],
+  // Fractions with the fraction slash, as an encyclopedia's fraction template writes them.
+  ["8 1\u20442", 8.5, null],
+  ["1\u20442", 0.5, null],
+  ["22 3\u20444", 22.75, null],
+  ["81\u20442", null, null],
   ["$14.00", 14, "$"],
   ["€1,200.50", 1200.5, "€"],
   ["-$3", -3, "$"],

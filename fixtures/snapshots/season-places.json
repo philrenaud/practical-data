@@ -1,0 +1,159 @@
+{
+ "url": "fixture://synthetic/season-places.html",
+ "title": "Practical Data: season places and fractions",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Season-by-season records",
+   "headers": [
+    "Season",
+    "Regular season: Record",
+    "Regular season: Win %",
+    "Regular season: League",
+    "Regular season: Division",
+    "Regular season: GB",
+    "Affiliate"
+   ],
+   "rows": [
+    [
+     "2019",
+     "71–69",
+     ".507",
+     "9th (tie)",
+     "3rd (tie)",
+     "6",
+     "Harbor Owls"
+    ],
+    [
+     "2020",
+     "79–61",
+     ".564",
+     "4th",
+     "2nd",
+     "2 1⁄2",
+     "Harbor Owls"
+    ],
+    [
+     "2021",
+     "60–80",
+     ".429",
+     "16th",
+     "6th",
+     "20 1⁄2",
+     "Harbor Owls"
+    ],
+    [
+     "2022",
+     "84–56",
+     ".600",
+     "2nd",
+     "1st",
+     "—",
+     "Harbor Owls"
+    ],
+    [
+     "2023",
+     "66–74",
+     ".471",
+     "13th",
+     "5th",
+     "14 1⁄2",
+     "Harbor Owls"
+    ],
+    [
+     "2024",
+     "73–67",
+     ".521",
+     "7th",
+     "3rd",
+     "9",
+     "Harbor Owls"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Relay final",
+   "headers": [
+    "Place",
+    "Club",
+    "Anchor",
+    "Time"
+   ],
+   "rows": [
+    [
+     "1st",
+     "Copper Foxes",
+     "Imogen",
+     "3:21"
+    ],
+    [
+     "2nd",
+     "Lantern Bay",
+     "Teodor",
+     "3:22"
+    ],
+    [
+     "3rd",
+     "North Quarry",
+     "Priya",
+     "3:22"
+    ],
+    [
+     "4th",
+     "Saltmarsh",
+     "Malik",
+     "3:24"
+    ],
+    [
+     "5th",
+     "Glass Street",
+     "Ottilie",
+     "3:25"
+    ],
+    [
+     "6th",
+     "Old Mill",
+     "Ren",
+     "3:27"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Recipe scaling",
+   "headers": [
+    "Ingredient",
+    "Cups",
+    "Grams"
+   ],
+   "rows": [
+    [
+     "Flour",
+     "31⁄2",
+     "440"
+    ],
+    [
+     "Oats",
+     "21⁄4",
+     "200"
+    ],
+    [
+     "Sugar",
+     "11⁄3",
+     "265"
+    ],
+    [
+     "Raisins",
+     "13⁄4",
+     "250"
+    ],
+    [
+     "Walnuts",
+     "11⁄2",
+     "175"
+    ]
+   ]
+  }
+ ]
+}

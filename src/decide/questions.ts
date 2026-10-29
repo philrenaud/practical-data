@@ -170,7 +170,7 @@ export const namesRows = (p: NumericProfile): boolean =>
  * repeat the row order, so shading them adds nothing. Other ranks, such as
  * one outlet's ranking beside the table's own, are worth comparing.
  */
-export const followsRows = (p: NumericProfile): boolean => {
+export const followsRows = (p: Pick<NumericProfile, "values">): boolean => {
   // Keep each value's row position. A blank cell is a tie written once (1, 2, "", 4).
   const rows = p.values.flatMap((v, i) => (v === null ? [] : [{ v, i }]));
   const counts = (dir: 1 | -1) =>

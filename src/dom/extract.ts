@@ -55,7 +55,11 @@ const textSkipping = (cell: HTMLElement, skip: ReadonlySet<Element>): string => 
     for (const child of node.childNodes) {
       if (child.nodeType === Node.TEXT_NODE) {
         out += child.textContent ?? "";
-      } else if (child instanceof HTMLElement && !skip.has(child)) {
+      } else if (child instanceof HTMLElement && skip.has(child)) {
+        // Screen-reader text can be the only thing between two numbers, as in
+        // a fraction template's "8<span>+</span>1⁄2". Keep them apart.
+        if (child.matches(SCREEN_READER_ONLY)) out += " ";
+      } else if (child instanceof HTMLElement) {
         if (child.tagName === "BR") {
           out += " ";
           continue;
