@@ -1,3 +1,54 @@
+/*
+ * Digits: IBM Plex Mono's 0-9, first in the text stacks, so every numeral on
+ * the site is set in Plex without wrapping it in an element. unicode-range
+ * limits the face to digits; every other character falls through to the next
+ * font. The files are unmodified Plex Mono (OFL, static/fonts/).
+ */
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-300.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: "Digits";
+  src: url("/fonts/IBMPlexMono-latin-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
+/*
+ * Cambridge Light (Hoodzpah), the display face, one licensed cut. The web
+ * EULA allows @font-face linking on this site only and forbids sharing the
+ * file, so it is git-ignored and must never reach the public repository.
+ * The dev server reads the local copy in static/fonts/; in production the
+ * site Worker (src/site/worker.ts) serves this path from a private R2
+ * bucket, so a deploy never needs the file.
+ */
+@font-face {
+  font-family: "Cambridge";
+  src: url("/fonts/Cambridge-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #f4f0e8;
   --paper: #fffdf8;
@@ -10,6 +61,17 @@
   --hero: #16151a;
   --hero-ink: #f4f0e8;
   --radius: 14px;
+  /*
+   * Type. Display is for headings; label is for table captions and headers;
+   * mono is for numbers, code, and the example tables. Cambridge is a trial:
+   * only the dev server loads its files (lib/trial-type.css); body copy is
+   * Prociono (OFL, one weight), loaded in app.html.
+   */
+  --font-text: "Digits", "Prociono", georgia, serif;
+  --font-display: "Digits", "Cambridge", georgia, serif;
+  /* ui is for interactive controls: buttons, pickers, toggles. */
+  --font-ui: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: light;
 }
 /* Dark theme when the system prefers dark and the toggle is not light, or when the toggle is dark. */
@@ -50,10 +112,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font:
-    16px/1.55 "Bricolage Grotesque",
-    ui-sans-serif,
-    sans-serif;
+  font: 16px/1.55 var(--font-text);
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
@@ -63,10 +122,7 @@ a {
   text-underline-offset: 3px;
 }
 code {
-  font:
-    0.86em "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 0.86em var(--font-mono);
   background: color-mix(in srgb, var(--line) 60%, transparent);
   padding: 1px 5px;
   border-radius: 5px;
@@ -92,28 +148,22 @@ code {
   max-width: 1040px;
   margin: 0 auto;
 }
-.eyebrow {
+.brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   margin: 0 0 28px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #c9c3b8;
+  font: 600 16px var(--font-ui);
+  letter-spacing: 0.01em;
+  color: #e4ded2;
 }
-.eyebrow img {
+.brand img {
   border-radius: 6px;
 }
-.tag {
-  margin-left: 4px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid #3a3842;
-  font:
-    500 12px "IBM Plex Mono",
-    monospace;
-  letter-spacing: 0;
-  color: #a7a196;
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 h1 {
   margin: 0;
@@ -140,7 +190,7 @@ h1 {
   min-height: 46px;
   padding: 0 20px;
   border-radius: 10px;
-  font-weight: 620;
+  font: 600 15px var(--font-ui);
   text-decoration: none;
   border: 1px solid #3a3842;
   color: var(--hero-ink);
@@ -204,22 +254,14 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px max(16px, calc((100vw - 1040px) / 2));
+  /* Side padding matches main's content edge: centered 1040px plus its 16px gutter. */
+  padding: 12px max(16px, calc((100vw - 1040px) / 2 + 16px));
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
-}
-.hint-link {
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--muted);
-}
-.hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
 }
 .segmented {
   display: inline-flex;
@@ -242,8 +284,7 @@ h1 {
   display: block;
   padding: 6px 13px;
   border-radius: 7px;
-  font-size: 14px;
-  font-weight: 580;
+  font: 500 13.5px/1.6 var(--font-ui);
   color: var(--muted);
   cursor: pointer;
   transition:
@@ -285,12 +326,6 @@ main {
   align-items: baseline;
   gap: 14px;
 }
-.index {
-  font:
-    500 13px "IBM Plex Mono",
-    monospace;
-  color: var(--faint);
-}
 .example h3 {
   margin: 0;
   font-size: clamp(26px, 3.4vw, 34px);
@@ -305,9 +340,7 @@ main {
 .source {
   display: inline-block;
   margin-bottom: 18px;
-  font:
-    13px "IBM Plex Mono",
-    monospace;
+  font: 13px var(--font-mono);
   color: var(--faint);
 }
 
@@ -321,10 +354,7 @@ main {
   border-collapse: collapse;
   min-width: 100%;
   background: var(--paper);
-  font:
-    14px/1.4 "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 14px/1.4 var(--font-mono);
   font-variant-numeric: tabular-nums;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -333,9 +363,7 @@ main {
   caption-side: top;
   text-align: left;
   padding: 0 0 8px;
-  font:
-    600 14px "Bricolage Grotesque",
-    sans-serif;
+  font: 600 13px var(--font-mono);
   color: var(--muted);
 }
 .example th,
@@ -347,9 +375,7 @@ main {
   vertical-align: top;
 }
 .example th {
-  font:
-    620 12.5px "Bricolage Grotesque",
-    sans-serif;
+  font: 600 11.5px var(--font-mono);
   letter-spacing: 0.02em;
   color: var(--muted);
   background: var(--paper);
@@ -357,62 +383,27 @@ main {
 .example tbody tr:last-child td {
   border-bottom: 0;
 }
-
-.why {
-  margin: 0 0 40px;
+.example tfoot td {
+  background: color-mix(in srgb, var(--accent) 7%, var(--paper));
+  border-top: 2px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  vertical-align: top;
+  white-space: normal;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
-.why summary {
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--muted);
-  width: fit-content;
-  padding: 6px 0;
+.example tfoot .k {
+  display: block;
+  font: 650 12px var(--font-ui);
+  color: var(--accent);
 }
-.why summary:hover {
-  color: var(--ink);
-}
-.why summary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-.why ul {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 2px;
-}
-.why li {
-  display: grid;
-  grid-template-columns: minmax(120px, 220px) 1fr auto;
-  gap: 16px;
-  padding: 7px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--paper);
-}
-.why li.plain {
-  background: transparent;
+.example tfoot .d {
+  display: block;
+  font: 11.5px/1.45 var(--font-ui);
   color: var(--muted);
 }
-.why .col {
-  font-weight: 620;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.why .conf {
-  font:
-    12px "IBM Plex Mono",
-    monospace;
+.example tfoot td.off .k {
   color: var(--faint);
-}
-.why .agg {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 10px 12px 0;
+  font-weight: 500;
 }
 
 /* ── How / install ── */
@@ -444,9 +435,7 @@ h2 {
 }
 .steps > li::before {
   content: "0" counter(step);
-  font:
-    500 13px "IBM Plex Mono",
-    monospace;
+  font: 500 13px var(--font-mono);
   color: var(--faint);
 }
 .steps h3 {
@@ -560,10 +549,7 @@ h2 {
 .terminal code {
   background: none;
   padding: 0;
-  font:
-    14px/1.75 "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font: 14px/1.75 var(--font-mono);
   color: #e8e4dc;
 }
 .terminal .prompt {
@@ -591,6 +577,7 @@ h2 {
   min-height: 44px;
   padding: 0 18px;
   border-radius: 10px;
+  font: 600 15px var(--font-ui);
   background: #f4f0e8;
   color: #16151a !important;
   font-weight: 620;
@@ -604,6 +591,14 @@ h2 {
   outline-offset: 3px;
 }
 
+.footer-brand {
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.signoff {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
 footer {
   max-width: 1040px;
   margin: 64px auto 0;
@@ -622,10 +617,6 @@ footer {
   }
   .lede {
     font-size: 17px;
-  }
-  .hint {
-    margin: 0;
-    flex-basis: 100%;
   }
   .steps,
   .stats,
@@ -654,10 +645,6 @@ footer {
     flex: 1 1 100%;
     justify-content: center;
   }
-  .why li {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
 }
 
 /* ── Palette picker ── */
@@ -678,8 +665,7 @@ footer {
   padding: 5px 10px 5px 7px;
   border-radius: 7px;
   cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 580;
+  font: 500 13px/1.6 var(--font-ui);
   color: var(--muted);
 }
 .palettes input {
@@ -708,12 +694,45 @@ footer {
   align-items: center;
   gap: 8px;
 }
-.control-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--faint);
+.theme-toggle {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  width: 46px;
+  height: 26px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.theme-toggle .knob {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  transition: transform 160ms;
+}
+.theme-toggle .knob.dark {
+  transform: translateX(20px);
+}
+.theme-toggle svg {
+  width: 13px;
+  height: 13px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle .knob {
+    transition: none;
+  }
 }
 @media (max-width: 760px) {
   .controls {
@@ -722,4 +741,37 @@ footer {
   .control-group {
     flex-wrap: wrap;
   }
+}
+
+/* ── Cambridge typography. The display face ships one cut: Light 300. ── */
+.hero .lede {
+  font-family: var(--font-display);
+  font-weight: 300;
+}
+h1,
+h2,
+h3,
+.example h3,
+.steps h3,
+.open h2,
+.open-points h3,
+/* .docs doubles the specificity: docs.css loads with the /tests route chunk,
+   after this file, and would win the tie with its 700-range weights. */
+.docs .docs-main h1,
+.docs .docs-main h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  /* Tight tracking closes word spaces too; give them back. */
+  word-spacing: 0.08em;
+}
+h1 {
+  line-height: 1.02;
+}
+.stats dt {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.proof strong {
+  font-weight: 600;
 }

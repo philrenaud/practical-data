@@ -1,7 +1,11 @@
 {
   "name": "practical-data",
+  "main": "src/site/worker.ts",
   "compatibility_date": "2026-10-01",
-  "assets": { "directory": "./site" },
+  // Requests for existing files are served from assets without running the
+  // Worker; anything else (the R2-hosted font) reaches src/site/worker.ts.
+  "assets": { "directory": "./site", "binding": "ASSETS" },
+  "r2_buckets": [{ "binding": "FONTS", "bucket_name": "practical-data-fonts" }],
   "routes": [
     { "pattern": "practicaldata.dev", "custom_domain": true },
     { "pattern": "www.practicaldata.dev", "custom_domain": true },

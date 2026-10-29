@@ -3,8 +3,7 @@
   --pass: #2a7d57;
   --known: #9a5f0c;
   --fail: #b8323f;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-  --sans: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --mono: var(--font-mono);
   min-height: 100vh;
 }
 @media (prefers-color-scheme: dark) {
