@@ -44,6 +44,11 @@ const outcomes = await sql<{ day: string; outcome: string; n: string; tokens: st
    FROM ${DATASET} WHERE ${since} AND blob1 = 'systemone'
    GROUP BY day, outcome ORDER BY day, outcome`,
 );
+const actives = await sql<{ day: string; installs: string }>(
+  `SELECT ${day} AS day, SUM(_sample_interval) AS installs
+   FROM ${DATASET} WHERE ${since} AND blob2 = 'model' AND double3 = 1
+   GROUP BY day ORDER BY day`,
+);
 const heavy = await sql<{ day: string; reached: string; installs: string }>(
   `SELECT ${day} AS day, double3 AS reached, SUM(_sample_interval) AS installs
    FROM ${DATASET} WHERE ${since} AND blob2 = 'model' AND (double3 = 100 OR double3 = 200 OR double3 = 400)
@@ -63,6 +68,7 @@ for (const o of outcomes) {
     `${o.outcome.padEnd(14)} ${o.n.padStart(8)}${o.outcome === "model" ? `   ${Number(o.tokens).toLocaleString("en-US")} tokens` : ""}`,
   );
 }
+for (const a of actives) line(a.day, `active installs (first model request): ${a.installs}`);
 for (const h of heavy) line(h.day, `installs that reached ${h.reached} requests: ${h.installs}`);
 for (const p of probes) line(p.day, `${p.route}/${p.outcome}: ${p.n}`);
 if (byDay.size === 0) console.log(`No data points in the last ${days} days.`);
