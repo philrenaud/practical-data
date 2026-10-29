@@ -67,10 +67,11 @@ export const KINDS: readonly KindInfo[] = [
     about: [
       "Ordered labels, such as Small < Medium < Large, get a sequential scale.",
       "The model compares each pair of labels, in the two directions. Code then finds the order that agrees with the most answers. Thus one incorrect answer cannot change the order.",
+      "Finishing places, such as 3rd, 14th, and 7th (tie), are ordered by code from their numbers, and the model gets no pair questions. Places that count the rows (1st, 2nd, 3rd down the table) are ignored, like ranks.",
     ],
     questions: ["c#.lt#_#"],
     rule: (p) =>
-      `Use the order that agrees with the most pair answers. Use it only when the mean confidence of those answers is ${p.orderConfidence} or more (${p.strongOrder} or more when P(ordered) is low).`,
+      `Use the order that agrees with the most pair answers. Use it only when the mean confidence of those answers is ${p.orderConfidence} or more (${p.strongOrder} or more when P(ordered) is low). Places use the order of their numbers.`,
   },
   {
     kind: "aggregates",

@@ -477,6 +477,27 @@
       "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
   },
+  "season-places": {
+    "t0": {
+      "Season": "none",
+      "Regular season: Record": "none",
+      "Regular season: Win %": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Regular season: League": { "kind": "ordinal", "order": ["16th", "13th", "9th (tie)", "7th", "4th", "2nd"] },
+      "Regular season: Division": { "kind": "ordinal", "order": ["6th", "5th", "3rd (tie)", "3rd", "2nd", "1st"] },
+      "Regular season: GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Affiliate": "none"
+    },
+    "t1": {
+      "Place": "none",
+      "Club": "none",
+      "Anchor": "none",
+      "Time": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    },
+    "t2": {
+      "Ingredient": "none",
+      "Grams": { "kind": "quantitative" }
+    }
+  },
   "value-with-change": {
     "t0": {
       "Rank": "none",

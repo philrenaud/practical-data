@@ -35,7 +35,9 @@ Code in `src/core` does the parts that need no model: `profile.ts`,
    words, such as "values span about 2 orders of magnitude", not as a ratio.
 4. Each categorical column gets its own request, with `categoricalState` as
    the state. A second request asks the pairwise order questions, but only
-   when the labels might be ordered.
+   when the labels might be ordered. Finishing places (3rd, 14th, 7th (tie))
+   get no pairwise questions: `placeOrder` orders them by their numbers, and
+   places that count the rows are skipped, like ranks.
 5. The `read` functions return probabilities, and the `Policy` thresholds
    turn them into a `ColumnEncoding` or a `SkippedColumn` with a reason.
 6. `dateEncodings` encodes the date columns without the model.
