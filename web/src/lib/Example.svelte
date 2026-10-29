@@ -2,17 +2,16 @@
 <script lang="ts">
   import type { PaletteId } from "../../../src/core/palettes.ts";
   import type { ColumnEncoding, SkippedColumn } from "../../../src/core/types.ts";
-  import { confidenceOf, describeEncoding, groupSizes, plainReason, type DemoSection } from "./demo.ts";
+  import { columnSummary, groupSizes, type DemoSection } from "./demo.ts";
   import { shade } from "./shade.ts";
 
   interface Props {
     readonly section: DemoSection;
-    readonly index: number;
     readonly palette: PaletteId;
     readonly colored: boolean;
     readonly theme: string;
   }
-  const { section: s, index, palette, colored, theme }: Props = $props();
+  const { section: s, palette, colored, theme }: Props = $props();
 
   const groups = $derived(groupSizes(s.judgment));
   const host = (url: string) => new URL(url).hostname.replace(/^www\./, "");
@@ -28,7 +27,6 @@
 
 <article class="example" id={s.section.id}>
   <header>
-    <span class="index">{String(index + 1).padStart(2, "0")}</span>
     <h3>{s.section.heading}</h3>
   </header>
   <p class="caption">{s.section.caption}</p>
@@ -55,28 +53,23 @@
             >
           {/each}
         </tbody>
+        <!-- The extractor skips <tfoot>, so the strip is never read as data. -->
+        <tfoot>
+          <tr>
+            {#each rowsOf(ti) as r, ci (ci)}
+              {@const sum = columnSummary(r.e, r.skipped)}
+              <td class:off={!sum.on}><span class="k">{sum.kind}</span><span class="d">{sum.detail}</span></td>
+            {/each}
+          </tr>
+        </tfoot>
       </table>
     </div>
-    <details class="why">
-      <summary>How it read {t.title ?? "this table"}</summary>
-      <ul>
-        {#each rowsOf(ti) as r, ri (ri)}
-          <li class:plain={r.e === undefined}>
-            <span class="col">{r.header || "(blank)"}</span>
-            <span class="verdict"
-              >{r.e !== undefined ? describeEncoding(r.e) : `left plain: ${plainReason(r.skipped?.reason)}`}</span
-            >
-            <span class="conf">{r.e !== undefined ? confidenceOf(r.e) : ""}</span>
-          </li>
-        {/each}
-      </ul>
-      {#if j.aggregateRows.length > 0}
-        <p class="agg">
-          Rows judged to be totals and kept out of the scale: {j.aggregateRows
-            .map((r) => `"${t.rows[r]?.[0] ?? r}"`)
-            .join(", ")}.
-        </p>
-      {/if}
-    </details>
+    {#if j.aggregateRows.length > 0}
+      <p class="note">
+        Rows judged to be totals and kept out of the scale: {j.aggregateRows
+          .map((r) => `"${t.rows[r]?.[0] ?? r}"`)
+          .join(", ")}.
+      </p>
+    {/if}
   {/each}
 </article>

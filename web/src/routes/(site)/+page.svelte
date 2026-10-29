@@ -52,9 +52,8 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <p class="eyebrow">
+    <p class="brand">
       <img src="icon128.png" alt="" width="22" height="22" /> Practical Data
-      <span class="tag">Free &amp; open source</span>
     </p>
     <h1>Tables you can read <br class="wide" />at a glance.</h1>
     <p class="lede">
@@ -85,8 +84,7 @@
     <label><input type="radio" name="view" value="original" bind:group={view} /><span>Original</span></label>
   </div>
   <div class="control-group">
-    <span class="control-label" id="palette-label">Palette</span>
-    <div class="palettes" id="palettes" role="radiogroup" aria-labelledby="palette-label">
+    <div class="palettes" id="palettes" role="radiogroup" aria-label="Palette">
       {#each palettes as [id, spec] (id)}
         <label title={spec.note}>
           <input type="radio" name="palette" value={id} bind:group={palette} />
@@ -96,25 +94,39 @@
       {/each}
     </div>
   </div>
-  <div class="control-group">
-    <span class="control-label" id="theme-label">Page</span>
-    <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
-      <label><input type="radio" name="theme" value="auto" bind:group={theme} /><span>Auto</span></label>
-      <label><input type="radio" name="theme" value="light" bind:group={theme} /><span>Light</span></label>
-      <label><input type="radio" name="theme" value="dark" bind:group={theme} /><span>Dark</span></label>
-    </div>
-  </div>
-  <a class="hint-link" href="/palettes" data-sveltekit-reload>Palette study</a>
-  <p class="hint">
-    Hover a shaded header to see how it was read. Switch the page to dark: the shading picks its dark ramps on its own.
-  </p>
+  <button
+    class="theme-toggle"
+    role="switch"
+    aria-checked={dark}
+    onclick={() => (theme = dark ? "light" : "dark")}
+    aria-label="Dark theme"
+    title={theme === "auto" ? "Following the system theme" : dark ? "Dark" : "Light"}
+  >
+    <span class="knob" class:dark>
+      {#if dark}
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.6 14.9A8.9 8.9 0 1 1 9.1 3.4a7.2 7.2 0 1 0 11.5 11.5Z" />
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="5" />
+          <path
+            d="M12 1.6v3.2M12 19.2v3.2M1.6 12h3.2M19.2 12h3.2M4.6 4.6l2.3 2.3M17.1 17.1l2.3 2.3M19.4 4.6l-2.3 2.3M6.9 17.1l-2.3 2.3"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+          />
+        </svg>
+      {/if}
+    </span>
+  </button>
 </nav>
 
 <main>
   <section id="examples" class="examples" aria-labelledby="examples-title">
     <h2 id="examples-title" class="sr-only">Examples</h2>
     {#each sections as section, i (section.section.id)}
-      <Example {section} index={i} {palette} colored={view === "colored"} theme={applied} />
+      <Example {section} {palette} colored={view === "colored"} theme={applied} />
     {/each}
   </section>
 
@@ -250,6 +262,10 @@
 </main>
 
 <footer>
+  <p class="brand footer-brand">
+    <img src="icon128.png" alt="" width="22" height="22" /> Practical Data
+  </p>
+  <p class="signoff">Conditional formatting for every table on the web, with the direction figured out for you.</p>
   <p>
     Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a
       href="/tests">Tests</a
