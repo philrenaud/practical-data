@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: a worked bill</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td:last-child { text-align: right; }
+</style>
+</head>
+<body>
+<h1>A worked bill</h1>
+<p>
+  Documentation often works one bill through: a few line items, how each is
+  calculated, its cost, and a Total row under them. The table has one number
+  column, so the sums alone are not enough to call the last row a total, but
+  its label says so and its cost is the sum of the others. The extension
+  leaves it off the scale. The plan table below ends with a plan whose name
+  starts with "Total" and whose price is not a sum, and it stays on the
+  scale.
+</p>
+
+<h2>Worked example</h2>
+<!-- Three line items and their total. The total's Calculation cell is empty. -->
+<table id="bill">
+  <thead><tr><th>Line item</th><th>Calculation</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td>Compute units</td><td>40,000 × $5 / 1,000,000</td><td>$0.20 USD</td></tr>
+    <tr><td>Transfer</td><td>12,000 × $25 / 1,000,000</td><td>$0.30 USD</td></tr>
+    <tr><td>Reserved hours</td><td>2.0 hours × $0.04</td><td>$0.08 USD</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td><strong>$0.58 USD</strong></td></tr>
+  </tbody>
+</table>
+
+<h2>Plans</h2>
+<!-- "Total Access" is a plan name, and its price is not the sum of the others. -->
+<table id="plans">
+  <thead><tr><th>Plan</th><th>Seats</th><th>Price per month</th></tr></thead>
+  <tbody>
+    <tr><td>Starter</td><td>Up to 3</td><td>$12</td></tr>
+    <tr><td>Studio</td><td>Up to 10</td><td>$29</td></tr>
+    <tr><td>Agency</td><td>Up to 50</td><td>$79</td></tr>
+    <tr><td>Total Access</td><td>Unlimited</td><td>$149</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
