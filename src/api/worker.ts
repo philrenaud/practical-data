@@ -55,8 +55,13 @@ const INSTALL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...headers } });
-const refuse = (status: number, error: string, message: string, headers: Record<string, string> = {}) =>
-  json(status, { error, message }, headers);
+const refuse = (
+  status: number,
+  error: string,
+  message: string,
+  headers: Record<string, string> = {},
+  extra: Record<string, number> = {},
+) => json(status, { error, message, ...extra }, headers);
 
 const today = () => new Date().toISOString().slice(0, 10);
 const secondsToMidnightUtc = () => {
@@ -189,13 +194,16 @@ const ask = async (
         "upstream",
         `The model returned ${upstream.status}.`,
         retry === null ? {} : { "Retry-After": retry },
+        { upstream: upstream.status },
       ),
     };
   }
   const decoded = decodeDecisionResponse(await upstream.json().catch(() => null));
   if (decoded === null || validateAnswers(questions, decoded) !== null) {
     // The model ran, so the request and its estimated tokens stay counted.
-    return { refusal: refuse(502, "upstream", "The model's answer didn't match the questions.") };
+    return {
+      refusal: refuse(502, "upstream", "The model's answer didn't match the questions.", {}, { upstream: 200 }),
+    };
   }
   ctx.waitUntil(
     Promise.all([

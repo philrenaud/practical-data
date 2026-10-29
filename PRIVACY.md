@@ -1,6 +1,6 @@
 # Privacy policy
 
-_Practical Data, a Chrome extension. Last updated October 21, 2026._
+_Practical Data, a Chrome extension. Last updated October 29, 2026._
 
 Practical Data shades the comparable columns of tables on web pages. To decide
 what each column means, it asks a decision model. From version 1.1.0, that goes
@@ -43,9 +43,11 @@ Only the provider set in the extension's options:
   - **Anonymous counts** of requests, in Cloudflare Workers Analytics
     Engine for three months: for each request, whether it was answered from
     the cache, answered by the model, or refused and why; the input tokens it
-    used; and how many requests its install had made that day. They have no
-    install id, IP address, location, or table text. They show how much the
-    endpoint is used and whether it is abused.
+    used; how many requests its install had made that day; and, when the
+    model's provider refuses a request, the provider's HTTP status. They have
+    no install id, IP address, location, or table text. They show how much
+    the endpoint is used and whether it is abused. The code that writes them
+    is public: [`src/api/usage.ts`](https://github.com/philrenaud/practical-data/blob/main/src/api/usage.ts).
 
   Nothing is logged. The Worker, its cache, and the counts run on
   Cloudflare, under
@@ -93,3 +95,5 @@ Sites can opt out for all users with
 Changes to this policy will be noted here with a new date.
 
 - October 21, 2026: the free endpoint keeps anonymous request counts.
+- October 29, 2026: the counts record the provider's HTTP status when a
+  request fails upstream, and link the code that writes them.

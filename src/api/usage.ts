@@ -10,6 +10,8 @@
  *   double2 input tokens that the model used (outcome "model" only)
  *   double3 the install's model requests today, this one included
  *           (outcomes "model" and "install_limit" only)
+ *   double4 the provider's HTTP status (outcome "upstream" only: 200 when it
+ *           answered but the answers failed validation, 0 when it never answered)
  *   index1  outcome, so that sampling keeps rare outcomes
  */
 
@@ -49,5 +51,10 @@ export const usagePoint = async (pathname: string, response: Response): Promise<
     tokens = typeof usage?.input_tokens === "number" ? usage.input_tokens : 0;
   }
   const counted = outcome === "model" || outcome === "install_limit";
-  return { blobs: [route, outcome], doubles: [response.status, tokens, counted ? used : 0], indexes: [outcome] };
+  const upstream = typeof body?.["upstream"] === "number" ? body["upstream"] : 0;
+  return {
+    blobs: [route, outcome],
+    doubles: [response.status, tokens, counted ? used : 0, upstream],
+    indexes: [outcome],
+  };
 };
