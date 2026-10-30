@@ -159,6 +159,10 @@ export const NOTES: readonly { readonly text: string; readonly when: string }[] 
     when: "Half of the values or more are ranges. Code puts a range at its midpoint.",
   },
   {
+    text: "the values are win or loss streaks, counted as wins minus losses: W3 is 3, L2 is -2",
+    when: "Every value is a streak such as W3 or 2L, and the column has both wins and losses or its header says Strk or Streak.",
+  },
+  {
     text: "values are written like clock readings (such as 2:41); they could be durations or times of day",
     when: "Half of the values or more look like clock times.",
   },

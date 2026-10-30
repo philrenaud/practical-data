@@ -78,6 +78,8 @@ test("duration extents read back as clock values", () => {
   assert.equal(withUnit(179, ":"), "2:59");
   assert.equal(withUnit(185, ":"), "3:05");
   assert.equal(withUnit(3723, ":"), "1:02:03");
+  assert.equal(withUnit(6, "streak"), "W6");
+  assert.equal(withUnit(-5, "streak"), "L5");
 });
 
 test("a date column reads as dates, earliest to latest", () => {

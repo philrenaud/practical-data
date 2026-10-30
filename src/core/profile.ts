@@ -76,7 +76,13 @@ const mode = <A>(xs: readonly A[]): A | undefined => {
   return best;
 };
 
-const profileNumeric = (col: number, header: string, cells: readonly string[]): NumericProfile | null => {
+/** `display` is the cell text for samples when `cells` were rewritten, as for streaks. */
+const profileNumeric = (
+  col: number,
+  header: string,
+  cells: readonly string[],
+  display: readonly string[] = cells,
+): NumericProfile | null => {
   const filled = cells.filter((c) => !isMissing(c));
   const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c)));
   const numeric = parsed.filter((p) => p !== null);
@@ -96,7 +102,7 @@ const profileNumeric = (col: number, header: string, cells: readonly string[]): 
     .filter((e): e is readonly [number, number] => e[0] !== undefined)
     .sort((a, b) => a[0] - b[0]);
   const at = (q: number) => sortedIdx[Math.round(q * (sortedIdx.length - 1))]?.[1] ?? 0;
-  const samples = [...new Set([0, 0.25, 0.5, 0.75, 1].map(at))].map((i) => stripNoise(cells[i] ?? ""));
+  const samples = [...new Set([0, 0.25, 0.5, 0.75, 1].map(at))].map((i) => stripNoise(display[i] ?? ""));
 
   return {
     kind: "numeric",
@@ -138,6 +144,38 @@ const profileCategorical = (col: number, header: string, cells: readonly string[
   return { kind: "categorical", col, header, values, levels, display };
 };
 
+/** A win, loss, or tie streak: "W3", "L2", "3W", "5L", "T1". */
+const STREAK_RE = /^(?:([WLT])\s?(\d{1,2})|(\d{1,2})\s?([WLT]))$/;
+const STREAK_HEADER = /\b(?:strk|streak)\b/i;
+
+/**
+ * Reads a streak column as wins minus losses: W3 is 3, L2 is -2, and a tie
+ * streak is 0. A letter after a number is also a unit ("5L" is five liters),
+ * so a column is a streak column only when every filled cell has the form
+ * and the column has both W and L or its header names a streak. Returns the
+ * cells rewritten as signed numbers, or null.
+ */
+const readStreaks = (header: string, cells: readonly string[]): readonly string[] | null => {
+  const letters = new Set<string>();
+  let filled = 0;
+  const out: string[] = [];
+  for (const cell of cells) {
+    if (isMissing(cell)) {
+      out.push(cell);
+      continue;
+    }
+    const m = STREAK_RE.exec(stripNoise(cell));
+    if (m === null) return null;
+    const letter = m[1] ?? m[4] ?? "";
+    const n = Number(m[2] ?? m[3]);
+    letters.add(letter);
+    filled++;
+    out.push(String(letter === "W" ? n : letter === "L" ? -n : 0));
+  }
+  if (filled < MIN_FILLED) return null;
+  return (letters.has("W") && letters.has("L")) || STREAK_HEADER.test(header) ? out : null;
+};
+
 /** A date, a clock time, or a relative time ("3 days ago", which would otherwise parse as 3 days). */
 const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(cell, { now: 0 }) !== null;
 
@@ -151,7 +189,9 @@ export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
     if (filled.length > 0 && filled.filter(looksLikeDate).length / filled.length >= NUMERIC_SHARE) {
       return { kind: "text", col, header, reason: "dates or times", samples: cells.slice(0, 5).map(stripNoise) };
     }
-    const numeric = profileNumeric(col, header, cells);
+    const streaks = readStreaks(header, cells);
+    const parsed = streaks === null ? profileNumeric(col, header, cells) : profileNumeric(col, header, streaks, cells);
+    const numeric = parsed !== null && streaks !== null ? { ...parsed, unit: "streak" } : parsed;
     if (numeric !== null) {
       if (numeric.distinct < 2) {
         return { kind: "text", col, header, reason: "constant", samples: cells.slice(0, 5) };

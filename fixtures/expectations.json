@@ -606,5 +606,27 @@
       "Bay": "none",
       "Pickup": "none"
     }
+  },
+  "standings-streaks": {
+    "t0": {
+      "Team": "none",
+      "Home Home record": "none",
+      "Strk Streak": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t1": {
+      "Team": "none",
+      "Strk Streak": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t2": {
+      "East": "none",
+      "Home": "none",
+      "Road": "none",
+      "Last 5": "none",
+      "Strk": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t3": {
+      "Capacity": { "kind": "quantitative" },
+      "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    }
   }
 }
