@@ -8,8 +8,9 @@
  * `globalThis.__practicalData` so scripts can snapshot pages with Playwright.
  */
 import { execFileSync } from "node:child_process";
+import { statSync } from "node:fs";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { basename } from "node:path";
+import { basename, relative } from "node:path";
 import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
@@ -20,10 +21,28 @@ if (out === undefined) throw new Error("--out needs a directory");
 const FLAGS_REPO = "philrenaud/practical-data-flags";
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
-// Skip dotfiles, such as Finder's .DS_Store, and the SVG icon source.
+// Copy only the files that git tracks in static/. The directory also holds
+// git-ignored local files, such as the licensed Hoodzpah fonts for the
+// website, whose EULA forbids redistribution; no untracked file belongs in a
+// build. Dotfiles, such as Finder's .DS_Store, and the SVG icon source stay
+// out even when tracked. Without git, only the known licensed names are
+// skipped.
+const tracked = (() => {
+  try {
+    return new Set(execFileSync("git", ["ls-files", "-z", "static"], { encoding: "utf8" }).split("\0").filter(Boolean));
+  } catch {
+    return null;
+  }
+})();
 await cp("static", out, {
   recursive: true,
-  filter: (src) => !basename(src).startsWith(".") && !src.endsWith(".svg"),
+  filter: (src) => {
+    if (basename(src).startsWith(".") || src.endsWith(".svg")) return false;
+    if (tracked === null) return !/hoodfonts|cambridge/i.test(src);
+    // Directories pass so cp descends; their files are filtered one by one.
+    const rel = relative("static", src);
+    return rel === "" || statSync(src).isDirectory() || tracked.has(`static/${rel}`);
+  },
 });
 
 // Stamp the build so a stale unpacked copy is obvious in chrome://extensions.
