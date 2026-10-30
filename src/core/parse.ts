@@ -241,8 +241,8 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
   // A value with its condition: the value is the cell's number.
   const condition = CONDITION_RE.exec(text);
   if (condition?.[1] !== undefined) return parseNumber(condition[1]);
-  // Open-ended bins: "65+".
-  const plus = /^(.*\d)\s*\+$/.exec(text);
+  // Open-ended bins: "65+", and with a magnitude, "1M+".
+  const plus = /^(.*\d\s*[KMBTkmbt]?)\s*\+$/.exec(text);
   if (plus?.[1] !== undefined) {
     const n = parseSingle(plus[1]);
     return n === null ? null : { ...n, bound: true };
