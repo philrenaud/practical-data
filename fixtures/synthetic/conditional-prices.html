@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: prices with a condition</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .unit, .note { color: #777; font-size: 0.85em; }
+  .note { display: block; }
+  .caption { display: block; color: #777; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<h1>Prices with a condition</h1>
+<p>
+  A price list can split one product into two rows, each with a note under
+  the price that says when it applies: "for requests up to 100,000 units" and
+  "for requests over 100,000 units". The number before the note is the price,
+  so the extension reads it. A bowling figure such as "3 for 45" is two
+  numbers, not a price with a condition, and stays text.
+</p>
+
+<h2>Service pricing</h2>
+<!-- The Harrier rows give the input price with a block note under it. -->
+<table id="services">
+  <thead>
+    <tr><th rowspan="2">Service</th><th colspan="2">Base units</th><th colspan="2">Storage</th></tr>
+    <tr><th>Input</th><th>Output</th><th>Hot</th><th>Cold</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="#">Osprey 3</a><span class="caption">For long batch jobs and deep analysis</span></td><td>$12 <span class="unit">/ MU</span></td><td>$48 <span class="unit">/ MU</span></td><td>$9 <span class="unit">/ GB</span></td><td>$1.20 <span class="unit">/ GB</span></td></tr>
+    <tr><td><a href="#">Kestrel 3</a><span class="caption">For everyday workloads</span></td><td>$3 <span class="unit">/ MU</span></td><td>$15 <span class="unit">/ MU</span></td><td>$4 <span class="unit">/ GB</span></td><td>$0.60 <span class="unit">/ GB</span></td></tr>
+    <tr><td rowspan="2"><a href="#">Harrier 3</a><span class="caption">For high-volume, quick requests such as tagging and sorting</span></td><td>$0.20 <span class="unit">/ MU</span><span class="note">for requests up to 100,000 units</span></td><td>$0.80 <span class="unit">/ MU</span></td><td>$1 <span class="unit">/ GB</span></td><td>$0.15 <span class="unit">/ GB</span></td></tr>
+    <tr><td>$0.60 <span class="unit">/ MU</span><span class="note">for requests over 100,000 units</span></td><td>$2.40 <span class="unit">/ MU</span></td><td>$2 <span class="unit">/ GB</span></td><td>$0.30 <span class="unit">/ GB</span></td></tr>
+    <tr><td><a href="#">Osprey 2</a></td><td>$15 <span class="unit">/ MU</span></td><td>$60 <span class="unit">/ MU</span></td><td>$10 <span class="unit">/ GB</span></td><td>$1.50 <span class="unit">/ GB</span></td></tr>
+    <tr><td><a href="#">Kestrel 2</a></td><td>$4 <span class="unit">/ MU</span></td><td>$20 <span class="unit">/ MU</span></td><td>$5 <span class="unit">/ GB</span></td><td>$0.80 <span class="unit">/ GB</span></td></tr>
+    <tr><td><a href="#">Harrier 2</a></td><td>$1 <span class="unit">/ MU</span></td><td>$4 <span class="unit">/ MU</span></td><td>$1.50 <span class="unit">/ GB</span></td><td>$0.25 <span class="unit">/ GB</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Bowling</h2>
+<!-- "Best" holds wickets for runs. It must not parse as a number with a condition. -->
+<table id="bowling">
+  <thead><tr><th>Bowler</th><th>Overs</th><th>Wickets</th><th>Economy</th><th>Best</th></tr></thead>
+  <tbody>
+    <tr><td>A. Fenwick</td><td>38.2</td><td>11</td><td>4.12</td><td>4 for 31</td></tr>
+    <tr><td>R. Lindqvist</td><td>41.0</td><td>9</td><td>4.85</td><td>3 for 45</td></tr>
+    <tr><td>T. Okafor</td><td>29.4</td><td>7</td><td>5.30</td><td>3 for 22</td></tr>
+    <tr><td>M. Duarte</td><td>33.0</td><td>6</td><td>4.48</td><td>2 for 18</td></tr>
+    <tr><td>J. Whitcombe</td><td>22.1</td><td>4</td><td>6.02</td><td>2 for 40</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

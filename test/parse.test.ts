@@ -65,6 +65,19 @@ for (const [input, value, unit, range] of cases) {
   });
 }
 
+test("a value followed by the condition it holds under parses to the value", () => {
+  assert.deepEqual(parseNumber("$0.10 / MTok for prompts up to 100,000 tokens"), {
+    value: 0.1,
+    unit: "$",
+    bound: false,
+    range: null,
+  });
+  assert.deepEqual(parseNumber("$2 / GB when billed yearly"), { value: 2, unit: "$", bound: false, range: null });
+  assert.equal(parseNumber("2 for 4"), null, "a batting line");
+  assert.equal(parseNumber("3 for 45"), null, "bowling figures");
+  assert.equal(parseNumber("Plan for teams"), null);
+});
+
 test("isMissing recognizes placeholders", () => {
   for (const t of ["", "—", "N/A", "Not applicable", " – ", "TBD[3]", "— N/a", "— N/a [p]", "-- n/a --", ".."]) {
     assert.equal(isMissing(t), true, t);
