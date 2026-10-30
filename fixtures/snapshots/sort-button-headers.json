@@ -1,0 +1,103 @@
+{
+ "url": "fixture://synthetic/sort-button-headers.html",
+ "title": "Practical Data: headers in sort buttons",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Weather stations",
+   "headers": [
+    "Station",
+    "Elevation (m)",
+    "Coverage (km²)",
+    "Uptime",
+    "Response time"
+   ],
+   "rows": [
+    [
+     "Alder Ridge",
+     "412",
+     "1.2M",
+     "99.1%",
+     "212.40s"
+    ],
+    [
+     "Brindle Flats",
+     "88",
+     "2M+",
+     "97.6%",
+     "48.15s"
+    ],
+    [
+     "Copperhill",
+     "1,206",
+     "850K",
+     "94.2%",
+     "95.02s"
+    ],
+    [
+     "Dunmore Point",
+     "15",
+     "1.6M",
+     "98.8%",
+     "31.77s"
+    ],
+    [
+     "Elkwater",
+     "734",
+     "600K",
+     "91.5%",
+     "160.33s"
+    ],
+    [
+     "Fernvale",
+     "256",
+     "1M",
+     "96.3%",
+     "22.90s"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Volunteers",
+   "headers": [
+    "Name",
+    "Shifts",
+    "Hours",
+    "Actions"
+   ],
+   "rows": [
+    [
+     "Ines Varga",
+     "12",
+     "38",
+     ""
+    ],
+    [
+     "Tomas Reyl",
+     "4",
+     "11",
+     ""
+    ],
+    [
+     "Wren Adeyemi",
+     "9",
+     "27",
+     ""
+    ],
+    [
+     "Paulo Strand",
+     "17",
+     "52",
+     ""
+    ],
+    [
+     "Mira Okafor",
+     "6",
+     "19",
+     ""
+    ]
+   ]
+  }
+ ]
+}

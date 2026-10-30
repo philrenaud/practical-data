@@ -113,19 +113,29 @@ const isHiddenCell = (cell: HTMLElement): boolean =>
 const holdsValue = (el: HTMLElement): boolean =>
   el.matches("button, [role=button]") && parseNumber(el.textContent ?? "") !== null;
 
-const cellText = (cell: HTMLElement): string => {
+const cellText = (cell: HTMLElement, keepButtons = false): string => {
   if (isHiddenCell(cell)) return "";
   const noise =
     cell.firstElementChild === null
       ? []
       : [
-          ...[...cell.querySelectorAll<HTMLElement>(CONTROLS)].filter((el) => !holdsValue(el)),
+          ...[...cell.querySelectorAll<HTMLElement>(CONTROLS)].filter(
+            (el) => !holdsValue(el) && !(keepButtons && el.matches("button, [role=button]")),
+          ),
           ...[...cell.querySelectorAll<HTMLElement>("sup")].filter(isAnnotation),
           ...[...cell.querySelectorAll<HTMLElement>(SCREEN_READER_ONLY)].filter(isScreenReaderOnly),
         ];
   const text = noise.length === 0 ? textOf(cell) : textSkipping(cell, new Set(noise));
   return text.replace(/\s+/g, " ").trim();
 };
+
+/**
+ * A header cell's label. A sortable header often puts its whole label in the
+ * sort button ("<th><button>Speed</button></th>"), and dropping buttons as
+ * controls leaves it empty. When nothing else is left, the button's text is
+ * the label. Body cells still drop buttons such as Edit.
+ */
+const headerText = (cell: HTMLElement): string => cellText(cell) || cellText(cell, true);
 
 /** Expands spans so grid[r][c] is the cell covering that slot. */
 const buildGrid = (rows: readonly HTMLTableRowElement[]): HTMLTableCellElement[][] => {
@@ -310,7 +320,7 @@ export const extractTable = (
     const parts: string[] = [];
     for (let r = 0; r < headerCount; r++) {
       const cell = grid[r]![c];
-      const t = cell === undefined ? "" : cellText(cell);
+      const t = cell === undefined ? "" : headerText(cell);
       if (t !== "" && parts.at(-1) !== t) parts.push(t);
     }
     return parts.join(": ");

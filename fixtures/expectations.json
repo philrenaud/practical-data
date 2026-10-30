@@ -641,5 +641,20 @@
       "Volunteers (new)": "none",
       "Bags collected": { "kind": "quantitative" }
     }
+  },
+  "sort-button-headers": {
+    "t0": {
+      "Station": "none",
+      "Elevation (m)": { "kind": "quantitative" },
+      "Coverage (km²)": { "kind": "quantitative" },
+      "Uptime": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Response time": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    },
+    "t1": {
+      "Name": "none",
+      "Shifts": { "kind": "quantitative" },
+      "Hours": { "kind": "quantitative" },
+      "Actions": "none"
+    }
   }
 }

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: headers in sort buttons</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  th button { font: inherit; font-weight: bold; border: 0; padding: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+  th button svg { width: 10px; height: 10px; }
+  td button { font: inherit; }
+</style>
+</head>
+<body>
+<h1>Headers in sort buttons</h1>
+<p>
+  A sortable table can put each column's whole label inside its sort button.
+  The label is the header, so the extension reads it. Buttons in body cells,
+  such as Edit, are still left out. An open-ended size such as 2M+ reads as
+  a bound at 2M.
+</p>
+
+<h2>Weather stations</h2>
+<!-- Every header but Elevation is a sort button. Coverage has an open-ended value. -->
+<table id="stations">
+  <thead><tr>
+    <th scope="col" aria-sort="none"><button aria-label="Sort by Station."><span>Station</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"></path></svg></button></th>
+    <th scope="col">Elevation (m)</th>
+    <th scope="col" aria-sort="none"><button aria-label="Sort by Coverage."><span>Coverage (km²)</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"></path></svg></button></th>
+    <th scope="col" aria-sort="none"><button aria-label="Sort by Uptime."><span>Uptime</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"></path></svg></button></th>
+    <th scope="col" aria-sort="none"><button aria-label="Sort by Response time."><span>Response time</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"></path></svg></button></th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Alder Ridge</td><td>412</td><td>1.2M</td><td>99.1%</td><td>212.40s</td></tr>
+    <tr><td>Brindle Flats</td><td>88</td><td>2M+</td><td>97.6%</td><td>48.15s</td></tr>
+    <tr><td>Copperhill</td><td>1,206</td><td>850K</td><td>94.2%</td><td>95.02s</td></tr>
+    <tr><td>Dunmore Point</td><td>15</td><td>1.6M</td><td>98.8%</td><td>31.77s</td></tr>
+    <tr><td>Elkwater</td><td>734</td><td>600K</td><td>91.5%</td><td>160.33s</td></tr>
+    <tr><td>Fernvale</td><td>256</td><td>1M</td><td>96.3%</td><td>22.90s</td></tr>
+  </tbody>
+</table>
+
+<h2>Volunteers</h2>
+<!-- Buttons in body cells are controls. Their text must not reach the snapshot. -->
+<table id="volunteers">
+  <thead><tr><th>Name</th><th>Shifts</th><th>Hours</th><th>Actions</th></tr></thead>
+  <tbody>
+    <tr><td>Ines Varga</td><td>12</td><td>38</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>Tomas Reyl</td><td>4</td><td>11</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>Wren Adeyemi</td><td>9</td><td>27</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>Paulo Strand</td><td>17</td><td>52</td><td><button type="button">Edit</button></td></tr>
+    <tr><td>Mira Okafor</td><td>6</td><td>19</td><td><button type="button">Edit</button></td></tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -39,6 +39,8 @@ const cases: ReadonlyArray<readonly [string, number | null, string | null, (read
   ["$10 to $20", 15, "$", [10, 20]],
   ["1.5-2.5 GB", 2, "GB", [1.5, 2.5]],
   ["65+", 65, null],
+  ["1M+", 1e6, null],
+  ["$500K+", 5e5, "$"],
   ["35-10", null, null],
   ["6-6", null, null],
   ["2024-01", null, null],
