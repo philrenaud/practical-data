@@ -628,5 +628,18 @@
       "Capacity": { "kind": "quantitative" },
       "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
+  },
+  "ranked-rates": {
+    "t0": {
+      "Club": "none",
+      "ATWR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "DFWR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "STWR": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+    },
+    "t1": {
+      "Crew": "none",
+      "Volunteers (new)": "none",
+      "Bags collected": { "kind": "quantitative" }
+    }
   }
 }

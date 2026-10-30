@@ -76,7 +76,7 @@ const mode = <A>(xs: readonly A[]): A | undefined => {
   return best;
 };
 
-/** `display` is the cell text for samples when `cells` were rewritten, as for streaks. */
+/** `display` is the cell text for samples when `cells` were rewritten, as for streaks or ranked values. */
 const profileNumeric = (
   col: number,
   header: string,
@@ -176,6 +176,46 @@ const readStreaks = (header: string, cells: readonly string[]): readonly string[
   return (letters.has("W") && letters.has("L")) || STREAK_HEADER.test(header) ? out : null;
 };
 
+/** A value followed by an unsigned whole number in parentheses, as in "47% (9)" or "3.1 (#7)". */
+const RANKED_RE = /^(.*\S)\s*\(\s*#?(\d{1,4})\s*\)$/;
+const MIN_RANKED = 5;
+
+/**
+ * Reads a column whose cells give a value with its rank in parentheses, as in
+ * "47% (9)". An unsigned parenthesis is often a count of something else
+ * ("42 (6)" animals, of which 6 puppies), so the column counts as ranked only
+ * when every filled cell has the form, every value parses, every rank is
+ * from 1 to the number of rows, and the ranks follow the values: a larger
+ * value never has a worse rank in one direction and a better one in the
+ * other. Returns the cells with the ranks removed, or null.
+ */
+const readRanked = (cells: readonly string[]): readonly string[] | null => {
+  const out: string[] = [];
+  const pairs: [number, number][] = [];
+  for (const cell of cells) {
+    if (isMissing(cell)) {
+      out.push(cell);
+      continue;
+    }
+    const m = RANKED_RE.exec(stripNoise(cell));
+    const n = m?.[1] === undefined ? null : parseNumber(m[1]);
+    const rank = Number(m?.[2]);
+    if (m?.[1] === undefined || n === null || rank < 1 || rank > cells.length) return null;
+    out.push(m[1]);
+    pairs.push([n.value, rank]);
+  }
+  if (pairs.length < MIN_RANKED || new Set(pairs.map((p) => p[1])).size < 2) return null;
+  let up = true;
+  let down = true;
+  for (const [va, ra] of pairs) {
+    for (const [vb, rb] of pairs) {
+      if (va > vb && ra > rb) down = false;
+      if (va > vb && ra < rb) up = false;
+    }
+  }
+  return up || down ? out : null;
+};
+
 /** A date, a clock time, or a relative time ("3 days ago", which would otherwise parse as 3 days). */
 const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(cell, { now: 0 }) !== null;
 
@@ -190,7 +230,9 @@ export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
       return { kind: "text", col, header, reason: "dates or times", samples: cells.slice(0, 5).map(stripNoise) };
     }
     const streaks = readStreaks(header, cells);
-    const parsed = streaks === null ? profileNumeric(col, header, cells) : profileNumeric(col, header, streaks, cells);
+    const rewritten = streaks ?? readRanked(cells);
+    const parsed =
+      rewritten === null ? profileNumeric(col, header, cells) : profileNumeric(col, header, rewritten, cells);
     const numeric = parsed !== null && streaks !== null ? { ...parsed, unit: "streak" } : parsed;
     if (numeric !== null) {
       if (numeric.distinct < 2) {
