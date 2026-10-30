@@ -148,7 +148,10 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     judged.set(table.element, t);
     const sample = table.element.querySelector<HTMLElement>("[data-pd-t]:not([data-pd-t=''])");
     if (sample !== null) sampleCell.set(table.element, sample);
-    control(table, { orientation: t.orientation, hidden: false });
+    // A table with nothing shaded gets no controls bar. There is no shading to
+    // hide. The dev build's right-click menu can still flag such a table.
+    if (t.encodings.length > 0) control(table, { orientation: t.orientation, hidden: false });
+    else uncontrol(table.element);
   }
   // Mark tables the judge skipped as handled, so that mutations don't send them again.
   for (const t of tables) if (t.element.dataset["pdTable"] === undefined) t.element.dataset["pdTable"] = "";
@@ -247,6 +250,12 @@ const control = (table: ExtractedTable, state: { orientation: Orientation; hidde
   const { headers, rows } = table.snapshot;
   const canOrient = headers.length >= 3 && rows.length >= 2 && rows.length <= MAX_ROWS_FOR_ROWS;
   attachControls(table.element, { ...state, canOrient }, handlers);
+};
+
+/** Removes a table's controls when a new judgment leaves it unshaded. */
+const uncontrol = (table: HTMLTableElement) => {
+  detachControls(table);
+  controlled.delete(table);
 };
 
 const pruneDetached = () => {
