@@ -44,6 +44,7 @@ const clock = (v: number): string =>
 /** Formats a value with its column's unit, for a legend. */
 export const withUnit = (v: number, unit: string | null, now: number = Date.now()): string => {
   if (unit === ":") return clock(v);
+  if (unit === "streak") return v > 0 ? `W${v}` : v < 0 ? `L${-v}` : "0";
   if (isDateUnit(unit)) return formatDate(v, unit, now);
   const n = formatNumber(v);
   if (unit === null) return n;

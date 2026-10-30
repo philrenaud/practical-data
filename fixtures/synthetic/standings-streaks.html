@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: standings streaks</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 960px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  abbr { text-decoration: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<h1>Standings streaks</h1>
+<p>
+  A standings table ends with each team's current streak: "W6" or "L1" on a
+  search results card, "1W" or "5L" on a league site. A streak is wins minus
+  losses, so L5 is the worst and W6 the best. A letter after a number can also
+  be a unit: a column of "5L" with no wins and no streak header is liters.
+</p>
+
+<h2>Northern division</h2>
+<!-- Letter-first streaks. Headers carry a visible abbreviation and a screen-reader name. -->
+<table id="north">
+  <thead><tr><th>Team</th><th><abbr>W</abbr><span class="sr"> Wins</span></th><th><abbr>L</abbr><span class="sr"> Losses</span></th><th><abbr>Pct</abbr><span class="sr"> Win percentage</span></th><th><abbr>PF</abbr><span class="sr"> Points for</span></th><th><abbr>PA</abbr><span class="sr"> Points against</span></th><th><abbr>Home</abbr><span class="sr"> Home record</span></th><th><abbr>Strk</abbr><span class="sr"> Streak</span></th></tr></thead>
+  <tbody>
+    <tr><td>Ridgeback Elk</td><td>6</td><td>1</td><td>.857</td><td>188</td><td>120</td><td>3-0</td><td>W4</td></tr>
+    <tr><td>Port Calder Gulls</td><td>4</td><td>3</td><td>.571</td><td>160</td><td>151</td><td>2-1</td><td>L2</td></tr>
+    <tr><td>Ashvale Lynx</td><td>3</td><td>4</td><td>.429</td><td>141</td><td>166</td><td>2-2</td><td>W1</td></tr>
+    <tr><td>Moorfield Rams</td><td>1</td><td>6</td><td>.143</td><td>102</td><td>190</td><td>1-3</td><td>L5</td></tr>
+  </tbody>
+</table>
+
+<h2>Southern division</h2>
+<!-- Every team on a winning streak: the header names the streak. -->
+<table id="south">
+  <thead><tr><th>Team</th><th><abbr>W</abbr><span class="sr"> Wins</span></th><th><abbr>L</abbr><span class="sr"> Losses</span></th><th><abbr>Pct</abbr><span class="sr"> Win percentage</span></th><th><abbr>PF</abbr><span class="sr"> Points for</span></th><th><abbr>PA</abbr><span class="sr"> Points against</span></th><th><abbr>Home</abbr><span class="sr"> Home record</span></th><th><abbr>Strk</abbr><span class="sr"> Streak</span></th></tr></thead>
+  <tbody>
+    <tr><td>Cinder Bay Hawks</td><td>5</td><td>2</td><td>.714</td><td>171</td><td>139</td><td>3-1</td><td>W3</td></tr>
+    <tr><td>Larkspur Wolves</td><td>4</td><td>3</td><td>.571</td><td>150</td><td>148</td><td>2-1</td><td>W1</td></tr>
+    <tr><td>Tidewater Foxes</td><td>4</td><td>3</td><td>.571</td><td>139</td><td>145</td><td>3-1</td><td>W2</td></tr>
+    <tr><td>Granite Pass Owls</td><td>2</td><td>5</td><td>.286</td><td>118</td><td>170</td><td>1-2</td><td>W1</td></tr>
+  </tbody>
+</table>
+
+<h2>Detailed standings</h2>
+<!-- Number-first streaks, with records written "3 - 1 - 0". -->
+<table id="detailed">
+  <thead><tr><th>East</th><th>W</th><th>L</th><th>T</th><th>PCT</th><th>PF</th><th>PA</th><th>Net Pts</th><th>Home</th><th>Road</th><th>Strk</th><th>Last 5</th></tr></thead>
+  <tbody>
+    <tr><td>Harbor City Herons</td><td>5</td><td>2</td><td>0</td><td>0.714</td><td>170</td><td>140</td><td>30</td><td>3 - 1 - 0</td><td>2 - 1 - 0</td><td>3W</td><td>4 - 1 - 0</td></tr>
+    <tr><td>Kingsmoor Bison</td><td>4</td><td>2</td><td>1</td><td>0.643</td><td>158</td><td>149</td><td>9</td><td>2 - 1 - 1</td><td>2 - 1 - 0</td><td>1W</td><td>3 - 1 - 1</td></tr>
+    <tr><td>Saltgrass Pilots</td><td>3</td><td>4</td><td>0</td><td>0.429</td><td>151</td><td>160</td><td>-9</td><td>2 - 2 - 0</td><td>1 - 2 - 0</td><td>1L</td><td>2 - 3 - 0</td></tr>
+    <tr><td>Westholm Badgers</td><td>1</td><td>5</td><td>1</td><td>0.214</td><td>120</td><td>176</td><td>-56</td><td>1 - 2 - 1</td><td>0 - 3 - 0</td><td>5L</td><td>0 - 5 - 0</td></tr>
+  </tbody>
+</table>
+
+<h2>Cooler sizes</h2>
+<!-- Capacity in liters, written "5L". No wins and no streak header: it is a quantity, not a streak. -->
+<table id="coolers">
+  <thead><tr><th>Cooler</th><th>Capacity</th><th>Weight (kg)</th><th>Price</th></tr></thead>
+  <tbody>
+    <tr><td>Daypack</td><td>8L</td><td>1.2</td><td>$39</td></tr>
+    <tr><td>Weekender</td><td>25L</td><td>3.4</td><td>$89</td></tr>
+    <tr><td>Basecamp</td><td>45L</td><td>6.1</td><td>$149</td></tr>
+    <tr><td>Expedition</td><td>70L</td><td>9.8</td><td>$229</td></tr>
+    <tr><td>Mini</td><td>5L</td><td>0.8</td><td>$24</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
