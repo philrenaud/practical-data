@@ -35,7 +35,7 @@ for (const f of files) await utimes(`dist/${f}`, committed, committed);
 
 // A store upload redistributes every file in it. Refuse a zip that holds a
 // licensed font or any static file git does not track, whatever the reason
-// it reached dist/.
+// it reached the build.
 const trackedStatic = new Set(
   execFileSync("git", ["ls-files", "-z", "static"], { encoding: "utf8" })
     .split("\0")

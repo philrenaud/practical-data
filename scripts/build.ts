@@ -1,10 +1,11 @@
 /**
- * Bundles the extension into dist/, or into the directory `--out` names.
- * `--watch` rebuilds on change. `--dev` builds the field-test copy: it files
- * flags to FLAGS_REPO (src/ext/flags.ts) and needs extra permissions. Never
- * upload a `--dev` build to the store. Test scripts build into dist-e2e/
- * (scripts/serve.ts), so dist/ stays whatever the owner loaded unpacked.
- * Also emits dist-probe/probe.js, an IIFE that exposes the extractor on
+ * Bundles the extension. Each build kind has its own directory, so none can
+ * overwrite another: store builds go to dist/ (the artifact package.ts zips),
+ * `--dev` builds go to dist-dev/ (the directory to load unpacked; it files
+ * flags to FLAGS_REPO (src/ext/flags.ts), needs extra permissions, and never
+ * goes to the store), and test scripts build into dist-e2e/ (scripts/serve.ts).
+ * `--out` overrides the directory and `--watch` rebuilds on change. Also
+ * emits dist-probe/probe.js, an IIFE that exposes the extractor on
  * `globalThis.__practicalData` so scripts can snapshot pages with Playwright.
  */
 import { execFileSync } from "node:child_process";
@@ -16,7 +17,7 @@ import * as esbuild from "esbuild";
 const watch = process.argv.includes("--watch");
 const dev = process.argv.includes("--dev");
 const outArg = process.argv.indexOf("--out");
-const out = outArg === -1 ? "dist" : process.argv[outArg + 1];
+const out = outArg === -1 ? (dev ? "dist-dev" : "dist") : process.argv[outArg + 1];
 if (out === undefined) throw new Error("--out needs a directory");
 const FLAGS_REPO = "philrenaud/practical-data-flags";
 await rm(out, { recursive: true, force: true });
