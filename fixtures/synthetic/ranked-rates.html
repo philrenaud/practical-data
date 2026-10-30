@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: values with a rank</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<h1>Values with a rank</h1>
+<p>
+  A ranking article can print each rate with its league rank after it, as in
+  "52% (14)". The ranks follow the rates, so the number before the
+  parenthesis is the cell's value and the extension reads it. A parenthesis
+  that counts something else, such as volunteers of whom some are new, does
+  not follow the value and stays text.
+</p>
+
+<h2>Club win rates</h2>
+<!-- Every rate carries its rank among the clubs; ties share a rank. -->
+<table id="rates">
+  <thead><tr><th>Club</th><th>ATWR</th><th>DFWR</th><th>STWR</th></tr></thead>
+  <tbody>
+    <tr><td><a href="#">Harbor Owls</a></td><td>48% (7)</td><td>54% (2)</td><td>64% (1)</td></tr>
+    <tr><td><a href="#">Copper Foxes</a></td><td>42% (8)</td><td>44% (7)</td><td>56% (4)</td></tr>
+    <tr><td><a href="#">Lantern Bay</a></td><td>50% (5)</td><td>39% (11)</td><td>41% (10)</td></tr>
+    <tr><td><a href="#">North Quarry</a></td><td>58% (2)</td><td>40% (8)</td><td>45% (9)</td></tr>
+    <tr><td><a href="#">Saltmarsh</a></td><td>39% (11)</td><td>51% (3)</td><td>58% (2)</td></tr>
+    <tr><td><a href="#">Glass Street</a></td><td>40% (10)</td><td>51% (3)</td><td>58% (2)</td></tr>
+    <tr><td><a href="#">Pike &amp; Reed</a></td><td>64% (1)</td><td>40% (8)</td><td>56% (4)</td></tr>
+    <tr><td><a href="#">Old Mill</a></td><td>55% (4)</td><td>45% (6)</td><td>39% (11)</td></tr>
+    <tr><td><a href="#">Westgate</a></td><td>41% (9)</td><td>40% (8)</td><td>56% (4)</td></tr>
+    <tr><td><a href="#">Fernhill</a></td><td>49% (6)</td><td>55% (1)</td><td>56% (4)</td></tr>
+    <tr><td><a href="#">Ironbridge</a></td><td>56% (3)</td><td>51% (3)</td><td>50% (8)</td></tr>
+    <tr><td><a href="#">Marsh End</a></td><td>39% (11)</td><td>39% (11)</td><td>39% (11)</td></tr>
+  </tbody>
+</table>
+
+<h2>Cleanup crews</h2>
+<!-- Unsigned parentheses are new volunteers, not a rank. The Volunteers column stays text. -->
+<table id="crews">
+  <thead><tr><th>Crew</th><th>Volunteers (new)</th><th>Bags collected</th></tr></thead>
+  <tbody>
+    <tr><td>Dockside</td><td>14 (3)</td><td>9</td></tr>
+    <tr><td>Upper Ward</td><td>22 (8)</td><td>12</td></tr>
+    <tr><td>Kiln Row</td><td>9 (5)</td><td>4</td></tr>
+    <tr><td>Ferry Lane</td><td>31 (2)</td><td>15</td></tr>
+    <tr><td>Beacon Hill</td><td>17 (11)</td><td>7</td></tr>
+    <tr><td>Sandpit</td><td>26 (6)</td><td>10</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

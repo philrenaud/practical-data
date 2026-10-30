@@ -100,3 +100,17 @@ test("a win/loss streak column reads as wins minus losses", () => {
   assert.deepEqual(liters.values, [5, 3, 8, 4]);
   assert.equal(liters.unit, "L");
 });
+
+test("a value with its rank in parentheses reads as the value when the ranks follow the values", () => {
+  const [, rate, animals] = profileTable({
+    id: "t0",
+    title: "Win rates",
+    headers: ["Team", "Rate", "Animals"],
+    rows: [
+      ["A", "52% (3)", "42 (6)"],
+      ["B", "61% (1)", "35 (11)"],
+      ["C", "44% (5)", "28 (2)"],
+      ["D", "52% (2)", "51 (9)"],
+      ["E", "48% (4)", "19 (4)"],
+    ],
+  });

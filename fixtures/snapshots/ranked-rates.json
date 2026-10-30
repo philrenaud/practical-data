@@ -1,0 +1,131 @@
+{
+ "url": "fixture://synthetic/ranked-rates.html",
+ "title": "Practical Data: values with a rank",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Club win rates",
+   "headers": [
+    "Club",
+    "ATWR",
+    "DFWR",
+    "STWR"
+   ],
+   "rows": [
+    [
+     "Harbor Owls",
+     "48% (7)",
+     "54% (2)",
+     "64% (1)"
+    ],
+    [
+     "Copper Foxes",
+     "42% (8)",
+     "44% (7)",
+     "56% (4)"
+    ],
+    [
+     "Lantern Bay",
+     "50% (5)",
+     "39% (11)",
+     "41% (10)"
+    ],
+    [
+     "North Quarry",
+     "58% (2)",
+     "40% (8)",
+     "45% (9)"
+    ],
+    [
+     "Saltmarsh",
+     "39% (11)",
+     "51% (3)",
+     "58% (2)"
+    ],
+    [
+     "Glass Street",
+     "40% (10)",
+     "51% (3)",
+     "58% (2)"
+    ],
+    [
+     "Pike & Reed",
+     "64% (1)",
+     "40% (8)",
+     "56% (4)"
+    ],
+    [
+     "Old Mill",
+     "55% (4)",
+     "45% (6)",
+     "39% (11)"
+    ],
+    [
+     "Westgate",
+     "41% (9)",
+     "40% (8)",
+     "56% (4)"
+    ],
+    [
+     "Fernhill",
+     "49% (6)",
+     "55% (1)",
+     "56% (4)"
+    ],
+    [
+     "Ironbridge",
+     "56% (3)",
+     "51% (3)",
+     "50% (8)"
+    ],
+    [
+     "Marsh End",
+     "39% (11)",
+     "39% (11)",
+     "39% (11)"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Cleanup crews",
+   "headers": [
+    "Crew",
+    "Volunteers (new)",
+    "Bags collected"
+   ],
+   "rows": [
+    [
+     "Dockside",
+     "14 (3)",
+     "9"
+    ],
+    [
+     "Upper Ward",
+     "22 (8)",
+     "12"
+    ],
+    [
+     "Kiln Row",
+     "9 (5)",
+     "4"
+    ],
+    [
+     "Ferry Lane",
+     "31 (2)",
+     "15"
+    ],
+    [
+     "Beacon Hill",
+     "17 (11)",
+     "7"
+    ],
+    [
+     "Sandpit",
+     "26 (6)",
+     "10"
+    ]
+   ]
+  }
+ ]
+}
