@@ -26,7 +26,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { chromium, type BrowserContext, type Page, type Route } from "playwright";
-import { EXTENSION_ARGS, PAGE_HOST, fixturePages, serve } from "./serve.ts";
+import { PAGE_HOST, buildTestExtension, fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -53,13 +53,15 @@ const proxy =
     ? undefined
     : { server: process.env["HTTPS_PROXY"], bypass: `127.0.0.1,localhost,${PAGE_HOST}` };
 
-/** Starts Chromium with dist/ loaded in a fresh profile. */
+const extensionArgs = buildTestExtension();
+
+/** Starts Chromium with dist-e2e/ loaded in a fresh profile. */
 const launch = async (): Promise<BrowserContext> => {
   const context = await chromium.launchPersistentContext("", {
     channel: "chromium",
     headless: !args.headed,
     viewport: { width: 1360, height: 900 },
-    args: EXTENSION_ARGS,
+    args: extensionArgs,
     ...(proxy === undefined ? {} : { proxy }),
   });
   await context.route("**/*", routeRequest);

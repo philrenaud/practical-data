@@ -1,7 +1,9 @@
 /**
- * Bundles the extension into dist/. `--watch` rebuilds on change. `--dev`
- * builds the field-test copy: it files flags to FLAGS_REPO (src/ext/flags.ts)
- * and needs extra permissions. Never upload a `--dev` build to the store.
+ * Bundles the extension into dist/, or into the directory `--out` names.
+ * `--watch` rebuilds on change. `--dev` builds the field-test copy: it files
+ * flags to FLAGS_REPO (src/ext/flags.ts) and needs extra permissions. Never
+ * upload a `--dev` build to the store. Test scripts build into dist-e2e/
+ * (scripts/serve.ts), so dist/ stays whatever the owner loaded unpacked.
  * Also emits dist-probe/probe.js, an IIFE that exposes the extractor on
  * `globalThis.__practicalData` so scripts can snapshot pages with Playwright.
  */
@@ -12,11 +14,14 @@ import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
 const dev = process.argv.includes("--dev");
+const outArg = process.argv.indexOf("--out");
+const out = outArg === -1 ? "dist" : process.argv[outArg + 1];
+if (out === undefined) throw new Error("--out needs a directory");
 const FLAGS_REPO = "philrenaud/practical-data-flags";
-await rm("dist", { recursive: true, force: true });
-await mkdir("dist", { recursive: true });
+await rm(out, { recursive: true, force: true });
+await mkdir(out, { recursive: true });
 // Skip dotfiles, such as Finder's .DS_Store, and the SVG icon source.
-await cp("static", "dist", {
+await cp("static", out, {
   recursive: true,
   filter: (src) => !basename(src).startsWith(".") && !src.endsWith(".svg"),
 });
@@ -31,12 +36,14 @@ const git = (...args: string[]) => {
 };
 const sha = git("rev-parse", "--short", "HEAD") || "nogit";
 const dirty = git("status", "--porcelain", "--", "src", "static") === "" ? "" : "+dev";
-const manifest = JSON.parse(await readFile("dist/manifest.json", "utf8")) as Record<string, unknown>;
+const manifest = JSON.parse(await readFile(`${out}/manifest.json`, "utf8")) as Record<string, unknown>;
 // A clean build takes its time from the commit, so two builds of one commit are identical.
 // A build with local changes takes the current time.
 const committed = Number(git("log", "-1", "--format=%ct"));
 const stamp = dirty === "" && committed > 0 ? new Date(committed * 1000) : new Date();
-const built = stamp.toISOString().slice(0, 16).replace("T", " ");
+// Seconds, so that a rebuild within the same minute still changes the stamp,
+// which the dev build's self-reload check compares.
+const built = stamp.toISOString().slice(0, 19).replace("T", " ");
 manifest["version_name"] = `${String(manifest["version"])} (${sha}${dirty}, ${built})`;
 // A local endpoint needs its own host permission, as api.practicaldata.dev has in the manifest.
 const apiOrigin = process.env["PD_API_ORIGIN"];
@@ -44,10 +51,11 @@ if (apiOrigin !== undefined) (manifest["host_permissions"] as string[]).push(`${
 if (dev) {
   manifest["name"] = `${String(manifest["name"])} (dev)`;
   // A flag needs a menu item, a screenshot of any tab, and the GitHub API.
-  (manifest["permissions"] as string[]).push("contextMenus");
+  // The self-reload check (src/ext/background.ts) needs an alarm.
+  (manifest["permissions"] as string[]).push("contextMenus", "alarms");
   (manifest["host_permissions"] as string[]).push("<all_urls>");
 }
-await writeFile("dist/manifest.json", JSON.stringify(manifest, null, 2));
+await writeFile(`${out}/manifest.json`, JSON.stringify(manifest, null, 2));
 
 const define: Record<string, string> = {};
 // PD_API_ORIGIN=http://localhost:8787 points the free provider at a local `wrangler dev`.
@@ -67,11 +75,11 @@ const common = {
 } as const satisfies esbuild.BuildOptions;
 
 const builds: esbuild.BuildOptions[] = [
-  { ...common, entryPoints: { content: "src/ext/content.ts" }, outdir: "dist", format: "iife" },
+  { ...common, entryPoints: { content: "src/ext/content.ts" }, outdir: out, format: "iife" },
   {
     ...common,
     entryPoints: { background: "src/ext/background.ts", options: "src/ext/options.ts", popup: "src/ext/popup.ts" },
-    outdir: "dist",
+    outdir: out,
     format: "esm",
   },
   {

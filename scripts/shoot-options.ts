@@ -1,11 +1,11 @@
 /** Screenshots the options page in light and dark at desktop and phone widths into artifacts/screens/. */
 import { chromium } from "playwright";
-import { EXTENSION_ARGS } from "./serve.ts";
+import { buildTestExtension } from "./serve.ts";
 
 const context = await chromium.launchPersistentContext("", {
   channel: "chromium",
   headless: true,
-  args: EXTENSION_ARGS,
+  args: buildTestExtension(),
 });
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
 const id = new URL(worker.url()).host;

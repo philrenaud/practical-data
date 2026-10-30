@@ -1,4 +1,5 @@
 /** A static file server for fixtures and built sites. Playwright cannot reliably run the extension on file:// pages. */
+import { execFileSync } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import { readFile, readdir } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
@@ -15,17 +16,24 @@ const TYPES: Record<string, string> = {
 /**
  * The host that browser harnesses load pages from. The extension is off on
  * private hosts such as 127.0.0.1 until the user turns them on, so pages are
- * served under a public-looking name that `EXTENSION_ARGS` maps to loopback.
+ * served under a public-looking name that `buildTestExtension` maps to loopback.
  * `.test` is reserved for testing (RFC 2606).
  */
 export const PAGE_HOST = "fixtures.test";
 
-/** Chromium arguments that load dist/ and resolve `PAGE_HOST` to the local server. */
-export const EXTENSION_ARGS = [
-  "--disable-extensions-except=dist",
-  "--load-extension=dist",
-  `--host-resolver-rules=MAP ${PAGE_HOST} 127.0.0.1`,
-];
+/**
+ * Builds a store-equivalent extension into dist-e2e/ and returns the Chromium
+ * arguments that load it and resolve `PAGE_HOST` to the local server. Test
+ * runs never touch dist/, where the owner's unpacked dev build lives.
+ */
+export const buildTestExtension = (env: NodeJS.ProcessEnv = process.env): string[] => {
+  execFileSync("node", ["scripts/build.ts", "--out", "dist-e2e"], { stdio: "inherit", env });
+  return [
+    "--disable-extensions-except=dist-e2e",
+    "--load-extension=dist-e2e",
+    `--host-resolver-rules=MAP ${PAGE_HOST} 127.0.0.1`,
+  ];
+};
 
 /**
  * Serves `root` on loopback. `url` is for Node and for browsers without
