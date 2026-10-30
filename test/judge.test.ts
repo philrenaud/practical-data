@@ -464,6 +464,30 @@ test("a row whose numbers add up to the other rows is a total", () => {
   assert.deepEqual(sumRows(columns([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]), 5), [], "zeros prove nothing");
 });
 
+test("a row labeled Total needs only one column to add up", () => {
+  const columns = (...cols: (number | null)[][]) => cols.map((values) => ({ values }) as unknown as NumericProfile);
+  const labeled = (...labels: string[]) => labels.map((l) => [l, ""]);
+  // A worked bill: three line items and their total in one cost column.
+  assert.deepEqual(sumRows(columns([0.2, 0.3, 0.08, 0.58]), 4, labeled("Input", "Output", "Runtime", "Total")), [3]);
+  assert.deepEqual(sumRows(columns([9, 4, 2, 15]), 4, labeled("A", "B", "C", "Grand total")), [3], "a grand total");
+  assert.deepEqual(sumRows(columns([9, 4, 2, 15]), 4, labeled("A", "B", "C", "D")), [], "no label, one column");
+  assert.deepEqual(
+    sumRows(columns([9, 4, 2, 20]), 4, labeled("A", "B", "C", "Total")),
+    [],
+    "a label without the sum is not enough",
+  );
+  assert.deepEqual(
+    sumRows(columns([9, 4, 2, 15], [3, 3, 3, 3]), 4, labeled("A", "B", "C", "Total")),
+    [],
+    "every column that counts must add up",
+  );
+  assert.deepEqual(
+    sumRows(columns([9, 4, 2, 15]), 4, labeled("A", "B", "C", "Totally Spies")),
+    [],
+    "a word that starts with total is not a total",
+  );
+});
+
 test("a total found by code is left out of the domain even when the model calls it an entry", async () => {
   const box = pricing(
     "t0",

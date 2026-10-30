@@ -369,6 +369,9 @@ export const aggregateCandidates = (rowCount: number): number[] =>
 /** The fewest numeric columns whose sums must check out before code calls a row a total. */
 const MIN_SUM_COLUMNS = 2;
 
+/** A cell that names its row a total: "Total", "Totals", "Grand total", "Total votes". */
+const TOTAL_LABEL = /^(?:grand\s+)?totals?\b/i;
+
 /**
  * Returns the first or the last row when its numbers are the sums of the
  * other rows. A box score's team row often has no label that names it a
@@ -378,9 +381,15 @@ const MIN_SUM_COLUMNS = 2;
  * of the columns that count, so a jersey number or an average in one column
  * does not hide the total. A table of three or four rows, such as an
  * election result with two candidates and a total, gets no model question,
- * so there every column that counts must match.
+ * so there every column that counts must match. A row with a cell that says
+ * it is a total ("Total") needs only one column, but every column that counts
+ * must match: a worked bill has one cost column and a Total row under it.
  */
-export const sumRows = (numeric: readonly NumericProfile[], rowCount: number): number[] =>
+export const sumRows = (
+  numeric: readonly NumericProfile[],
+  rowCount: number,
+  rows: readonly (readonly string[])[] = [],
+): number[] =>
   (rowCount < 3 ? [] : [...new Set([0, rowCount - 1])]).filter((r) => {
     let matched = 0;
     let counted = 0;
@@ -394,6 +403,7 @@ export const sumRows = (numeric: readonly NumericProfile[], rowCount: number): n
       // Cells are rounded for display, so allow half a percent.
       if (Math.abs(total - sum) <= Math.max(1e-9, 0.005 * Math.abs(sum))) matched++;
     }
+    if ((rows[r] ?? []).some((cell) => TOTAL_LABEL.test(cell.trim()))) return matched >= 1 && matched === counted;
     if (rowCount < 5) return matched >= MIN_SUM_COLUMNS && matched === counted;
     return matched >= MIN_SUM_COLUMNS && matched * 3 >= counted * 2;
   });

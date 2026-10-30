@@ -257,7 +257,7 @@ const judgeColumns = async (
   const answers = tableAnswers!.answers;
   // A row whose numbers add up to the other rows is a total, whatever the model says about its label.
   const aggregateRows = [
-    ...new Set([...aggregates.read(answers, policy.aggregate), ...sumRows(numeric, table.rows.length)]),
+    ...new Set([...aggregates.read(answers, policy.aggregate), ...sumRows(numeric, table.rows.length, table.rows)]),
   ].sort((a, b) => a - b);
   const excluded = new Set(aggregateRows);
   const plans = [

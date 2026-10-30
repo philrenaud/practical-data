@@ -1,0 +1,68 @@
+{
+ "url": "fixture://synthetic/worked-bill.html",
+ "title": "Practical Data: a worked bill",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Worked example",
+   "headers": [
+    "Line item",
+    "Calculation",
+    "Cost"
+   ],
+   "rows": [
+    [
+     "Compute units",
+     "40,000 × $5 / 1,000,000",
+     "$0.20 USD"
+    ],
+    [
+     "Transfer",
+     "12,000 × $25 / 1,000,000",
+     "$0.30 USD"
+    ],
+    [
+     "Reserved hours",
+     "2.0 hours × $0.04",
+     "$0.08 USD"
+    ],
+    [
+     "Total",
+     "",
+     "$0.58 USD"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Plans",
+   "headers": [
+    "Plan",
+    "Seats",
+    "Price per month"
+   ],
+   "rows": [
+    [
+     "Starter",
+     "Up to 3",
+     "$12"
+    ],
+    [
+     "Studio",
+     "Up to 10",
+     "$29"
+    ],
+    [
+     "Agency",
+     "Up to 50",
+     "$79"
+    ],
+    [
+     "Total Access",
+     "Unlimited",
+     "$149"
+    ]
+   ]
+  }
+ ]
+}
