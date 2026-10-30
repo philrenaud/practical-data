@@ -33,6 +33,24 @@ const files = (await readdir("dist", { recursive: true, withFileTypes: true }))
   .sort();
 for (const f of files) await utimes(`dist/${f}`, committed, committed);
 
+// A store upload redistributes every file in it. Refuse a zip that holds a
+// licensed font or any static file git does not track, whatever the reason
+// it reached dist/.
+const trackedStatic = new Set(
+  execFileSync("git", ["ls-files", "-z", "static"], { encoding: "utf8" })
+    .split("\0")
+    .filter(Boolean)
+    .map((p) => p.replace(/^static\//, "")),
+);
+const built = new Set(["manifest.json", "background.js", "content.js", "options.js", "popup.js"]);
+const forbidden = files.filter(
+  (f) => /hoodfonts|cambridge|\.pdf$/i.test(f) || (!built.has(f) && !trackedStatic.has(f)),
+);
+if (forbidden.length > 0) {
+  console.error(`Refusing to package files that do not belong in a store upload:\n  ${forbidden.join("\n  ")}`);
+  process.exit(1);
+}
+
 await mkdir("release", { recursive: true });
 const out = `release/practical-data-${version}.zip`;
 execFileSync("rm", ["-f", out]);
