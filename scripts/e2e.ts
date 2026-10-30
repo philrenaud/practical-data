@@ -525,6 +525,28 @@ const controlsScenario = async (): Promise<string[]> => {
   if (!(await waitFor(async () => (await orientation()) === "columns" && (await painted()) > 0))) {
     problems.push(`controls: 'Show shading' should restore the user's columns choice (got ${await orientation()})`);
   }
+
+  // A judged table with nothing shaded gets no bar. The glossary table's two
+  // text columns leave it unshaded; the wine table above it is shaded.
+  await page.goto(`${base}/synthetic/edge-cases.html`, { waitUntil: "domcontentloaded" });
+  await page.locator("#glossary").scrollIntoViewIfNeeded();
+  await page
+    .waitForFunction(() => document.querySelector("#wine [data-pd-t]") !== null, undefined, {
+      timeout: 15_000,
+      polling: 100,
+    })
+    .catch(() => undefined);
+  const barOpen = () =>
+    page.evaluate(() => document.querySelector("[data-pd-controls]")?.shadowRoot?.querySelector(".bar.open") != null);
+  const hoverTable = async (selector: string) => {
+    const box = (await page.locator(selector).boundingBox())!;
+    await page.mouse.move(box.x + 20, box.y + 20);
+    await page.waitForTimeout(500);
+  };
+  await hoverTable("#wine");
+  if (!(await barOpen())) problems.push("controls: shaded wine table should show the bar");
+  await hoverTable("#glossary");
+  if (await barOpen()) problems.push("controls: unshaded glossary table should show no bar");
   await page.close();
   return problems;
 };
