@@ -656,5 +656,19 @@
       "Hours": { "kind": "quantitative" },
       "Actions": "none"
     }
+  },
+  "season-ice-time": {
+    "t0": {
+      "Rk": "none",
+      "Player": "none",
+      "Pos": "none",
+      "Ice Time: TOI": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Ice Time: ATOI": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    },
+    "t1": {
+      "Model": "none",
+      "Contrast": { "kind": "ordinal" },
+      "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    }
   }
 }
