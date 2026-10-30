@@ -1,0 +1,236 @@
+{
+ "url": "fixture://synthetic/standings-streaks.html",
+ "title": "Practical Data: standings streaks",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Northern division",
+   "headers": [
+    "Team",
+    "W Wins",
+    "L Losses",
+    "Pct Win percentage",
+    "PF Points for",
+    "PA Points against",
+    "Home Home record",
+    "Strk Streak"
+   ],
+   "rows": [
+    [
+     "Ridgeback Elk",
+     "6",
+     "1",
+     ".857",
+     "188",
+     "120",
+     "3-0",
+     "W4"
+    ],
+    [
+     "Port Calder Gulls",
+     "4",
+     "3",
+     ".571",
+     "160",
+     "151",
+     "2-1",
+     "L2"
+    ],
+    [
+     "Ashvale Lynx",
+     "3",
+     "4",
+     ".429",
+     "141",
+     "166",
+     "2-2",
+     "W1"
+    ],
+    [
+     "Moorfield Rams",
+     "1",
+     "6",
+     ".143",
+     "102",
+     "190",
+     "1-3",
+     "L5"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Southern division",
+   "headers": [
+    "Team",
+    "W Wins",
+    "L Losses",
+    "Pct Win percentage",
+    "PF Points for",
+    "PA Points against",
+    "Home Home record",
+    "Strk Streak"
+   ],
+   "rows": [
+    [
+     "Cinder Bay Hawks",
+     "5",
+     "2",
+     ".714",
+     "171",
+     "139",
+     "3-1",
+     "W3"
+    ],
+    [
+     "Larkspur Wolves",
+     "4",
+     "3",
+     ".571",
+     "150",
+     "148",
+     "2-1",
+     "W1"
+    ],
+    [
+     "Tidewater Foxes",
+     "4",
+     "3",
+     ".571",
+     "139",
+     "145",
+     "3-1",
+     "W2"
+    ],
+    [
+     "Granite Pass Owls",
+     "2",
+     "5",
+     ".286",
+     "118",
+     "170",
+     "1-2",
+     "W1"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Detailed standings",
+   "headers": [
+    "East",
+    "W",
+    "L",
+    "T",
+    "PCT",
+    "PF",
+    "PA",
+    "Net Pts",
+    "Home",
+    "Road",
+    "Strk",
+    "Last 5"
+   ],
+   "rows": [
+    [
+     "Harbor City Herons",
+     "5",
+     "2",
+     "0",
+     "0.714",
+     "170",
+     "140",
+     "30",
+     "3 - 1 - 0",
+     "2 - 1 - 0",
+     "3W",
+     "4 - 1 - 0"
+    ],
+    [
+     "Kingsmoor Bison",
+     "4",
+     "2",
+     "1",
+     "0.643",
+     "158",
+     "149",
+     "9",
+     "2 - 1 - 1",
+     "2 - 1 - 0",
+     "1W",
+     "3 - 1 - 1"
+    ],
+    [
+     "Saltgrass Pilots",
+     "3",
+     "4",
+     "0",
+     "0.429",
+     "151",
+     "160",
+     "-9",
+     "2 - 2 - 0",
+     "1 - 2 - 0",
+     "1L",
+     "2 - 3 - 0"
+    ],
+    [
+     "Westholm Badgers",
+     "1",
+     "5",
+     "1",
+     "0.214",
+     "120",
+     "176",
+     "-56",
+     "1 - 2 - 1",
+     "0 - 3 - 0",
+     "5L",
+     "0 - 5 - 0"
+    ]
+   ]
+  },
+  {
+   "id": "t3",
+   "title": "Cooler sizes",
+   "headers": [
+    "Cooler",
+    "Capacity",
+    "Weight (kg)",
+    "Price"
+   ],
+   "rows": [
+    [
+     "Daypack",
+     "8L",
+     "1.2",
+     "$39"
+    ],
+    [
+     "Weekender",
+     "25L",
+     "3.4",
+     "$89"
+    ],
+    [
+     "Basecamp",
+     "45L",
+     "6.1",
+     "$149"
+    ],
+    [
+     "Expedition",
+     "70L",
+     "9.8",
+     "$229"
+    ],
+    [
+     "Mini",
+     "5L",
+     "0.8",
+     "$24"
+    ]
+   ]
+  }
+ ]
+}

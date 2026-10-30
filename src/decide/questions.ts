@@ -57,6 +57,8 @@ const describeColumn = (p: NumericProfile | CategoricalProfile) => {
     if (p.boundShare >= 0.5)
       notes.push("most values are written as bounds with ≤, <, ≥, >, or + rather than exact amounts");
     if (p.rangeShare >= 0.5) notes.push("most values are written as two numbers joined by a dash, such as 20-25");
+    if (p.unit === "streak")
+      notes.push("the values are win or loss streaks, counted as wins minus losses: W3 is 3, L2 is -2");
     if (p.durationShare >= 0.5) {
       notes.push("values are written like clock readings (such as 2:41); they could be durations or times of day");
     }

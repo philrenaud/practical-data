@@ -77,3 +77,26 @@ test("labels that name Object.prototype members are levels like any other", () =
     ]),
   );
 });
+
+test("a win/loss streak column reads as wins minus losses", () => {
+  const [, before, after, liters] = profileTable({
+    id: "t0",
+    title: "Standings",
+    headers: ["Team", "Strk", "Streak", "Tank"],
+    rows: [
+      ["A", "1W", "W6", "5L"],
+      ["B", "5L", "W2", "3L"],
+      ["C", "2W", "L1", "8L"],
+      ["D", "1L", "", "4L"],
+    ],
+  });
+  assert.ok(before?.kind === "numeric" && after?.kind === "numeric");
+  assert.deepEqual(before.values, [1, -5, 2, -1]);
+  assert.equal(before.unit, "streak");
+  assert.deepEqual(after.values, [6, 2, -1, null]);
+  assert.deepEqual(after.samples, ["L1", "W2", "W6"]);
+  // Only L, and no streak header: liters, not losses.
+  assert.ok(liters?.kind === "numeric");
+  assert.deepEqual(liters.values, [5, 3, 8, 4]);
+  assert.equal(liters.unit, "L");
+});
