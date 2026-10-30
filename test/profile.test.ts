@@ -114,3 +114,10 @@ test("a value with its rank in parentheses reads as the value when the ranks fol
       ["E", "48% (4)", "19 (4)"],
     ],
   });
+  assert.ok(rate?.kind === "numeric");
+  assert.deepEqual(rate.values, [52, 61, 44, 52, 48]);
+  assert.equal(rate.unit, "%");
+  assert.ok(rate.samples.includes("61% (1)"));
+  // The counts in parentheses do not follow the values, so the column is not ranked.
+  assert.notEqual(animals?.kind, "numeric");
+});
