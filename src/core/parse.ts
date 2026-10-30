@@ -105,9 +105,10 @@ export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw)
  * Clock-style durations: "2:59" (h:mm or m:ss) and "1:02:03" (h:mm:ss). They
  * parse as base-60 numbers, so a:b is a × 60 + b, and 3:00 is one more than
  * 2:59. A column uses one format, so the order is correct whichever unit the
- * column means.
+ * column means. A season total of ice time or minutes played runs past 999
+ * minutes ("1544:10"), so the first part takes up to four digits.
  */
-const DURATION_RE = /^(\d{1,3}):([0-5]\d)(?::([0-5]\d))?$/;
+const DURATION_RE = /^(\d{1,4}):([0-5]\d)(?::([0-5]\d))?$/;
 
 /** Unicode fractions, as in games behind ("6½"). */
 const VULGAR: Readonly<Record<string, number>> = {

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: season ice time</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<h1>Season ice time</h1>
+<p>
+  A season stats table gives each skater's total time on ice as minutes and
+  seconds, and a regular player passes 999 minutes ("1544:10"). The extension
+  reads it as a duration, like the per-game average next to it. A display's
+  contrast ratio ("1200:1") is not a duration, so it is not read as one.
+</p>
+
+<h2>Skaters</h2>
+<!-- TOI is a season total in m:ss, often four digits of minutes. ATOI is the per-game average. -->
+<table id="skaters">
+  <thead>
+    <tr><th rowspan="2">Rk</th><th rowspan="2">Player</th><th rowspan="2">Pos</th><th rowspan="2">GP</th><th colspan="2">Scoring</th><th colspan="2">Ice Time</th></tr>
+    <tr><th>G</th><th>PTS</th><th>TOI</th><th>ATOI</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Corwin Ashby</td><td>C</td><td>80</td><td>37</td><td>78</td><td>1544:10</td><td>19:18</td></tr>
+    <tr><td>2</td><td>Ilse Marrow</td><td>D</td><td>78</td><td>17</td><td>70</td><td>1891:42</td><td>24:15</td></tr>
+    <tr><td>3</td><td>Dmitri Fallow</td><td>RW</td><td>81</td><td>30</td><td>63</td><td>1488:05</td><td>18:22</td></tr>
+    <tr><td>4</td><td>Lyle Penrose</td><td>LW</td><td>76</td><td>22</td><td>49</td><td>1215:36</td><td>15:59</td></tr>
+    <tr><td>5</td><td>Bastien Crowe</td><td>C</td><td>82</td><td>15</td><td>44</td><td>1340:27</td><td>16:21</td></tr>
+    <tr><td>6</td><td>Henrik Sale</td><td>D</td><td>74</td><td>6</td><td>31</td><td>1702:13</td><td>23:00</td></tr>
+    <tr><td>7</td><td>Otto Weir</td><td>RW</td><td>58</td><td>12</td><td>25</td><td>866:49</td><td>14:57</td></tr>
+    <tr><td>8</td><td>Marek Thorne</td><td>D</td><td>69</td><td>3</td><td>18</td><td>1104:30</td><td>16:00</td></tr>
+    <tr><td>9</td><td>Silas Brack</td><td>LW</td><td>33</td><td>4</td><td>9</td><td>401:12</td><td>12:09</td></tr>
+    <tr><td>10</td><td>Emeric Lund</td><td>C</td><td>11</td><td>1</td><td>2</td><td>98:44</td><td>8:59</td></tr>
+    <tr><td>11</td><td>Pavel Ostrow</td><td>D</td><td>4</td><td>0</td><td>0</td><td>47:31</td><td>11:53</td></tr>
+  </tbody>
+</table>
+
+<h2>Monitors</h2>
+<!-- Contrast is a ratio written with a colon. It must not parse as a duration; as labels it can still be ordered. -->
+<table id="monitors">
+  <thead><tr><th>Model</th><th>Brightness (nits)</th><th>Contrast</th><th>Price</th></tr></thead>
+  <tbody>
+    <tr><td>Vantage 27</td><td>350</td><td>1000:1</td><td>$279</td></tr>
+    <tr><td>Vantage 32</td><td>400</td><td>3000:1</td><td>$399</td></tr>
+    <tr><td>Lumen Pro</td><td>600</td><td>1200:1</td><td>$649</td></tr>
+    <tr><td>Lumen Air</td><td>300</td><td>1000:1</td><td>$219</td></tr>
+    <tr><td>Studio OLED</td><td>250</td><td>1500000:1</td><td>$1,099</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
