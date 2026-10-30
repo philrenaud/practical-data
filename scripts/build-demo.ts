@@ -9,7 +9,7 @@ import { cp, mkdir } from "node:fs/promises";
 
 // The SvelteKit adapter empties site/, so the zip and the videos go in after it runs.
 execFileSync("npm", ["run", "build", "-w", "web"], { stdio: "inherit" });
-execFileSync("zip", ["-qr", "../site/practical-data-extension.zip", ".", "-x", ".*", "*/.*"], { cwd: "dist" });
+execFileSync("zip", ["-qr", "../site/practical-data-extension.zip", ".", "-x", ".*", "*/.*"], { cwd: "dist-store" });
 // The launch videos are rendered outside this repository. Copy them only if they exist.
 await mkdir("site/media", { recursive: true });
 for (const f of ["practical-data-reel.mp4", "practical-data-loop.mp4"])

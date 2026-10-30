@@ -5,6 +5,7 @@ dist/
 artifacts/
 dist-probe/
 dist-e2e/
+dist-store/
 /site/
 .wrangler/
 launch/
