@@ -25,7 +25,7 @@
     "eval": "node scripts/eval.ts",
     "e2e": "node scripts/e2e.ts",
     "check": "npm run format:check && npm run typecheck && npm test && npm run eval -- --offline --strict && npm run e2e -- --offline",
-    "demo": "node scripts/build.ts --out dist-store && npm run demo:data && npm run tests:data && node scripts/build-demo.ts",
+    "demo": "npm run build && npm run demo:data && npm run tests:data && node scripts/build-demo.ts",
     "web:dev": "npm run demo:data && npm run tests:data && npm run dev -w web",
     "web:check": "npm run check -w web",
     "deploy": "npm run demo && wrangler deploy",

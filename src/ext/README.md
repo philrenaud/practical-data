@@ -144,19 +144,24 @@ badge to `!`. Rate limiting or overload stops sending for `COOL_DOWN_MS`
 
 ```sh
 npm install
-npm run build        # writes dist/
-npm run dev          # rebuilds dist/ on change
+npm run build        # store build, writes dist/
+npm run build:dev    # dev build, writes dist-dev/
+npm run dev          # rebuilds dist-dev/ on change
 ```
 
-`scripts/build.ts` bundles `content.ts` as an IIFE and the other entry points
-as ES modules. It copies `static/` into `dist/`. It stamps the git SHA and the
-build time into `version_name`, which the popup and options pages show. The
-bundle is not minified, so the code in `dist/` matches this source.
+Each build kind has its own directory, so none can overwrite another:
+`dist/` is the store artifact that `npm run package` and `npm run demo` zip,
+`dist-dev/` is the dev build to load unpacked, and test runs build
+`dist-e2e/`. `scripts/build.ts` bundles `content.ts` as an IIFE and the other
+entry points as ES modules. It copies the git-tracked files of `static/` in.
+It stamps the git SHA and the build time into `version_name`, which the popup
+and options pages show. The bundle is not minified, so the built code matches
+this source.
 `PD_API_ORIGIN=http://localhost:8787` points the free provider at a local
 `wrangler dev` and adds that origin to `host_permissions`.
 
 To load the build, open `chrome://extensions`, turn on **Developer mode**,
-click **Load unpacked**, and select `dist/`. A store build needs the reload
+click **Load unpacked**, and select `dist-dev/`. A store build needs the reload
 icon on its card after a rebuild. A dev build reloads itself: its worker
 checks the `version_name` on disk every few seconds (every 30 seconds while
 the worker sleeps) and calls `chrome.runtime.reload()` when a build changed
@@ -171,7 +176,7 @@ npm run check               # format, typecheck, unit tests, eval, and offline e
 ```
 
 `scripts/e2e.ts` builds a store-equivalent copy into `dist-e2e/` and loads it
-in a fresh Chromium profile, so a dev build loaded unpacked from `dist/` is
+in a fresh Chromium profile, so a dev build loaded unpacked from `dist-dev/` is
 not overwritten by a test run. It opens every page
 in `fixtures/`. It checks that each page reaches `data-pd-status="done"`, that
 painted text keeps a 4.5:1 contrast, and that turning shading off restores

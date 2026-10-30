@@ -17,23 +17,21 @@ if (dirty !== "" && !process.argv.includes("--allow-dirty")) {
 }
 // PD_API_ORIGIN points a build at a local endpoint and adds its host permission. A store build never does.
 const { PD_API_ORIGIN: _local, ...env } = process.env;
-// The store build goes into its own directory: dist/ belongs to whatever the
-// owner loaded unpacked, and a store build written there would downgrade it.
-execFileSync("node", ["scripts/build.ts", "--out", "dist-store"], { stdio: "inherit", env });
-const { version, version_name } = JSON.parse(await readFile("dist-store/manifest.json", "utf8")) as {
+execFileSync("node", ["scripts/build.ts"], { stdio: "inherit", env });
+const { version, version_name } = JSON.parse(await readFile("dist/manifest.json", "utf8")) as {
   version: string;
   version_name: string;
 };
 
 // The zip records each file's mtime, so set every mtime to the commit time.
 const committed = Number(execFileSync("git", ["log", "-1", "--format=%ct"], { encoding: "utf8" }).trim());
-// Sort the entries for a fixed order. Skip dotfiles, such as a .DS_Store that Finder wrote in.
-const files = (await readdir("dist-store", { recursive: true, withFileTypes: true }))
+// Sort the entries for a fixed order. Skip dotfiles, such as a .DS_Store that Finder wrote into dist/.
+const files = (await readdir("dist", { recursive: true, withFileTypes: true }))
   .filter((f) => f.isFile())
-  .map((f) => `${f.parentPath}/${f.name}`.replace(/^dist-store\//, ""))
+  .map((f) => `${f.parentPath}/${f.name}`.replace(/^dist\//, ""))
   .filter((p) => !p.split("/").some((part) => part.startsWith(".")))
   .sort();
-for (const f of files) await utimes(`dist-store/${f}`, committed, committed);
+for (const f of files) await utimes(`dist/${f}`, committed, committed);
 
 // A store upload redistributes every file in it. Refuse a zip that holds a
 // licensed font or any static file git does not track, whatever the reason
@@ -59,7 +57,7 @@ execFileSync("rm", ["-f", out]);
 // -X drops extra attributes such as owner ids. -D writes no directory entries. TZ=UTC fixes
 // the DOS timestamps, which zip stores in local time.
 execFileSync("zip", ["-q", "-X", "-D", `../${out}`, "-@"], {
-  cwd: "dist-store",
+  cwd: "dist",
   input: files.join("\n"),
   env: { ...env, TZ: "UTC" },
 });
