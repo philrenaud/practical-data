@@ -316,6 +316,9 @@ if (PD_FLAGS_REPO !== null) {
   form.querySelector("footer")!.before(section);
 }
 
+// The background opens options.html#welcome on a fresh install (background.ts).
+if (location.hash === "#welcome") document.getElementById("welcome")?.removeAttribute("hidden");
+
 renderPalettes();
 write(await loadSettings().catch(() => DEFAULT_SETTINGS));
 renderPreview();

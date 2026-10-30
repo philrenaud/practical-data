@@ -255,9 +255,15 @@ if (PD_FLAGS_REPO !== null) {
   void reloadIfRebuilt();
 }
 
+/**
+ * A fresh install opens the options page with its welcome strip, which says
+ * shading is already on and points at a sample page. The #welcome fragment
+ * shows the strip, so a later visit through the usual options entry points
+ * is just the settings. Updates and reloads open nothing.
+ */
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason === "install" && providerConfig(await loadSettings(), await getInstallId()) === null) {
-    await chrome.runtime.openOptionsPage();
+  if (reason === "install") {
+    await chrome.tabs.create({ url: chrome.runtime.getURL("options.html#welcome") });
   }
 });
 

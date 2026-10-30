@@ -27,6 +27,8 @@
   --accent: #5b4bc4;
   --accent-ink: #fff;
   --focus: #5b4bc4;
+  --welcome-bg: #efecfa;
+  --welcome-line: #cdc6ef;
   --radius: 12px;
   color-scheme: light;
 }
@@ -39,6 +41,8 @@
     --line: #2d2b33;
     --accent: #8f82f0;
     --accent-ink: #141317;
+    --welcome-bg: #221f31;
+    --welcome-line: #413a63;
     color-scheme: dark;
   }
 }
@@ -91,6 +95,33 @@ section {
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 16px;
+}
+.welcome {
+  background: var(--welcome-bg);
+  border: 1px solid var(--welcome-line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.welcome h2 {
+  color: var(--accent);
+}
+.welcome p {
+  margin: 0 0 14px;
+}
+.welcome .cta {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+.welcome .cta:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 h2 {
   margin: 0 0 14px;

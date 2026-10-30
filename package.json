@@ -1,6 +1,6 @@
 {
   "name": "practical-data",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Chrome extension that color-encodes comparable columns in HTML tables using a System One decision model.",
   "license": "MIT",
   "author": "Phil Renaud",
