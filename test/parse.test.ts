@@ -48,7 +48,7 @@ const cases: ReadonlyArray<readonly [string, number | null, string | null, (read
   ["3:00", 180, ":"],
   ["0:57", 57, ":"],
   ["1:02:03", 3723, ":"],
-  ["1558:44", 93524, ":"],
+  ["1544:10", 92650, ":"],
   ["12345:00", null, null],
   ["1200:1", null, null],
   ["2:61", null, null],

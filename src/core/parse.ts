@@ -106,7 +106,7 @@ export const isDateLike = (raw: string): boolean => DATE_RE.test(stripNoise(raw)
  * parse as base-60 numbers, so a:b is a × 60 + b, and 3:00 is one more than
  * 2:59. A column uses one format, so the order is correct whichever unit the
  * column means. A season total of ice time or minutes played runs past 999
- * minutes ("1558:44"), so the first part takes up to four digits.
+ * minutes ("1544:10"), so the first part takes up to four digits.
  */
 const DURATION_RE = /^(\d{1,4}):([0-5]\d)(?::([0-5]\d))?$/;
 
