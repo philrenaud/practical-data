@@ -10,18 +10,17 @@
  * - A fresh install, built against the local endpoint with no settings,
  *   shades a page.
  *
- * The last check rebuilds dist/ for the local endpoint, then rebuilds it for
- * production.
+ * The last check builds dist-e2e/ against the local endpoint.
  *
  *   node scripts/api-smoke.ts
  */
-import { execFileSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
-import { EXTENSION_ARGS, fixturePages, serve } from "./serve.ts";
+import { buildTestExtension, fixturePages, serve } from "./serve.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
 
 const PORT = 8799;
@@ -300,12 +299,12 @@ try {
   });
 
   await check("a fresh install with no settings shades a page through the endpoint", async () => {
-    execFileSync("node", ["scripts/build.ts"], { env: { ...process.env, PD_API_ORIGIN: ORIGIN }, stdio: "ignore" });
+    const extensionArgs = buildTestExtension({ ...process.env, PD_API_ORIGIN: ORIGIN });
     const { pagesUrl: base, server } = await serve("fixtures");
     const context = await chromium.launchPersistentContext("", {
       channel: "chromium",
       headless: true,
-      args: EXTENSION_ARGS,
+      args: extensionArgs,
     });
     try {
       const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
@@ -325,7 +324,6 @@ try {
     } finally {
       await context.close();
       server.close();
-      execFileSync("node", ["scripts/build.ts"], { stdio: "ignore" });
     }
   });
 } finally {

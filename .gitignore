@@ -4,6 +4,7 @@ dist/
 .env
 artifacts/
 dist-probe/
+dist-e2e/
 /site/
 .wrangler/
 launch/

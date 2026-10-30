@@ -4,7 +4,7 @@
  * model. Needs TYPESAFE_API_KEY.
  */
 import { chromium } from "playwright";
-import { EXTENSION_ARGS, serve } from "./serve.ts";
+import { buildTestExtension, serve } from "./serve.ts";
 
 const apiKey = process.env["TYPESAFE_API_KEY"] ?? "";
 const { pagesUrl: url, server } = await serve("fixtures");
@@ -12,7 +12,7 @@ const context = await chromium.launchPersistentContext("", {
   channel: "chromium",
   headless: true,
   viewport: { width: 1200, height: 800 },
-  args: EXTENSION_ARGS,
+  args: buildTestExtension(),
 });
 const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
 await worker.evaluate(

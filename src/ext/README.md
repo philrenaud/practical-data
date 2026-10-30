@@ -156,18 +156,23 @@ bundle is not minified, so the code in `dist/` matches this source.
 `wrangler dev` and adds that origin to `host_permissions`.
 
 To load the build, open `chrome://extensions`, turn on **Developer mode**,
-click **Load unpacked**, and select `dist/`. After a rebuild, click the reload
-icon on the extension's card.
+click **Load unpacked**, and select `dist/`. A store build needs the reload
+icon on its card after a rebuild. A dev build reloads itself: its worker
+checks the `version_name` on disk every few seconds (every 30 seconds while
+the worker sleeps) and calls `chrome.runtime.reload()` when a build changed
+it, so `npm run build:dev` or the watcher reaches the browser on its own.
 
 ## Test
 
 ```sh
 npm test                    # unit tests in test/
-npm run e2e -- --offline    # Chromium with dist/ loaded, replaying fixtures/recordings
-npm run check               # format, typecheck, unit tests, build, eval, and offline e2e
+npm run e2e -- --offline    # Chromium with dist-e2e/ loaded, replaying fixtures/recordings
+npm run check               # format, typecheck, unit tests, eval, and offline e2e
 ```
 
-`scripts/e2e.ts` loads `dist/` in a fresh Chromium profile and opens every page
+`scripts/e2e.ts` builds a store-equivalent copy into `dist-e2e/` and loads it
+in a fresh Chromium profile, so a dev build loaded unpacked from `dist/` is
+not overwritten by a test run. It opens every page
 in `fixtures/`. It checks that each page reaches `data-pd-status="done"`, that
 painted text keeps a 4.5:1 contrast, and that turning shading off restores
 the original markup. It also runs these scenarios:

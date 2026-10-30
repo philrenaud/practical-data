@@ -227,6 +227,34 @@ if (PD_FLAGS_REPO !== null) {
   });
 }
 
+/**
+ * A dev build reloads itself when a new build lands in its directory, so
+ * `npm run build:dev` reaches the browser without a trip to
+ * chrome://extensions. An unpacked extension serves its files from disk, and
+ * the version_name stamp (scripts/build.ts) changes with every build of
+ * changed sources, so a stamp on disk that differs from the loaded one means
+ * a new build. The interval checks while the worker is awake; the alarm
+ * wakes it when it is not.
+ */
+if (PD_FLAGS_REPO !== null) {
+  const reloadIfRebuilt = async () => {
+    try {
+      const res = await fetch(chrome.runtime.getURL("manifest.json"), { cache: "no-store" });
+      const disk = (await res.json()) as { version_name?: string };
+      if (typeof disk.version_name === "string" && disk.version_name !== chrome.runtime.getManifest().version_name)
+        chrome.runtime.reload();
+    } catch {
+      // A build is rewriting the directory. The next check reads the finished copy.
+    }
+  };
+  setInterval(() => void reloadIfRebuilt(), 3_000);
+  chrome.alarms.create("pd-dev-reload", { periodInMinutes: 0.5 });
+  chrome.alarms.onAlarm.addListener((a) => {
+    if (a.name === "pd-dev-reload") void reloadIfRebuilt();
+  });
+  void reloadIfRebuilt();
+}
+
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   if (reason === "install" && providerConfig(await loadSettings(), await getInstallId()) === null) {
     await chrome.runtime.openOptionsPage();
