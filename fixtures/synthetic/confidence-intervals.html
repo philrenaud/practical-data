@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: scores with confidence intervals</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 1000px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; font-size: 14px; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; vertical-align: top; text-align: left; }
+  .mono { font-family: ui-monospace, monospace; }
+  .strong { font-weight: 600; }
+  .sub { display: block; color: #777; font-size: 0.8em; font-weight: normal; }
+  .sub-cell { color: #777; font-size: 0.85em; }
+  details { color: #777; font-size: 0.8em; }
+</style>
+</head>
+<body>
+<h1>Scores with confidence intervals</h1>
+<p>
+  A benchmark leaderboard puts each system's score on one line and its 95%
+  confidence interval on a smaller line under it ("71.40" over "95% CI
+  69.12–72.33"). The score is the cell's number, so the extension reads it
+  and shades the column with the others. A survey table writes the interval
+  inline, in parentheses. A plain range ("30–45") still reads as its midpoint.
+</p>
+
+<h2>Leaderboard</h2>
+<!-- Score holds the estimate with its interval on a block line under it. Rank carries a tie mark; Cost carries an "estimate" note. -->
+<table id="leaderboard">
+  <caption>Invented benchmark results (12 systems)</caption>
+  <thead>
+    <tr><th scope="col">Rank</th><th scope="col">System</th><th scope="col">Score</th><th scope="col">Reasoning</th><th scope="col">Calibration</th><th scope="col">Speed</th><th scope="col">Cost per 1,000 runs (USD)</th><th scope="col">Open / closed</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="mono">1 <span title="Tied within the interval">≈</span></td><th scope="row"><a href="#">Larkspur 9</a><span class="sub">Fenmoor Labs · open-track</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">73.26<span class="sub">95% CI 71.98–74.41</span></td><td class="mono">25.07</td><td class="mono">57.51</td><td class="mono">45.60</td><td class="mono">0.01362<span class="sub">estimate</span></td><td class="sub-cell">Unknown</td></tr>
+    <tr><td class="mono">2</td><th scope="row"><a href="#">Quillon-7B</a><span class="sub">Tess Arbery · rebuild</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">72.57<span class="sub">95% CI 71.49–73.49</span></td><td class="mono">36.85</td><td class="mono">58.57</td><td class="mono">24.14</td><td class="mono">0.02783<span class="sub">estimate</span></td><td class="sub-cell">Open</td></tr>
+    <tr><td class="mono">3</td><th scope="row"><a href="#">Marrowind 2</a><span class="sub">Halcyte AI · hosted</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">70.92<span class="sub">95% CI 68.25–71.48</span></td><td class="mono">60.99</td><td class="mono">23.47</td><td class="mono">35.48</td><td class="mono">0.02759<span class="sub">estimate</span></td><td class="sub-cell">Open</td></tr>
+    <tr><td class="mono">4</td><th scope="row"><a href="#">Brisket 4B</a><span class="sub">odalys · unclassified</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">70.05<span class="sub">95% CI 68.79–70.67</span></td><td class="mono">41.59</td><td class="mono">77.13</td><td class="mono">32.65</td><td class="mono">0.02828<span class="sub">estimate</span></td><td class="sub-cell">Unknown</td></tr>
+    <tr><td class="mono">5</td><th scope="row"><a href="#">Pellucid</a><span class="sub">Corran Vey · open-track</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">69.42<span class="sub">95% CI 68.31–70.63</span></td><td class="mono">59.51</td><td class="mono">63.33</td><td class="mono">54.75</td><td class="mono">0.02689<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">6 <span title="Tied within the interval">≈</span></td><th scope="row"><a href="#">Tamarack S</a><span class="sub">Wexley · rebuild</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">68.15<span class="sub">95% CI 64.39–69.01</span></td><td class="mono">37.39</td><td class="mono">32.58</td><td class="mono">74.59</td><td class="mono">0.01429<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">7</td><th scope="row"><a href="#">Ostinato 3B</a><span class="sub">mirelle · unclassified</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">66.74<span class="sub">95% CI 63.14–67.97</span></td><td class="mono">40.16</td><td class="mono">88.61</td><td class="mono">28.26</td><td class="mono">0.02371<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">8</td><th scope="row"><a href="#">Verdigris 1.4</a><span class="sub">Ansel & Co · hosted</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">66.19<span class="sub">95% CI 63.83–66.73</span></td><td class="mono">66.78</td><td class="mono">73.52</td><td class="mono">60.11</td><td class="mono">0.03651<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">9</td><th scope="row"><a href="#">Sparrowhawk</a><span class="sub">N. Okonjo · open-track</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">65.21<span class="sub">95% CI 63.29–66.21</span></td><td class="mono">75.78</td><td class="mono">24.81</td><td class="mono">26.55</td><td class="mono">0.01956<span class="sub">estimate</span></td><td class="sub-cell">Unknown</td></tr>
+    <tr><td class="mono">10</td><th scope="row"><a href="#">Glimmer 2B</a><span class="sub">pashto-labs · unclassified</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">63.48<span class="sub">95% CI 62.49–64.68</span></td><td class="mono">65.30</td><td class="mono">89.52</td><td class="mono">77.53</td><td class="mono">0.01997<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">11</td><th scope="row"><a href="#">Halberd v3</a><span class="sub">Ruthven · rebuild</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">61.24<span class="sub">95% CI 59.33–62.68</span></td><td class="mono">44.88</td><td class="mono">62.76</td><td class="mono">54.56</td><td class="mono">0.01811<span class="sub">estimate</span></td><td class="sub-cell">Closed</td></tr>
+    <tr><td class="mono">12</td><th scope="row"><a href="#">Cobble 1B</a><span class="sub">teo.k · unclassified</span><details><summary>Run details</summary><p>Invented entry for this fixture.</p></details></th><td class="mono strong">60.74<span class="sub">95% CI 59.15–61.63</span></td><td class="mono">81.00</td><td class="mono">25.64</td><td class="mono">51.44</td><td class="mono">0.02738<span class="sub">estimate</span></td><td class="sub-cell">Open</td></tr>
+  </tbody>
+</table>
+
+<h2>Survey estimates</h2>
+<!-- Share holds an estimate with an inline interval in parentheses. Target band is a plain range and must keep reading as its midpoint. -->
+<table id="survey">
+  <thead><tr><th>Region</th><th>Share (%)</th><th>Target band (%)</th><th>Respondents</th></tr></thead>
+  <tbody>
+    <tr><td>Northfold</td><td>41.2 (95% CI: 38.0, 44.5)</td><td>30–45</td><td>750</td></tr>
+    <tr><td>Eastmere</td><td>36.8 (95% CI: 33.1, 40.2)</td><td>25–40</td><td>873</td></tr>
+    <tr><td>Calder Vale</td><td>52.5 (95% CI: 49.9, 55.0)</td><td>45–60</td><td>595</td></tr>
+    <tr><td>Saltreach</td><td>29.4 (95% CI: 25.0, 33.7)</td><td>20–35</td><td>735</td></tr>
+    <tr><td>Ormsby</td><td>47.1 (95% CI: 44.2, 50.3)</td><td>40–55</td><td>677</td></tr>
+    <tr><td>Pinehollow</td><td>33.3 (95% CI: 30.6, 36.1)</td><td>25–40</td><td>699</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

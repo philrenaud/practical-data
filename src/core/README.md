@@ -46,7 +46,8 @@ all import it.
 - **Parsers return null on doubt.** `parseNumber` rejects dates, clock times,
   ordinals, and high-first scores ("35-10"). A wrong number in a scale is
   worse than an unshaded cell. Ranges parse to their midpoint, and clock
-  durations ("2:59") parse as base-60 numbers.
+  durations ("2:59") parse as base-60 numbers. An estimate followed by its confidence
+  interval ("73.7 95% CI 72.4–74.5") parses as the estimate.
 - **Dates never reach the model.** `profileTable` marks a column where 80% of
   filled cells look like dates as text, and judge.ts shades it from earliest
   to latest. Numeric dates with an ambiguous day order ("3/4/2026") parse

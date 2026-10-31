@@ -670,5 +670,19 @@
       "Contrast": { "kind": "ordinal" },
       "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
+  },
+  "confidence-intervals": {
+    "t0": {
+      "Rank": "none",
+      "System": "none",
+      "Score": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "Cost per 1,000 runs (USD)": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Open / closed": "none"
+    },
+    "t1": {
+      "Region": "none",
+      "Share (%)": { "kind": "quantitative" },
+      "Target band (%)": { "kind": "quantitative" }
+    }
   }
 }

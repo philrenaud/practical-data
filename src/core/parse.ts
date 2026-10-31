@@ -233,9 +233,37 @@ const CHANGE_RE = /^(.*\S)\s+\(\s*[+\-−±]\s*\d[\d,.]*\s*%?\s*\)$/;
  */
 const CONDITION_RE = /^(.*?\S)\s+(?:for|when|if|until|after|before)\s+\p{L}/u;
 
+/**
+ * An estimate followed by its confidence interval, as in "73.7 95% CI
+ * 72.4–74.5" or "73.7 (95% CI: 72.4, 74.5)". The "CI" mark is required, the
+ * interval must be a low-to-high pair, and the estimate must lie inside it.
+ */
+const INTERVAL_RE =
+  /^(.*?\S)\s+\(?\s*(?:\d{2}(?:\.\d+)?\s?%\s*)?(?:CI|C\.I\.|confidence interval)\s*:?\s*(.+?)\s*\)?$/u;
+
+/** The estimate of a cell with a confidence interval, or null when the cell is not one. */
+const parseInterval = (text: string): ParsedNumber | null => {
+  const m = INTERVAL_RE.exec(text);
+  if (m?.[1] === undefined || m[2] === undefined) return null;
+  const estimate = parseSingle(m[1]);
+  if (estimate === null || estimate.bound) return null;
+  const bounds = /^\[?\s*([^,;\]]+?)\s*[,;]\s*([^,;\]]+?)\s*\]?$/.exec(m[2]);
+  const interval =
+    bounds?.[1] !== undefined && bounds[2] !== undefined
+      ? parseRange(`${bounds[1]} to ${bounds[2]}`)
+      : parseRange(m[2]);
+  if (interval?.range == null) return null;
+  const [lo, hi] = interval.range;
+  if (!(lo <= estimate.value && estimate.value <= hi)) return null;
+  return estimate;
+};
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
+  // An estimate with its confidence interval: the estimate is the cell's number.
+  const interval = parseInterval(text);
+  if (interval !== null) return interval;
   // A value followed by its change: the value is the cell's number.
   const change = CHANGE_RE.exec(text);
   if (change?.[1] !== undefined) return parseNumber(change[1]);

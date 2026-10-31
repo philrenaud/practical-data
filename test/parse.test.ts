@@ -100,6 +100,22 @@ test("a unit that names an Object.prototype member is a unit, not a magnitude", 
   assert.deepEqual(parseNumber("5 constructor"), { value: 5, unit: "constructor", bound: false, range: null });
 });
 
+test("an estimate followed by its confidence interval parses as the estimate", () => {
+  const plain = { value: 61.4, unit: null, bound: false, range: null };
+  assert.deepEqual(parseNumber("61.4 95% CI 58.9–63.0"), plain);
+  assert.deepEqual(parseNumber("61.4 (95% CI 58.9-63.0)"), plain);
+  assert.deepEqual(parseNumber("61.4 (95% CI: 58.9, 63.0)"), plain);
+  assert.deepEqual(parseNumber("61.4 CI [58.9, 63.0]"), plain);
+  assert.deepEqual(parseNumber("12.5% 90% CI 10.1%–14.8%"), { value: 12.5, unit: "%", bound: false, range: null });
+  // An estimate outside its interval, or an interval that is not low to high, stays text.
+  assert.equal(parseNumber("61.4 95% CI 62.0–63.0"), null);
+  assert.equal(parseNumber("61.4 95% CI 63.0–58.9"), null);
+  // "CI" must be followed by an interval.
+  assert.equal(parseNumber("61.4 95% CI"), null);
+  assert.equal(parseNumber("61.4 CI 4"), null);
+  assert.equal(parseNumber("61.4 95% 58.9–63.0"), null);
+});
+
 test("a value followed by a signed change parses as the value", () => {
   assert.deepEqual(parseNumber("740 (-16)"), { value: 740, unit: null, bound: false, range: null });
   assert.deepEqual(parseNumber("683 (+47)"), { value: 683, unit: null, bound: false, range: null });

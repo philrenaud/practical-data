@@ -312,6 +312,7 @@ const PARSE_EXAMPLES = [
   "≤ 272K",
   "> 200K",
   "$0.20 / GB for requests up to 100,000 units",
+  "61.4 95% CI 58.9–63.0",
   "3 for 45",
   "12-4",
   "35-10",

@@ -1,0 +1,190 @@
+{
+ "url": "fixture://synthetic/confidence-intervals.html",
+ "title": "Practical Data: scores with confidence intervals",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Invented benchmark results (12 systems)",
+   "headers": [
+    "Rank",
+    "System",
+    "Score",
+    "Reasoning",
+    "Calibration",
+    "Speed",
+    "Cost per 1,000 runs (USD)",
+    "Open / closed"
+   ],
+   "rows": [
+    [
+     "1 ≈",
+     "Larkspur 9 Fenmoor Labs · open-track Run details",
+     "73.26 95% CI 71.98–74.41",
+     "25.07",
+     "57.51",
+     "45.60",
+     "0.01362 estimate",
+     "Unknown"
+    ],
+    [
+     "2",
+     "Quillon-7B Tess Arbery · rebuild Run details",
+     "72.57 95% CI 71.49–73.49",
+     "36.85",
+     "58.57",
+     "24.14",
+     "0.02783 estimate",
+     "Open"
+    ],
+    [
+     "3",
+     "Marrowind 2 Halcyte AI · hosted Run details",
+     "70.92 95% CI 68.25–71.48",
+     "60.99",
+     "23.47",
+     "35.48",
+     "0.02759 estimate",
+     "Open"
+    ],
+    [
+     "4",
+     "Brisket 4B odalys · unclassified Run details",
+     "70.05 95% CI 68.79–70.67",
+     "41.59",
+     "77.13",
+     "32.65",
+     "0.02828 estimate",
+     "Unknown"
+    ],
+    [
+     "5",
+     "Pellucid Corran Vey · open-track Run details",
+     "69.42 95% CI 68.31–70.63",
+     "59.51",
+     "63.33",
+     "54.75",
+     "0.02689 estimate",
+     "Closed"
+    ],
+    [
+     "6 ≈",
+     "Tamarack S Wexley · rebuild Run details",
+     "68.15 95% CI 64.39–69.01",
+     "37.39",
+     "32.58",
+     "74.59",
+     "0.01429 estimate",
+     "Closed"
+    ],
+    [
+     "7",
+     "Ostinato 3B mirelle · unclassified Run details",
+     "66.74 95% CI 63.14–67.97",
+     "40.16",
+     "88.61",
+     "28.26",
+     "0.02371 estimate",
+     "Closed"
+    ],
+    [
+     "8",
+     "Verdigris 1.4 Ansel & Co · hosted Run details",
+     "66.19 95% CI 63.83–66.73",
+     "66.78",
+     "73.52",
+     "60.11",
+     "0.03651 estimate",
+     "Closed"
+    ],
+    [
+     "9",
+     "Sparrowhawk N. Okonjo · open-track Run details",
+     "65.21 95% CI 63.29–66.21",
+     "75.78",
+     "24.81",
+     "26.55",
+     "0.01956 estimate",
+     "Unknown"
+    ],
+    [
+     "10",
+     "Glimmer 2B pashto-labs · unclassified Run details",
+     "63.48 95% CI 62.49–64.68",
+     "65.30",
+     "89.52",
+     "77.53",
+     "0.01997 estimate",
+     "Closed"
+    ],
+    [
+     "11",
+     "Halberd v3 Ruthven · rebuild Run details",
+     "61.24 95% CI 59.33–62.68",
+     "44.88",
+     "62.76",
+     "54.56",
+     "0.01811 estimate",
+     "Closed"
+    ],
+    [
+     "12",
+     "Cobble 1B teo.k · unclassified Run details",
+     "60.74 95% CI 59.15–61.63",
+     "81.00",
+     "25.64",
+     "51.44",
+     "0.02738 estimate",
+     "Open"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Survey estimates",
+   "headers": [
+    "Region",
+    "Share (%)",
+    "Target band (%)",
+    "Respondents"
+   ],
+   "rows": [
+    [
+     "Northfold",
+     "41.2 (95% CI: 38.0, 44.5)",
+     "30–45",
+     "750"
+    ],
+    [
+     "Eastmere",
+     "36.8 (95% CI: 33.1, 40.2)",
+     "25–40",
+     "873"
+    ],
+    [
+     "Calder Vale",
+     "52.5 (95% CI: 49.9, 55.0)",
+     "45–60",
+     "595"
+    ],
+    [
+     "Saltreach",
+     "29.4 (95% CI: 25.0, 33.7)",
+     "20–35",
+     "735"
+    ],
+    [
+     "Ormsby",
+     "47.1 (95% CI: 44.2, 50.3)",
+     "40–55",
+     "677"
+    ],
+    [
+     "Pinehollow",
+     "33.3 (95% CI: 30.6, 36.1)",
+     "25–40",
+     "699"
+    ]
+   ]
+  }
+ ]
+}
