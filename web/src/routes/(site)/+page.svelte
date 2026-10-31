@@ -2,6 +2,7 @@
 <script lang="ts">
   import { DEFAULT_PALETTE, divergingStops, PALETTES, type PaletteId } from "../../../../src/core/palettes.ts";
   import { config } from "../../../../package.json";
+  import { track } from "#lib/analytics.ts";
   import Example from "#lib/Example.svelte";
   import { sections } from "#lib/demo.ts";
 
@@ -61,7 +62,9 @@
       shades the comparable columns of any HTML table, so the better and worse rows show without reading every cell.
     </p>
     <div class="actions">
-      <a class="button primary" href={storeUrl}>Add to Chrome</a>
+      <a class="button primary" href={storeUrl} onclick={() => track("store_click", { placement: "hero" })}
+        >Add to Chrome</a
+      >
       <a class="button" href="https://github.com/philrenaud/practical-data"
         ><svg class="gh" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"
           ><path
@@ -245,7 +248,11 @@
   <section class="install" id="install" aria-labelledby="install-title">
     <h2 id="install-title">Install</h2>
     <ol>
-      <li>Install <a href={storeUrl}>Practical Data from the Chrome Web Store</a>.</li>
+      <li>
+        Install <a href={storeUrl} onclick={() => track("store_click", { placement: "install" })}
+          >Practical Data from the Chrome Web Store</a
+        >.
+      </li>
       <li>
         It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options
         page.
