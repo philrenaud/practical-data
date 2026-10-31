@@ -1,6 +1,6 @@
 # Privacy policy
 
-_Practical Data, a Chrome extension. Last updated October 29, 2026._
+_Practical Data, a Chrome extension. Last updated October 31, 2026._
 
 Practical Data shades the comparable columns of tables on web pages. To decide
 what each column means, it asks a decision model. From version 1.1.0, that goes
@@ -90,6 +90,16 @@ All in your browser's extension storage, on your device:
 Sites can opt out for all users with
 `<meta name="practical-data" content="off">`.
 
+## This website
+
+The website at `practicaldata.dev` (not the extension) keeps anonymous visit
+statistics with [PostHog](https://posthog.com): the pages viewed, clicks
+through to the Chrome Web Store, the referring site, and the country, browser
+and device type derived from the request. It sets no cookies and stores
+nothing in your browser, so one visit cannot be linked to another, and it
+stays off entirely when your browser sends Do Not Track or Global Privacy
+Control. The extension sends nothing to the website or to PostHog.
+
 ## Changes
 
 Changes to this policy will be noted here with a new date.
@@ -97,3 +107,4 @@ Changes to this policy will be noted here with a new date.
 - October 21, 2026: the free endpoint keeps anonymous request counts.
 - October 29, 2026: the counts record the provider's HTTP status when a
   request fails upstream, and link the code that writes them.
+- October 31, 2026: the website keeps anonymous visit statistics.
