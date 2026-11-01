@@ -5,7 +5,7 @@
  */
 
 /** The PostHog project's key. Publishable: it ships in the bundle anyway. Empty turns analytics off. */
-const KEY = "phc_AQVmefzPBveL8y7b8MaXB4GAemnzwyT6jegnawRi5nHi";
+const KEY: string = "phc_AQVmefzPBveL8y7b8MaXB4GAemnzwyT6jegnawRi5nHi";
 const HOST = "https://us.i.posthog.com";
 const SCRIPT = "https://us-assets.i.posthog.com/static/array.js";
 
