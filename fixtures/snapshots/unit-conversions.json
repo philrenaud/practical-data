@@ -1,0 +1,148 @@
+{
+ "url": "fixture://synthetic/unit-conversions.html",
+ "title": "Practical Data: unit conversions",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Fastest scheduled services",
+   "headers": [
+    "Average speed",
+    "Top speed",
+    "Train",
+    "Line",
+    "Distance",
+    "Duration",
+    "Year",
+    "Comments"
+   ],
+   "rows": [
+    [
+     "306.2 km/h (190 mph)",
+     "350 km/h (217 mph)",
+     "Aster 400",
+     "Line 4 (express)",
+     "1,102.5 km (685 mi)",
+     "216 min",
+     "2024",
+     "Runs twice daily on the coastal corridor"
+    ],
+    [
+     "288.4 km/h (179 mph)",
+     "320 km/h (310 km/h with tolerance)",
+     "Aster 380",
+     "Line 2 (north)",
+     "418.0 km (260 mi)",
+     "87 min",
+     "2015",
+     "Fastest service on the northern line"
+    ],
+    [
+     "270.1 km/h (168 mph)",
+     "320 km/h (199 mph)",
+     "Duplex Gray",
+     "Line 7",
+     "180.3 km (112 mi)",
+     "40 min",
+     "2009",
+     "Stops once at the river junction"
+    ],
+    [
+     "255.9 km/h (159 mph)",
+     "300 km/h (186 mph)",
+     "Kestrel",
+     "Line 1 (main)",
+     "277.4 km (172 mi)",
+     "65 min",
+     "2012",
+     "Limited to weekday mornings"
+    ],
+    [
+     "241.6 km/h (150 mph)",
+     "430 km/h (267 mph)",
+     "Levitor",
+     "Airport link",
+     "31 km (19 mi)",
+     "8 min",
+     "2004",
+     "Peak hours only"
+    ],
+    [
+     "229.0 km/h (142 mph)",
+     "310 km/h (193 mph)",
+     "Meridian 103",
+     "Line 3 (south)",
+     "604.7 km (376 mi)",
+     "158 min",
+     "2010",
+     "Through service to the border"
+    ],
+    [
+     "214.3 km/h (133 mph)",
+     "300 km/h (186 mph)",
+     "Harrier",
+     "Line 5",
+     "229.9 km (143 mi)",
+     "64 min",
+     "2008",
+     "Historical"
+    ],
+    [
+     "131.2 km/h (82 mph)",
+     "160 km/h (99 mph)",
+     "Morning Lark",
+     "Valley branch",
+     "127.5 km (79 mi)",
+     "58 min",
+     "1938",
+     "79 miles (127 km) in 58 minutes. Historical"
+    ],
+    [
+     "112.6 km/h (70 mph)",
+     "145 km/h (90 mph)",
+     "Spa Flyer",
+     "Valley branch",
+     "122.0 km (76 mi)",
+     "65 min",
+     "1931",
+     "Claimed at the time as the fastest train. Historical"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Constituency results",
+   "headers": [
+    "Candidate",
+    "Party",
+    "Votes",
+    "Share"
+   ],
+   "rows": [
+    [
+     "Mara Ellison",
+     "Harbor",
+     "18,240 (41.2%)",
+     "41.2%"
+    ],
+    [
+     "Tobias Wren",
+     "Upland",
+     "14,903 (33.7%)",
+     "33.7%"
+    ],
+    [
+     "Ines Calder",
+     "Green Vale",
+     "7,118 (16.1%)",
+     "16.1%"
+    ],
+    [
+     "Rufus Hale",
+     "Independent",
+     "3,992 (9.0%)",
+     "9.0%"
+    ]
+   ]
+  }
+ ]
+}

@@ -109,3 +109,16 @@ test("a value followed by a signed change parses as the value", () => {
   assert.equal(parseNumber("Team (+3)"), null);
   assert.deepEqual(parseNumber("($3.00)"), { value: -3, unit: "$", bound: false, range: null });
 });
+
+test("a measurement followed by its conversion to another unit parses as the first value", () => {
+  assert.deepEqual(parseNumber("317.7 km/h (197 mph)"), { value: 317.7, unit: "km/h", bound: false, range: null });
+  assert.deepEqual(parseNumber("1,021.9 km (635 mi)"), { value: 1021.9, unit: "km", bound: false, range: null });
+  assert.deepEqual(parseNumber("29 km (18 mi)[3]"), { value: 29, unit: "km", bound: false, range: null });
+  // The parenthesis must hold one amount in a different unit.
+  assert.equal(parseNumber("300 km/h (310 km/h with +10 tolerance)"), null);
+  assert.equal(parseNumber("120 km (120 km)"), null, "same unit");
+  assert.equal(parseNumber("1,234 (45.2%)"), null, "a count with its share");
+  assert.equal(parseNumber("45 votes (12%)"), null, "a share is not a conversion");
+  assert.equal(parseNumber("12 km (est.)"), null);
+  assert.equal(parseNumber("Route 9 (north)"), null);
+});

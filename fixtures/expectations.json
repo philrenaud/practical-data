@@ -670,5 +670,19 @@
       "Contrast": { "kind": "ordinal" },
       "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
     }
+  },
+  "unit-conversions": {
+    "t0": {
+      "Average speed": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Top speed": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Train": "none",
+      "Line": "none",
+      "Distance": { "kind": "quantitative" },
+      "Comments": "none"
+    },
+    "t1": {
+      "Candidate": "none",
+      "Share": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    }
   }
 }

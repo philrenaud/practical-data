@@ -233,6 +233,28 @@ const CHANGE_RE = /^(.*\S)\s+\(\s*[+\-−±]\s*\d[\d,.]*\s*%?\s*\)$/;
  */
 const CONDITION_RE = /^(.*?\S)\s+(?:for|when|if|until|after|before)\s+\p{L}/u;
 
+/**
+ * A measurement followed by the same amount in another unit, as in
+ * "317.7 km/h (197 mph)" or "1,021.9 km (635 mi)". Both sides must carry a
+ * unit and the units must differ, so a count with its share ("1,234 (45%)")
+ * and a value with a bare number ("45 (12)") stay text.
+ */
+const CONVERSION_RE = /^(.*\S)\s*\(([^()]+)\)$/;
+
+const isMeasureUnit = (unit: string | null): unit is string =>
+  unit !== null && unit !== "%" && unit !== "x" && unit !== ":" && !CURRENCY.includes(unit) && !unit.endsWith("$");
+
+const parseConversion = (text: string): ParsedNumber | null => {
+  const m = CONVERSION_RE.exec(text);
+  if (m?.[1] === undefined || m[2] === undefined) return null;
+  const outer = parseSingle(m[1]);
+  const inner = parseSingle(m[2].trim());
+  if (outer === null || inner === null || outer.bound || inner.bound) return null;
+  if (!isMeasureUnit(outer.unit) || !isMeasureUnit(inner.unit)) return null;
+  if (outer.unit.toLowerCase() === inner.unit.toLowerCase()) return null;
+  return outer;
+};
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
@@ -248,7 +270,7 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
     const n = parseSingle(plus[1]);
     return n === null ? null : { ...n, bound: true };
   }
-  return parseSingle(text) ?? parseRange(text);
+  return parseSingle(text) ?? parseRange(text) ?? parseConversion(text);
 };
 
 /** Normalizes a category label for grouping. It removes footnote markers and lowercases the text. */

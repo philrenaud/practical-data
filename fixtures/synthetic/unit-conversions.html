@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: unit conversions</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<h1>Unit conversions</h1>
+<p>
+  An encyclopedia's records table writes each measurement in two units, the
+  second in parentheses: "317.7 km/h (197 mph)". The extension reads the first
+  amount. A parenthesis that holds a note, a share ("1,240 (41%)"), or the
+  same unit is not a conversion, so those cells are not read this way.
+</p>
+
+<h2>Fastest scheduled services</h2>
+<!-- Speeds and distances carry a conversion. One top speed has a note instead of a conversion; the column still parses. -->
+<table id="services">
+  <thead>
+    <tr><th>Average speed</th><th>Top speed</th><th>Train</th><th>Line</th><th>Distance</th><th>Duration</th><th>Year</th><th>Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>306.2 km/h (190 mph)</td><td>350 km/h (217 mph)</td><td>Aster 400</td><td>Line 4 (express)</td><td>1,102.5 km (685 mi)</td><td>216 min</td><td>2024</td><td>Runs twice daily on the coastal corridor</td></tr>
+    <tr><td>288.4 km/h (179 mph)</td><td>320 km/h (310 km/h with tolerance)</td><td>Aster 380</td><td>Line 2 (north)</td><td>418.0 km (260 mi)</td><td>87 min</td><td>2015</td><td>Fastest service on the northern line</td></tr>
+    <tr><td>270.1 km/h (168 mph)</td><td>320 km/h (199 mph)</td><td>Duplex Gray</td><td>Line 7</td><td>180.3 km (112 mi)</td><td>40 min</td><td>2009</td><td>Stops once at the river junction</td></tr>
+    <tr><td>255.9 km/h (159 mph)</td><td>300 km/h (186 mph)</td><td>Kestrel</td><td>Line 1 (main)</td><td>277.4 km (172 mi)</td><td>65 min</td><td>2012</td><td>Limited to weekday mornings</td></tr>
+    <tr><td>241.6 km/h (150 mph)</td><td>430 km/h (267 mph)</td><td>Levitor</td><td>Airport link</td><td>31 km (19 mi)</td><td>8 min</td><td>2004</td><td>Peak hours only</td></tr>
+    <tr><td>229.0 km/h (142 mph)</td><td>310 km/h (193 mph)</td><td>Meridian 103</td><td>Line 3 (south)</td><td>604.7 km (376 mi)</td><td>158 min</td><td>2010</td><td>Through service to the border</td></tr>
+    <tr><td>214.3 km/h (133 mph)</td><td>300 km/h (186 mph)</td><td>Harrier</td><td>Line 5</td><td>229.9 km (143 mi)</td><td>64 min</td><td>2008</td><td>Historical</td></tr>
+    <tr><td>131.2 km/h (82 mph)</td><td>160 km/h (99 mph)</td><td>Morning Lark</td><td>Valley branch</td><td>127.5 km (79 mi)</td><td>58 min</td><td>1938</td><td>79 miles (127 km) in 58 minutes. Historical</td></tr>
+    <tr><td>112.6 km/h (70 mph)</td><td>145 km/h (90 mph)</td><td>Spa Flyer</td><td>Valley branch</td><td>122.0 km (76 mi)</td><td>65 min</td><td>1931</td><td>Claimed at the time as the fastest train. Historical</td></tr>
+  </tbody>
+</table>
+
+<h2>Constituency results</h2>
+<!-- Votes with their share in parentheses: not a conversion. The share column is the number to shade. -->
+<table id="results">
+  <thead><tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Share</th></tr></thead>
+  <tbody>
+    <tr><td>Mara Ellison</td><td>Harbor</td><td>18,240 (41.2%)</td><td>41.2%</td></tr>
+    <tr><td>Tobias Wren</td><td>Upland</td><td>14,903 (33.7%)</td><td>33.7%</td></tr>
+    <tr><td>Ines Calder</td><td>Green Vale</td><td>7,118 (16.1%)</td><td>16.1%</td></tr>
+    <tr><td>Rufus Hale</td><td>Independent</td><td>3,992 (9.0%)</td><td>9.0%</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
