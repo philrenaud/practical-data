@@ -498,6 +498,24 @@
       "Grams": { "kind": "quantitative" }
     }
   },
+  "count-with-share": {
+    "t0": {
+      "source": "none",
+      "Color": "none",
+      "MO 3 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "TU 4 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "WE 5 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "TH 6 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "FR 7 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "SA 8 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "SU 9 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    },
+    "t1": {
+      "Club": "none",
+      "Members (of which new)": "none",
+      "Renewals": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    }
+  },
   "value-with-change": {
     "t0": {
       "Rank": "none",
@@ -682,6 +700,7 @@
     },
     "t1": {
       "Candidate": "none",
+      "Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
       "Share": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
     }
   }
