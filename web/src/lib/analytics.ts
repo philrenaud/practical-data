@@ -8,8 +8,8 @@
  * sends nothing here; this file is the website's only analytics code.
  */
 
-/** The PostHog project's publishable key. Empty turns analytics off, as in local dev. */
-const KEY = "";
+/** The PostHog project's publishable key. Publishable: it ships in the bundle. Empty turns analytics off. */
+const KEY = "phc_AQVmefzPBveL8y7b8MaXB4GAemnzwyT6jegnawRi5nHi";
 const HOST = "https://us.i.posthog.com";
 const SCRIPT = "https://us-assets.i.posthog.com/static/array.js";
 
