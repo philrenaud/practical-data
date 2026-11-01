@@ -14,8 +14,9 @@
 <p>
   An encyclopedia's records table writes each measurement in two units, the
   second in parentheses: "317.7 km/h (197 mph)". The extension reads the first
-  amount. A parenthesis that holds a note, a share ("1,240 (41%)"), or the
-  same unit is not a conversion, so those cells are not read this way.
+  amount. A parenthesis that holds a note or the same unit is not a
+  conversion, so those cells are not read this way. A share ("1,240 (41%)")
+  is not a conversion either; it is read as a count with its share.
 </p>
 
 <h2>Fastest scheduled services</h2>
@@ -38,7 +39,7 @@
 </table>
 
 <h2>Constituency results</h2>
-<!-- Votes with their share in parentheses: not a conversion. The share column is the number to shade. -->
+<!-- Votes with their share in parentheses: not a conversion, but a count with its share, so Votes reads as the count. -->
 <table id="results">
   <thead><tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Share</th></tr></thead>
   <tbody>

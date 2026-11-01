@@ -236,8 +236,8 @@ const CONDITION_RE = /^(.*?\S)\s+(?:for|when|if|until|after|before)\s+\p{L}/u;
 /**
  * A measurement followed by the same amount in another unit, as in
  * "317.7 km/h (197 mph)" or "1,021.9 km (635 mi)". Both sides must carry a
- * unit and the units must differ, so a count with its share ("1,234 (45%)")
- * and a value with a bare number ("45 (12)") stay text.
+ * unit and the units must differ, so a value with a bare number ("45 (12)")
+ * stays text. parseCountShare reads a count with its share ("1,234 (45%)").
  */
 const CONVERSION_RE = /^(.*\S)\s*\(([^()]+)\)$/;
 
@@ -255,6 +255,24 @@ const parseConversion = (text: string): ParsedNumber | null => {
   return outer;
 };
 
+/**
+ * A count followed by its share of the whole, as in "1,234 (45.2%)" or
+ * "22(13.1%)" from an analytics breakdown. The count must be a bare number
+ * and the share a bare percentage from 0 to 100, so "45 (12)", "$40 (12%)",
+ * and "12% (3%)" stay text. In one column every share divides by the same
+ * total, so ordering by count and by share agree.
+ */
+const COUNT_SHARE_RE = /^(.*\S)\s*\(\s*(\d+(?:\.\d+)?)\s*%\s*\)$/;
+
+const parseCountShare = (text: string): ParsedNumber | null => {
+  const m = COUNT_SHARE_RE.exec(text);
+  if (m?.[1] === undefined || m[2] === undefined) return null;
+  if (Number(m[2]) > 100) return null;
+  const count = parseSingle(m[1]);
+  if (count === null || count.unit !== null || count.bound || count.value < 0) return null;
+  return count;
+};
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
@@ -270,7 +288,7 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
     const n = parseSingle(plus[1]);
     return n === null ? null : { ...n, bound: true };
   }
-  return parseSingle(text) ?? parseRange(text) ?? parseConversion(text);
+  return parseSingle(text) ?? parseRange(text) ?? parseConversion(text) ?? parseCountShare(text);
 };
 
 /** Normalizes a category label for grouping. It removes footnote markers and lowercases the text. */

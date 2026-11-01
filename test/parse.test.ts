@@ -117,8 +117,27 @@ test("a measurement followed by its conversion to another unit parses as the fir
   // The parenthesis must hold one amount in a different unit.
   assert.equal(parseNumber("300 km/h (310 km/h with +10 tolerance)"), null);
   assert.equal(parseNumber("120 km (120 km)"), null, "same unit");
-  assert.equal(parseNumber("1,234 (45.2%)"), null, "a count with its share");
   assert.equal(parseNumber("45 votes (12%)"), null, "a share is not a conversion");
   assert.equal(parseNumber("12 km (est.)"), null);
   assert.equal(parseNumber("Route 9 (north)"), null);
+});
+
+test("a count followed by its share parses as the count", () => {
+  assert.deepEqual(parseNumber("1,234 (45.2%)"), { value: 1234, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("22(13.1%)"), { value: 22, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("0 (0%)"), { value: 0, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("4 ( 100% )"), { value: 4, unit: null, bound: false, range: null });
+  // The count must be a bare number and the share a percentage of the whole.
+  assert.equal(parseNumber("45 votes (12%)"), null, "a count with a unit");
+  assert.equal(parseNumber("$40 (12%)"), null, "a price");
+  assert.equal(parseNumber("12% (3%)"), null, "a share with a share");
+  assert.equal(parseNumber("45 (12)"), null, "no percent sign");
+  assert.equal(parseNumber("45 (140%)"), null, "more than the whole");
+  assert.equal(parseNumber("≥ 45 (12%)"), null, "a bound");
+  assert.equal(parseNumber("Route 9 (12%)"), null);
+  assert.deepEqual(
+    parseNumber("740 (+16%)"),
+    { value: 740, unit: null, bound: false, range: null },
+    "a signed change still reads first",
+  );
 });

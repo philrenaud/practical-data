@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: counts with their share</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; max-width: 1100px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 4px 10px; }
+  .num { text-align: right; }
+  .nowrap { white-space: nowrap; }
+  .pct { color: #777; margin-left: 4px; }
+  .dow { font-weight: 600; text-transform: uppercase; }
+  .sort { border: 0; background: none; font: inherit; cursor: pointer; }
+  .swatch { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #999; background: transparent; }
+  tr { border-left: 3px solid var(--ribbon, transparent); }
+</style>
+</head>
+<body>
+<h1>Counts with their share</h1>
+<p>
+  An analytics dashboard's breakdown table writes each count with its share of
+  the day's total in parentheses: "22 (13.1%)". The extension reads the count.
+  In one column every share divides by the same total, so the order is the
+  same either way. A parenthesis that holds a bare number is not a share and
+  stays text.
+</p>
+
+<h2>Signups by source</h2>
+<!-- A trends breakdown: a pinned label column with checkboxes, an empty color-swatch column, one column per day, and an Other row of bare counts. Every day column is a count. -->
+<table id="breakdown">
+  <thead><tr><th><label><input type="checkbox" checked> <button type="button" class="sort">source</button></label></th><th>Color</th><th class="num"><button type="button" class="sort"><span class="dow">Mo</span> <span>3 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">Tu</span> <span>4 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">We</span> <span>5 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">Th</span> <span>6 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">Fr</span> <span>7 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">Sa</span> <span>8 Feb</span></button></th><th class="num"><button type="button" class="sort"><span class="dow">Su</span> <span>9 Feb</span></button></th></tr></thead>
+  <tbody>
+    <tr style="--ribbon:#3b6cf6"><td class="pin"><label><input type="checkbox" checked> <span>newsletter</span></label></td><td><button type="button" class="swatch" aria-label="Cobalt" style="border-color:#3b6cf6"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>51</span><span class="pct">(19.2%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>47</span><span class="pct">(36.4%)</span></span></td><td class="num"><span class="nowrap"><span>8</span><span class="pct">(5.2%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td></tr>
+    <tr style="--ribbon:#8a4fd8"><td class="pin"><label><input type="checkbox" checked> <span>podcast-ad</span></label></td><td><button type="button" class="swatch" aria-label="Violet" style="border-color:#8a4fd8"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>8</span><span class="pct">(6.2%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>81</span><span class="pct">(34.6%)</span></span></td></tr>
+    <tr style="--ribbon:#2c9a8f"><td class="pin"><label><input type="checkbox" checked> <span>search-engine</span></label></td><td><button type="button" class="swatch" aria-label="Teal" style="border-color:#2c9a8f"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>74</span><span class="pct">(27.9%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>19</span><span class="pct">(8.1%)</span></span></td></tr>
+    <tr style="--ribbon:#d6336c"><td class="pin"><label><input type="checkbox" checked> <span>partner-blog</span></label></td><td><button type="button" class="swatch" aria-label="Rose" style="border-color:#d6336c"></button></td><td class="num"><span class="nowrap"><span>16</span><span class="pct">(64%)</span></span></td><td class="num"><span class="nowrap"><span>40</span><span class="pct">(15.1%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>14</span><span class="pct">(5.6%)</span></span></td><td class="num"><span class="nowrap"><span>74</span><span class="pct">(57.4%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>13</span><span class="pct">(5.6%)</span></span></td></tr>
+    <tr style="--ribbon:#e8590c"><td class="pin"><label><input type="checkbox" checked> <span>direct</span></label></td><td><button type="button" class="swatch" aria-label="Orange" style="border-color:#e8590c"></button></td><td class="num"><span class="nowrap"><span>9</span><span class="pct">(36%)</span></span></td><td class="num"><span class="nowrap"><span>8</span><span class="pct">(3%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>88</span><span class="pct">(35.3%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>60</span><span class="pct">(38.7%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td></tr>
+    <tr style="--ribbon:#7a5c3e"><td class="pin"><label><input type="checkbox" checked> <span>forum-thread</span></label></td><td><button type="button" class="swatch" aria-label="Umber" style="border-color:#7a5c3e"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>24</span><span class="pct">(9.1%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>44</span><span class="pct">(28.4%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td></tr>
+    <tr style="--ribbon:#3fa34d"><td class="pin"><label><input type="checkbox" checked> <span>video-preroll</span></label></td><td><button type="button" class="swatch" aria-label="Leaf" style="border-color:#3fa34d"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>16</span><span class="pct">(6%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>6</span><span class="pct">(3.9%)</span></span></td><td class="num"><span class="nowrap"><span>10</span><span class="pct">(4.3%)</span></span></td></tr>
+    <tr style="--ribbon:#1c7ed6"><td class="pin"><label><input type="checkbox" checked> <span>qr-poster</span></label></td><td><button type="button" class="swatch" aria-label="Azure" style="border-color:#1c7ed6"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>44</span><span class="pct">(16.6%)</span></span></td><td class="num"><span class="nowrap"><span>45</span><span class="pct">(67.2%)</span></span></td><td class="num"><span class="nowrap"><span>64</span><span class="pct">(25.7%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>61</span><span class="pct">(26.1%)</span></span></td></tr>
+    <tr style="--ribbon:#f06595"><td class="pin"><label><input type="checkbox" checked> <span>app-store</span></label></td><td><button type="button" class="swatch" aria-label="Pink" style="border-color:#f06595"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>8</span><span class="pct">(3%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>83</span><span class="pct">(33.3%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>37</span><span class="pct">(23.9%)</span></span></td><td class="num"><span class="nowrap"><span>50</span><span class="pct">(21.4%)</span></span></td></tr>
+    <tr style="--ribbon:#495057"><td class="pin"><label><input type="checkbox" checked> <span>referral-code</span></label></td><td><button type="button" class="swatch" aria-label="Slate" style="border-color:#495057"></button></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>22</span><span class="pct">(32.8%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td><td class="num"><span class="nowrap"><span>0</span><span class="pct">(0%)</span></span></td></tr>
+    <tr><td class="pin"><label><input type="checkbox" checked> <span>Other (all remaining values)</span></label></td><td><button type="button" class="swatch" aria-label="Gray"></button></td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">2</td><td class="num">1</td></tr>
+  </tbody>
+</table>
+
+<h2>Club membership</h2>
+<!-- Members carry an unsigned bare count in parentheses (of which new): not a share, stays text. Renewals carry a share and parse as counts. -->
+<table id="membership">
+  <thead><tr><th>Club</th><th>Members (of which new)</th><th>Renewals</th></tr></thead>
+  <tbody>
+    <tr><td>Harbor Rowing</td><td>64 (9)</td><td>51 (38.6%)</td></tr>
+    <tr><td>Quarry Climbing</td><td>41 (12)</td><td>27 (20.5%)</td></tr>
+    <tr><td>Fernhill Chess</td><td>23 (2)</td><td>19 (14.4%)</td></tr>
+    <tr><td>Saltmarsh Birding</td><td>37 (5)</td><td>30 (22.7%)</td></tr>
+    <tr><td>Glass Street Choir</td><td>12 (4)</td><td>5 (3.8%)</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
