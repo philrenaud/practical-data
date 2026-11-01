@@ -6,12 +6,10 @@
     <meta name="practical-data" content="off" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="%sveltekit.assets%/icon128.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Prociono&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <!-- The above-the-fold faces, fetched in parallel with the stylesheet that declares them. -->
+    <link rel="preload" href="/fonts/Cambridge-Light.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Prociono-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/IBMPlexMono-latin-400.woff2" as="font" type="font/woff2" crossorigin />
     %sveltekit.head%
   </head>
   <body>
