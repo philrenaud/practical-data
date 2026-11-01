@@ -1,14 +1,10 @@
 /**
- * Anonymous visit statistics for the website, via PostHog. The script loads
- * only when a key is set and the browser does not ask not to be tracked
- * (Do Not Track or Global Privacy Control). Cookieless: PostHog keeps its
- * state in memory, writes nothing to cookies or local storage, and so cannot
- * link one visit to another. Page views are captured on load and on in-app
- * navigation; everything else is an explicit track() call. The extension
- * sends nothing here; this file is the website's only analytics code.
+ * Anonymous referrer statistics for the website (not the extension), via PostHog.
+ * Loads only when a key is set and the browser does not ask not to be tracked
+ * (Do Not Track or Global Privacy Control). No cookies.
  */
 
-/** The PostHog project's publishable key. Publishable: it ships in the bundle. Empty turns analytics off. */
+/** The PostHog project's key. Publishable: it ships in the bundle anyway. Empty turns analytics off. */
 const KEY = "phc_AQVmefzPBveL8y7b8MaXB4GAemnzwyT6jegnawRi5nHi";
 const HOST = "https://us.i.posthog.com";
 const SCRIPT = "https://us-assets.i.posthog.com/static/array.js";
