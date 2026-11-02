@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: values that change later</title>
+<style>
+  body { font: 16px/1.6 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; width: 100%; }
+  th, td { border-bottom: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { font-family: system-ui, sans-serif; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<h1>Values that change later</h1>
+<p>
+  A buying guide works out one month's cost for each plan. Most cells are a
+  single amount. A few give the amount now and the amount it becomes later:
+  "$52, or $58 after year one" and "$61.25, then $122.50 from March 1, 2027".
+  The extension reads the first amount, which holds now. A note that joins
+  two values in different units, or two plain numbers, stays text.
+</p>
+
+<h2>One month of image hosting</h2>
+<!-- Cost for the month mixes plain amounts with "now, or later" amounts and one "Not worked out". -->
+<table id="hosting">
+  <thead><tr><th>Plan</th><th>Rate</th><th>Included</th><th>Cost for the month</th></tr></thead>
+  <tbody>
+    <tr><td>Pebble Basic</td><td>$2 per 10K images</td><td>50K a month</td><td>$18</td></tr>
+    <tr><td>Pebble Plus</td><td>$6 per 10K images</td><td>20K a month</td><td>$66</td></tr>
+    <tr><td>Pebble Max</td><td>$11 per 10K images</td><td>20K a month</td><td>$121</td></tr>
+    <tr><td>Lantern Starter</td><td>$2 per 10K images</td><td>60K a month</td><td>$16</td></tr>
+    <tr><td>Lantern Pro</td><td>$6 per 10K images</td><td>20K a month for 12 months</td><td>$52, or $58 after year one</td></tr>
+    <tr><td>Lantern Studio</td><td>$11 per 10K images</td><td>5K a month for 12 months</td><td>$118, or $121 after year one</td></tr>
+    <tr><td>Quarry Team</td><td>1 token per image, 90K tokens for $140, then $15 per 10K</td><td>None beyond the plan</td><td>$155</td></tr>
+    <tr><td>Fernway Lite</td><td>$0.02 per 100 images</td><td>Not stated</td><td>$200</td></tr>
+    <tr><td>Fernway Full</td><td>$0.04 per 100 images</td><td>Not stated</td><td>$400</td></tr>
+    <tr><td>Orchid Flash</td><td>$4 per 10K images at 30 frames a clip</td><td>None</td><td>$72.50</td></tr>
+    <tr><td>Orchid Next (Preview)</td><td>$3.50 per 10K images through February 28, 2027</td><td>None</td><td>$61.25, then $122.50 from March 1, 2027</td></tr>
+    <tr><td>Juniper Mini</td><td>$5 per 10K images</td><td>Not stated</td><td>Not worked out</td></tr>
+  </tbody>
+</table>
+
+<h2>Plan notes</h2>
+<!-- "Billing" joins values with ", or" in mixed units or as plain numbers. It must stay text. -->
+<table id="notes">
+  <thead><tr><th>Plan</th><th>Seats</th><th>Billing</th></tr></thead>
+  <tbody>
+    <tr><td>Pebble Basic</td><td>1</td><td>$40, or 12% of sales</td></tr>
+    <tr><td>Pebble Plus</td><td>5</td><td>3, or 4 invoices a year</td></tr>
+    <tr><td>Lantern Starter</td><td>2</td><td>Monthly, or yearly at a discount</td></tr>
+    <tr><td>Lantern Pro</td><td>10</td><td>$90, and $10 per extra seat</td></tr>
+    <tr><td>Quarry Team</td><td>25</td><td>Free, or $5 with support</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

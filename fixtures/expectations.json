@@ -498,6 +498,17 @@
       "Grams": { "kind": "quantitative" }
     }
   },
+  "later-alternatives": {
+    "t0": {
+      "Plan": "none",
+      "Rate": "none",
+      "Cost for the month": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+    },
+    "t1": {
+      "Plan": "none",
+      "Billing": "none"
+    }
+  },
   "count-with-share": {
     "t0": {
       "source": "none",
