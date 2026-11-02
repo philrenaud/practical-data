@@ -1,6 +1,6 @@
 /** The toolbar popup. It shows what is shaded on the page and has switches for the page and the site. */
 import { lowAllowanceNote, quotaMessage, type StoredAllowance } from "./allowance.ts";
-import type { PageState, ToContent, ToWorker } from "./messages.ts";
+import type { PageState, Shading, ToContent, ToWorker } from "./messages.ts";
 import { isPagePaused, isPrivateHost, loadSettings, siteEnabled } from "./settings.ts";
 
 const summary = document.querySelector<HTMLParagraphElement>("#summary")!;
@@ -15,11 +15,22 @@ const [tab] =
     ? [await chrome.tabs.get(forced)]
     : await chrome.tabs.query({ active: true, currentWindow: true });
 
-const query = async (): Promise<PageState | undefined> =>
-  tab?.id === undefined
-    ? undefined
-    : ((await chrome.tabs.sendMessage(tab.id, { type: "state" } satisfies ToContent).catch(() => undefined)) as
-        PageState | undefined);
+/**
+ * Asks the top frame for the page's state, and the worker for what embedded
+ * frames shaded, such as a hosted app in an iframe. The counts add up.
+ */
+const query = async (): Promise<PageState | undefined> => {
+  if (tab?.id === undefined) return undefined;
+  const top = (await chrome.tabs
+    .sendMessage(tab.id, { type: "state" } satisfies ToContent, { frameId: 0 })
+    .catch(() => undefined)) as PageState | undefined;
+  if (top === undefined) return undefined;
+  const framed = (await chrome.runtime
+    .sendMessage({ type: "frameShading", tabId: tab.id } satisfies ToWorker)
+    .catch(() => undefined)) as Shading | undefined;
+  if (framed === undefined || !top.enabled) return top;
+  return { ...top, tables: top.tables + framed.tables, columns: top.columns + framed.columns };
+};
 
 const first = await query();
 const url = first?.url ?? tab?.url ?? "";

@@ -498,6 +498,13 @@
       "Grams": { "kind": "quantitative" }
     }
   },
+  "framed-app": {
+    "t0": {
+      "Space": "none",
+      "Likes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Visits this week": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+    }
+  },
   "count-with-share": {
     "t0": {
       "source": "none",

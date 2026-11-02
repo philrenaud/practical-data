@@ -7,7 +7,7 @@ import { DecisionError, modelFromConfig, type Allowance } from "../decide/model.
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
 import { answerCache } from "./cache.ts";
 import { fileFlag, flagId, type FlagCapture, type FlagContext, type FlagReply } from "./flags.ts";
-import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
+import type { JudgeReply, PageConfig, Shading, ToContent, ToWorker } from "./messages.ts";
 import {
   getInstallId,
   isPagePaused,
@@ -98,7 +98,12 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) return false;
   if (msg.type === "pageConfig") {
     if (!sameOrigin(msg.url, sender.url)) return false;
-    pageConfig(msg.url).then(sendResponse, () => sendResponse({ enabled: false, choices: {} } satisfies PageConfig));
+    const tabId = sender.tab?.id;
+    const frameId = sender.frameId ?? 0;
+    // A frame's new document starts from nothing. tabs.onUpdated clears the whole tab when the top page loads.
+    if (tabId !== undefined && frameId !== 0) void forgetShading(tabId, frameId);
+    const config = frameId === 0 ? pageConfig(msg.url) : framePageConfig(msg.url, sender.tab?.url);
+    config.then(sendResponse, () => sendResponse({ enabled: false, choices: {} } satisfies PageConfig));
     return true;
   }
   if (msg.type === "saveTableChoices") {
@@ -121,6 +126,14 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
     enableSite(msg.tabId, msg.host, msg.enabled).then(() => sendResponse(true));
     return true;
   }
+  if (msg.type === "frameShading") {
+    if (!fromExtensionPage) return false;
+    loadShading(msg.tabId).then(
+      (byFrame) => sendResponse(sumShading(byFrame, (frameId) => frameId !== "0")),
+      () => sendResponse({ tables: 0, columns: 0 } satisfies Shading),
+    );
+    return true;
+  }
   if (PD_FLAGS_REPO !== null && msg.type === "flag") {
     const tab = sender.tab;
     if (tab?.id === undefined) return false;
@@ -135,9 +148,17 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
       sendResponse(reply);
       const tabId = sender.tab?.id;
       if (tabId !== undefined && reply.ok) {
-        const n = reply.judgment.tables.reduce((s, t) => s + t.encodings.length, 0);
-        void chrome.action.setBadgeText({ tabId, text: n === 0 ? "" : String(n) });
-        void chrome.action.setBadgeBackgroundColor({ tabId, color: "#5b4bc4" });
+        const shaded = reply.judgment.tables.filter((t) => t.encodings.length > 0);
+        const shading = { tables: shaded.length, columns: shaded.reduce((s, t) => s + t.encodings.length, 0) };
+        // The badge counts every frame in the tab, so a frame's reply doesn't overwrite the page's count.
+        void recordShading(tabId, sender.frameId ?? 0, shading).then(
+          (byFrame) => {
+            const n = sumShading(byFrame, () => true).columns;
+            void chrome.action.setBadgeText({ tabId, text: n === 0 ? "" : String(n) });
+            void chrome.action.setBadgeBackgroundColor({ tabId, color: "#5b4bc4" });
+          },
+          () => undefined,
+        );
       } else if (tabId !== undefined && !reply.ok && isQuota(reply.reason)) {
         // The page stays plain when the free allowance is spent, so the toolbar badge shows it.
         void chrome.action.setBadgeText({ tabId, text: "!" });
@@ -178,6 +199,68 @@ const pageConfig = async (url: string): Promise<PageConfig> => {
   const [settings, paused, choices] = await Promise.all([loadSettings(), isPagePaused(url), loadTableChoices(url)]);
   return { enabled: siteEnabled(settings, host) && !paused, choices };
 };
+
+/**
+ * The config for an embedded frame. The frame follows the switches of the
+ * page the user sees, which the popup controls, and its own site must be on
+ * as well, so a site the user turned off, or a private-network host, stays
+ * plain when another page embeds it. Without the tab's URL the frame stays off.
+ */
+const framePageConfig = async (url: string, topUrl: string | undefined): Promise<PageConfig> => {
+  if (topUrl === undefined || !/^https?:/.test(topUrl)) return { enabled: false, choices: {} };
+  const [top, settings, choices] = await Promise.all([pageConfig(topUrl), loadSettings(), loadTableChoices(url)]);
+  return { enabled: top.enabled && siteEnabled(settings, new URL(url).hostname), choices };
+};
+
+// ── Shading per frame ───────────────────────────────────────────────────────
+
+/**
+ * What each frame of a tab has shaded, keyed by frame id, for the badge and
+ * the popup. It lives in storage.session because the worker sleeps between
+ * requests. Writes are chained so that two frames replying together don't
+ * drop each other's counts.
+ */
+const shadingKey = (tabId: number) => `shading:${tabId}`;
+let shadingWrites: Promise<unknown> = Promise.resolve();
+
+const loadShading = async (tabId: number): Promise<Record<string, Shading>> => {
+  const stored = (await chrome.storage.session.get(shadingKey(tabId))) as Record<string, Record<string, Shading>>;
+  return stored[shadingKey(tabId)] ?? {};
+};
+
+const updateShading = (
+  tabId: number,
+  change: (byFrame: Record<string, Shading>) => Record<string, Shading>,
+): Promise<Record<string, Shading>> => {
+  const next = shadingWrites.then(async () => {
+    const byFrame = change(await loadShading(tabId));
+    await chrome.storage.session.set({ [shadingKey(tabId)]: byFrame });
+    return byFrame;
+  });
+  shadingWrites = next.catch(() => undefined);
+  return next;
+};
+
+const recordShading = (tabId: number, frameId: number, shading: Shading) =>
+  updateShading(tabId, (byFrame) => ({ ...byFrame, [frameId]: shading }));
+
+/** Forgets one frame's shading, or with `null`, every frame's. */
+const forgetShading = (tabId: number, frameId: number | null) =>
+  updateShading(tabId, (byFrame) =>
+    frameId === null ? {} : Object.fromEntries(Object.entries(byFrame).filter(([id]) => id !== String(frameId))),
+  ).catch(() => undefined);
+
+const sumShading = (byFrame: Record<string, Shading>, include: (frameId: string) => boolean): Shading =>
+  Object.entries(byFrame)
+    .filter(([id]) => include(id))
+    .reduce((s, [, f]) => ({ tables: s.tables + f.tables, columns: s.columns + f.columns }), { tables: 0, columns: 0 });
+
+chrome.tabs.onUpdated.addListener((tabId, change) => {
+  if (change.status === "loading") void forgetShading(tabId, null);
+});
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void chrome.storage.session.remove(shadingKey(tabId)).catch(() => undefined);
+});
 
 const enableSite = async (tabId: number, host: string, enabled: boolean) => {
   await saveSettings(setSiteEnabledIn(await loadSettings(), host, enabled));

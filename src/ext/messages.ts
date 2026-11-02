@@ -26,7 +26,9 @@ export type ToWorker =
   /** Turns a host on or off and saves it in the settings. Popup only. */
   | { readonly type: "setSiteEnabled"; readonly tabId: number; readonly host: string; readonly enabled: boolean }
   /** Files a flag for a table. Dev build only; the worker adds a screenshot. Replies with a `FlagReply`. */
-  | { readonly type: "flag"; readonly capture: FlagCapture };
+  | { readonly type: "flag"; readonly capture: FlagCapture }
+  /** Asks what embedded frames in a tab have shaded. Popup only. Replies with a `Shading`. */
+  | { readonly type: "frameShading"; readonly tabId: number };
 
 /** The worker's reply to `judge`. */
 export type JudgeReply =
@@ -57,4 +59,10 @@ export interface PageConfig {
   readonly enabled: boolean;
   /** The saved table choices for the page, keyed by table fingerprint. */
   readonly choices: Readonly<Record<string, TableChoice>>;
+}
+
+/** How much one frame, or a set of frames, has shaded. */
+export interface Shading {
+  readonly tables: number;
+  readonly columns: number;
 }

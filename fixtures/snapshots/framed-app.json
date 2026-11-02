@@ -1,0 +1,42 @@
+{
+ "url": "fixture://synthetic/framed-app.html",
+ "title": "Practical Data: a table inside an embedded app",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Hub statistics",
+   "headers": [
+    "Space",
+    "Likes",
+    "Visits this week"
+   ],
+   "rows": [
+    [
+     "Glimmer arena",
+     "412",
+     "18,204"
+    ],
+    [
+     "Tidepool evals",
+     "96",
+     "3,118"
+    ],
+    [
+     "Bramble bench",
+     "1,240",
+     "52,770"
+    ],
+    [
+     "Quartz leaderboard",
+     "305",
+     "9,861"
+    ],
+    [
+     "Saffron studio",
+     "58",
+     "1,402"
+    ]
+   ]
+  }
+ ]
+}

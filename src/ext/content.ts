@@ -11,6 +11,11 @@
  * The script never reads the extension settings, because they hold API keys.
  * The worker says whether the page is on.
  *
+ * The script runs in every frame, so a table in an embedded app, such as a
+ * hosted demo in a cross-origin iframe, is shaded too. An embedded frame
+ * stays dormant until it is large enough to be page content and holds a
+ * table, so ad and widget frames never reach the worker. See `frameIsContent`.
+ *
  * The status for tests and debugging is in `<html data-pd-status>`. It starts
  * as "working" and ends as "done", "error:<reason>", "off", "none", or "idle".
  * "idle" means the page has tables but none is near the viewport yet.
@@ -34,6 +39,19 @@ const NEAR = "100% 0px";
 const REPLY_TIMEOUT_MS = 60_000;
 
 const root = document.documentElement;
+
+/** True in an embedded frame. The top frame answers the popup; embedded frames only shade. */
+const inFrame = window !== window.top;
+/**
+ * The smallest embedded frame that counts as page content. Standard ad slots
+ * (300×250, 300×600, 728×90, 970×250) are narrower or shorter than this.
+ */
+const MIN_FRAME_WIDTH = 480;
+const MIN_FRAME_HEIGHT = 320;
+const frameIsContent = () =>
+  innerWidth >= MIN_FRAME_WIDTH && innerHeight >= MIN_FRAME_HEIGHT && document.querySelector("table") !== null;
+/** True once an embedded frame has passed `frameIsContent`. The top frame is always ready. */
+let frameReady = !inFrame;
 const setStatus = (s: string) => {
   root.dataset["pdStatus"] = s;
 };
@@ -378,6 +396,8 @@ const turnOff = () => {
 
 chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => {
   if (msg.type === "state") {
+    // The popup asks the top frame. tabs.sendMessage without a frame id reaches every frame, so frames stay quiet.
+    if (inFrame) return false;
     const tables = [...document.querySelectorAll<HTMLElement>("table[data-pd-table]")];
     sendResponse({
       url: location.href,
@@ -388,7 +408,11 @@ chrome.runtime.onMessage.addListener((msg: ToContent, _sender, sendResponse) => 
     } satisfies PageState);
     return false;
   }
-  if (msg.type === "toggle") {
+  if (inFrame && !frameReady) return false;
+  if (msg.type === "toggle" && inFrame && msg.enabled) {
+    // The switch is the top page's. The frame's own site may still be off, so it asks the worker again.
+    void start();
+  } else if (msg.type === "toggle") {
     enabled = msg.enabled && !optedOut();
     setPolling(enabled);
     if (enabled) void run(true);
@@ -425,7 +449,7 @@ const start = async () => {
 
 let lastHref = location.href;
 const onNavigate = () => {
-  if (location.href === lastHref) return;
+  if (!frameReady || location.href === lastHref) return;
   lastHref = location.href;
   // The same document shows a new page, so forget the old page's tables and choices.
   turnOff();
@@ -454,4 +478,31 @@ const setPolling = (on: boolean) => {
   }
 };
 
-void start();
+/**
+ * Starts an embedded frame once it is large enough and holds a table. Until
+ * then the frame sends nothing and changes nothing. Frames often load small
+ * and grow, and apps render their tables after load, so it checks again on
+ * resize and on page changes, at most a few times a second.
+ */
+const startWhenContent = () => {
+  let pending: ReturnType<typeof setTimeout> | undefined;
+  const check = () => {
+    pending = undefined;
+    if (frameReady || !frameIsContent()) return;
+    frameReady = true;
+    lastHref = location.href;
+    removeEventListener("resize", soon);
+    watch.disconnect();
+    void start();
+  };
+  const soon = () => {
+    pending ??= setTimeout(check, 250);
+  };
+  const watch = new MutationObserver(soon);
+  addEventListener("resize", soon);
+  watch.observe(document.documentElement, { childList: true, subtree: true });
+  check();
+};
+
+if (inFrame) startWhenContent();
+else void start();

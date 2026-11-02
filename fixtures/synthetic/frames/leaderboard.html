@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quartz leaderboard</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 16px; color: #111; background: #fff; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  th, td { border-bottom: 1px solid #e5e5e5; padding: 6px 4px; text-align: right; }
+  th:nth-child(3), td:nth-child(3) { text-align: left; }
+  th button { all: unset; cursor: pointer; font-weight: 700; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .sub { display: block; font-size: 10px; color: #777; }
+  .repo { display: block; font-size: 10px; color: #777; }
+  [role=checkbox] { width: 14px; height: 14px; border: 1px solid #999; border-radius: 3px; display: inline-block; }
+</style>
+</head>
+<body>
+<!-- The structure of a hosted leaderboard app: a compare checkbox column, sortable headers built from buttons, and model names with their repository under them. -->
+<table aria-label="Overall leaderboard">
+  <thead>
+    <tr>
+      <th><span class="sr-only">Compare</span></th>
+      <th><button type="button" aria-label="Rank">#</button></th>
+      <th><button type="button">Model</button></th>
+      <th aria-sort="descending"><button type="button"><span class="sub">Borda</span>Score</button></th>
+      <th aria-sort="none"><button type="button"><span class="sub">Task</span>Avg</button></th>
+      <th aria-sort="none"><button type="button">Recall</button></th>
+      <th aria-sort="none"><button type="button">Choice</button></th>
+      <th aria-sort="none"><button type="button"><span class="sub">General</span>Recall</button></th>
+      <th><button type="button" aria-label="Coverage">Cov</button></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Lumen 30B"></button></td><td>1</td><td><button type="button">Lumen 30B</button><span class="repo">lumen-lab/Lumen-30B</span></td><td>88.42</td><td>71.06</td><td>75.20</td><td>66.31</td><td>97.10</td><td>120</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Corvid fast"></button></td><td>2</td><td><button type="button">Corvid fast</button><span class="repo">corvid/corvid-fast</span></td><td>87.95</td><td>69.84</td><td>77.48</td><td>61.02</td><td>98.40</td><td>120</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Wren 27B Instant"></button></td><td>3</td><td><button type="button">Wren 27B Instant</button><span class="repo">wren-models/Wren-27B-Instant</span></td><td>86.10</td><td>70.12</td><td>79.66</td><td>58.90</td><td>95.75</td><td>118</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Heron 14B"></button></td><td>4</td><td><button type="button">Heron 14B</button><span class="repo">heron/Heron-14B</span></td><td>81.33</td><td>65.47</td><td>70.08</td><td>57.12</td><td>93.20</td><td>120</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Finch 8B"></button></td><td>5</td><td><button type="button">Finch 8B</button><span class="repo">finch-ai/Finch-8B</span></td><td>74.86</td><td>60.31</td><td>64.95</td><td>52.40</td><td>90.05</td><td>112</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Sparrow 3B"></button></td><td>6</td><td><button type="button">Sparrow 3B</button><span class="repo">sparrow/Sparrow-3B</span></td><td>62.19</td><td>51.77</td><td>55.36</td><td>44.81</td><td>84.60</td><td>104</td></tr>
+    <tr><td><button type="button" role="checkbox" aria-checked="false" aria-label="Compare Gull 1B"></button></td><td>7</td><td><button type="button">Gull 1B</button><span class="repo">gull/Gull-1B</span></td><td>48.03</td><td>40.92</td><td>43.18</td><td>35.66</td><td>76.30</td><td>96</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

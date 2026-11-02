@@ -31,7 +31,8 @@ export const buildTestExtension = (env: NodeJS.ProcessEnv = process.env): string
   return [
     "--disable-extensions-except=dist-e2e",
     "--load-extension=dist-e2e",
-    `--host-resolver-rules=MAP ${PAGE_HOST} 127.0.0.1`,
+    // Subdomains such as embed.fixtures.test serve the same files from another origin, for cross-origin frames.
+    `--host-resolver-rules=MAP ${PAGE_HOST} 127.0.0.1, MAP *.${PAGE_HOST} 127.0.0.1`,
   ];
 };
 

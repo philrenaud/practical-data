@@ -19,8 +19,8 @@
  * - Turning shading off restores the original markup exactly.
  * - A table marked `data-e2e-skip` (an app list) is not judged.
  *
- * Then it runs three scenarios: page lifecycle, per-table controls, and the
- * popup. Screenshots go to artifacts/screens/.
+ * Then it runs scenarios for the page lifecycle, per-table controls, the
+ * popup, and tables inside embedded frames, among others. Screenshots go to artifacts/screens/.
  */
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -51,7 +51,7 @@ await mkdir("artifacts/screens", { recursive: true });
 const proxy =
   process.env["HTTPS_PROXY"] === undefined || process.env["HTTPS_PROXY"] === ""
     ? undefined
-    : { server: process.env["HTTPS_PROXY"], bypass: `127.0.0.1,localhost,${PAGE_HOST}` };
+    : { server: process.env["HTTPS_PROXY"], bypass: `127.0.0.1,localhost,${PAGE_HOST},*.${PAGE_HOST}` };
 
 const extensionArgs = buildTestExtension();
 
@@ -82,6 +82,9 @@ const routeRequest = async (route: Route) => {
   const req = route.request();
   const url = req.url();
   if (url.startsWith(base) || url.startsWith(loopback) || url.startsWith("chrome-extension://"))
+    return route.continue();
+  // Embedded frames load from a subdomain of the fixture host, another origin on the same server.
+  if (new URL(url).hostname.endsWith(`.${PAGE_HOST}`) && new URL(url).port === new URL(base).port)
     return route.continue();
   if (url.startsWith("https://api.typesafe.ai/")) {
     // Use the AnswerCache key, the SHA-256 of the exact JSON body.
@@ -422,6 +425,99 @@ const popupScenario = async (): Promise<string[]> => {
   if ((await status()) !== "off") problems.push(`popup: site switch didn't persist (status ${await status()})`);
   await popup.reload();
   await popup.click("label:has(#site)");
+  await popup.close();
+  await target.close();
+  return problems;
+};
+
+// ── Frames: a table inside an embedded app ──────────────────────────────────
+
+/**
+ * A cross-origin frame large enough to be page content is shaded, follows the
+ * page's switch, and counts in the popup. An ad-sized frame is never judged.
+ */
+const framesScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const target = await context.newPage();
+  await target.goto(`${base}/synthetic/framed-app.html`, { waitUntil: "domcontentloaded" });
+  if ((await waitForStatus(target)) !== "done") problems.push("frames: the page's own table wasn't judged");
+  const frameOf = async (name: string) => {
+    for (let i = 0; i < 50; i++) {
+      const f = target.frames().find((fr) => fr.url().includes(`/frames/${name}`));
+      if (f !== undefined) return f;
+      await target.waitForTimeout(100);
+    }
+    return undefined;
+  };
+  const app = await frameOf("leaderboard.html");
+  const ad = await frameOf("ad-slot.html");
+  if (app === undefined || ad === undefined) return [...problems, "frames: the embedded frames never loaded"];
+  if (new URL(app.url()).origin === new URL(target.url()).origin) problems.push("frames: the app frame is same-origin");
+  const frameStatus = (f: typeof app) => f.evaluate(() => document.documentElement.dataset["pdStatus"]);
+  const framePainted = (f: typeof app) =>
+    f.evaluate(() => document.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length);
+  const until = async (fn: () => Promise<boolean>, ms = 15_000) => {
+    for (let t = 0; t < ms; t += 150) {
+      if (await fn().catch(() => false)) return true;
+      await target.waitForTimeout(150);
+    }
+    return false;
+  };
+  if (!(await until(async () => (await frameStatus(app)) === "done" && (await framePainted(app)) > 0)))
+    problems.push(`frames: the app frame wasn't shaded (status ${await frameStatus(app)})`);
+  const encoded = await app.evaluate(() =>
+    (document.querySelector("table")?.dataset["pdEncoded"] ?? "").split("|").filter(Boolean),
+  );
+  // Columns 3 to 7 are scores. The rank, the name, and the checkbox column must not be shaded.
+  if (encoded.some((e) => ["0", "1", "2"].includes(e.split(":")[0]!)))
+    problems.push(`frames: the app table shaded a label column (${encoded.join("|")})`);
+  const adTouched = await ad.evaluate(
+    () =>
+      document.documentElement.dataset["pdStatus"] !== undefined ||
+      document.querySelector("[data-pd-table], [data-pd-t]") !== null,
+  );
+  if (adTouched) problems.push("frames: the ad-sized frame was judged");
+  await target.locator("#app").scrollIntoViewIfNeeded();
+  await target.screenshot({ path: "artifacts/screens/framed-app.png" });
+
+  // The popup counts the frame's columns with the page's own.
+  const topColumns = await target.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>("table[data-pd-table]")].reduce(
+      (n, t) => n + (t.dataset["pdEncoded"] ?? "").split("|").filter(Boolean).length,
+      0,
+    ),
+  );
+  const tabId = await worker.evaluate(async () =>
+    (await chrome.tabs.query({}))
+      .map((t) => t.id)
+      .filter((id) => id !== undefined)
+      .at(-1),
+  );
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html?tab=${tabId}`);
+  const expected = topColumns + encoded.length;
+  await popup
+    .waitForFunction(
+      (n) =>
+        new RegExp(`^${n} columns? shaded in 2 tables`).test(document.querySelector("#summary")?.textContent ?? ""),
+      expected,
+      { timeout: 5000 },
+    )
+    .catch(() => undefined);
+  const summary = (await popup.textContent("#summary")) ?? "";
+  if (!summary.startsWith(`${expected} column`) || !summary.includes("in 2 tables"))
+    problems.push(`frames: popup reads "${summary}", expected ${expected} columns in 2 tables`);
+
+  // Turning the page off clears the frame too, and turning it back on repaints it.
+  await popup.click("label:has(#page)");
+  if (!(await until(async () => (await frameStatus(app)) === "off" && (await framePainted(app)) === 0, 5000)))
+    problems.push("frames: turning the page off left the app frame shaded");
+  await popup.reload();
+  await popup.click("label:has(#page)");
+  if (!(await until(async () => (await frameStatus(app)) === "done" && (await framePainted(app)) > 0)))
+    problems.push("frames: turning the page back on didn't repaint the app frame");
+  if (await ad.evaluate(() => document.documentElement.dataset["pdStatus"] !== undefined))
+    problems.push("frames: the page switch woke the ad-sized frame");
   await popup.close();
   await target.close();
   return problems;
@@ -838,6 +934,11 @@ console.log(`${privateHostProblems.length === 0 ? "✓" : "✗"} private host: o
 for (const p of privateHostProblems) console.log(`    - ${p}`);
 if (privateHostProblems.length > 0) failed++;
 
+const framesProblems = await framesScenario();
+console.log(`${framesProblems.length === 0 ? "✓" : "✗"} frames: a table inside an embedded app`);
+for (const p of framesProblems) console.log(`    - ${p}`);
+if (framesProblems.length > 0) failed++;
+
 const popupProblems = await popupScenario();
 console.log(`${popupProblems.length === 0 ? "✓" : "✗"} popup: page and site switches`);
 for (const p of popupProblems) console.log(`    - ${p}`);
@@ -848,7 +949,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 9 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 10 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

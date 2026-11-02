@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: a table inside an embedded app</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 1100px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 4px 10px; }
+  iframe { border: 1px solid #ccc; display: block; margin: 8px 0 32px; }
+  #app { width: 100%; height: 560px; }
+  #ad { width: 300px; height: 250px; }
+</style>
+</head>
+<body>
+<h1>A table inside an embedded app</h1>
+<p>
+  A model hub shows a hosted demo app inside a cross-origin iframe. The app's
+  leaderboard is a plain table, so the extension shades it once the content
+  script runs in that frame. The 300×250 frame below is an ad slot. It holds
+  a small table too, and must stay untouched. The page's own table is shaded
+  as before.
+</p>
+
+<h2>Hub statistics</h2>
+<table id="stats">
+  <thead><tr><th>Space</th><th>Likes</th><th>Visits this week</th></tr></thead>
+  <tbody>
+    <tr><td>Glimmer arena</td><td>412</td><td>18,204</td></tr>
+    <tr><td>Tidepool evals</td><td>96</td><td>3,118</td></tr>
+    <tr><td>Bramble bench</td><td>1,240</td><td>52,770</td></tr>
+    <tr><td>Quartz leaderboard</td><td>305</td><td>9,861</td></tr>
+    <tr><td>Saffron studio</td><td>58</td><td>1,402</td></tr>
+  </tbody>
+</table>
+
+<h2>Quartz leaderboard (embedded app)</h2>
+<!-- The frames load from embed.<this host>, another origin. The e2e harness resolves it to the fixture server. -->
+<iframe id="app" title="Quartz leaderboard"></iframe>
+<iframe id="ad" title="Advertisement"></iframe>
+<script>
+  const embed = `${location.protocol}//embed.${location.host}/synthetic/frames`;
+  document.getElementById("app").src = `${embed}/leaderboard.html`;
+  document.getElementById("ad").src = `${embed}/ad-slot.html`;
+</script>
+</body>
+</html>

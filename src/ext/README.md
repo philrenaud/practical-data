@@ -32,9 +32,10 @@ extensions can't send them.
 | `judge` | content | worker | Returns `JudgeReply`, with the judgment and the palette or an error reason. |
 | `setPagePaused` | popup | worker | Pauses or resumes one page for the browser session. |
 | `setSiteEnabled` | popup | worker | Turns a host on or off in the saved settings. |
+| `frameShading` | popup | worker | Returns `Shading`, the tables and columns that embedded frames in a tab have shaded. |
 | `toggle` | worker | content | Turns shading on or off now. |
 | `repaint` | worker | content | Runs the page again with `force`, after a settings change. |
-| `state` | popup | content | Returns `PageState`, with the URL, the status, and the counts of shaded tables and columns. |
+| `state` | popup | content (top frame) | Returns `PageState`, with the URL, the status, and the counts of shaded tables and columns. Embedded frames don't answer. |
 | `flag` | content | worker | Dev build only. Files a flag and returns `FlagReply`. |
 | `flagAt` | worker | content | Dev build only. Flags the table under the last right-click. |
 
@@ -43,7 +44,23 @@ from a tab. It accepts `pageConfig` and `saveTableChoices` only for a URL with
 the sender's origin, so a content script reaches only its own site's session
 state. It accepts the two switches only from a sender URL under the
 extension's origin. A content script runs inside a web page, so the worker
-never takes a switch from one.
+never takes a switch from one. `frameShading` is accepted on the same terms.
+
+## Embedded frames
+
+The content script runs in every frame (`all_frames`), so a table inside an
+embedded app, such as a hosted demo in a cross-origin iframe, is shaded. An
+embedded frame stays dormant until it is at least 480×320 and holds a
+`<table>`. Standard ad slots are narrower or shorter, so ad and widget frames
+never message the worker, set a status, or observe their page beyond that
+check.
+
+A frame follows the switches of the page the user sees: the worker answers
+its `pageConfig` from the tab's URL (`sender.tab.url`), and the frame's own
+host must be on too. A frame whose tab URL the worker can't read stays off.
+Each frame judges its own tables, so scales are not shared across frames.
+The worker keeps what each frame shaded in `storage.session` under
+`shading:<tabId>`, and the badge and the popup add the frames up.
 
 ## Permissions
 
@@ -52,7 +69,7 @@ never takes a switch from one.
 | `storage` | Settings, the install id, the answer cache, and the session state. |
 | `activeTab` | The popup and the `toggle-page` shortcut need the current tab's id and URL. `activeTab` grants them only after a user gesture. The broader `tabs` permission would expose every tab's URL. |
 | `host_permissions` for the three API origins | The worker and the options page call `api.practicaldata.dev`, `api.typesafe.ai`, and `api.cloudflare.com`. The extension calls no other origin. |
-| `content_scripts` on `http://*/*`, `https://*/*` | Tables are shaded without a click. The content script makes no network requests. It sends table text only to the worker. |
+| `content_scripts` on `http://*/*`, `https://*/*`, in all frames | Tables are shaded without a click, including tables inside embedded frames. The content script makes no network requests. It sends table text only to the worker. |
 | `commands.toggle-page` | <kbd>Alt+Shift+H</kbd> pauses or resumes the current page. |
 
 The extension has no `scripting`, `tabs`, `cookies`, `webRequest`, or
@@ -68,7 +85,7 @@ with `saveTableChoices`.
 | Area | Access level | Keys |
 | --- | --- | --- |
 | `storage.local` | `TRUSTED_CONTEXTS` | `settings` (provider, keys, palette, mode, host lists), `installId`, `allowance`, `answers:v2:<sha-256>`, `answers:v2:index` |
-| `storage.session` | `TRUSTED_CONTEXTS` | `pausedPages` (URLs without fragments), `tables:<URL without fragment>` (per-table choices) |
+| `storage.session` | `TRUSTED_CONTEXTS` | `pausedPages` (URLs without fragments), `tables:<URL without fragment>` (per-table choices), `shading:<tabId>` (what each frame shaded, for the badge and the popup) |
 
 `TRUSTED_CONTEXTS` means the worker and the extension's own pages.
 `storage.session` has this level by default, and Chrome clears it when the
@@ -192,6 +209,8 @@ the original markup. It also runs these scenarios:
 - **lifecycle**: in-place edits, inserted tables, page styles, and in-app
   navigation.
 - **controls**: the per-table rows, columns, and hide buttons.
+- **frames**: a large cross-origin frame is shaded, follows the page switch,
+  and counts in the popup; an ad-sized frame is never judged.
 - **popup**: the page and site switches.
 
 Without `--offline`, API calls go live and need `TYPESAFE_API_KEY`. Use
