@@ -78,7 +78,7 @@ averaged. The page request holds one `g{n}.share` Noul per group, and
 | --- | --- | --- |
 | `measure` | 0.7 | Shade a numeric column. |
 | `ordinal`, `orderConfidence` | 0.7, 0.7 | Shade a categorical column. Both must hold. |
-| `ordinalWithStrongOrder`, `strongOrder` | 0.5, 0.85 | The other way to shade a categorical column. Below 0.5, no pairwise questions are sent. |
+| `ordinalWithStrongOrder`, `strongOrder` | 0.4, 0.85 | The other way to shade a categorical column. Below 0.4, no pairwise questions are sent. |
 | `polarity` | 0.55 | Use a direction. Otherwise the scale is neutral. |
 | `log` | 0.5 | Use a log scale. |
 | `aggregate` | 0.5 | Leave a row out of the domains. |

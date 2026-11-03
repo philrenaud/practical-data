@@ -68,7 +68,9 @@ export interface Policy {
    * A lower P(ordered levels) that still counts when the pairwise answers
    * agree at `strongOrder` or above. Consistent pairwise answers are evidence
    * that the order is real. Lightweight < Versatile < Powerful scores about
-   * 0.6 and 0.95. Below this value, the pairwise questions are not sent.
+   * 0.6 and 0.95. The first answer depends on the order in which the labels
+   * first appear: listed as Powerful, Lightweight, Versatile, the same labels
+   * scored 0.41 to 0.53. Below this value, the pairwise questions are not sent.
    */
   readonly ordinalWithStrongOrder: number;
   readonly strongOrder: number;
@@ -89,7 +91,7 @@ export const DEFAULT_POLICY: Policy = {
   aggregate: 0.5,
   share: 0.5,
   rows: 0.75,
-  ordinalWithStrongOrder: 0.5,
+  ordinalWithStrongOrder: 0.4,
   strongOrder: 0.85,
 };
 

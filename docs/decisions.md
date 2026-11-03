@@ -54,8 +54,13 @@ These results set the current design:
   in the state, Lightweight, Versatile, Powerful went from 0.67 to 0.85. True
   non-ordinals, such as Status, Region, and Team, stayed at 0.00.
 - **Strong pairwise agreement counts.** A column is ordinal at P(ordered
-  levels) ≥ 0.7. It is also ordinal at ≥ 0.5 when the pairwise answers agree
-  at ≥ 0.85.
+  levels) ≥ 0.7. It is also ordinal at ≥ 0.4 when the pairwise answers agree
+  at ≥ 0.85. The cutoff was 0.5 until P(ordered levels) for Lightweight,
+  Versatile, Powerful fell to 0.41 to 0.53 on a table that listed them in the
+  order Powerful, Lightweight, Versatile. The first answer depends on the
+  order in which the labels appear; the pairwise answers barely do (0.98).
+  At 0.4, the eval corpus sent one more pairwise request and no other result
+  changed. At 0.35, a column of plan names got an order and was shaded.
 - **Two-level ordinals are dropped** after cross-table sharing. Every
   unstable ordinal call in the corpus had two levels, such as GA and Preview,
   or Default and Long context. Jev's answer on them moved between 0.55 and
