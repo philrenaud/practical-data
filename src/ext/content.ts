@@ -16,8 +16,11 @@
  * "idle" means the page has tables but none is near the viewport yet.
  */
 import type { Orientation } from "../core/orient.ts";
-import { attachControls, detachControls } from "../dom/controls.ts";
+import { conventionForLang, normalizeLabel, parseNumber, stripNoise } from "../core/parse.ts";
+import { attachControls, detachControls, type SortControlState, type SortOption } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
+import { isPaginated } from "../dom/paginated.ts";
+import { canSortRows, restoreRows, sortRows } from "../dom/sort.ts";
 import { paintTable, unpaint } from "../dom/paint.ts";
 import { toast } from "../dom/toast.ts";
 import type { TableJudgment } from "../core/types.ts";
@@ -184,7 +187,92 @@ const choose = (table: HTMLTableElement, change: TableChoice) => {
 const handlers = {
   orient: (table: HTMLTableElement, orientation: Orientation) => choose(table, { orientation }),
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
+  sort: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => applySort(table, by),
   ...(PD_FLAGS_REPO === null ? {} : { flag: (table: HTMLTableElement) => void flag(table) }),
+};
+
+// ── Sorting ─────────────────────────────────────────────────────────────────
+
+/** The active sort of each table, for the bar's select. Sorting lasts until the page replaces the rows. */
+const sorted = new WeakMap<HTMLTableElement, { col: number; dir: "asc" | "desc" }>();
+
+/** A sort or restore mutates the page; this recomputes the keys that stop those mutations from re-judging. */
+const syncAfterSort = (table: HTMLTableElement) => {
+  const extracted = extractPage(document, (el) => seen.has(el));
+  const tables = extracted.tables.filter((t) => choices[fingerprint(t)]?.hidden !== true);
+  const orientations: Record<string, Orientation> = {};
+  for (const t of tables) {
+    const o = choices[fingerprint(t)]?.orientation;
+    if (o !== undefined) orientations[t.snapshot.id] = o;
+  }
+  painted = JSON.stringify([tables.map((t) => t.snapshot), orientations]);
+  const now = extracted.tables.find((t) => t.element === table);
+  const before = keyOf.get(table);
+  if (now !== undefined && before !== undefined) {
+    const after = fingerprint(now);
+    if (after !== before && choices[before] !== undefined) {
+      choices = { ...choices, [after]: choices[before]! };
+      void send({ type: "saveTableChoices", url: location.href, choices }).catch(() => undefined);
+    }
+    keyOf.set(table, after);
+  }
+};
+
+/** The sort keys for one column: parsed numbers, or an ordinal level's place in the judged order. */
+const sortKeys = (table: ExtractedTable, judgment: TableJudgment, col: number): (number | null)[] | null => {
+  const encoding = judgment.encodings.find((e) => e.col === col);
+  const cells = table.snapshot.rows.map((r) => r[col] ?? "");
+  if (encoding?.kind === "quantitative") {
+    const convention = conventionForLang(document.documentElement.lang);
+    return cells.map((c) => parseNumber(c, convention)?.value ?? null);
+  }
+  if (encoding?.kind === "ordinal") {
+    return cells.map((c) => {
+      const place = encoding.order.indexOf(normalizeLabel(c));
+      return place === -1 ? null : place;
+    });
+  }
+  return null;
+};
+
+const applySort = (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => {
+  const judgment = judged.get(table);
+  if (judgment === undefined) return;
+  const extracted = extractPage(document, (el) => el === table).tables.find((t) => t.element === table);
+  if (extracted === undefined) return;
+  mutations.disconnect();
+  try {
+    if (by === null) {
+      restoreRows(table);
+      sorted.delete(table);
+    } else {
+      const keys = sortKeys(extracted, judgment, by.col);
+      // Totals rows keep their place; a sum sorted into the middle reads as a giant row.
+      const pinned = new Set(judgment.aggregateRows);
+      if (keys === null || keys.length !== extracted.snapshot.rows.length) return;
+      if (!sortRows(table, extracted.cells, keys, pinned, by.dir)) return;
+      sorted.set(table, by);
+    }
+    syncAfterSort(table);
+  } finally {
+    if (enabled) observeMutations();
+  }
+  control(extracted, { orientation: judgment.orientation, hidden: false });
+};
+
+/** Columns the bar offers to sort by: the judged quantitative and ordinal ones. */
+const sortState = (table: ExtractedTable, orientation: Orientation, hidden: boolean): SortControlState | null => {
+  if (orientation !== "columns" || hidden) return null;
+  const judgment = judged.get(table.element);
+  if (judgment === undefined) return null;
+  // A site with live sorting of its own keeps it; aria-sort marks the headers.
+  if (table.element.querySelector("thead [aria-sort]") !== null) return null;
+  if (!canSortRows(table.cells)) return null;
+  const options: SortOption[] = judgment.encodings
+    .filter((e) => e.kind === "quantitative" || e.kind === "ordinal")
+    .map((e) => ({ col: e.col, header: stripNoise(table.snapshot.headers[e.col] ?? "") }));
+  if (options.length === 0) return null;
+  return { options, active: sorted.get(table.element) ?? null, paginated: isPaginated(table.element) };
 };
 
 // ── Flags (dev build only) ──────────────────────────────────────────────────
@@ -249,7 +337,8 @@ const control = (table: ExtractedTable, state: { orientation: Orientation; hidde
   controlled.add(table.element);
   const { headers, rows } = table.snapshot;
   const canOrient = headers.length >= 3 && rows.length >= 2 && rows.length <= MAX_ROWS_FOR_ROWS;
-  attachControls(table.element, { ...state, canOrient }, handlers);
+  const sort = sortState(table, state.orientation, state.hidden);
+  attachControls(table.element, { ...state, canOrient, sort }, handlers);
 };
 
 /** Removes a table's controls when a new judgment leaves it unshaded. */

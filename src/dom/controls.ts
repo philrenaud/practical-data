@@ -7,16 +7,33 @@
  */
 import type { Orientation } from "../core/orient.ts";
 
+export interface SortOption {
+  /** Index into the table snapshot's headers. */
+  readonly col: number;
+  readonly header: string;
+}
+
+export interface SortControlState {
+  readonly options: readonly SortOption[];
+  /** The active sort, or null for the page's own order. */
+  readonly active: { readonly col: number; readonly dir: "asc" | "desc" } | null;
+  /** True when the table shows one page of a longer set, so a sort orders only this page. */
+  readonly paginated: boolean;
+}
+
 export interface TableControlState {
   readonly orientation: Orientation;
   readonly hidden: boolean;
   /** True when the bar shows the Columns and Rows buttons. */
   readonly canOrient: boolean;
+  /** Sortable columns, or null when the table cannot be sorted. */
+  readonly sort: SortControlState | null;
 }
 
 export interface TableControlHandlers {
   readonly orient: (table: HTMLTableElement, orientation: Orientation) => void;
   readonly hide: (table: HTMLTableElement, hidden: boolean) => void;
+  readonly sort?: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => void;
   /** Flags the table as judged wrongly. Only the dev build has it. */
   readonly flag?: (table: HTMLTableElement) => void;
 }
@@ -39,6 +56,15 @@ button:hover { background: rgb(255 255 255 / 0.1); color: #fff; }
 button[aria-pressed="true"] { background: #f3f1ec; color: #16151a; }
 button:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
 .sep { width: 1px; height: 16px; background: rgb(255 255 255 / 0.14); }
+select {
+  all: unset; box-sizing: border-box; cursor: pointer; max-width: 150px; padding: 5px 9px;
+  border-radius: 6px; color: #d9d4ca; background: rgb(255 255 255 / 0.08);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+select:hover { background: rgb(255 255 255 / 0.12); color: #fff; }
+select:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
+option { background: #1d1c21; color: #f3f1ec; }
+.note { padding: 0 6px; color: #a7a196; }
 `;
 
 let bar: { host: HTMLElement; el: HTMLDivElement } | null = null;
@@ -100,6 +126,42 @@ const render = () => {
     const sep = document.createElement("span");
     sep.className = "sep";
     el.append(label, seg, sep);
+  }
+  const { sort } = state;
+  if (sort !== null && handlers.sort !== undefined && !state.hidden) {
+    const onSort = handlers.sort;
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", "Sort rows");
+    const option = (value: string, label: string, selected: boolean) => {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = label;
+      o.selected = selected;
+      return o;
+    };
+    select.append(option("", "Page order", sort.active === null));
+    for (const { col, header } of sort.options) {
+      const name = header === "" ? `Column ${col + 1}` : header;
+      select.append(
+        option(`${col}:asc`, `${name} ↑`, sort.active?.col === col && sort.active.dir === "asc"),
+        option(`${col}:desc`, `${name} ↓`, sort.active?.col === col && sort.active.dir === "desc"),
+      );
+    }
+    select.addEventListener("click", (ev) => ev.stopPropagation());
+    select.addEventListener("change", () => {
+      const [col, dir] = select.value.split(":");
+      onSort(table, select.value === "" ? null : { col: Number(col), dir: dir === "asc" ? "asc" : "desc" });
+    });
+    el.append(select);
+    if (sort.paginated && sort.active !== null) {
+      const note = document.createElement("span");
+      note.className = "note";
+      note.textContent = "sorts this page of a longer table";
+      el.append(note);
+    }
+    const sep = document.createElement("span");
+    sep.className = "sep";
+    el.append(sep);
   }
   el.append(button(state.hidden ? "Show shading" : "Hide shading", null, () => handlers.hide(table, !state.hidden)));
   const { flag } = handlers;
