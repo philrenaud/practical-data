@@ -27,3 +27,4 @@ web/static/fonts/Cambridge-*
 static/fonts/HoodFonts*
 dist-sheets/
 .claude/
+.dev.vars
