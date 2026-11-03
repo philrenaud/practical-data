@@ -1,7 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
-import { createTables, release, reserve, settle, stats, type Sql } from "../src/api/counts.ts";
+import {
+  createTables,
+  release,
+  releaseFlag,
+  reserve,
+  reserveFlag,
+  settle,
+  stats,
+  type Sql,
+} from "../src/api/counts.ts";
 
 /** Durable Object SQL storage, backed by an in-memory node:sqlite database. */
 const memorySql = (): Sql => {
@@ -30,7 +39,7 @@ test("counts requests per install up to the daily limit", () => {
     ],
   );
   assert.deepEqual(reserve(sql, "b", allowance, 0), { status: "ok", remaining: 2 });
-  assert.deepEqual(stats(sql), { installs: 2, requests: 4, tokens: 0 });
+  assert.deepEqual(stats(sql), { installs: 2, requests: 4, tokens: 0, flags: 0 });
 });
 
 test("gives back a request that failed upstream, with its estimated tokens", () => {
@@ -40,7 +49,7 @@ test("gives back a request that failed upstream, with its estimated tokens", () 
   assert.deepEqual(reserve(sql, "a", allowance, 100), { status: "ok", remaining: 0 });
   // A release with nothing reserved changes nothing.
   release(sql, "b", 100);
-  assert.deepEqual(stats(sql), { installs: 1, requests: 3, tokens: 300 });
+  assert.deepEqual(stats(sql), { installs: 1, requests: 3, tokens: 300, flags: 0 });
 });
 
 test("refuses every install once the token budget is spent", () => {
@@ -48,7 +57,23 @@ test("refuses every install once the token budget is spent", () => {
   reserve(sql, "a", allowance, 400);
   settle(sql, 400, 1000);
   assert.deepEqual(reserve(sql, "b", allowance, 0), { status: "budget_spent", remaining: 3 });
-  assert.deepEqual(stats(sql), { installs: 1, requests: 1, tokens: 1000 });
+  assert.deepEqual(stats(sql), { installs: 1, requests: 1, tokens: 1000, flags: 0 });
+});
+
+test("counts flags per install up to the daily limit, and gives back a failed one", () => {
+  const sql = memorySql();
+  assert.deepEqual(
+    [1, 2, 3].map(() => reserveFlag(sql, "a", 2)),
+    [true, true, false],
+  );
+  assert.equal(reserveFlag(sql, "b", 2), true);
+  releaseFlag(sql, "a");
+  assert.equal(reserveFlag(sql, "a", 2), true);
+  // A release with nothing reserved changes nothing.
+  releaseFlag(sql, "c");
+  assert.equal(stats(sql).flags, 3);
+  // Flags spend no model requests.
+  assert.deepEqual(reserve(sql, "a", allowance, 0), { status: "ok", remaining: 2 });
 });
 
 test("counts estimated tokens for requests in flight against the budget", () => {

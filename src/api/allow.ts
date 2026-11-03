@@ -283,13 +283,13 @@ export const readRequest = (body: unknown): Accepted | Refused => {
 };
 
 /**
- * Parses a request body as JSON. Throws a RangeError past `LIMITS.bodyBytes`
- * bytes, and stops reading at that point even when the body has no
- * Content-Length.
+ * Parses a request body as JSON. Throws a RangeError past `limit` bytes
+ * (`LIMITS.bodyBytes` unless the route sets its own), and stops reading at
+ * that point even when the body has no Content-Length.
  */
-export const readBody = async (request: Request): Promise<unknown> => {
-  const tooLarge = () => new RangeError(`body over ${LIMITS.bodyBytes} bytes`);
-  if (Number(request.headers.get("content-length") ?? "0") > LIMITS.bodyBytes) throw tooLarge();
+export const readBody = async (request: Request, limit: number = LIMITS.bodyBytes): Promise<unknown> => {
+  const tooLarge = () => new RangeError(`body over ${limit} bytes`);
+  if (Number(request.headers.get("content-length") ?? "0") > limit) throw tooLarge();
   const chunks: Uint8Array[] = [];
   let size = 0;
   const reader = request.body?.getReader();
@@ -297,7 +297,7 @@ export const readBody = async (request: Request): Promise<unknown> => {
     const { done, value } = await reader.read();
     if (done) break;
     size += value.byteLength;
-    if (size > LIMITS.bodyBytes) {
+    if (size > limit) {
       await reader.cancel();
       throw tooLarge();
     }

@@ -8,6 +8,7 @@
  * directory.
  *
  *   POST /v1/systemone   { state, questions } → System One response
+ *   POST /v1/flag           a report of wrong shading → an issue in the private flags repo
  *   GET  /v1/health      → { ok: true }
  *   GET  /v1/stats       → today's counts, with Authorization: Bearer STATS_TOKEN
  *
@@ -28,6 +29,7 @@ import {
 } from "../decide/model.ts";
 import { rateLimitKey, sameSecret } from "./admit.ts";
 import { LIMITS, readBody, readRequest } from "./allow.ts";
+import { FLAG_LIMITS, fileUserFlag, readFlag } from "./flag.ts";
 import type { Quota } from "./quota.ts";
 import { usagePoint } from "./usage.ts";
 
@@ -41,7 +43,12 @@ interface Env {
   readonly ALLOWED_ORIGINS: string;
   readonly INSTALL_DAILY_REQUESTS: string;
   readonly DAILY_TOKEN_BUDGET: string;
+  /** "owner/name" of the private repository that receives user flags. */
+  readonly FLAGS_REPO: string;
+  readonly INSTALL_DAILY_FLAGS: string;
   readonly STATS_TOKEN?: string;
+  /** A repo-scoped token for FLAGS_REPO. Unset turns /v1/flag off. */
+  readonly FLAGS_GITHUB_TOKEN?: string;
   readonly QUOTA: DurableObjectNamespace<Quota>;
   readonly RL_INSTALL: RateLimit;
   readonly RL_IP: RateLimit;
@@ -241,8 +248,44 @@ const decide = async (request: Request, env: Env, ctx: ExecutionContext): Promis
   });
 };
 
+/**
+ * Handles POST /v1/flag: a store user's report of wrong shading, shown in full
+ * before sending. The same admission as /v1/systemone applies, plus a small
+ * daily flag allowance per install. The report becomes an issue in
+ * FLAGS_REPO. GitHub's response never reaches the client.
+ */
+const flag = async (request: Request, env: Env): Promise<Response> => {
+  const caller = await admit(request, env);
+  if (caller instanceof Response) return caller;
+  if (!(request.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json"))
+    return refuse(400, "body", "Expected application/json.");
+  let body: unknown;
+  try {
+    body = await readBody(request, FLAG_LIMITS.bodyBytes);
+  } catch {
+    return refuse(400, "body", `Expected a JSON body under ${FLAG_LIMITS.bodyBytes} bytes.`);
+  }
+  const read = readFlag(body);
+  if ("error" in read) return refuse(400, read.error, read.message);
+  const token = env.FLAGS_GITHUB_TOKEN ?? "";
+  if (token === "") return refuse(503, "github", "Flagging is off right now.");
+  const quota = env.QUOTA.get(env.QUOTA.idFromName(today()));
+  if (!(await quota.reserveFlag(caller.install, Number(env.INSTALL_DAILY_FLAGS))))
+    return refuse(429, "flag_limit", "You've sent today's flags. It resets at midnight UTC.", {
+      "Retry-After": String(secondsToMidnightUtc()),
+    });
+  try {
+    await fileUserFlag(read, token, env.FLAGS_REPO);
+  } catch {
+    await quota.releaseFlag(caller.install);
+    return refuse(502, "github", "Couldn't file the report. Try again later.");
+  }
+  return json(201, { ok: true });
+};
+
 const route = async (request: Request, env: Env, ctx: ExecutionContext, pathname: string): Promise<Response> => {
   if (pathname === "/v1/systemone" && request.method === "POST") return decide(request, env, ctx);
+  if (pathname === "/v1/flag" && request.method === "POST") return flag(request, env);
   if (pathname === "/v1/stats" && request.method === "GET") {
     if (!(await sameSecret(request.headers.get("authorization"), env.STATS_TOKEN ?? "")))
       return refuse(401, "auth", "Unauthorized.");

@@ -4,7 +4,7 @@
  * route, the outcome, and counts. Cloudflare keeps the data for three months.
  * `scripts/api-usage.ts` queries it.
  *
- *   blob1   route: "systemone", "stats", or "other"
+ *   blob1   route: "systemone", "flag", "stats", or "other"
  *   blob2   outcome: "cache", "model", "ok", or the refusal's error code
  *   double1 HTTP status
  *   double2 input tokens that the model used (outcome "model" only)
@@ -21,7 +21,11 @@ export interface DataPoint {
   readonly indexes: readonly string[];
 }
 
-const ROUTES: Readonly<Record<string, string>> = { "/v1/systemone": "systemone", "/v1/stats": "stats" };
+const ROUTES: Readonly<Record<string, string>> = {
+  "/v1/systemone": "systemone",
+  "/v1/flag": "flag",
+  "/v1/stats": "stats",
+};
 
 const readJson = (response: Response): Promise<Record<string, unknown> | null> =>
   response.json().then(

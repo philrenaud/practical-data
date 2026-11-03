@@ -301,7 +301,7 @@ if (PD_FLAGS_REPO !== null) {
     </label>
     <p class="note">
       A fine-grained token with Contents and Issues write access to this repository only. Hover a shaded table and
-      select <b>Flag as wrong</b>, or right-click any table and select <b>Flag this table as wrong</b>.
+      select <b>Looks wrong</b>, or right-click any table and select <b>Flag this table as wrong</b>.
     </p>`;
   section.querySelector("code")!.textContent = PD_FLAGS_REPO;
   const input = section.querySelector<HTMLInputElement>("input")!;

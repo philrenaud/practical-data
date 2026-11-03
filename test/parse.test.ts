@@ -38,6 +38,17 @@ const cases: ReadonlyArray<readonly [string, number | null, string | null, (read
   ["26–30", 28, null, [26, 30]],
   ["$10 to $20", 15, "$", [10, 20]],
   ["1.5-2.5 GB", 2, "GB", [1.5, 2.5]],
+  // A magnitude written once distributes to both ends.
+  ["$50–60K", 55000, "$", [50000, 60000]],
+  ["$50-60K", 55000, "$", [50000, 60000]],
+  ["$50K–$60K", 55000, "$", [50000, 60000]],
+  ["50–60K", 55000, null, [50000, 60000]],
+  ["€1–2M", 1500000, "€", [1000000, 2000000]],
+  ["$1.5–2.5M", 2000000, "$", [1500000, 2500000]],
+  ["1–2 million", 1500000, null, [1000000, 2000000]],
+  ["3 to 5 bn", 4e9, null, [3e9, 5e9]],
+  // The low end keeps its bare reading when distributing would invert the range.
+  ["500–1K", 750, null, [500, 1000]],
   ["65+", 65, null],
   ["1M+", 1e6, null],
   ["$500K+", 5e5, "$"],

@@ -22,10 +22,12 @@ import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/ext
 import { isPaginated } from "../dom/paginated.ts";
 import { canSortRows, restoreRows, sortRows } from "../dom/sort.ts";
 import { paintTable, unpaint } from "../dom/paint.ts";
+import { confirmReport } from "../dom/report.ts";
 import { toast } from "../dom/toast.ts";
 import type { TableJudgment } from "../core/types.ts";
+import { buildFlagReport } from "./flag-report.ts";
 import { MAX_HTML, type FlagCapture, type FlagReply } from "./flags.ts";
-import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker } from "./messages.ts";
+import type { JudgeReply, PageConfig, PageState, ToContent, ToWorker, UserFlagReply } from "./messages.ts";
 import { afterSend, PACE_START, waitFor } from "./pace.ts";
 import type { TableChoice } from "./settings.ts";
 
@@ -188,7 +190,50 @@ const handlers = {
   orient: (table: HTMLTableElement, orientation: Orientation) => choose(table, { orientation }),
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
   sort: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => applySort(table, by),
-  ...(PD_FLAGS_REPO === null ? {} : { flag: (table: HTMLTableElement) => void flag(table) }),
+  // The dev build files flags with its own token; the store build reports through the hosted endpoint.
+  flag:
+    PD_FLAGS_REPO === null
+      ? (table: HTMLTableElement) => void report(table)
+      : (table: HTMLTableElement) => void flag(table),
+};
+
+// ── Reports (store build) ───────────────────────────────────────────────────
+
+/** What the endpoint's error codes mean to the person who clicked. */
+const REPORT_NOTICES: Readonly<Record<string, string>> = {
+  flag_limit: "You've sent today's reports. It resets at midnight UTC.",
+  github: "Reporting is off right now. Try again later.",
+  network: "Couldn't reach the server. Check your connection and try again.",
+};
+
+/**
+ * The store build's "Looks wrong" flow: build the report, show all of it,
+ * send only what the person confirmed.
+ */
+const report = async (table: HTMLTableElement) => {
+  const now = extractPage(document, (el) => el === table).tables.find((t) => t.element === table);
+  if (now === undefined) {
+    toast("Couldn't read this table any more.");
+    return;
+  }
+  const kind = (table.dataset["pdEncoded"] ?? "") !== "" ? "shaded" : "unshaded";
+  const manifest = chrome.runtime.getManifest();
+  const page = { url: location.href, title: document.title, lang: document.documentElement.lang };
+  const choice = await confirmReport(buildFlagReport(now.snapshot, page, kind, manifest.version));
+  if (choice === null) return;
+  const confirmed = buildFlagReport(
+    now.snapshot,
+    { ...page, url: choice.includeUrl ? page.url : null },
+    kind,
+    manifest.version,
+    choice.note,
+  );
+  try {
+    const reply = await send<UserFlagReply>({ type: "userFlag", report: confirmed });
+    toast(reply.ok ? "Report sent. Thank you." : (REPORT_NOTICES[reply.reason] ?? "Couldn't send the report."));
+  } catch {
+    toast(REPORT_NOTICES["network"]!);
+  }
 };
 
 // ── Sorting ─────────────────────────────────────────────────────────────────

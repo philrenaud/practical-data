@@ -78,11 +78,23 @@ const SETTINGS = {
 
 // Fixture pages get no network access. Decision API calls go live or replay from recordings.
 let replayMisses = 0;
+/** Reports the extension POSTed to the stubbed /v1/flag, and the statuses the stub answers with (201 when empty). */
+const flagPosts: string[] = [];
+const flagStatuses: number[] = [];
 const routeRequest = async (route: Route) => {
   const req = route.request();
   const url = req.url();
   if (url.startsWith(base) || url.startsWith(loopback) || url.startsWith("chrome-extension://"))
     return route.continue();
+  if (url === "https://api.practicaldata.dev/v1/flag" && req.method() === "POST") {
+    flagPosts.push(req.postData() ?? "");
+    const status = flagStatuses.shift() ?? 201;
+    return route.fulfill({
+      status,
+      contentType: "application/json",
+      body: status === 201 ? '{"ok":true}' : '{"error":"flag_limit","message":"over"}',
+    });
+  }
   if (url.startsWith("https://api.typesafe.ai/")) {
     // Use the AnswerCache key, the SHA-256 of the exact JSON body.
     const key = createHash("sha256")
@@ -536,6 +548,85 @@ const sortScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Reports: the store build's "Looks wrong" dialog ─────────────────────────
+
+const reportScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const page = await context.newPage();
+  await page.goto(`${base}/synthetic/edge-cases.html`, { waitUntil: "domcontentloaded" });
+  const wine = page.locator("#wine");
+  await wine.scrollIntoViewIfNeeded();
+  await page
+    .waitForFunction(() => (document.querySelector("#wine")?.getAttribute("data-pd-encoded") ?? "") !== "", undefined, {
+      timeout: 15_000,
+      polling: 100,
+    })
+    .catch(() => undefined);
+  const hover = async () => {
+    await page.mouse.move(0, 0);
+    const box = (await wine.boundingBox())!;
+    await page.mouse.move(box.x + 30, box.y + 30);
+    await page.waitForTimeout(200);
+  };
+  const open = async () => {
+    await hover();
+    await page.locator("[data-pd-controls] button", { hasText: "Looks wrong" }).click();
+    await page.waitForTimeout(150);
+  };
+  await open();
+  if (
+    !(await page
+      .locator("[data-pd-report] h1")
+      .isVisible()
+      .catch(() => false))
+  ) {
+    problems.push("report: the dialog did not open");
+    await page.close();
+    return problems;
+  }
+  // The preview is the payload: the dialog must show the table's headers.
+  const previewHeads = await page.locator("[data-pd-report] th").allTextContents();
+  if (previewHeads.length === 0) problems.push("report: the dialog shows no table sample");
+  await page.locator("[data-pd-report] button", { hasText: "Cancel" }).click();
+  if (flagPosts.length > 0) problems.push("report: cancel still sent a report");
+
+  await open();
+  await page.locator("[data-pd-report] input[type=checkbox]").uncheck();
+  await page.locator("[data-pd-report] textarea").fill("the vintage column looks off");
+  await page.screenshot({ path: "artifacts/screens/report.png" });
+  await page.locator("[data-pd-report] button", { hasText: "Send report" }).click();
+  await page.waitForTimeout(500);
+  if (flagPosts.length !== 1) problems.push(`report: expected one POST, saw ${flagPosts.length}`);
+  const sent = JSON.parse(flagPosts[0] ?? "{}") as {
+    url?: string;
+    kind?: string;
+    note?: string;
+    table?: { rows?: unknown[] };
+  };
+  if (sent.url !== undefined) problems.push("report: unticking the address still sent the url");
+  if (sent.kind !== "shaded") problems.push(`report: kind was "${sent.kind}"`);
+  if (sent.note !== "the vintage column looks off") problems.push("report: the note didn't travel");
+  if ((sent.table?.rows?.length ?? 99) > 5) problems.push("report: more than five rows were sent");
+  const sentToast = await page
+    .locator("[data-pd-toast]")
+    .evaluate((h) => h.shadowRoot?.textContent ?? "")
+    .catch(() => "");
+  if (!sentToast.includes("Report sent")) problems.push(`report: toast said "${sentToast}"`);
+
+  // The daily-limit refusal, in the user's words.
+  flagStatuses.push(429);
+  await open();
+  await page.locator("[data-pd-report] button", { hasText: "Send report" }).click();
+  await page.waitForTimeout(500);
+  const limitToast = await page
+    .locator("[data-pd-toast]")
+    .evaluate((h) => h.shadowRoot?.textContent ?? "")
+    .catch(() => "");
+  if (!limitToast.includes("today's reports")) problems.push(`report: limit toast said "${limitToast}"`);
+  await page.close();
+  return problems;
+};
+
 // ── Per-table controls: rows/columns and hide ───────────────────────────────
 
 const controlsScenario = async (): Promise<string[]> => {
@@ -912,6 +1003,11 @@ console.log(`${sortProblems.length === 0 ? "✓" : "✗"} sort: by parsed values
 for (const p of sortProblems) console.log(`    - ${p}`);
 if (sortProblems.length > 0) failed++;
 
+const reportProblems = await reportScenario();
+console.log(`${reportProblems.length === 0 ? "✓" : "✗"} report: the Looks wrong dialog previews, cancels, sends`);
+for (const p of reportProblems) console.log(`    - ${p}`);
+if (reportProblems.length > 0) failed++;
+
 const privateHostProblems = await privateHostScenario();
 console.log(`${privateHostProblems.length === 0 ? "✓" : "✗"} private host: off until the user turns it on`);
 for (const p of privateHostProblems) console.log(`    - ${p}`);
@@ -927,7 +1023,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 10 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 11 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

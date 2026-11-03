@@ -808,6 +808,23 @@
           "higher_is_better"
         ]
       }
+    },
+    "t3": {
+      "Role": "none",
+      "Salary band": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Openings": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      }
     }
   },
   "statcan-urban-greenness": {
