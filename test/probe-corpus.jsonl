@@ -1,0 +1,30 @@
+{"cell":"$50–60K","expect":{"value":55000,"unit":"$","range":[50000,60000]},"note":"a magnitude written once distributes to both ends"}
+{"cell":"$38–44K","expect":{"value":41000,"unit":"$","range":[38000,44000]}}
+{"cell":"€1–2M","expect":{"value":1500000,"unit":"€","range":[1000000,2000000]}}
+{"cell":"1–2 million","expect":{"value":1500000,"range":[1000000,2000000]}}
+{"cell":"500–1K","expect":{"value":750,"range":[500,1000]},"note":"distributing the K would invert the range"}
+{"cell":"$50K–$60K","expect":{"value":55000,"unit":"$","range":[50000,60000]}}
+{"cell":"1.5-2.5 GB","expect":{"value":2,"unit":"GB","range":[1.5,2.5]}}
+{"cell":"$10 to $20","expect":{"value":15,"unit":"$","range":[10,20]}}
+{"cell":"35-10","expect":null,"note":"a score written high first"}
+{"cell":"2024-01","expect":null,"note":"a year-month"}
+{"cell":"7:05 PM","expect":null,"note":"a clock time"}
+{"cell":"2:59","expect":{"value":179,"unit":":"},"note":"a duration reads base-60"}
+{"cell":"≤ 272K","expect":{"value":272000,"bound":true}}
+{"cell":"1M+","expect":{"value":1000000,"bound":true}}
+{"cell":"$1.5B","expect":{"value":1500000000,"unit":"$"}}
+{"cell":"($3.00)","expect":{"value":-3,"unit":"$"},"note":"an accounting negative"}
+{"cell":"6 ft 2 in","expect":{"value":74,"unit":"in"}}
+{"cell":"8 1⁄2","expect":{"value":8.5},"note":"an encyclopedia's fraction template"}
+{"cell":"81⁄2","expect":null,"note":"the lost space would read as 40.5"}
+{"cell":"1,234[12]","expect":{"value":1234},"note":"a footnote marker"}
+{"cell":"317.7 km/h (197 mph)","expect":{"value":317.7,"unit":"km/h"},"note":"a conversion keeps the first reading"}
+{"cell":"22 (13.1%)","expect":{"value":22},"note":"a count with its share"}
+{"cell":"740 (-16)","expect":{"value":740},"note":"a value with its change"}
+{"cell":"$144, or $160 after year one","expect":{"value":144,"unit":"$"},"note":"the value that holds now"}
+{"cell":"$40, or 12%","expect":null,"note":"a flat fee and a revenue share are two schemes, not one quantity"}
+{"cell":"1.299,00 €","lang":"de","expect":{"value":1299,"unit":"€"}}
+{"cell":"65.890","lang":"de","expect":{"value":65890},"note":"a dot-thousands count"}
+{"cell":"1.5","lang":"de","expect":null,"note":"fits neither comma-decimal shape; text beats a silent misreading"}
+{"cell":"12,5 %","lang":"de","expect":{"value":12.5,"unit":"%"}}
+{"cell":"1st","expect":null,"note":"an ordinal is a rank, not an amount"}
