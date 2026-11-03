@@ -273,6 +273,27 @@ const parseCountShare = (text: string): ParsedNumber | null => {
   return count;
 };
 
+/**
+ * A value followed by the value that replaces it later, as in "$144, or $160
+ * after year one" or "$168.75, then $337.50 from January 1, 2027". The first
+ * value is the one that holds now. Both values must carry the same unit, so
+ * "3, or 4" and "$40, or 12%" stay text, and the words between them are only
+ * ", or" or ", then". A tail after the second value must start with a word
+ * that says when it applies.
+ */
+const ALTERNATIVE_RE =
+  /^(.*?\S),\s+(?:or|then)\s+([^\s,]+(?:\s[A-Za-zµ°/%]{1,9})?)(?:\s+(?:from|after|until|before|when|if|for|in|on|starting)\s+\S.*)?$/u;
+
+const parseAlternative = (text: string): ParsedNumber | null => {
+  const m = ALTERNATIVE_RE.exec(text);
+  if (m?.[1] === undefined || m[2] === undefined) return null;
+  const now = parseSingle(m[1]);
+  const later = parseSingle(m[2]);
+  if (now === null || later === null || now.bound || later.bound) return null;
+  if (now.unit === null || now.unit !== later.unit) return null;
+  return now;
+};
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string): ParsedNumber | null => {
   const text = stripNoise(raw);
@@ -288,7 +309,9 @@ export const parseNumber = (raw: string): ParsedNumber | null => {
     const n = parseSingle(plus[1]);
     return n === null ? null : { ...n, bound: true };
   }
-  return parseSingle(text) ?? parseRange(text) ?? parseConversion(text) ?? parseCountShare(text);
+  return (
+    parseSingle(text) ?? parseRange(text) ?? parseConversion(text) ?? parseCountShare(text) ?? parseAlternative(text)
+  );
 };
 
 /** Normalizes a category label for grouping. It removes footnote markers and lowercases the text. */
