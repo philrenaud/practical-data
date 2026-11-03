@@ -5,34 +5,93 @@
     "wiki-demographics-of-japan t0 \"±% p.a.\" polarity": "A close decision can change from one run to the next. The model's answers are not fully repeatable near a threshold. For a population growth rate, two runs gave \"higher is better\" 55% and less than 50%.",
     "wiki-earthquakes-2023 not shared: t0:Death toll + t1:Death toll": "A close decision can change from one run to the next. The model's answers are not fully repeatable near a threshold. Two runs of the same question about death tolls in two earthquake tables gave a shared scale once and separate scales once."
   },
-
   "$comment": "Hand labels. Per page → table id → column header (as extracted). A spec is \"none\" (must not be colored) or an object; `polarity` lists every acceptable answer; omitted fields are not scored. Columns not listed are ambiguous and unscored. `aggregateRows` lists data-row indexes that are totals. `shared` lists table:header pairs that must end up on one scale.",
   "cloudflare-clef": {
-    "t0": { "@orientation": "rows" }
+    "t0": {
+      "@orientation": "rows"
+    }
   },
   "github-copilot-pricing": {
     "t0": {
       "@orientation": "columns",
       "Model": "none",
-      "Category": { "kind": "ordinal", "order": ["lightweight", "versatile", "powerful"] },
+      "Category": {
+        "kind": "ordinal",
+        "order": [
+          "lightweight",
+          "versatile",
+          "powerful"
+        ]
+      },
       "Tier": "none",
       "Threshold (input tokens)": "none",
-      "Input": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Cached input": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Cache write": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Output": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Cached input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Cache write": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Output": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t1": {
       "Model": "none",
-      "Category": { "kind": "ordinal", "order": ["lightweight", "versatile", "powerful"] },
-      "Input": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Output": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Category": {
+        "kind": "ordinal",
+        "order": [
+          "lightweight",
+          "versatile",
+          "powerful"
+        ]
+      },
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Output": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t5": {
       "Model": "none",
-      "Input": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
-    "shared": [["t0:Input", "t1:Input"], ["t0:Output", "t1:Output"]]
+    "shared": [
+      [
+        "t0:Input",
+        "t1:Input"
+      ],
+      [
+        "t0:Output",
+        "t1:Output"
+      ]
+    ]
   },
   "bbref-aaron-judge": {
     "t1": {
@@ -40,26 +99,105 @@
       "Age": "none",
       "Team": "none",
       "Lg": "none",
-      "WAR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "HR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "RBI": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "BA": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "OBP": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "OPS": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "OPS+": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "SO": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "CS": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "GIDP": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "WAR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "HR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "RBI": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "BA": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "OBP": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "OPS": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "OPS+": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "SO": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "CS": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "GIDP": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "bbref-rules-changes": {
     "t10": {
       "Year": "none",
-      "G": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "AvgTime": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "%≥3:30": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Avg Tm Btwn PA": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Avg Tm Btwn BIP": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] }
+      "G": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "AvgTime": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "%≥3:30": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Avg Tm Btwn PA": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Avg Tm Btwn BIP": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
     }
   },
   "bbref-tarik-skubal": {
@@ -68,33 +206,119 @@
       "Season": "none",
       "Age": "none",
       "Team": "none",
-      "WAR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "ERA": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "ERA+": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "FIP": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "WHIP": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "HR9": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "BB9": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "SO9": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "WAR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "ERA": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "ERA+": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "FIP": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "WHIP": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "HR9": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "BB9": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "SO9": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t4": {
       "Season": "none",
       "Age": "none",
-      "Batting Against: BA": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Batting Against: OBP": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Batting Against: OPS": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pitching Ratios: K%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Pitching Ratios: BB%": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Batted Ball: HardH%": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Batting Against: BA": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Batting Against: OBP": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Batting Against: OPS": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pitching Ratios: K%": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Pitching Ratios: BB%": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Batted Ball: HardH%": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "wiki-mlb-career-era-leaders": {
     "t1": {
       "Rank": "none",
       "Player": "none",
-      "ERA": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" }
+      "ERA": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      }
     }
   },
   "scryfall-blb-checklist": {
@@ -102,66 +326,173 @@
       "№": "none",
       "Name": "none",
       "Artist": "none",
-      "R": { "kind": "ordinal", "order": ["c", "u", "r", "m"] },
-      "USD": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"], "transform": "log" }
+      "R": {
+        "kind": "ordinal",
+        "order": [
+          "c",
+          "u",
+          "r",
+          "m"
+        ]
+      },
+      "USD": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ],
+        "transform": "log"
+      }
     }
   },
   "mtggoldfish-modern-price-index": {
     "t1": {
       "Card": "none",
       "Set": "none",
-      "Rarity": { "kind": "ordinal" },
-      "Price": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"], "transform": "log" }
+      "Rarity": {
+        "kind": "ordinal"
+      },
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ],
+        "transform": "log"
+      }
     }
   },
   "wiki-mtg-sets": {
     "t1": {
       "Set": "none",
       "Expansion code": "none",
-      "Size: Total Cards": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Release date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
-      "Pre-release date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" }
+      "Size: Total Cards": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Release date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
+      "Pre-release date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      }
     }
   },
   "wiki-countries-by-population": {
     "t0": {
       "Location": "none",
-      "Population": { "kind": "quantitative", "polarity": ["neutral"], "transform": "log" },
-      "% of world": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
-      "aggregateRows": [0]
+      "Population": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "log"
+      },
+      "% of world": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
+      "aggregateRows": [
+        0
+      ]
     }
   },
   "wiki-costliest-atlantic-hurricanes": {
     "t0": {
       "Rank": "none",
       "Season": "none",
-      "Cost": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] }
+      "Cost": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ]
+      }
     },
     "t1": {
       "Name": "none",
       "Season": "none",
       "Areas affected": "none",
-      "Nominal damage (Billions USD)": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] },
+      "Nominal damage (Billions USD)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ]
+      },
       "Storm classification at peak intensity": {
         "kind": "ordinal",
-        "order": ["tropical storm", "category 1 hurricane", "category 2 hurricane", "category 3 hurricane", "category 4 hurricane", "category 5 hurricane"]
+        "order": [
+          "tropical storm",
+          "category 1 hurricane",
+          "category 2 hurricane",
+          "category 3 hurricane",
+          "category 4 hurricane",
+          "category 5 hurricane"
+        ]
       }
     }
   },
   "wiki-super-bowl-champions": {
     "t1": {
-      "Date (season)": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Date (season)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Winning team": "none",
       "Venue": "none",
       "Referee": "none",
-      "Attendance": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] }
+      "Attendance": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      }
     },
     "t4": {
       "Franchise": "none",
-      "Wins": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Losses": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Win %": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Wins": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Losses": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Win %": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     }
   },
   "wiki-tallest-buildings": {
@@ -169,119 +500,367 @@
       "": "none",
       "Name": "none",
       "Year": "none",
-      "Height: m": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
+      "Height: m": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
       "City": "none"
     }
   },
   "edge-cases": {
     "t0": {
       "SKU": "none",
-      "Size": { "kind": "ordinal", "order": ["xs", "s", "m", "l", "xl"] },
-      "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "In stock": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Size": {
+        "kind": "ordinal",
+        "order": [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ]
+      },
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "In stock": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Player": "none",
       "Jersey #": "none",
       "Born": "none",
       "Zip code": "none",
-      "Height (in)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Points per game": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Height (in)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Points per game": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t2": {
       "@orientation": "columns",
       "Region": "none",
-      "Revenue": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Returns": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Margin": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "aggregateRows": [5]
+      "Revenue": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Returns": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Margin": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "aggregateRows": [
+        5
+      ]
     },
     "t3": {
       "Ticket": "none",
       "Summary": "none",
-      "Priority": { "kind": "ordinal", "order": ["low", "medium", "high", "critical"] }
+      "Priority": {
+        "kind": "ordinal",
+        "order": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      }
     },
     "t4": {
       "Mountain": "none",
       "Range": "none",
       "First ascent": "none",
-      "Elevation: m": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"], "transform": "linear" }
+      "Elevation: m": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ],
+        "transform": "linear"
+      }
     },
     "t5": {
       "City": "none",
       "Conditions": "none",
-      "Change (°C)": { "kind": "quantitative", "polarity": ["neutral"] }
+      "Change (°C)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
     },
-    "t6": { "Item": "none", "Price (USD)": { "kind": "quantitative", "polarity": ["lower_is_better"] } },
-    "t7": { "Item": "none", "Price (USD)": { "kind": "quantitative", "polarity": ["lower_is_better"] } },
-    "t8": { "Term": "none", "Definition": "none" },
+    "t6": {
+      "Item": "none",
+      "Price (USD)": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t7": {
+      "Item": "none",
+      "Price (USD)": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t8": {
+      "Term": "none",
+      "Definition": "none"
+    },
     "t9": {
       "Wine": "none",
       "Region": "none",
-      "Sweetness": { "kind": "ordinal", "order": ["dry", "off-dry", "sweet"] },
-      "Body": { "kind": "ordinal", "order": ["light", "medium", "full"] },
-      "Glass": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Sweetness": {
+        "kind": "ordinal",
+        "order": [
+          "dry",
+          "off-dry",
+          "sweet"
+        ]
+      },
+      "Body": {
+        "kind": "ordinal",
+        "order": [
+          "light",
+          "medium",
+          "full"
+        ]
+      },
+      "Glass": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
-    "shared": [["t6:Price (USD)", "t7:Price (USD)"]]
+    "shared": [
+      [
+        "t6:Price (USD)",
+        "t7:Price (USD)"
+      ]
+    ]
   },
   "collapsed": {
     "t0": {
       "Period": "none",
-      "Life expectancy (years)": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Life expectancy (years)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     }
   },
   "readme-cards": {
     "t1": {
       "@orientation": "columns",
       "Model": "none",
-      "Category": { "kind": "ordinal", "order": ["lightweight", "versatile", "powerful"] },
-      "Input": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Category": {
+        "kind": "ordinal",
+        "order": [
+          "lightweight",
+          "versatile",
+          "powerful"
+        ]
+      },
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
-    "t2": { "@orientation": "columns", "Season": "none", "ERA": { "kind": "quantitative", "polarity": ["lower_is_better"] } },
+    "t2": {
+      "@orientation": "columns",
+      "Season": "none",
+      "ERA": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
     "t4": {
-      "Priority": { "kind": "ordinal", "order": ["low", "medium", "high", "critical"] },
-      "Storm at landfall": { "kind": "ordinal" }
+      "Priority": {
+        "kind": "ordinal",
+        "order": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      },
+      "Storm at landfall": {
+        "kind": "ordinal"
+      }
     }
   },
   "lifecycle": {
-    "t0": { "Item": "none", "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] } },
-    "t1": { "Team": "none", "Wins": { "kind": "quantitative", "polarity": ["higher_is_better"] }, "Losses": { "kind": "quantitative", "polarity": ["lower_is_better"] } },
-    "t2": { "City": "none", "Rainfall (mm)": { "kind": "quantitative", "polarity": ["neutral"] } }
+    "t0": {
+      "Item": "none",
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "Team": "none",
+      "Wins": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Losses": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t2": {
+      "City": "none",
+      "Rainfall (mm)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
+    }
   },
   "ranges": {
     "t0": {
       "Age bracket": "none",
-      "Typical salary": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Respondents": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] }
+      "Typical salary": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Respondents": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      }
     },
     "t2": {
       "Matchup": "none",
       "First pitch": "none",
-      "Game length": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Attendance": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Game length": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Attendance": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Team": "none",
       "Record": "none",
       "Home": "none",
-      "Run differential": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Run differential": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     }
   },
   "statcan-urban-greenness": {
     "t0": {
       "Urban greenness: Geography": "none",
-      "Average greenness: 2021: Percent": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Average greenness: 2025: Percent": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Average greenness: 2021: Percent": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Average greenness: 2025: Percent": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     }
   },
   "dark-theme": {
     "t0": {
       "@orientation": "columns",
       "Card": "none",
-      "Tier": { "kind": "ordinal", "order": ["entry", "mid-range", "high-end", "flagship"] },
-      "Avg FPS (1440p)": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Power draw": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Launch price": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Tier": {
+        "kind": "ordinal",
+        "order": [
+          "entry",
+          "mid-range",
+          "high-end",
+          "flagship"
+        ]
+      },
+      "Avg FPS (1440p)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Power draw": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Launch price": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Release year": "none"
     }
   },
@@ -289,138 +868,456 @@
     "t0": {
       "Rank": "none",
       "NOC": "none",
-      "Gold": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Silver": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Bronze": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Total": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "aggregateRows": [29]
+      "Gold": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Silver": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Bronze": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Total": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "aggregateRows": [
+        29
+      ]
     }
   },
   "wiki-2024-mlb-season": {
     "t0": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "t1": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "t2": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "t3": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "t4": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "t5": {
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Pct.": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Pct.": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Home": "none",
       "Road": "none"
     },
     "shared": [
-      ["t0:W", "t1:W", "t2:W", "t3:W", "t4:W", "t5:W"],
-      ["t0:L", "t1:L", "t2:L", "t3:L", "t4:L", "t5:L"],
-      ["t0:Pct.", "t1:Pct.", "t2:Pct.", "t3:Pct.", "t4:Pct.", "t5:Pct."],
-      ["t0:GB", "t1:GB", "t2:GB", "t3:GB", "t4:GB", "t5:GB"]
+      [
+        "t0:W",
+        "t1:W",
+        "t2:W",
+        "t3:W",
+        "t4:W",
+        "t5:W"
+      ],
+      [
+        "t0:L",
+        "t1:L",
+        "t2:L",
+        "t3:L",
+        "t4:L",
+        "t5:L"
+      ],
+      [
+        "t0:Pct.",
+        "t1:Pct.",
+        "t2:Pct.",
+        "t3:Pct.",
+        "t4:Pct.",
+        "t5:Pct."
+      ],
+      [
+        "t0:GB",
+        "t1:GB",
+        "t2:GB",
+        "t3:GB",
+        "t4:GB",
+        "t5:GB"
+      ]
     ]
   },
   "wiki-demographics-of-japan": {
     "t0": {
       "Year": "none",
-      "Pop.": { "kind": "quantitative", "polarity": ["neutral"] },
-      "±% p.a.": { "kind": "quantitative", "polarity": ["neutral"] }
+      "Pop.": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "±% p.a.": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Year": "none",
-      "Total population (census; thousands)": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Population by age (%): 0–14": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Population by age (%): 15–64": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Population by age (%): 65+": { "kind": "quantitative", "polarity": ["neutral"] }
+      "Total population (census; thousands)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Population by age (%): 0–14": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Population by age (%): 15–64": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Population by age (%): 65+": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
     },
     "t2": {
       "Age group": "none",
-      "Male": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Female": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Total": { "kind": "quantitative", "polarity": ["neutral"] },
-      "%": { "kind": "quantitative", "polarity": ["neutral"] },
-      "aggregateRows": [0]
+      "Male": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Female": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Total": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "%": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "aggregateRows": [
+        0
+      ]
     }
   },
   "wiki-earthquakes-2023": {
     "t0": {
       "Rank": "none",
-      "Death toll": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Magnitude": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] },
+      "Death toll": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Magnitude": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ]
+      },
       "Location": "none",
       "MMI": {
         "kind": "ordinal",
-        "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
+        "order": [
+          "iv (light)",
+          "v (moderate)",
+          "vi (strong)",
+          "vii (very strong)",
+          "viii (severe)",
+          "ix (violent)",
+          "xi (extreme)",
+          "xii (extreme)"
+        ]
       },
-      "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Depth (km)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Event": "none"
     },
     "t1": {
       "Rank": "none",
-      "Magnitude": { "kind": "quantitative", "polarity": ["neutral", "lower_is_better"] },
-      "Death toll": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
+      "Magnitude": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ]
+      },
+      "Death toll": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
       "Location": "none",
       "MMI": {
         "kind": "ordinal",
-        "order": ["iv (light)", "v (moderate)", "vi (strong)", "vii (very strong)", "viii (severe)", "ix (violent)", "xi (extreme)", "xii (extreme)"]
+        "order": [
+          "iv (light)",
+          "v (moderate)",
+          "vi (strong)",
+          "vii (very strong)",
+          "viii (severe)",
+          "ix (violent)",
+          "xi (extreme)",
+          "xii (extreme)"
+        ]
       },
-      "Depth (km)": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Depth (km)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Event": "none"
     },
     "shared": [
-      ["t0:Death toll", "t1:Death toll"],
-      ["t0:Magnitude", "t1:Magnitude"],
-      ["t0:MMI", "t1:MMI"],
-      ["t0:Depth (km)", "t1:Depth (km)"]
+      [
+        "t0:Death toll",
+        "t1:Death toll"
+      ],
+      [
+        "t0:Magnitude",
+        "t1:Magnitude"
+      ],
+      [
+        "t0:MMI",
+        "t1:MMI"
+      ],
+      [
+        "t0:Depth (km)",
+        "t1:Depth (km)"
+      ]
     ]
   },
   "bkref-thunder-2025": {
     "t0": {
       "No.": "none",
       "Player": "none",
-      "Ht": { "kind": "quantitative", "polarity": ["neutral", "higher_is_better"] },
-      "Wt": { "kind": "quantitative", "polarity": ["neutral"] },
-      "Birth Date": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Ht": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Wt": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Birth Date": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Birth": "none",
       "College": "none"
     },
@@ -428,16 +1325,68 @@
       "Rk": "none",
       "Player": "none",
       "Age": "none",
-      "G": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "MP": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "FG%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "3P%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "FT%": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "TRB": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "AST": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "TOV": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "PF": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "PTS": { "kind": "quantitative", "polarity": ["higher_is_better"] },
+      "G": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "MP": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "FG%": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "3P%": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "FT%": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "TRB": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "AST": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "TOV": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "PF": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "PTS": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
       "Awards": "none"
     }
   },
@@ -445,57 +1394,197 @@
     "t0": {
       "#": "none",
       "Team": "none",
-      "Avg": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "High": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Low": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "SD": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Gazette": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Courier": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Herald": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Wire": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Post": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Ledger": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Radio": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Fan poll": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" }
+      "Avg": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "High": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Low": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "SD": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Gazette": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Courier": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Herald": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Wire": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Post": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Ledger": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Radio": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Fan poll": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      }
     },
     "t1": {
       "Player": "none",
       "Team": "none",
-      "Finish": { "kind": "quantitative", "polarity": ["lower_is_better"], "transform": "linear" },
-      "Points": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Finish": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ],
+        "transform": "linear"
+      },
+      "Points": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     }
   },
   "app-grids": {
     "t1": {
       "Team": "none",
-      "Points": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Goal difference": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Points": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Goal difference": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t2": {
       "Server": "none",
-      "CPU %": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] },
-      "Latency (ms)": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "CPU %": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Latency (ms)": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "season-places": {
     "t0": {
       "Season": "none",
       "Regular season: Record": "none",
-      "Regular season: Win %": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Regular season: League": { "kind": "ordinal", "order": ["16th", "13th", "9th (tie)", "7th", "4th", "2nd"] },
-      "Regular season: Division": { "kind": "ordinal", "order": ["6th", "5th", "3rd (tie)", "3rd", "2nd", "1st"] },
-      "Regular season: GB": { "kind": "quantitative", "polarity": ["lower_is_better"] },
+      "Regular season: Win %": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Regular season: League": {
+        "kind": "ordinal",
+        "order": [
+          "16th",
+          "13th",
+          "9th (tie)",
+          "7th",
+          "4th",
+          "2nd"
+        ]
+      },
+      "Regular season: Division": {
+        "kind": "ordinal",
+        "order": [
+          "6th",
+          "5th",
+          "3rd (tie)",
+          "3rd",
+          "2nd",
+          "1st"
+        ]
+      },
+      "Regular season: GB": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
       "Affiliate": "none"
     },
     "t1": {
       "Place": "none",
       "Club": "none",
       "Anchor": "none",
-      "Time": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Time": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t2": {
       "Ingredient": "none",
-      "Grams": { "kind": "quantitative" }
+      "Grams": {
+        "kind": "quantitative"
+      }
     }
   },
   "later-alternatives": {
@@ -513,18 +1602,66 @@
     "t0": {
       "source": "none",
       "Color": "none",
-      "MO 3 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "TU 4 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "WE 5 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "TH 6 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "FR 7 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "SA 8 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "SU 9 Feb": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "MO 3 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "TU 4 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "WE 5 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "TH 6 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "FR 7 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "SA 8 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "SU 9 Feb": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Club": "none",
       "Members (of which new)": "none",
-      "Renewals": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Renewals": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     }
   },
   "value-with-change": {
@@ -532,106 +1669,260 @@
       "Rank": "none",
       "Club": "none",
       "Captain": "none",
-      "Rating (+-)": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Rating (+-)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t1": {
       "Shelter": "none",
       "Animals (of which puppies)": "none",
-      "Adoptions this month": { "kind": "quantitative" }
+      "Adoptions this month": {
+        "kind": "quantitative"
+      }
     }
   },
   "conditional-prices": {
     "t0": {
       "Service": "none",
-      "Base units: Input": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Base units: Output": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Storage: Hot": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Storage: Cold": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Base units: Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Base units: Output": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Storage: Hot": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Storage: Cold": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t1": {
       "Bowler": "none",
-      "Wickets": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Economy": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Wickets": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Economy": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "worked-bill": {
     "t0": {
-      "aggregateRows": [3],
+      "aggregateRows": [
+        3
+      ],
       "Line item": "none",
-      "Cost": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] }
+      "Cost": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "aggregateRows": [],
-      "Price per month": { "kind": "quantitative", "polarity": ["lower_is_better", "neutral"] }
+      "Price per month": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
     }
   },
   "number-buttons": {
     "t0": {
       "Region": "none",
-      "Storage": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Egress": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Archive": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Storage": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Egress": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Archive": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t1": {
       "Runner": "none",
-      "Queue time (s)": { "kind": "quantitative", "polarity": ["lower_is_better"] },
-      "Jobs today": { "kind": "quantitative" },
+      "Queue time (s)": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Jobs today": {
+        "kind": "quantitative"
+      },
       "Actions": "none"
     }
   },
   "box-score-totals": {
     "t1": {
-      "aggregateRows": [7],
-      "Tackles: TOT": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Tackles: SOLO": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "aggregateRows": [
+        7
+      ],
+      "Tackles: TOT": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Tackles: SOLO": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t2": {
       "aggregateRows": [],
       "Team": "none",
-      "W": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "L": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "W": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "L": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "election-results": {
     "t0": {
-      "aggregateRows": [2],
+      "aggregateRows": [
+        2
+      ],
       "Candidate": "none",
-      "Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "%": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Votes": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "%": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
-      "aggregateRows": [2],
+      "aggregateRows": [
+        2
+      ],
       "Primary election: Candidate": "none",
-      "Primary election: Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Primary election: %": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Primary election: Votes": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Primary election: %": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t2": {
       "aggregateRows": [],
-      "Seats": { "kind": "quantitative" },
-      "Price per month ($)": { "kind": "quantitative" }
+      "Seats": {
+        "kind": "quantitative"
+      },
+      "Price per month ($)": {
+        "kind": "quantitative"
+      }
     }
   },
   "hidden-text": {
     "t0": {
       "Description": "none",
-      "Withdrawals": { "kind": "quantitative" },
-      "Balance": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Withdrawals": {
+        "kind": "quantitative"
+      },
+      "Balance": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Title": "none",
-      "Pages": { "kind": "quantitative" },
-      "Rating": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Pages": {
+        "kind": "quantitative"
+      },
+      "Rating": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     }
   },
   "weekday-times": {
     "t0": {
-      "Time": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Time": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Away": "none",
       "@": "none",
       "Home": "none"
     },
     "t1": {
-      "Logged": { "kind": "quantitative", "polarity": ["neutral"], "transform": "linear" },
+      "Logged": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ],
+        "transform": "linear"
+      },
       "Bay": "none",
       "Pickup": "none"
     }
@@ -640,49 +1931,106 @@
     "t0": {
       "Team": "none",
       "Home Home record": "none",
-      "Strk Streak": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Strk Streak": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t1": {
       "Team": "none",
-      "Strk Streak": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Strk Streak": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t2": {
       "East": "none",
       "Home": "none",
       "Road": "none",
       "Last 5": "none",
-      "Strk": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "Strk": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t3": {
-      "Capacity": { "kind": "quantitative" },
-      "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Capacity": {
+        "kind": "quantitative"
+      },
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "ranked-rates": {
     "t0": {
       "Club": "none",
-      "ATWR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "DFWR": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "STWR": { "kind": "quantitative", "polarity": ["higher_is_better"] }
+      "ATWR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "DFWR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "STWR": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
     },
     "t1": {
       "Crew": "none",
       "Volunteers (new)": "none",
-      "Bags collected": { "kind": "quantitative" }
+      "Bags collected": {
+        "kind": "quantitative"
+      }
     }
   },
   "sort-button-headers": {
     "t0": {
       "Station": "none",
-      "Elevation (m)": { "kind": "quantitative" },
-      "Coverage (km²)": { "kind": "quantitative" },
-      "Uptime": { "kind": "quantitative", "polarity": ["higher_is_better"] },
-      "Response time": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Elevation (m)": {
+        "kind": "quantitative"
+      },
+      "Coverage (km²)": {
+        "kind": "quantitative"
+      },
+      "Uptime": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Response time": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     },
     "t1": {
       "Name": "none",
-      "Shifts": { "kind": "quantitative" },
-      "Hours": { "kind": "quantitative" },
+      "Shifts": {
+        "kind": "quantitative"
+      },
+      "Hours": {
+        "kind": "quantitative"
+      },
       "Actions": "none"
     }
   },
@@ -691,28 +2039,133 @@
       "Rk": "none",
       "Player": "none",
       "Pos": "none",
-      "Ice Time: TOI": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Ice Time: ATOI": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Ice Time: TOI": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Ice Time: ATOI": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
     },
     "t1": {
       "Model": "none",
-      "Contrast": { "kind": "ordinal" },
-      "Price": { "kind": "quantitative", "polarity": ["lower_is_better"] }
+      "Contrast": {
+        "kind": "ordinal"
+      },
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
     }
   },
   "unit-conversions": {
     "t0": {
-      "Average speed": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Top speed": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
+      "Average speed": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Top speed": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
       "Train": "none",
       "Line": "none",
-      "Distance": { "kind": "quantitative" },
+      "Distance": {
+        "kind": "quantitative"
+      },
       "Comments": "none"
     },
     "t1": {
       "Candidate": "none",
-      "Votes": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] },
-      "Share": { "kind": "quantitative", "polarity": ["higher_is_better", "neutral"] }
+      "Votes": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Share": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
+    }
+  },
+  "locale-de": {
+    "t0": {
+      "Stadt": "none",
+      "Einwohner": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Ew. je km²": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Fläche (km²)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Veränderung 2024": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
+    },
+    "t1": {
+      "Modell": "none",
+      "Preis": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Gewicht": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Bewertung": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    },
+    "t2": {
+      "Software": "none",
+      "Version": "none",
+      "Downloads (laut US-Verzeichnis)": "none"
     }
   }
 }

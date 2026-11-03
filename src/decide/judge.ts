@@ -15,7 +15,7 @@ import { isDateUnit, parseDateColumn } from "../core/dates.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import type { CategoricalProfile, ColumnProfile, NumericProfile } from "../core/profile.ts";
 import { profileTable } from "../core/profile.ts";
-import { normalizeLabel } from "../core/parse.ts";
+import { conventionForLang, normalizeLabel } from "../core/parse.ts";
 import type {
   ColumnEncoding,
   PageJudgment,
@@ -178,7 +178,7 @@ const judgeColumns = async (
   askOrientation: boolean,
   now: number,
 ) => {
-  const profiles = profileTable(table);
+  const profiles = profileTable(table, conventionForLang(page.lang));
   const candidates = profiles.filter(
     (p): p is NumericProfile | CategoricalProfile => p.kind === "numeric" || p.kind === "categorical",
   );

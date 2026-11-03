@@ -55,6 +55,89 @@ const MAGNITUDE: Readonly<Record<string, number>> = {
 
 const CURRENCY = "$€£¥₹₩₽₺";
 
+/** How a page writes numbers: dot-decimal ("1,234.56") or comma-decimal ("1.234,56"). */
+export type NumberConvention = "dot-decimal" | "comma-decimal";
+
+/**
+ * Primary language subtags whose standard number format is comma-decimal.
+ * Spanish is missing on purpose: Spain and Argentina write "1.234,56" while
+ * Mexico and most of Central America write "1,234.56", and a bare "es" does
+ * not say which, so Spanish pages keep the dot-decimal reading.
+ */
+const COMMA_DECIMAL_LANGS = new Set([
+  "af",
+  "az",
+  "be",
+  "bg",
+  "bs",
+  "ca",
+  "cs",
+  "da",
+  "de",
+  "el",
+  "et",
+  "eu",
+  "fi",
+  "fr",
+  "gl",
+  "hr",
+  "hu",
+  "hy",
+  "id",
+  "is",
+  "it",
+  "ka",
+  "kk",
+  "lt",
+  "lv",
+  "mk",
+  "nb",
+  "nl",
+  "nn",
+  "no",
+  "pl",
+  "pt",
+  "ro",
+  "ru",
+  "sk",
+  "sl",
+  "sq",
+  "sr",
+  "sv",
+  "tr",
+  "uk",
+  "uz",
+  "vi",
+]);
+
+/** Maps a document's `lang` ("de", "pt-BR") to its number convention. Unknown or missing is dot-decimal. */
+export const conventionForLang = (lang: string | null | undefined): NumberConvention =>
+  COMMA_DECIMAL_LANGS.has((lang ?? "").trim().toLowerCase().split("-")[0] ?? "") ? "comma-decimal" : "dot-decimal";
+
+/** A maximal run of digits and separators, checked and rewritten as one number. */
+const NUMBER_TOKEN_RE = /[\d.,]*\d/g;
+const COMMA_DECIMAL_TOKEN_RE = /^(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d+))?$/;
+
+/**
+ * Rewrites comma-decimal numbers ("2.962", "891,12", "1.299,00") into
+ * dot-decimal form for NUMBER_RE. A dot counts as a thousands separator only
+ * when every group has three digits, so "1.5" and "1,234,567" do not fit the
+ * convention and null makes the cell text instead of a silent misreading.
+ */
+const normalizeCommaDecimal = (text: string): string | null => {
+  let bad = false;
+  const out = text.replace(NUMBER_TOKEN_RE, (token) => {
+    if (!token.includes(".") && !token.includes(",")) return token;
+    const m = COMMA_DECIMAL_TOKEN_RE.exec(token);
+    if (m?.[1] === undefined) {
+      bad = true;
+      return token;
+    }
+    return m[1].replaceAll(".", "") + (m[2] === undefined ? "" : `.${m[2]}`);
+  });
+  return bad ? null : out;
+};
+
 const NUMBER_RE = new RegExp(
   "^" +
     "([≤≥<>~≈]=?\\s*)?" + // comparator prefix, e.g. "≤ 272K"
@@ -65,7 +148,9 @@ const NUMBER_RE = new RegExp(
     "([+\\-−]?)" + // sign after currency
     "(\\d{1,3}(?:[,\\u2009\\u202f ]\\d{3})+(?:\\.\\d+)?|\\d+(?:\\.\\d+)?|\\.\\d+)" +
     "\\s*" +
-    "(%|[x×]|[a-zA-Zµ°/]{1,9}(?:\\s?[a-zA-Z/]{1,6})?)?" +
+    "(%|[x×]|[" +
+    CURRENCY +
+    "]|[a-zA-Zµ°/]{1,9}(?:\\s?[a-zA-Z/]{1,6})?)?" +
     "$",
 );
 
@@ -133,8 +218,13 @@ const VULGAR_RE = /^(\d*)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/;
 const FRACTION_RE = /^(?:(\d+)\s+)?(\d+)\s*\u2044\s*(\d+)$/;
 
 /** Parses one number. parseRange handles ranges. */
-const parseSingle = (input: string): ParsedNumber | null => {
+const parseSingle = (input: string, convention: NumberConvention): ParsedNumber | null => {
   let text = input;
+  if (convention === "comma-decimal") {
+    const normalized = normalizeCommaDecimal(text);
+    if (normalized === null) return null;
+    text = normalized;
+  }
   const clock = DURATION_RE.exec(text);
   if (clock !== null) {
     const [, a = "0", b = "0", c] = clock;
@@ -186,6 +276,9 @@ const parseSingle = (input: string): ParsedNumber | null => {
       unit = "%";
     } else if (suffix === "x" || suffix === "×") {
       unit = "x";
+    } else if (suffix.length === 1 && CURRENCY.includes(suffix)) {
+      // Trailing currency ("40 €", "1.299,00 €"), the usual order in most of Europe.
+      unit = unit ?? suffix;
     } else {
       // Ordinals ("1st") and units ("GB") are both letters. Ordinals are ranks, not amounts.
       if (/^(st|nd|rd|th)$/i.test(suffix)) return null;
@@ -209,11 +302,11 @@ const RANGE_SEPARATOR = /\s*(?:–|—|-|\bto\b)\s*/g;
  * and year-months ("2024-01"). Records written low first ("4-12") still
  * parse. The model's `record` role rejects those.
  */
-const parseRange = (text: string): ParsedNumber | null => {
+const parseRange = (text: string, convention: NumberConvention): ParsedNumber | null => {
   for (const m of text.matchAll(RANGE_SEPARATOR)) {
     if (m.index === 0) continue;
-    const lo = parseSingle(text.slice(0, m.index));
-    const hi = parseSingle(text.slice(m.index + m[0].length));
+    const lo = parseSingle(text.slice(0, m.index), convention);
+    const hi = parseSingle(text.slice(m.index + m[0].length), convention);
     if (lo === null || hi === null || lo.bound || hi.bound) continue;
     if (lo.unit !== null && hi.unit !== null && lo.unit !== hi.unit) continue;
     if (!(lo.value < hi.value)) continue;
@@ -244,11 +337,11 @@ const CONVERSION_RE = /^(.*\S)\s*\(([^()]+)\)$/;
 const isMeasureUnit = (unit: string | null): unit is string =>
   unit !== null && unit !== "%" && unit !== "x" && unit !== ":" && !CURRENCY.includes(unit) && !unit.endsWith("$");
 
-const parseConversion = (text: string): ParsedNumber | null => {
+const parseConversion = (text: string, convention: NumberConvention): ParsedNumber | null => {
   const m = CONVERSION_RE.exec(text);
   if (m?.[1] === undefined || m[2] === undefined) return null;
-  const outer = parseSingle(m[1]);
-  const inner = parseSingle(m[2].trim());
+  const outer = parseSingle(m[1], convention);
+  const inner = parseSingle(m[2].trim(), convention);
   if (outer === null || inner === null || outer.bound || inner.bound) return null;
   if (!isMeasureUnit(outer.unit) || !isMeasureUnit(inner.unit)) return null;
   if (outer.unit.toLowerCase() === inner.unit.toLowerCase()) return null;
@@ -262,13 +355,15 @@ const parseConversion = (text: string): ParsedNumber | null => {
  * and "12% (3%)" stay text. In one column every share divides by the same
  * total, so ordering by count and by share agree.
  */
-const COUNT_SHARE_RE = /^(.*\S)\s*\(\s*(\d+(?:\.\d+)?)\s*%\s*\)$/;
+const COUNT_SHARE_RE = /^(.*\S)\s*\(\s*(\d+(?:[.,]\d+)?)\s*%\s*\)$/;
 
-const parseCountShare = (text: string): ParsedNumber | null => {
+const parseCountShare = (text: string, convention: NumberConvention): ParsedNumber | null => {
   const m = COUNT_SHARE_RE.exec(text);
   if (m?.[1] === undefined || m[2] === undefined) return null;
-  if (Number(m[2]) > 100) return null;
-  const count = parseSingle(m[1]);
+  // The share's decimal separator must follow the page's convention, so "22 (13,1%)" reads on a German page and stays text on an English one.
+  const share = parseSingle(m[2], convention);
+  if (share === null || share.value > 100) return null;
+  const count = parseSingle(m[1], convention);
   if (count === null || count.unit !== null || count.bound || count.value < 0) return null;
   return count;
 };
@@ -284,33 +379,37 @@ const parseCountShare = (text: string): ParsedNumber | null => {
 const ALTERNATIVE_RE =
   /^(.*?\S),\s+(?:or|then)\s+([^\s,]+(?:\s[A-Za-zµ°/%]{1,9})?)(?:\s+(?:from|after|until|before|when|if|for|in|on|starting)\s+\S.*)?$/u;
 
-const parseAlternative = (text: string): ParsedNumber | null => {
+const parseAlternative = (text: string, convention: NumberConvention): ParsedNumber | null => {
   const m = ALTERNATIVE_RE.exec(text);
   if (m?.[1] === undefined || m[2] === undefined) return null;
-  const now = parseSingle(m[1]);
-  const later = parseSingle(m[2]);
+  const now = parseSingle(m[1], convention);
+  const later = parseSingle(m[2], convention);
   if (now === null || later === null || now.bound || later.bound) return null;
   if (now.unit === null || now.unit !== later.unit) return null;
   return now;
 };
 
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
-export const parseNumber = (raw: string): ParsedNumber | null => {
+export const parseNumber = (raw: string, convention: NumberConvention = "dot-decimal"): ParsedNumber | null => {
   const text = stripNoise(raw);
   // A value followed by its change: the value is the cell's number.
   const change = CHANGE_RE.exec(text);
-  if (change?.[1] !== undefined) return parseNumber(change[1]);
+  if (change?.[1] !== undefined) return parseNumber(change[1], convention);
   // A value with its condition: the value is the cell's number.
   const condition = CONDITION_RE.exec(text);
-  if (condition?.[1] !== undefined) return parseNumber(condition[1]);
+  if (condition?.[1] !== undefined) return parseNumber(condition[1], convention);
   // Open-ended bins: "65+", and with a magnitude, "1M+".
   const plus = /^(.*\d\s*[KMBTkmbt]?)\s*\+$/.exec(text);
   if (plus?.[1] !== undefined) {
-    const n = parseSingle(plus[1]);
+    const n = parseSingle(plus[1], convention);
     return n === null ? null : { ...n, bound: true };
   }
   return (
-    parseSingle(text) ?? parseRange(text) ?? parseConversion(text) ?? parseCountShare(text) ?? parseAlternative(text)
+    parseSingle(text, convention) ??
+    parseRange(text, convention) ??
+    parseConversion(text, convention) ??
+    parseCountShare(text, convention) ??
+    parseAlternative(text, convention)
   );
 };
 

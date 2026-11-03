@@ -6,6 +6,7 @@
  */
 import { parseDate } from "./dates.ts";
 import { isDateLike, isMissing, normalizeLabel, parseNumber, stripNoise } from "./parse.ts";
+import type { NumberConvention } from "./parse.ts";
 import type { TableSnapshot } from "./types.ts";
 
 export const MAX_ORDINAL_LEVELS = 12;
@@ -81,10 +82,11 @@ const profileNumeric = (
   col: number,
   header: string,
   cells: readonly string[],
+  convention: NumberConvention,
   display: readonly string[] = cells,
 ): NumericProfile | null => {
   const filled = cells.filter((c) => !isMissing(c));
-  const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c)));
+  const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c, convention)));
   const numeric = parsed.filter((p) => p !== null);
   if (filled.length < MIN_FILLED || numeric.length / filled.length < NUMERIC_SHARE) return null;
 
@@ -189,7 +191,7 @@ const MIN_RANKED = 5;
  * value never has a worse rank in one direction and a better one in the
  * other. Returns the cells with the ranks removed, or null.
  */
-const readRanked = (cells: readonly string[]): readonly string[] | null => {
+const readRanked = (cells: readonly string[], convention: NumberConvention): readonly string[] | null => {
   const out: string[] = [];
   const pairs: [number, number][] = [];
   for (const cell of cells) {
@@ -198,7 +200,7 @@ const readRanked = (cells: readonly string[]): readonly string[] | null => {
       continue;
     }
     const m = RANKED_RE.exec(stripNoise(cell));
-    const n = m?.[1] === undefined ? null : parseNumber(m[1]);
+    const n = m?.[1] === undefined ? null : parseNumber(m[1], convention);
     const rank = Number(m?.[2]);
     if (m?.[1] === undefined || n === null || rank < 1 || rank > cells.length) return null;
     out.push(m[1]);
@@ -219,8 +221,11 @@ const readRanked = (cells: readonly string[]): readonly string[] | null => {
 /** A date, a clock time, or a relative time ("3 days ago", which would otherwise parse as 3 days). */
 const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(cell, { now: 0 }) !== null;
 
-/** Profiles every column of a table. */
-export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
+/** Profiles every column of a table. `convention` is the page's number format, from its `lang`. */
+export const profileTable = (
+  table: TableSnapshot,
+  convention: NumberConvention = "dot-decimal",
+): readonly ColumnProfile[] =>
   table.headers.map((rawHeader, col) => {
     const header = stripNoise(rawHeader);
     const cells = table.rows.map((r) => r[col] ?? "");
@@ -230,9 +235,11 @@ export const profileTable = (table: TableSnapshot): readonly ColumnProfile[] =>
       return { kind: "text", col, header, reason: "dates or times", samples: cells.slice(0, 5).map(stripNoise) };
     }
     const streaks = readStreaks(header, cells);
-    const rewritten = streaks ?? readRanked(cells);
+    const rewritten = streaks ?? readRanked(cells, convention);
     const parsed =
-      rewritten === null ? profileNumeric(col, header, cells) : profileNumeric(col, header, rewritten, cells);
+      rewritten === null
+        ? profileNumeric(col, header, cells, convention)
+        : profileNumeric(col, header, rewritten, convention, cells);
     const numeric = parsed !== null && streaks !== null ? { ...parsed, unit: "streak" } : parsed;
     if (numeric !== null) {
       if (numeric.distinct < 2) {

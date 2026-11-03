@@ -13,6 +13,13 @@ number:
 
 - `parseNumber` reads currency, percentages, multipliers, K, M, and B
   suffixes, accounting negatives, footnotes, and bounds such as `≤ 272K`.
+- The page's `lang` picks the number convention. On a comma-decimal page
+  (German, Italian, Turkish, and most of Europe), `65.890` is 65,890 and
+  `891,12` is 891.12; a dot counts as a thousands separator only when every
+  group has three digits, so `1.5` stays text instead of misreading. A bare
+  `es` keeps the dot-decimal reading, because Spain writes `1.234,56` while
+  Mexico writes `1,234.56`. Currency symbols also read after the number
+  (`1.299,00 €`), the usual order in most of Europe.
 - `profileTable` decides whether a column is numeric, a short set of labels,
   or text. It computes the extents, the spread, and hints such as
   `isSequence`, `looksLikeYears`, and `boundShare`.
