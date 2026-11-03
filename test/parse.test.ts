@@ -197,3 +197,22 @@ test("a trailing currency symbol is the unit in both conventions", () => {
   assert.deepEqual(parseNumber("1.299,00 €", "comma-decimal"), { value: 1299, unit: "€", bound: false, range: null });
   assert.deepEqual(parseNumber("12 £"), { value: 12, unit: "£", bound: false, range: null });
 });
+
+test("a value followed by the value that replaces it later parses as the first value", () => {
+  const dollars = (value: number) => ({ value, unit: "$", bound: false, range: null });
+  assert.deepEqual(parseNumber("$52, or $58 after year one"), dollars(52));
+  assert.deepEqual(parseNumber("$61.25, then $122.50 from March 1, 2027"), dollars(61.25));
+  assert.deepEqual(parseNumber("$12, or $15"), dollars(12));
+  assert.deepEqual(parseNumber("4 GB, then 8 GB after the upgrade"), {
+    value: 4,
+    unit: "GB",
+    bound: false,
+    range: null,
+  });
+  // Both values need the same unit, and only ", or" and ", then" join them.
+  assert.equal(parseNumber("3, or 4"), null, "bare numbers");
+  assert.equal(parseNumber("$40, or 12%"), null, "different units");
+  assert.equal(parseNumber("$40, and $50"), null);
+  assert.equal(parseNumber("$40, or $50 plus tax"), null, "a tail that is not a condition");
+  assert.equal(parseNumber("Free, or $5 with support"), null);
+});

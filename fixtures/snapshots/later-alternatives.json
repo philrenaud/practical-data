@@ -1,0 +1,126 @@
+{
+ "url": "fixture://synthetic/later-alternatives.html",
+ "title": "Practical Data: values that change later",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "One month of image hosting",
+   "headers": [
+    "Plan",
+    "Rate",
+    "Included",
+    "Cost for the month"
+   ],
+   "rows": [
+    [
+     "Pebble Basic",
+     "$2 per 10K images",
+     "50K a month",
+     "$18"
+    ],
+    [
+     "Pebble Plus",
+     "$6 per 10K images",
+     "20K a month",
+     "$66"
+    ],
+    [
+     "Pebble Max",
+     "$11 per 10K images",
+     "20K a month",
+     "$121"
+    ],
+    [
+     "Lantern Starter",
+     "$2 per 10K images",
+     "60K a month",
+     "$16"
+    ],
+    [
+     "Lantern Pro",
+     "$6 per 10K images",
+     "20K a month for 12 months",
+     "$52, or $58 after year one"
+    ],
+    [
+     "Lantern Studio",
+     "$11 per 10K images",
+     "5K a month for 12 months",
+     "$118, or $121 after year one"
+    ],
+    [
+     "Quarry Team",
+     "1 token per image, 90K tokens for $140, then $15 per 10K",
+     "None beyond the plan",
+     "$155"
+    ],
+    [
+     "Fernway Lite",
+     "$0.02 per 100 images",
+     "Not stated",
+     "$200"
+    ],
+    [
+     "Fernway Full",
+     "$0.04 per 100 images",
+     "Not stated",
+     "$400"
+    ],
+    [
+     "Orchid Flash",
+     "$4 per 10K images at 30 frames a clip",
+     "None",
+     "$72.50"
+    ],
+    [
+     "Orchid Next (Preview)",
+     "$3.50 per 10K images through February 28, 2027",
+     "None",
+     "$61.25, then $122.50 from March 1, 2027"
+    ],
+    [
+     "Juniper Mini",
+     "$5 per 10K images",
+     "Not stated",
+     "Not worked out"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Plan notes",
+   "headers": [
+    "Plan",
+    "Seats",
+    "Billing"
+   ],
+   "rows": [
+    [
+     "Pebble Basic",
+     "1",
+     "$40, or 12% of sales"
+    ],
+    [
+     "Pebble Plus",
+     "5",
+     "3, or 4 invoices a year"
+    ],
+    [
+     "Lantern Starter",
+     "2",
+     "Monthly, or yearly at a discount"
+    ],
+    [
+     "Lantern Pro",
+     "10",
+     "$90, and $10 per extra seat"
+    ],
+    [
+     "Quarry Team",
+     "25",
+     "Free, or $5 with support"
+    ]
+   ]
+  }
+ ]
+}
