@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Städte und Preise im Vergleich</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td:nth-child(n+2), th:nth-child(n+2) { text-align: right; }
+  tbody tr:nth-child(even) td { background: #f4f4f4; }
+</style>
+</head>
+<body>
+<h1>Städte und Preise im Vergleich</h1>
+<p>
+  Eine deutschsprachige Seite schreibt Zahlen mit Punkt als Tausendertrennzeichen
+  und Komma als Dezimaltrennzeichen: 65.890 Einwohner, 891,12 km², 1.299,00 €.
+  Die Dichtespalte kreuzt die Tausendergrenze, damit die Reihenfolge der Werte
+  die Lesart beweist: 982 liegt unter 4.153.
+</p>
+
+<h2>Großstädte im Vergleich</h2>
+<table id="staedte">
+  <thead><tr><th>Stadt</th><th>Einwohner</th><th>Ew. je km²</th><th>Fläche (km²)</th><th>Veränderung 2024</th></tr></thead>
+  <tbody>
+    <tr><td>Westhafen</td><td>764.104</td><td>4.153</td><td>183,97</td><td>+0,42 %</td></tr>
+    <tr><td>Nordheim</td><td>625.481</td><td>2.308</td><td>271,04</td><td>−0,18 %</td></tr>
+    <tr><td>Altbrücken</td><td>248.589</td><td>1.871</td><td>132,86</td><td>+1,05 %</td></tr>
+    <tr><td>Lindenfeld</td><td>99.854</td><td>982</td><td>101,68</td><td>−0,73 %</td></tr>
+    <tr><td>Steinau</td><td>65.890</td><td>319</td><td>206,55</td><td>+0,09 %</td></tr>
+    <tr><td>Birkenwerder</td><td>31.207</td><td>640</td><td>48,76</td><td>+0,31 %</td></tr>
+  </tbody>
+</table>
+
+<h2>Preisvergleich: Notebooks</h2>
+<table id="preise">
+  <thead><tr><th>Modell</th><th>Preis</th><th>Gewicht</th><th>Bewertung</th></tr></thead>
+  <tbody>
+    <tr><td>Falke 14</td><td>1.299,00 €</td><td>1,38 kg</td><td>4,6</td></tr>
+    <tr><td>Milan Air</td><td>949,00 €</td><td>1,12 kg</td><td>4,2</td></tr>
+    <tr><td>Kondor Pro</td><td>1.849,95 €</td><td>1,94 kg</td><td>4,8</td></tr>
+    <tr><td>Sperber S</td><td>749,50 €</td><td>1,41 kg</td><td>3,9</td></tr>
+    <tr><td>Habicht X</td><td>1.049,00 €</td><td>1,27 kg</td><td>4,4</td></tr>
+  </tbody>
+</table>
+
+<h2>Versionsstände</h2>
+<p>
+  Versionsnummern und englisch formatierte Zahlen passen nicht zur deutschen
+  Schreibweise. Beide Spalten müssen Text bleiben.
+</p>
+<table id="versionen">
+  <thead><tr><th>Software</th><th>Version</th><th>Downloads (laut US-Verzeichnis)</th></tr></thead>
+  <tbody>
+    <tr><td>Quellwerk</td><td>1.5</td><td>1,204,318</td></tr>
+    <tr><td>Datenbank Nord</td><td>2.0.1</td><td>845,112</td></tr>
+    <tr><td>Tabellenkern</td><td>3.11</td><td>2,491,007</td></tr>
+    <tr><td>Netzplaner</td><td>0.9.4</td><td>96,553</td></tr>
+    <tr><td>Formularwerk</td><td>4.2</td><td>310,440</td></tr>
+    <tr><td>Druckstudio</td><td>2.7.3</td><td>78,901</td></tr>
+    <tr><td>Kalenderdienst</td><td>5.1</td><td>1,733,264</td></tr>
+    <tr><td>Bildarchiv</td><td>1.0.8</td><td>452,209</td></tr>
+    <tr><td>Rechenkern</td><td>6.4</td><td>603,775</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

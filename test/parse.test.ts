@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
+import { conventionForLang, isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 
 const cases: ReadonlyArray<readonly [string, number | null, string | null, (readonly [number, number])?]> = [
   ["$0.25", 0.25, "$"],
@@ -140,4 +140,60 @@ test("a count followed by its share parses as the count", () => {
     { value: 740, unit: null, bound: false, range: null },
     "a signed change still reads first",
   );
+});
+
+test("a document language maps to its number convention", () => {
+  assert.equal(conventionForLang("de"), "comma-decimal");
+  assert.equal(conventionForLang("de-DE"), "comma-decimal");
+  assert.equal(conventionForLang("pt-BR"), "comma-decimal");
+  assert.equal(conventionForLang("TR"), "comma-decimal");
+  assert.equal(conventionForLang("en"), "dot-decimal");
+  assert.equal(conventionForLang("en-GB"), "dot-decimal");
+  assert.equal(conventionForLang(""), "dot-decimal");
+  assert.equal(conventionForLang(undefined), "dot-decimal");
+  // Spanish stays dot-decimal: Spain writes 1.234,56 but Mexico writes 1,234.56.
+  assert.equal(conventionForLang("es"), "dot-decimal");
+});
+
+test("comma-decimal pages read dots as thousands and commas as decimals", () => {
+  const de = (t: string) => parseNumber(t, "comma-decimal");
+  assert.deepEqual(de("65.890"), { value: 65890, unit: null, bound: false, range: null });
+  assert.deepEqual(de("1.234.567"), { value: 1234567, unit: null, bound: false, range: null });
+  assert.deepEqual(de("891,12"), { value: 891.12, unit: null, bound: false, range: null });
+  assert.deepEqual(de("12,5 %"), { value: 12.5, unit: "%", bound: false, range: null });
+  assert.deepEqual(de("2.962 m"), { value: 2962, unit: "m", bound: false, range: null });
+  assert.deepEqual(de("1.299,00 €"), { value: 1299, unit: "€", bound: false, range: null });
+  assert.deepEqual(de("1 234,56"), { value: 1234.56, unit: null, bound: false, range: null });
+  assert.deepEqual(de("−2,5"), { value: -2.5, unit: null, bound: false, range: null });
+  assert.deepEqual(de("(1.234)"), { value: -1234, unit: null, bound: false, range: null }, "an accounting negative");
+  assert.deepEqual(
+    de("22 (13,1%)"),
+    { value: 22, unit: null, bound: false, range: null },
+    "count-share follows the convention",
+  );
+  // A comma decimal means something different in each convention.
+  assert.deepEqual(de("1,234"), { value: 1.234, unit: null, bound: false, range: null });
+  // Numbers that do not fit the convention stay text instead of misreading.
+  assert.equal(de("1.5"), null, "a dot decimal on a comma-decimal page");
+  assert.equal(de("1,234,567"), null, "comma thousands on a comma-decimal page");
+  assert.equal(de("1.23.4"), null, "groups that are not thousands");
+  assert.equal(de("22 (13.1%)"), null, "a dot-decimal share on a comma-decimal page");
+  // Untouched forms still read.
+  assert.deepEqual(de("1544:10"), { value: 92650, unit: ":", bound: false, range: null });
+  assert.equal(de("15. März 2024"), null);
+});
+
+test("the default convention is unchanged English behavior", () => {
+  assert.deepEqual(parseNumber("65.890"), { value: 65.89, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("1,234.56"), { value: 1234.56, unit: null, bound: false, range: null });
+  assert.equal(parseNumber("891,12"), null);
+  assert.equal(parseNumber("22 (13,1%)"), null, "a comma-decimal share on an English page");
+});
+
+test("a trailing currency symbol is the unit in both conventions", () => {
+  assert.deepEqual(parseNumber("40 €"), { value: 40, unit: "€", bound: false, range: null });
+  assert.deepEqual(parseNumber("40€"), { value: 40, unit: "€", bound: false, range: null });
+  assert.deepEqual(parseNumber("1,299.00 $"), { value: 1299, unit: "$", bound: false, range: null });
+  assert.deepEqual(parseNumber("1.299,00 €", "comma-decimal"), { value: 1299, unit: "€", bound: false, range: null });
+  assert.deepEqual(parseNumber("12 £"), { value: 12, unit: "£", bound: false, range: null });
 });

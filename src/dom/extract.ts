@@ -400,7 +400,12 @@ export const extractPage = (
     .map(([t, i]) => extractTable(t, `t${i}`, headings))
     .filter((t): t is ExtractedTable => t !== null);
   return {
-    page: { url: doc.location?.href ?? "", title: doc.title, tables: tables.map((t) => t.snapshot) },
+    page: {
+      url: doc.location?.href ?? "",
+      title: doc.title,
+      lang: doc.documentElement.lang.trim(),
+      tables: tables.map((t) => t.snapshot),
+    },
     tables,
     elements,
   };

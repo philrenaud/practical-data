@@ -18,6 +18,8 @@ export interface TableSnapshot {
 export interface PageSnapshot {
   readonly url: string;
   readonly title: string;
+  /** The document's language ("de", "pt-BR"). Absent on snapshots saved before it was recorded. */
+  readonly lang?: string;
   readonly tables: readonly TableSnapshot[];
 }
 

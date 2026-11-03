@@ -1,0 +1,160 @@
+{
+ "url": "fixture://synthetic/locale-de.html",
+ "title": "Städte und Preise im Vergleich",
+ "lang": "de",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Großstädte im Vergleich",
+   "headers": [
+    "Stadt",
+    "Einwohner",
+    "Ew. je km²",
+    "Fläche (km²)",
+    "Veränderung 2024"
+   ],
+   "rows": [
+    [
+     "Westhafen",
+     "764.104",
+     "4.153",
+     "183,97",
+     "+0,42 %"
+    ],
+    [
+     "Nordheim",
+     "625.481",
+     "2.308",
+     "271,04",
+     "−0,18 %"
+    ],
+    [
+     "Altbrücken",
+     "248.589",
+     "1.871",
+     "132,86",
+     "+1,05 %"
+    ],
+    [
+     "Lindenfeld",
+     "99.854",
+     "982",
+     "101,68",
+     "−0,73 %"
+    ],
+    [
+     "Steinau",
+     "65.890",
+     "319",
+     "206,55",
+     "+0,09 %"
+    ],
+    [
+     "Birkenwerder",
+     "31.207",
+     "640",
+     "48,76",
+     "+0,31 %"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Preisvergleich: Notebooks",
+   "headers": [
+    "Modell",
+    "Preis",
+    "Gewicht",
+    "Bewertung"
+   ],
+   "rows": [
+    [
+     "Falke 14",
+     "1.299,00 €",
+     "1,38 kg",
+     "4,6"
+    ],
+    [
+     "Milan Air",
+     "949,00 €",
+     "1,12 kg",
+     "4,2"
+    ],
+    [
+     "Kondor Pro",
+     "1.849,95 €",
+     "1,94 kg",
+     "4,8"
+    ],
+    [
+     "Sperber S",
+     "749,50 €",
+     "1,41 kg",
+     "3,9"
+    ],
+    [
+     "Habicht X",
+     "1.049,00 €",
+     "1,27 kg",
+     "4,4"
+    ]
+   ]
+  },
+  {
+   "id": "t2",
+   "title": "Versionsstände",
+   "headers": [
+    "Software",
+    "Version",
+    "Downloads (laut US-Verzeichnis)"
+   ],
+   "rows": [
+    [
+     "Quellwerk",
+     "1.5",
+     "1,204,318"
+    ],
+    [
+     "Datenbank Nord",
+     "2.0.1",
+     "845,112"
+    ],
+    [
+     "Tabellenkern",
+     "3.11",
+     "2,491,007"
+    ],
+    [
+     "Netzplaner",
+     "0.9.4",
+     "96,553"
+    ],
+    [
+     "Formularwerk",
+     "4.2",
+     "310,440"
+    ],
+    [
+     "Druckstudio",
+     "2.7.3",
+     "78,901"
+    ],
+    [
+     "Kalenderdienst",
+     "5.1",
+     "1,733,264"
+    ],
+    [
+     "Bildarchiv",
+     "1.0.8",
+     "452,209"
+    ],
+    [
+     "Rechenkern",
+     "6.4",
+     "603,775"
+    ]
+   ]
+  }
+ ]
+}
