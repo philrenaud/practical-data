@@ -155,6 +155,8 @@ export const fileUserFlag = async (
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
+      // GitHub refuses any request without a User-Agent with a 403.
+      "User-Agent": "practical-data-api",
     },
     body: JSON.stringify({ title, body, labels: ["flag", "user"] }),
     signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),

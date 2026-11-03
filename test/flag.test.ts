@@ -101,6 +101,9 @@ test("filing opens the issue with the flag and user labels", async () => {
   const body = JSON.parse(String(calls[0]!.init.body)) as Record<string, unknown>;
   assert.deepEqual(body["labels"], ["flag", "user"]);
   assert.equal(body["title"], "tables.example: shaded Widget throughput");
+  // GitHub refuses any request without a User-Agent with a 403.
+  const headers = calls[0]!.init.headers as Record<string, string>;
+  assert.equal(headers["User-Agent"], "practical-data-api");
 });
 
 test("a GitHub error stops the flag without its response body", async () => {
