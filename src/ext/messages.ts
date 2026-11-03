@@ -1,4 +1,5 @@
 /** Message types for the content script, the popup, and the service worker. */
+import type { FlagReport } from "../api/flag.ts";
 import type { PageJudgment, PageSnapshot } from "../core/types.ts";
 import type { Orientation } from "../core/orient.ts";
 import type { Palette } from "../core/scale.ts";
@@ -26,7 +27,12 @@ export type ToWorker =
   /** Turns a host on or off and saves it in the settings. Popup only. */
   | { readonly type: "setSiteEnabled"; readonly tabId: number; readonly host: string; readonly enabled: boolean }
   /** Files a flag for a table. Dev build only; the worker adds a screenshot. Replies with a `FlagReply`. */
-  | { readonly type: "flag"; readonly capture: FlagCapture };
+  | { readonly type: "flag"; readonly capture: FlagCapture }
+  /** Sends a store user's confirmed report to the hosted endpoint. Replies with a `UserFlagReply`. */
+  | { readonly type: "userFlag"; readonly report: FlagReport };
+
+/** The worker's reply to `userFlag`. `reason` is the endpoint's error code, or "network". */
+export type UserFlagReply = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 /** The worker's reply to `judge`. */
 export type JudgeReply =
