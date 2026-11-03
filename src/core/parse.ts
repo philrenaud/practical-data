@@ -295,19 +295,37 @@ const parseSingle = (input: string, convention: NumberConvention): ParsedNumber 
 
 const RANGE_SEPARATOR = /\s*(?:–|—|-|\bto\b)\s*/g;
 
+/** The trailing magnitude word of a range end ("60K", "2 million"), if any. */
+const magnitudeSuffix = (text: string): string | null => {
+  const m = /([a-zA-Z]+)\s*$/.exec(text);
+  return m?.[1] !== undefined && Object.hasOwn(MAGNITUDE, m[1].toLowerCase()) ? m[1] : null;
+};
+
 /**
  * Parses a range such as "20-25", "26–30", "$10 to $20", or "1.5-2.5 GB". Both
  * ends must parse, the low end must be strictly lower, and the units must
  * agree. These rules reject scores and records written high first ("35-10")
  * and year-months ("2024-01"). Records written low first ("4-12") still
  * parse. The model's `record` role rejects those.
+ *
+ * A magnitude written once distributes to both ends: "$50–60K" means
+ * $50,000 to $60,000, not $50 to $60,000. The low end keeps its bare
+ * reading when the distributed one is not below the high end, so "500–1K"
+ * still means 500 to 1,000.
  */
 const parseRange = (text: string, convention: NumberConvention): ParsedNumber | null => {
   for (const m of text.matchAll(RANGE_SEPARATOR)) {
     if (m.index === 0) continue;
-    const lo = parseSingle(text.slice(0, m.index), convention);
-    const hi = parseSingle(text.slice(m.index + m[0].length), convention);
+    const loText = text.slice(0, m.index);
+    const hiText = text.slice(m.index + m[0].length);
+    let lo = parseSingle(loText, convention);
+    const hi = parseSingle(hiText, convention);
     if (lo === null || hi === null || lo.bound || hi.bound) continue;
+    const suffix = magnitudeSuffix(hiText);
+    if (suffix !== null && magnitudeSuffix(loText) === null) {
+      const distributed = parseSingle(`${loText} ${suffix}`, convention);
+      if (distributed !== null && distributed.value < hi.value) lo = distributed;
+    }
     if (lo.unit !== null && hi.unit !== null && lo.unit !== hi.unit) continue;
     if (!(lo.value < hi.value)) continue;
     return { value: (lo.value + hi.value) / 2, unit: hi.unit ?? lo.unit, bound: false, range: [lo.value, hi.value] };

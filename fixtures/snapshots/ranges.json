@@ -1,6 +1,7 @@
 {
  "url": "fixture://synthetic/ranges.html",
  "title": "Practical Data: ranges",
+ "lang": "en",
  "tables": [
   {
    "id": "t0",
@@ -124,6 +125,47 @@
      "7:10",
      "2:44",
      "40,005"
+    ]
+   ]
+  },
+  {
+   "id": "t3",
+   "title": "Open roles",
+   "headers": [
+    "Role",
+    "Salary band",
+    "Openings"
+   ],
+   "rows": [
+    [
+     "Support specialist",
+     "$38–44K",
+     "6"
+    ],
+    [
+     "QA analyst",
+     "$50–60K",
+     "3"
+    ],
+    [
+     "Marketing manager",
+     "$70–85K",
+     "2"
+    ],
+    [
+     "Product designer",
+     "$88–105K",
+     "2"
+    ],
+    [
+     "Data engineer",
+     "$95–120K",
+     "4"
+    ],
+    [
+     "Staff engineer",
+     "$140–170K",
+     "1"
     ]
    ]
   }
