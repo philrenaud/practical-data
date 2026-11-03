@@ -167,7 +167,7 @@ the code calls no `console` method.
 | Requests per install per minute      | 60                                            | `RL_INSTALL` in `api/wrangler.jsonc`           |
 | Requests per IP per minute           | 120                                           | `RL_IP` in `api/wrangler.jsonc`                |
 | Model requests per install per day   | 400                                           | `INSTALL_DAILY_REQUESTS`                       |
-| Flag reports per install per day     | 5                                             | `INSTALL_DAILY_FLAGS`                          |
+| Flag reports per install per day     | 10                                            | `INSTALL_DAILY_FLAGS`                          |
 | Input tokens per day, all installs   | 50,000,000                                    | `DAILY_TOKEN_BUDGET`                           |
 | Body size                            | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
 | Flag report body size                | 32 KiB                                        | `FLAG_LIMITS.bodyBytes` in `flag.ts`           |
