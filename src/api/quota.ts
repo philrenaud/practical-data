@@ -10,7 +10,9 @@ import { DurableObject } from "cloudflare:workers";
 import {
   createTables,
   release,
+  releaseFlag,
   reserve,
+  reserveFlag,
   settle,
   stats,
   type Allowance,
@@ -50,6 +52,18 @@ export class Quota extends DurableObject {
   async settle(estimate: number, used: number): Promise<void> {
     await this.#open();
     settle(this.ctx.storage.sql, estimate, used);
+  }
+
+  /** Counts one flag report, unless today's flag allowance is used up. */
+  async reserveFlag(install: string, limit: number): Promise<boolean> {
+    await this.#open();
+    return reserveFlag(this.ctx.storage.sql, install, limit);
+  }
+
+  /** Gives back a flag, when filing the issue failed. */
+  async releaseFlag(install: string): Promise<void> {
+    await this.#open();
+    releaseFlag(this.ctx.storage.sql, install);
   }
 
   /** Today's totals, for the operator. */

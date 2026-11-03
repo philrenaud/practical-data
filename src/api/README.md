@@ -10,6 +10,7 @@ The configuration is in `api/wrangler.jsonc`.
 | `worker.ts`       | Routes, origin and install checks, the shared cache, and the upstream call. |
 | `admit.ts`        | `rateLimitKey`, which keys the per-IP rate limit.                           |
 | `allow.ts`        | The allowlist (`readRequest`) and `readBody`.                               |
+| `flag.ts`         | The /flag report shape (`readFlag`) and the GitHub issue it becomes.        |
 | `quota.ts`        | The `Quota` Durable Object, which holds one UTC day's counts.               |
 | `counts.ts`       | The SQL that `Quota` runs, kept apart so that Node tests can load it.       |
 | `usage.ts`        | The anonymous data point for each response.                                 |
@@ -20,16 +21,17 @@ The configuration is in `api/wrangler.jsonc`.
 | Route                | Body                                            | Response                                      |
 | -------------------- | ----------------------------------------------- | --------------------------------------------- |
 | `POST /v1/systemone` | `{ state, questions }`                          | A System One response.                        |
+| `POST /v1/flag`         | A report of wrong shading. See **Flagging**.    | `{ ok: true }` with status 201.               |
 | `GET /v1/health`     | None                                            | `{ ok: true }`                                |
-| `GET /v1/stats`      | None. Send `Authorization: Bearer STATS_TOKEN`. | Today's installs, requests, and input tokens. |
+| `GET /v1/stats`      | None. Send `Authorization: Bearer STATS_TOKEN`. | Today's installs, requests, input tokens, and flags. |
 
 The Worker sets the model from `MODEL`. It ignores a `model` field in the
 body.
 
 Every refusal is JSON of the form `{ error, message }`. The `error` field is
 one of `origin`, `install`, `rate_limited`, `body`, `state`, `questions`,
-`data`, `install_limit`, `budget_spent`, `upstream`, `auth`, or
-`not_found`.
+`data`, `install_limit`, `budget_spent`, `upstream`, `auth`, `flag`,
+`flag_limit`, `github`, or `not_found`.
 
 ## Request flow
 
@@ -79,6 +81,37 @@ Every response that spent from the allowance carries
 neither. `src/ext/allowance.ts` turns these headers into the popup's
 messages.
 
+## Flagging
+
+`POST /v1/flag` lets a store user report wrong shading. The extension shows the
+whole report before sending (`src/ext/flag-report.ts` builds it), and the
+Worker files it as an issue in the private repository `FLAGS_REPO`, with the
+labels `flag` and `user`. The user never touches GitHub.
+
+The route runs the same origin, install-id, and per-minute checks as
+`/v1/systemone`. The body must be `application/json` under 32 KiB, and
+`readFlag` in `flag.ts` refuses anything outside the report shape: a page
+title, an optional URL and language, `shaded` or `unshaded`, up to 30
+headers, up to 5 sample rows of 200-character cells, and an optional
+500-character note. Nothing is clipped on the server; a too-long field is a
+`flag` refusal, because the client clips before the preview.
+
+`Quota.reserveFlag` counts each report against `INSTALL_DAILY_FLAGS` per
+install. Past it, the refusal is a 429 with `flag_limit` and `Retry-After`
+set to the seconds until midnight UTC. The GitHub call uses the
+`FLAGS_GITHUB_TOKEN` secret, a token scoped to `FLAGS_REPO` with issue
+write access:
+
+```sh
+npx wrangler@4.147.0 secret put FLAGS_GITHUB_TOKEN -c api/wrangler.jsonc
+```
+
+With the secret unset, every report gets a 503 with `github`, and nothing
+counts against the day's flags. A failed GitHub call is a 502 with `github`,
+gives the flag back, and never carries GitHub's response. The issue title is
+`<host>: <shaded|unshaded> <table title>`, the dev flags' convention, with
+`(no url)` as the host when the user unticks the URL.
+
 ## Design decisions
 
 - **An allowlist instead of user accounts.** The extension has no sign-in,
@@ -111,8 +144,9 @@ messages.
 
 - The Cloudflare cache holds answers under the SHA-256 hash of the request,
   for 30 days. The cache is per data centre.
-- The `Quota` object for each day holds a request count per install id and
-  the day's input-token total. The alarm deletes it two days later.
+- The `Quota` object for each day holds a request count and a flag count per
+  install id and the day's input-token total. The alarm deletes it two days
+  later. The reports themselves go to `FLAGS_REPO` and are not stored here.
 - The rate-limit bindings hold counters by install id and by IP for one
   minute.
 - The `USAGE` Analytics Engine dataset (`practical_data_api`) gets one data
@@ -133,8 +167,10 @@ the code calls no `console` method.
 | Requests per install per minute      | 60                                            | `RL_INSTALL` in `api/wrangler.jsonc`           |
 | Requests per IP per minute           | 120                                           | `RL_IP` in `api/wrangler.jsonc`                |
 | Model requests per install per day   | 400                                           | `INSTALL_DAILY_REQUESTS`                       |
+| Flag reports per install per day     | 10                                            | `INSTALL_DAILY_FLAGS`                          |
 | Input tokens per day, all installs   | 50,000,000                                    | `DAILY_TOKEN_BUDGET`                           |
 | Body size                            | 256 KiB                                       | `LIMITS.bodyBytes` in `allow.ts`               |
+| Flag report body size                | 32 KiB                                        | `FLAG_LIMITS.bodyBytes` in `flag.ts`           |
 | Questions per request                | 200                                           | `LIMITS.questions`                             |
 | State and table data, after clipping | 64 KiB of JSON                                | `LIMITS.dataBytes`                             |
 | Each string in state or table data   | 2,000 characters, then clipped                | `LIMITS.text`                                  |
@@ -186,6 +222,7 @@ The Worker does not deploy with the site. Deploy it by hand:
 ```sh
 npx wrangler@4.147.0 secret put TYPESAFE_API_KEY -c api/wrangler.jsonc
 npx wrangler@4.147.0 secret put STATS_TOKEN -c api/wrangler.jsonc
+npx wrangler@4.147.0 secret put FLAGS_GITHUB_TOKEN -c api/wrangler.jsonc
 npm run api:deploy
 curl https://api.practicaldata.dev/v1/health
 ```

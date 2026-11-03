@@ -7,7 +7,9 @@ import { DecisionError, modelFromConfig, type Allowance } from "../decide/model.
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
 import { answerCache } from "./cache.ts";
 import { fileFlag, flagId, type FlagCapture, type FlagContext, type FlagReply } from "./flags.ts";
-import type { JudgeReply, PageConfig, ToContent, ToWorker } from "./messages.ts";
+import type { FlagReport } from "../api/flag.ts";
+import { API_ORIGIN } from "../decide/model.ts";
+import type { JudgeReply, PageConfig, ToContent, ToWorker, UserFlagReply } from "./messages.ts";
 import {
   getInstallId,
   isPagePaused,
@@ -93,6 +95,26 @@ const judge = async (msg: Extract<ToWorker, { type: "judge" }>): Promise<JudgeRe
   }
 };
 
+/**
+ * Sends a store user's confirmed report to the hosted endpoint. The report was
+ * shown in full before this runs. The reply carries the endpoint's error code,
+ * so the content script can word the notice.
+ */
+const userFlag = async (report: FlagReport): Promise<UserFlagReply> => {
+  try {
+    const res = await fetch(`${API_ORIGIN}/v1/flag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Practical-Data-Install": await getInstallId() },
+      body: JSON.stringify(report),
+    });
+    if (res.status === 201) return { ok: true };
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    return { ok: false, reason: body.error ?? `status_${res.status}` };
+  } catch {
+    return { ok: false, reason: "network" };
+  }
+};
+
 chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
   // Accept only this extension's pages and content scripts.
   if (sender.id !== chrome.runtime.id) return false;
@@ -119,6 +141,13 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
   if (msg.type === "setSiteEnabled") {
     if (!fromExtensionPage) return false;
     enableSite(msg.tabId, msg.host, msg.enabled).then(() => sendResponse(true));
+    return true;
+  }
+  if (msg.type === "userFlag") {
+    if (sender.tab === undefined) return false;
+    userFlag(msg.report).then(sendResponse, () =>
+      sendResponse({ ok: false, reason: "network" } satisfies UserFlagReply),
+    );
     return true;
   }
   if (PD_FLAGS_REPO !== null && msg.type === "flag") {

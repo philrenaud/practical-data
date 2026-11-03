@@ -223,10 +223,25 @@ the same reason.
 - **Fonts ship in `static/fonts`.** The options page makes no third-party
   requests.
 
+## Reports (store build)
+
+The store build's table bar has the same **Looks wrong** button, wired to
+the hosted endpoint instead of a token. Clicking it opens a dialog
+(`src/dom/report.ts`) that shows the whole report — the table sample
+`src/ext/flag-report.ts` builds, the page title, and the page address with a
+box to leave it out — plus an optional note. Nothing sends until the person
+confirms, and what the dialog shows is exactly what sends: the builder
+applies the server's caps, so the endpoint's validator (`src/api/flag.ts`)
+accepts everything the dialog previews. The service worker POSTs the report
+to `/v1/flag` with the install id; the endpoint files it in the private
+flags repository, labeled `flag, user`. No screenshot, no HTML, no
+judgment data: a report carries less than a dev flag, because strangers
+send it.
+
 ## Flags (dev build only)
 
 `npm run build:dev` (or `npm run dev`, which watches) builds a field-test
-copy named "Practical Data (dev)". It adds a **Flag as wrong** button to the
+copy named "Practical Data (dev)". It adds a **Looks wrong** button to the
 table controls and a **Flag this table as wrong** item to the right-click
 menu. A flag files an issue in the private repository
 `philrenaud/practical-data-flags` with:
