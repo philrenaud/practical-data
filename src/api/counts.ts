@@ -25,12 +25,14 @@ export interface Stats {
   readonly installs: number;
   readonly requests: number;
   readonly tokens: number;
+  readonly flags: number;
 }
 
 /** Creates the tables if they do not exist. */
 export const createTables = (sql: Sql): void => {
   sql.exec("CREATE TABLE IF NOT EXISTS installs (id TEXT PRIMARY KEY, requests INTEGER NOT NULL)");
   sql.exec("CREATE TABLE IF NOT EXISTS totals (name TEXT PRIMARY KEY, value INTEGER NOT NULL)");
+  sql.exec("CREATE TABLE IF NOT EXISTS flags (id TEXT PRIMARY KEY, count INTEGER NOT NULL)");
 };
 
 const tokens = (sql: Sql): number =>
@@ -78,8 +80,25 @@ export const settle = (sql: Sql, estimate: number, used: number): void => {
   addTokens(sql, Math.round(used) - estimate);
 };
 
+const flagCount = (sql: Sql, install: string): number =>
+  sql.exec<{ count: number }>("SELECT count FROM flags WHERE id = ?", install).toArray()[0]?.count ?? 0;
+
+/** Counts one flag report for `install`, unless today's flag allowance is used up. */
+export const reserveFlag = (sql: Sql, install: string, limit: number): boolean => {
+  if (flagCount(sql, install) >= limit) return false;
+  sql.exec("INSERT INTO flags (id, count) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET count = count + 1", install);
+  return true;
+};
+
+/** Gives back a flag, when filing the issue failed. */
+export const releaseFlag = (sql: Sql, install: string): void => {
+  if (flagCount(sql, install) === 0) return;
+  sql.exec("UPDATE flags SET count = count - 1 WHERE id = ?", install);
+};
+
 /** Today's totals, for the operator. */
 export const stats = (sql: Sql): Stats => {
   const i = sql.exec<{ n: number; r: number | null }>("SELECT COUNT(*) AS n, SUM(requests) AS r FROM installs").one();
-  return { installs: i.n, requests: i.r ?? 0, tokens: tokens(sql) };
+  const f = sql.exec<{ f: number | null }>("SELECT SUM(count) AS f FROM flags").one();
+  return { installs: i.n, requests: i.r ?? 0, tokens: tokens(sql), flags: f.f ?? 0 };
 };
