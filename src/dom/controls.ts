@@ -108,7 +108,7 @@ const render = () => {
     sep.className = "sep";
     el.append(
       sep,
-      button("Flag as wrong", null, () => flag(table)),
+      button("Looks wrong", null, () => flag(table)),
     );
   }
 };
