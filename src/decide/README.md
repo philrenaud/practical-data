@@ -122,6 +122,10 @@ members' polarity probabilities.
 
 If the share request fails, each table keeps its own scales.
 
+The user can take one table off a shared scale from its bar ("Isolate
+scales"). That is applied at paint time (`src/core/isolate.ts`), so it sends
+no new requests and leaves the other members' shared scale as it is.
+
 ## Provider layer
 
 `model.ts` defines `DecisionModel`, an interface with `name` and

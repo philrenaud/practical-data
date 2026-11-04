@@ -35,6 +35,8 @@ export interface TableControlState {
   readonly sort: SortControlState | null;
   /** The copy control, or null when the table cannot be copied. */
   readonly copy: CopyControlState | null;
+  /** The shared-scale toggle, or null when no column shares a scale with another table. */
+  readonly isolate: { readonly isolated: boolean } | null;
 }
 
 export interface TableControlHandlers {
@@ -43,6 +45,8 @@ export interface TableControlHandlers {
   readonly sort?: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => void;
   /** Copies the table's text to the clipboard as CSV. Resolves false when the copy failed. */
   readonly copy?: (table: HTMLTableElement) => Promise<boolean>;
+  /** Takes the table off the page's shared scales, or puts it back. */
+  readonly isolate?: (table: HTMLTableElement, isolated: boolean) => void;
   /** Flags the table as judged wrongly. Only the dev build has it. */
   readonly flag?: (table: HTMLTableElement) => void;
 }
@@ -106,6 +110,12 @@ const ICONS = {
   /** Two sheets: copy the table. */
   copy: SVG(
     '<rect x="4" y="4" width="7" height="7" rx="1"/><path d="M2 8c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h5c.55 0 1 .45 1 1"/>',
+  ),
+  /** A chain: the table shares its scales with the page again. */
+  link: SVG('<path d="M5 8.5H3.5a2.5 2.5 0 0 1 0-5H5"/><path d="M7 3.5h1.5a2.5 2.5 0 1 1 0 5H7"/><path d="M4.5 6h3"/>'),
+  /** A struck chain: scale this table by its own values. */
+  linkOff: SVG(
+    '<path d="M5 8.5H3.5a2.5 2.5 0 0 1 0-5H5"/><path d="M7 3.5h1.5a2.5 2.5 0 1 1 0 5H7"/><path d="M2.2 10.3 9.8 1.7"/>',
   ),
 } as const;
 
@@ -240,6 +250,21 @@ const render = () => {
     const sep = document.createElement("span");
     sep.className = "sep";
     el.append(b, sep);
+  }
+  const { isolate } = state;
+  if (isolate !== null && handlers.isolate !== undefined && !state.hidden) {
+    const onIsolate = handlers.isolate;
+    const sep = document.createElement("span");
+    sep.className = "sep";
+    el.append(
+      button(
+        isolate.isolated ? "Share scales" : "Isolate scales",
+        null,
+        () => onIsolate(table, !isolate.isolated),
+        isolate.isolated ? ICONS.link : ICONS.linkOff,
+      ),
+      sep,
+    );
   }
   el.append(
     button(

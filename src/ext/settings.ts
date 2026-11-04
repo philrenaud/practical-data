@@ -146,10 +146,15 @@ export const setPagePaused = async (url: string, paused: boolean): Promise<void>
 
 // ── Per-table choices (session) ─────────────────────────────────────────────
 
-/** The user's choices for one table. `orientation` is the direction to compare, and `hidden` turns off the shading. */
+/**
+ * The user's choices for one table. `orientation` is the direction to
+ * compare, `hidden` turns off the shading, and `isolated` takes the table off
+ * the page's shared scales.
+ */
 export interface TableChoice {
   readonly orientation?: "columns" | "rows";
   readonly hidden?: boolean;
+  readonly isolated?: boolean;
 }
 
 const tablesKey = (url: string) => `tables:${pageKey(url)}`;
