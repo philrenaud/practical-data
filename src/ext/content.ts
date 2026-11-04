@@ -15,8 +15,9 @@
  * as "working" and ends as "done", "error:<reason>", "off", "none", or "idle".
  * "idle" means the page has tables but none is near the viewport yet.
  */
-import type { Orientation } from "../core/orient.ts";
+import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import { conventionForLang, normalizeLabel, parseNumber, stripNoise } from "../core/parse.ts";
+import { toCSV } from "../core/tabular.ts";
 import { attachControls, detachControls, type SortControlState, type SortOption } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { isPaginated } from "../dom/paginated.ts";
@@ -190,6 +191,7 @@ const handlers = {
   orient: (table: HTMLTableElement, orientation: Orientation) => choose(table, { orientation }),
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
   sort: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => applySort(table, by),
+  copy: (table: HTMLTableElement) => copyTable(table),
   // The dev build files flags with its own token; the store build reports through the hosted endpoint.
   flag:
     PD_FLAGS_REPO === null
@@ -320,6 +322,46 @@ const sortState = (table: ExtractedTable, orientation: Orientation, hidden: bool
   return { options, active: sorted.get(table.element) ?? null, paginated: isPaginated(table.element) };
 };
 
+// ── Copying ─────────────────────────────────────────────────────────────────
+
+/** Writes through the clipboard API, or through a selection when the API is blocked. */
+const writeClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.documentElement.append(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    area.remove();
+    return ok;
+  }
+};
+
+/**
+ * Copies the table as the page shows it now: the extracted cell text, in the
+ * current row order, transposed when the table is judged row-oriented. The
+ * text is the page's own; parsed values never stand in for it.
+ */
+const copyTable = async (table: HTMLTableElement): Promise<boolean> => {
+  const now = extractPage(document, (el) => el === table).tables.find((t) => t.element === table);
+  if (now === undefined) return false;
+  // What you see is what you copy: rows the page hides stay out.
+  const rows = now.snapshot.rows.filter((_, i) => {
+    const row = now.cells[i]?.[0]?.closest("tr");
+    return row == null || row.checkVisibility();
+  });
+  const grid =
+    judged.get(table)?.orientation === "rows"
+      ? transposeSnapshot({ ...now.snapshot, rows })
+      : { ...now.snapshot, rows };
+  return writeClipboard(toCSV(grid.headers, grid.rows));
+};
+
 // ── Flags (dev build only) ──────────────────────────────────────────────────
 
 /** Reads what the extension sees and decided for one table. */
@@ -383,7 +425,8 @@ const control = (table: ExtractedTable, state: { orientation: Orientation; hidde
   const { headers, rows } = table.snapshot;
   const canOrient = headers.length >= 3 && rows.length >= 2 && rows.length <= MAX_ROWS_FOR_ROWS;
   const sort = sortState(table, state.orientation, state.hidden);
-  attachControls(table.element, { ...state, canOrient, sort }, handlers);
+  const copy = state.hidden ? null : { paginated: isPaginated(table.element) };
+  attachControls(table.element, { ...state, canOrient, sort, copy }, handlers);
 };
 
 /** Removes a table's controls when a new judgment leaves it unshaded. */

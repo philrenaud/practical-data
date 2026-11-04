@@ -21,6 +21,11 @@ export interface SortControlState {
   readonly paginated: boolean;
 }
 
+export interface CopyControlState {
+  /** True when the table shows one page of a longer set, so a copy takes only this page. */
+  readonly paginated: boolean;
+}
+
 export interface TableControlState {
   readonly orientation: Orientation;
   readonly hidden: boolean;
@@ -28,12 +33,16 @@ export interface TableControlState {
   readonly canOrient: boolean;
   /** Sortable columns, or null when the table cannot be sorted. */
   readonly sort: SortControlState | null;
+  /** The copy control, or null when the table cannot be copied. */
+  readonly copy: CopyControlState | null;
 }
 
 export interface TableControlHandlers {
   readonly orient: (table: HTMLTableElement, orientation: Orientation) => void;
   readonly hide: (table: HTMLTableElement, hidden: boolean) => void;
   readonly sort?: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => void;
+  /** Copies the table's text to the clipboard as CSV. Resolves false when the copy failed. */
+  readonly copy?: (table: HTMLTableElement) => Promise<boolean>;
   /** Flags the table as judged wrongly. Only the dev build has it. */
   readonly flag?: (table: HTMLTableElement) => void;
 }
@@ -94,6 +103,10 @@ const ICONS = {
   ),
   /** A small flag: report wrong shading. */
   flag: SVG('<path d="M3 11V1.5"/><path d="M3 2h5.6L7.3 4l1.3 2H3"/>'),
+  /** Two sheets: copy the table. */
+  copy: SVG(
+    '<rect x="4" y="4" width="7" height="7" rx="1"/><path d="M2 8c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h5c.55 0 1 .45 1 1"/>',
+  ),
 } as const;
 
 let bar: { host: HTMLElement; el: HTMLDivElement } | null = null;
@@ -125,6 +138,23 @@ function scheduleHide() {
   clearTimeout(hideTimer);
   hideTimer = setTimeout(() => bar?.el.classList.remove("open"), 350);
 }
+
+let flashTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** A short-lived note after an action, such as "Copied". A re-render replaces it. */
+const flash = (after: HTMLElement, text: string) => {
+  clearTimeout(flashTimer);
+  bar?.el.querySelector(".note.flash")?.remove();
+  const note = document.createElement("span");
+  note.className = "note flash";
+  note.textContent = text;
+  after.after(note);
+  if (current !== null) place(current.table);
+  flashTimer = setTimeout(() => {
+    note.remove();
+    if (current !== null && bar?.el.classList.contains("open") === true) place(current.table);
+  }, 1800);
+};
 
 const render = () => {
   if (current === null) return;
@@ -192,6 +222,24 @@ const render = () => {
     const sep = document.createElement("span");
     sep.className = "sep";
     el.append(sep);
+  }
+  const { copy } = state;
+  if (copy !== null && handlers.copy !== undefined && !state.hidden) {
+    const onCopy = handlers.copy;
+    const b = button(
+      "",
+      null,
+      () =>
+        void onCopy(table).then((ok) => {
+          flash(b, ok ? (copy.paginated ? "Copied — this page only" : "Copied") : "Couldn't copy");
+        }),
+      ICONS.copy,
+    );
+    b.setAttribute("aria-label", "Copy as CSV");
+    b.title = "Copy as CSV";
+    const sep = document.createElement("span");
+    sep.className = "sep";
+    el.append(b, sep);
   }
   el.append(
     button(

@@ -548,6 +548,88 @@ const sortScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Copying as CSV ──────────────────────────────────────────────────────────
+
+const copyScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const page = await context.newPage();
+  await page.goto(`${base}/synthetic/sort-tools.html`, { waitUntil: "domcontentloaded" });
+  await page.bringToFront();
+  // The http fixture origin has no async clipboard API, so the check pastes
+  // into a textarea instead of reading the clipboard directly.
+  const readClipboard = async (): Promise<string> => {
+    await page.evaluate(() => {
+      const area = document.createElement("textarea");
+      area.id = "pd-e2e-paste";
+      document.body.append(area);
+      area.focus();
+    });
+    await page.keyboard.press("ControlOrMeta+V");
+    return await page.evaluate(() => {
+      const area = document.querySelector<HTMLTextAreaElement>("#pd-e2e-paste")!;
+      const value = area.value;
+      area.remove();
+      return value;
+    });
+  };
+  const funding = page.locator("#funding table");
+  await funding.scrollIntoViewIfNeeded();
+  await page
+    .waitForFunction(() => document.documentElement.dataset["pdStatus"] === "done", undefined, {
+      timeout: 15_000,
+      polling: 100,
+    })
+    .catch(() => undefined);
+  const hover = async (locator: ReturnType<typeof page.locator>) => {
+    await page.mouse.move(0, 0);
+    const box = (await locator.boundingBox())!;
+    await page.mouse.move(box.x + 40, box.y + 40);
+    await page.waitForTimeout(200);
+  };
+  const copyButton = page.locator('[data-pd-controls] button[aria-label="Copy as CSV"]');
+  const flashNote = () =>
+    page
+      .locator("[data-pd-controls]")
+      .evaluate((host) => host.shadowRoot?.querySelector(".note.flash")?.textContent ?? "");
+  await hover(funding);
+  if ((await copyButton.count()) === 0) {
+    problems.push("copy: the bar shows no copy button on the funding table");
+    await page.close();
+    return problems;
+  }
+  await copyButton.click();
+  await page.waitForTimeout(250);
+  const csv = await readClipboard();
+  // The cell "1,200" holds a comma, so CSV quotes it. The textarea paste
+  // normalizes the CRLF line ends to LF; the unit test covers the CRLF.
+  if (!csv.startsWith('Company,Raised,Employees\nNimbus Systems,$1.5B,"1,200"\n'))
+    problems.push(`copy: CSV should quote the comma in 1,200, got "${csv.slice(0, 60)}"`);
+  if ((await flashNote()) !== "Copied") problems.push("copy: the bar should flash Copied");
+  // A copy after sorting takes the sorted order.
+  const sortSelect = page.locator("[data-pd-controls] select");
+  await hover(funding);
+  await sortSelect.selectOption("1:asc");
+  await page.waitForTimeout(250);
+  await hover(funding);
+  await copyButton.click();
+  await page.waitForTimeout(250);
+  const sorted = (await readClipboard()).split("\n");
+  if (sorted[1]?.startsWith("Oakroute,") !== true)
+    problems.push(`copy: the copy should take the sorted order, got "${sorted[1]}"`);
+  await page.screenshot({ path: "artifacts/screens/copy.png" });
+  // The transfers table sits next to a pager, so its copy says it takes one page.
+  const transfers = page.locator("#transfers table");
+  await transfers.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(800);
+  await hover(transfers);
+  await copyButton.click();
+  await page.waitForTimeout(250);
+  const note = await flashNote();
+  if (!note.includes("this page only")) problems.push(`copy: the paginated table should warn, got "${note}"`);
+  await page.close();
+  return problems;
+};
+
 // ── Reports: the store build's "Looks wrong" dialog ─────────────────────────
 
 const reportScenario = async (): Promise<string[]> => {
@@ -1003,6 +1085,11 @@ console.log(`${sortProblems.length === 0 ? "✓" : "✗"} sort: by parsed values
 for (const p of sortProblems) console.log(`    - ${p}`);
 if (sortProblems.length > 0) failed++;
 
+const copyProblems = await copyScenario();
+console.log(`${copyProblems.length === 0 ? "✓" : "✗"} copy: CSV, sorted order, pagination noted`);
+for (const p of copyProblems) console.log(`    - ${p}`);
+if (copyProblems.length > 0) failed++;
+
 const reportProblems = await reportScenario();
 console.log(`${reportProblems.length === 0 ? "✓" : "✗"} report: the Looks wrong dialog previews, cancels, sends`);
 for (const p of reportProblems) console.log(`    - ${p}`);
@@ -1023,7 +1110,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 11 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 12 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();
