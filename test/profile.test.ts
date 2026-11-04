@@ -121,3 +121,43 @@ test("a value with its rank in parentheses reads as the value when the ranks fol
   // The counts in parentheses do not follow the values, so the column is not ranked.
   assert.notEqual(animals?.kind, "numeric");
 });
+
+test("a repeated word that stands in for a row's values reads as missing in a numeric column", () => {
+  const roster = {
+    id: "t0",
+    title: "Roster",
+    headers: ["Slot", "Points", "Projected", "Medal", "Years"],
+    rows: [
+      ["A", "22.40", "20.10", "Gold", "3"],
+      ["B", "Idle", "Idle", "Silver", "R"],
+      ["C", "13.30", "9.80", "4", "5"],
+      ["D", "0.00", "14.20", "5", "R"],
+      ["E", "Idle", "Idle", "Gold", "2"],
+      ["F", "9.10", "8.70", "6", "R"],
+      ["G", "Idle", "Idle", "7", "7"],
+      ["H", "18.40", "7.90", "8", "1"],
+      ["I", "5.20", "0.00", "9", "4"],
+    ],
+  };
+  const [, points, projected, medal, years] = profileTable(roster);
+  assert.ok(points?.kind === "numeric");
+  assert.deepEqual(points.values, [22.4, null, 13.3, 0, null, 9.1, null, 18.4, 5.2]);
+  assert.equal(projected?.kind, "numeric");
+  // Two different words are labels, so the column stays a set of categories.
+  assert.equal(medal?.kind, "categorical");
+  // "R" (a rookie) appears in this column alone, so it is a value, not a stand-in.
+  assert.equal(years?.kind, "categorical");
+});
+
+test("a word that appears once, or that is most of the column, is not a stand-in", () => {
+  const rows = (cells: readonly string[]) => cells.map((c, i) => [String(i), c, c]);
+  const once = profileTable({ id: "t0", title: "", headers: ["K", "V", "W"], rows: rows(["1", "2", "Idle", "4"]) })[1];
+  assert.notEqual(once?.kind, "numeric");
+  const most = profileTable({
+    id: "t0",
+    title: "",
+    headers: ["K", "V", "W"],
+    rows: rows(["1", "2", "3", "Idle", "Idle", "Idle", "Idle"]),
+  })[1];
+  assert.notEqual(most?.kind, "numeric");
+});
