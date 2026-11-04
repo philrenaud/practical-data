@@ -630,6 +630,79 @@ const copyScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Isolating a table from the page's shared scales ─────────────────────────
+
+const isolateScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const page = await context.newPage();
+  await page.goto(`${base}/synthetic/edge-cases.html`, { waitUntil: "domcontentloaded" });
+  const storeA = page.locator("#store-a");
+  await storeA.scrollIntoViewIfNeeded();
+  await page
+    .waitForFunction(
+      () => (document.querySelector("#store-a")?.getAttribute("data-pd-encoded") ?? "") !== "",
+      undefined,
+      { timeout: 15_000, polling: 100 },
+    )
+    .catch(() => undefined);
+  const hover = async (locator: ReturnType<typeof page.locator>) => {
+    await page.mouse.move(0, 0);
+    const box = (await locator.boundingBox())!;
+    await page.mouse.move(box.x + 30, box.y + 30);
+    await page.waitForTimeout(200);
+  };
+  // Store A's Blender ($89) sits mid-scale on the shared [35, 249] domain and
+  // at the end of the table's own [39, 89] domain, so its tint must change.
+  const blender = page.locator("#store-a tbody tr:nth-child(3) td:nth-child(2)");
+  const fill = () => blender.evaluate((td) => getComputedStyle(td).backgroundColor);
+  const before = await fill();
+  await hover(storeA);
+  const chip = page.locator("[data-pd-controls] button", { hasText: "Isolate scales" });
+  if ((await chip.count()) === 0) {
+    problems.push("isolate: a shared-scale table should offer the chip");
+    await page.close();
+    return problems;
+  }
+  await chip.click();
+  await page
+    .waitForFunction(
+      (prev) => {
+        const td = document.querySelector("#store-a tbody tr:nth-child(3) td:nth-child(2)");
+        return td !== null && getComputedStyle(td).backgroundColor !== prev;
+      },
+      before,
+      { timeout: 10_000, polling: 100 },
+    )
+    .catch(() => undefined);
+  const isolated = await fill();
+  if (isolated === before) problems.push("isolate: the Blender cell should rescale to the table's own extent");
+  await hover(storeA);
+  const share = page.locator("[data-pd-controls] button", { hasText: "Share scales" });
+  if ((await share.count()) === 0) problems.push("isolate: the chip should now offer to share again");
+  await page.screenshot({ path: "artifacts/screens/isolate.png" });
+  // The wine table shares with nothing, so its bar offers no chip.
+  const wine = page.locator("#wine");
+  await wine.scrollIntoViewIfNeeded();
+  await hover(wine);
+  if ((await page.locator("[data-pd-controls] button", { hasText: "scales" }).count()) > 0)
+    problems.push("isolate: a table without shared scales should not offer the chip");
+  await hover(storeA);
+  await share.click();
+  await page
+    .waitForFunction(
+      (want) => {
+        const td = document.querySelector("#store-a tbody tr:nth-child(3) td:nth-child(2)");
+        return td !== null && getComputedStyle(td).backgroundColor === want;
+      },
+      before,
+      { timeout: 10_000, polling: 100 },
+    )
+    .catch(() => undefined);
+  if ((await fill()) !== before) problems.push("isolate: sharing again should restore the shared tint");
+  await page.close();
+  return problems;
+};
+
 // ── Reports: the store build's "Looks wrong" dialog ─────────────────────────
 
 const reportScenario = async (): Promise<string[]> => {
@@ -1090,6 +1163,11 @@ console.log(`${copyProblems.length === 0 ? "✓" : "✗"} copy: CSV, sorted orde
 for (const p of copyProblems) console.log(`    - ${p}`);
 if (copyProblems.length > 0) failed++;
 
+const isolateProblems = await isolateScenario();
+console.log(`${isolateProblems.length === 0 ? "✓" : "✗"} isolate: a table leaves and rejoins the shared scales`);
+for (const p of isolateProblems) console.log(`    - ${p}`);
+if (isolateProblems.length > 0) failed++;
+
 const reportProblems = await reportScenario();
 console.log(`${reportProblems.length === 0 ? "✓" : "✗"} report: the Looks wrong dialog previews, cancels, sends`);
 for (const p of reportProblems) console.log(`    - ${p}`);
@@ -1110,7 +1188,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 12 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 13 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

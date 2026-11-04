@@ -10,7 +10,7 @@ site (`web/src/lib/shade.ts`) both use it. The math is in `src/core`.
 | --- | --- |
 | `extract.ts` | `extractPage` and `extractTable` (DOM to `TableSnapshot`), `transposeExtracted` |
 | `paint.ts` | `paintTable` and `unpaint`. The header gradient bar and the hover card |
-| `controls.ts` | `attachControls` and `detachControls`: the bar with the Columns and Rows pair, the sort dropdown, Copy, and Hide shading |
+| `controls.ts` | `attachControls` and `detachControls`: the bar with the Columns and Rows pair, the sort dropdown, Copy, Isolate scales, and Hide shading |
 | `color.ts` | `resolveColor`: any CSS color to sRGB and alpha |
 | `probe.ts` | A test-only bundle (`dist-probe/probe.js`) that exposes `extractPage` to Playwright |
 

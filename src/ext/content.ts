@@ -15,6 +15,7 @@
  * as "working" and ends as "done", "error:<reason>", "off", "none", or "idle".
  * "idle" means the page has tables but none is near the viewport yet.
  */
+import { isolateJudgment } from "../core/isolate.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import { conventionForLang, normalizeLabel, parseNumber, stripNoise } from "../core/parse.ts";
 import { toCSV } from "../core/tabular.ts";
@@ -150,7 +151,10 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
   for (const t of reply.judgment.tables) {
     const table = byId.get(t.id);
     if (!table?.element.isConnected) continue;
-    paintTable(t.orientation === "rows" ? transposeExtracted(table) : table, t, reply.palette, groupSizes);
+    // `judged` keeps the reply's judgment, so the bar still knows the table
+    // shares scales and can offer to rejoin them.
+    const shown = choices[fingerprint(table)]?.isolated === true ? isolateJudgment(t) : t;
+    paintTable(t.orientation === "rows" ? transposeExtracted(table) : table, shown, reply.palette, groupSizes);
     judged.set(table.element, t);
     const sample = table.element.querySelector<HTMLElement>("[data-pd-t]:not([data-pd-t=''])");
     if (sample !== null) sampleCell.set(table.element, sample);
@@ -192,6 +196,7 @@ const handlers = {
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
   sort: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => applySort(table, by),
   copy: (table: HTMLTableElement) => copyTable(table),
+  isolate: (table: HTMLTableElement, isolated: boolean) => choose(table, { isolated }),
   // The dev build files flags with its own token; the store build reports through the hosted endpoint.
   flag:
     PD_FLAGS_REPO === null
@@ -426,7 +431,12 @@ const control = (table: ExtractedTable, state: { orientation: Orientation; hidde
   const canOrient = headers.length >= 3 && rows.length >= 2 && rows.length <= MAX_ROWS_FOR_ROWS;
   const sort = sortState(table, state.orientation, state.hidden);
   const copy = state.hidden ? null : { paginated: isPaginated(table.element) };
-  attachControls(table.element, { ...state, canOrient, sort, copy }, handlers);
+  const judgment = judged.get(table.element);
+  const isolate =
+    !state.hidden && judgment !== undefined && judgment.encodings.some((e) => e.group !== null)
+      ? { isolated: choices[fingerprint(table)]?.isolated === true }
+      : null;
+  attachControls(table.element, { ...state, canOrient, sort, copy, isolate }, handlers);
 };
 
 /** Removes a table's controls when a new judgment leaves it unshaded. */
