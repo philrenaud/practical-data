@@ -1,0 +1,255 @@
+{
+ "url": "fixture://synthetic/tier-order.html",
+ "title": "Plans and rates for Northwind Compute",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Plans",
+   "headers": [
+    "Model",
+    "Release status",
+    "Category",
+    "Tier",
+    "Threshold (input tokens)",
+    "Input",
+    "Cached input",
+    "Cache write",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Kestrel 4 Pro",
+     "GA",
+     "Powerful",
+     "Default",
+     "Not applicable",
+     "$2.25",
+     "$0.225",
+     "Not applicable",
+     "$16.00"
+    ],
+    [
+     "Kestrel 4 Nano",
+     "GA",
+     "Lightweight",
+     "Default",
+     "Not applicable",
+     "$0.15",
+     "$0.015",
+     "Not applicable",
+     "$1.10"
+    ],
+    [
+     "Wren 2",
+     "GA",
+     "Lightweight",
+     "Default",
+     "≤ 128K",
+     "$0.30",
+     "$0.03",
+     "$0.35",
+     "$1.40"
+    ],
+    [
+     "Wren 2",
+     "GA",
+     "Lightweight",
+     "Long context",
+     "> 128K",
+     "$0.60",
+     "$0.06",
+     "$0.70",
+     "$2.10"
+    ],
+    [
+     "Heron 3",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 256K",
+     "$5.00",
+     "$0.50",
+     "$6.25",
+     "$24.00"
+    ],
+    [
+     "Heron 3",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 256K",
+     "$10.00",
+     "$1.00",
+     "$12.50",
+     "$36.00"
+    ],
+    [
+     "Plover 3",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 256K",
+     "$1.50",
+     "$0.15",
+     "$1.90",
+     "$9.00"
+    ],
+    [
+     "Plover 3",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 256K",
+     "$3.00",
+     "$0.30",
+     "$3.80",
+     "$13.50"
+    ],
+    [
+     "Osprey 5",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 256K",
+     "$12.00",
+     "$1.20",
+     "$15.00",
+     "$60.00"
+    ],
+    [
+     "Osprey 5",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 256K",
+     "$24.00",
+     "$2.40",
+     "$30.00",
+     "$90.00"
+    ],
+    [
+     "Wren 3",
+     "GA",
+     "Lightweight",
+     "Default",
+     "≤ 256K",
+     "$0.08",
+     "$0.008",
+     "$0.10",
+     "$0.40"
+    ],
+    [
+     "Wren 3",
+     "GA",
+     "Lightweight",
+     "Long context",
+     "> 256K",
+     "$0.16",
+     "$0.016",
+     "$0.20",
+     "$0.60"
+    ],
+    [
+     "Heron 4",
+     "GA",
+     "Powerful",
+     "Default",
+     "≤ 256K",
+     "$2.50",
+     "$0.25",
+     "$3.10",
+     "$12.00"
+    ],
+    [
+     "Heron 4",
+     "GA",
+     "Powerful",
+     "Long context",
+     "> 256K",
+     "$5.00",
+     "$0.50",
+     "$6.20",
+     "$18.00"
+    ],
+    [
+     "Plover 4",
+     "GA",
+     "Versatile",
+     "Default",
+     "≤ 256K",
+     "$1.20",
+     "$0.06",
+     "$1.50",
+     "$6.00"
+    ],
+    [
+     "Plover 4",
+     "GA",
+     "Versatile",
+     "Long context",
+     "> 256K",
+     "$2.40",
+     "$0.12",
+     "$3.00",
+     "$9.00"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Regions",
+   "headers": [
+    "Data center",
+    "Region",
+    "Status",
+    "Input",
+    "Output"
+   ],
+   "rows": [
+    [
+     "Harbor 1",
+     "West",
+     "Open",
+     "$1.00",
+     "$5.00"
+    ],
+    [
+     "Harbor 2",
+     "East",
+     "Open",
+     "$1.10",
+     "$5.50"
+    ],
+    [
+     "Ridge 1",
+     "North",
+     "Waitlist",
+     "$1.20",
+     "$6.00"
+    ],
+    [
+     "Ridge 2",
+     "West",
+     "Open",
+     "$0.90",
+     "$4.50"
+    ],
+    [
+     "Delta 1",
+     "South",
+     "Waitlist",
+     "$1.30",
+     "$6.50"
+    ],
+    [
+     "Delta 2",
+     "East",
+     "Open",
+     "$1.05",
+     "$5.25"
+    ]
+   ]
+  }
+ ]
+}
