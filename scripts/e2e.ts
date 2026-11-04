@@ -543,7 +543,7 @@ const sortScenario = async (): Promise<string[]> => {
   const note = await page
     .locator("[data-pd-controls]")
     .evaluate((host) => host.shadowRoot?.querySelector(".note")?.textContent ?? "");
-  if (!note.includes("longer table")) problems.push(`sort: the paginated table should warn, got "${note}"`);
+  if (!note.includes("sorting this page only")) problems.push(`sort: the paginated table should warn, got "${note}"`);
   await page.close();
   return problems;
 };
