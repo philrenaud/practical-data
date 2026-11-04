@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toCSV, toMarkdown } from "../src/core/tabular.ts";
+import { toCSV } from "../src/core/tabular.ts";
 
 test("CSV quotes fields with commas, quotes, and line breaks", () => {
   const csv = toCSV(
@@ -18,15 +18,4 @@ test("CSV quotes fields with commas, quotes, and line breaks", () => {
 
 test("CSV leaves plain fields unquoted", () => {
   assert.equal(toCSV(["A", "B"], [["1", "2"]]), "A,B\r\n1,2");
-});
-
-test("Markdown escapes pipes and flattens line breaks", () => {
-  const md = toMarkdown(
-    ["Name", "Flags"],
-    [
-      ["a|b", "one\ntwo"],
-      ["plain", ""],
-    ],
-  );
-  assert.equal(md, "| Name | Flags |\n| --- | --- |\n| a\\|b | one two |\n| plain |  |");
 });

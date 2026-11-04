@@ -500,7 +500,7 @@ const sortScenario = async (): Promise<string[]> => {
     await page.mouse.move(box.x + 40, box.y + 40);
     await page.waitForTimeout(200);
   };
-  const select = page.locator("[data-pd-controls] select.sort");
+  const select = page.locator("[data-pd-controls] select");
   await hover(funding);
   if ((await select.count()) === 0) {
     problems.push("sort: the bar shows no sort control on the funding table");
@@ -548,7 +548,7 @@ const sortScenario = async (): Promise<string[]> => {
   return problems;
 };
 
-// ── Copying as CSV and Markdown ─────────────────────────────────────────────
+// ── Copying as CSV ──────────────────────────────────────────────────────────
 
 const copyScenario = async (): Promise<string[]> => {
   const problems: string[] = [];
@@ -586,18 +586,18 @@ const copyScenario = async (): Promise<string[]> => {
     await page.mouse.move(box.x + 40, box.y + 40);
     await page.waitForTimeout(200);
   };
-  const copySelect = page.locator("[data-pd-controls] select.copy");
+  const copyButton = page.locator('[data-pd-controls] button[aria-label="Copy as CSV"]');
   const flashNote = () =>
     page
       .locator("[data-pd-controls]")
       .evaluate((host) => host.shadowRoot?.querySelector(".note.flash")?.textContent ?? "");
   await hover(funding);
-  if ((await copySelect.count()) === 0) {
-    problems.push("copy: the bar shows no copy control on the funding table");
+  if ((await copyButton.count()) === 0) {
+    problems.push("copy: the bar shows no copy button on the funding table");
     await page.close();
     return problems;
   }
-  await copySelect.selectOption("csv");
+  await copyButton.click();
   await page.waitForTimeout(250);
   const csv = await readClipboard();
   // The cell "1,200" holds a comma, so CSV quotes it. The textarea paste
@@ -606,25 +606,23 @@ const copyScenario = async (): Promise<string[]> => {
     problems.push(`copy: CSV should quote the comma in 1,200, got "${csv.slice(0, 60)}"`);
   if ((await flashNote()) !== "Copied") problems.push("copy: the bar should flash Copied");
   // A copy after sorting takes the sorted order.
-  const sortSelect = page.locator("[data-pd-controls] select.sort");
+  const sortSelect = page.locator("[data-pd-controls] select");
   await hover(funding);
   await sortSelect.selectOption("1:asc");
   await page.waitForTimeout(250);
   await hover(funding);
-  await copySelect.selectOption("markdown");
+  await copyButton.click();
   await page.waitForTimeout(250);
-  const md = (await readClipboard()).split("\n");
-  if (md[0] !== "| Company | Raised | Employees |" || md[1] !== "| --- | --- | --- |")
-    problems.push(`copy: markdown header rows got "${md[0]}" / "${md[1]}"`);
-  if (md[2]?.startsWith("| Oakroute |") !== true)
-    problems.push(`copy: markdown should copy the sorted order, got "${md[2]}"`);
+  const sorted = (await readClipboard()).split("\n");
+  if (sorted[1]?.startsWith("Oakroute,") !== true)
+    problems.push(`copy: the copy should take the sorted order, got "${sorted[1]}"`);
   await page.screenshot({ path: "artifacts/screens/copy.png" });
   // The transfers table sits next to a pager, so its copy says it takes one page.
   const transfers = page.locator("#transfers table");
   await transfers.scrollIntoViewIfNeeded();
   await page.waitForTimeout(800);
   await hover(transfers);
-  await copySelect.selectOption("csv");
+  await copyButton.click();
   await page.waitForTimeout(250);
   const note = await flashNote();
   if (!note.includes("this page only")) problems.push(`copy: the paginated table should warn, got "${note}"`);
@@ -1088,7 +1086,7 @@ for (const p of sortProblems) console.log(`    - ${p}`);
 if (sortProblems.length > 0) failed++;
 
 const copyProblems = await copyScenario();
-console.log(`${copyProblems.length === 0 ? "✓" : "✗"} copy: CSV and Markdown, sorted order, pagination noted`);
+console.log(`${copyProblems.length === 0 ? "✓" : "✗"} copy: CSV, sorted order, pagination noted`);
 for (const p of copyProblems) console.log(`    - ${p}`);
 if (copyProblems.length > 0) failed++;
 

@@ -6,7 +6,6 @@
  * and does not change the table's layout.
  */
 import type { Orientation } from "../core/orient.ts";
-import type { CopyFormat } from "../core/tabular.ts";
 
 export interface SortOption {
   /** Index into the table snapshot's headers. */
@@ -42,8 +41,8 @@ export interface TableControlHandlers {
   readonly orient: (table: HTMLTableElement, orientation: Orientation) => void;
   readonly hide: (table: HTMLTableElement, hidden: boolean) => void;
   readonly sort?: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => void;
-  /** Copies the table's text to the clipboard. Resolves false when the copy failed. */
-  readonly copy?: (table: HTMLTableElement, format: CopyFormat) => Promise<boolean>;
+  /** Copies the table's text to the clipboard as CSV. Resolves false when the copy failed. */
+  readonly copy?: (table: HTMLTableElement) => Promise<boolean>;
   /** Flags the table as judged wrongly. Only the dev build has it. */
   readonly flag?: (table: HTMLTableElement) => void;
 }
@@ -77,19 +76,12 @@ select {
   all: unset; box-sizing: border-box; cursor: pointer; max-width: 170px; padding: 5px 22px 5px 26px;
   border-radius: 6px; color: #d9d4ca;
   background-color: rgb(255 255 255 / 0.08);
-  background-position: 8px center, calc(100% - 7px) center;
-  background-repeat: no-repeat;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-select.sort {
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 9.5v-7M1.5 4.5l2-2 2 2M8.5 2.5v7M6.5 7.5l2 2 2-2' fill='none' stroke='%23d9d4ca' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M1.5 3l2.5 2.6L6.5 3' fill='none' stroke='%23a7a196' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-}
-select.copy {
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Crect x='4' y='4' width='7' height='7' rx='1' fill='none' stroke='%23d9d4ca' stroke-width='1.3' stroke-linejoin='round'/%3E%3Cpath d='M2 8c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h5c.55 0 1 .45 1 1' fill='none' stroke='%23d9d4ca' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M1.5 3l2.5 2.6L6.5 3' fill='none' stroke='%23a7a196' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: 8px center, calc(100% - 7px) center;
+  background-repeat: no-repeat;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 select:hover { background-color: rgb(255 255 255 / 0.12); color: #fff; }
 select:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
@@ -111,6 +103,10 @@ const ICONS = {
   ),
   /** A small flag: report wrong shading. */
   flag: SVG('<path d="M3 11V1.5"/><path d="M3 2h5.6L7.3 4l1.3 2H3"/>'),
+  /** Two sheets: copy the table. */
+  copy: SVG(
+    '<rect x="4" y="4" width="7" height="7" rx="1"/><path d="M2 8c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h5c.55 0 1 .45 1 1"/>',
+  ),
 } as const;
 
 let bar: { host: HTMLElement; el: HTMLDivElement } | null = null;
@@ -192,18 +188,17 @@ const render = () => {
     el.append(label, seg, sep);
   }
   const { sort } = state;
-  const option = (value: string, label: string, selected: boolean) => {
-    const o = document.createElement("option");
-    o.value = value;
-    o.textContent = label;
-    o.selected = selected;
-    return o;
-  };
   if (sort !== null && handlers.sort !== undefined && !state.hidden) {
     const onSort = handlers.sort;
     const select = document.createElement("select");
-    select.className = "sort";
     select.setAttribute("aria-label", "Sort rows");
+    const option = (value: string, label: string, selected: boolean) => {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = label;
+      o.selected = selected;
+      return o;
+    };
     select.append(option("", "Page order", sort.active === null));
     for (const { col, header } of sort.options) {
       const name = header === "" ? `Column ${col + 1}` : header;
@@ -231,22 +226,20 @@ const render = () => {
   const { copy } = state;
   if (copy !== null && handlers.copy !== undefined && !state.hidden) {
     const onCopy = handlers.copy;
-    const select = document.createElement("select");
-    select.className = "copy";
-    select.setAttribute("aria-label", "Copy table");
-    select.append(option("", "Copy", true), option("csv", "As CSV", false), option("markdown", "As Markdown", false));
-    select.addEventListener("click", (ev) => ev.stopPropagation());
-    select.addEventListener("change", () => {
-      const format = select.value;
-      select.selectedIndex = 0;
-      if (format !== "csv" && format !== "markdown") return;
-      void onCopy(table, format).then((ok) => {
-        flash(select, ok ? (copy.paginated ? "Copied — this page only" : "Copied") : "Couldn't copy");
-      });
-    });
+    const b = button(
+      "",
+      null,
+      () =>
+        void onCopy(table).then((ok) => {
+          flash(b, ok ? (copy.paginated ? "Copied — this page only" : "Copied") : "Couldn't copy");
+        }),
+      ICONS.copy,
+    );
+    b.setAttribute("aria-label", "Copy as CSV");
+    b.title = "Copy as CSV";
     const sep = document.createElement("span");
     sep.className = "sep";
-    el.append(select, sep);
+    el.append(b, sep);
   }
   el.append(
     button(

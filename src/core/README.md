@@ -17,7 +17,7 @@ all import it.
 | `profile.ts` | `profileTable`: each column as a `NumericProfile`, `CategoricalProfile`, or `TextProfile`. `describeSpread` |
 | `order.ts` | `orderFromPairs`: label order from pairwise probabilities |
 | `orient.ts` | `transposeSnapshot`, for tables whose rows are the measures |
-| `tabular.ts` | `toCSV` and `toMarkdown`: a snapshot's text grid for the clipboard |
+| `tabular.ts` | `toCSV`: a snapshot's text grid for the clipboard |
 | `palettes.ts` | `PALETTES`, `divergingColor`, `divergingStops` |
 | `scale.ts` | `positions` (value to 0–1), `schemeColor` (position to color), `legendStops` |
 | `tint.ts` | `cellFill`, `luminance`, `contrast`, `isDark` |

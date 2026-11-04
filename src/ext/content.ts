@@ -17,7 +17,7 @@
  */
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import { conventionForLang, normalizeLabel, parseNumber, stripNoise } from "../core/parse.ts";
-import { toCSV, toMarkdown, type CopyFormat } from "../core/tabular.ts";
+import { toCSV } from "../core/tabular.ts";
 import { attachControls, detachControls, type SortControlState, type SortOption } from "../dom/controls.ts";
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { isPaginated } from "../dom/paginated.ts";
@@ -191,7 +191,7 @@ const handlers = {
   orient: (table: HTMLTableElement, orientation: Orientation) => choose(table, { orientation }),
   hide: (table: HTMLTableElement, hidden: boolean) => choose(table, { hidden }),
   sort: (table: HTMLTableElement, by: { col: number; dir: "asc" | "desc" } | null) => applySort(table, by),
-  copy: (table: HTMLTableElement, format: CopyFormat) => copyTable(table, format),
+  copy: (table: HTMLTableElement) => copyTable(table),
   // The dev build files flags with its own token; the store build reports through the hosted endpoint.
   flag:
     PD_FLAGS_REPO === null
@@ -347,7 +347,7 @@ const writeClipboard = async (text: string): Promise<boolean> => {
  * current row order, transposed when the table is judged row-oriented. The
  * text is the page's own; parsed values never stand in for it.
  */
-const copyTable = async (table: HTMLTableElement, format: CopyFormat): Promise<boolean> => {
+const copyTable = async (table: HTMLTableElement): Promise<boolean> => {
   const now = extractPage(document, (el) => el === table).tables.find((t) => t.element === table);
   if (now === undefined) return false;
   // What you see is what you copy: rows the page hides stay out.
@@ -359,7 +359,7 @@ const copyTable = async (table: HTMLTableElement, format: CopyFormat): Promise<b
     judged.get(table)?.orientation === "rows"
       ? transposeSnapshot({ ...now.snapshot, rows })
       : { ...now.snapshot, rows };
-  return writeClipboard(format === "csv" ? toCSV(grid.headers, grid.rows) : toMarkdown(grid.headers, grid.rows));
+  return writeClipboard(toCSV(grid.headers, grid.rows));
 };
 
 // ── Flags (dev build only) ──────────────────────────────────────────────────
