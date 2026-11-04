@@ -270,15 +270,66 @@ const isAppList = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]
   return rows.every((r) => r.querySelector(ROW_CONTROLS) !== null);
 };
 
+/** The rows of `table` itself, without those of nested tables or rows with no cells. */
+const ownRows = (table: HTMLTableElement): HTMLTableRowElement[] =>
+  // Rows with no cells (StatCan puts one between header and body) carry nothing.
+  Array.from(table.rows).filter((r) => r.closest("table") === table && r.cells.length > 0);
+
+/** The most rows, and cells in a row, that a table inside a cell can have and still be that cell's content. */
+const CELL_TABLE_MAX = 3;
+
+/**
+ * True for a small table that lays out the content of one body cell, such as
+ * a photo beside a player's name and position. It sits in a <td>, has no
+ * <th> and no table inside it, and has at most three rows of at most three
+ * cells.
+ */
+const isCellContentTable = (t: HTMLTableElement): boolean => {
+  if (t.parentElement?.closest("td, th")?.tagName !== "TD") return false;
+  if (t.querySelector("table, th") !== null) return false;
+  const rows = Array.from(t.rows);
+  return rows.length <= CELL_TABLE_MAX && rows.every((r) => r.cells.length <= CELL_TABLE_MAX);
+};
+
+/**
+ * True when every table inside `table` only lays out a cell's content, so
+ * `table` is data and not layout. All of these must hold: `table` has a
+ * header row of its own, each nested table is a cell content table (see
+ * isCellContentTable) in a body row of `table`, and the nested tables all
+ * sit in one column. A layout table nests large tables, or tables in several
+ * columns, and seldom has a header row.
+ */
+const holdsOnlyCellTables = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]): boolean => {
+  if (!rows.some(isHeaderRow)) return false;
+  const columns = new Set<number>();
+  for (const t of table.querySelectorAll("table")) {
+    if (!isCellContentTable(t)) return false;
+    const cell = t.parentElement!.closest("td")!;
+    const row = cell.parentElement;
+    if (cell.closest("table") !== table || !(row instanceof HTMLTableRowElement) || isHeaderRow(row)) return false;
+    columns.add(cell.cellIndex);
+  }
+  return columns.size === 1;
+};
+
+/** True for a cell content table whose enclosing table is data. It is read as part of that table's cell. */
+const isPartOfCell = (table: HTMLTableElement): boolean => {
+  const outer = table.parentElement?.closest("table");
+  return outer != null && isCellContentTable(table) && holdsOnlyCellTables(outer, ownRows(outer));
+};
+
 /**
  * True for tables that the extractor skips. Presentation tables and tables
- * that contain tables are layout. Tables in an editable region are skipped
- * because an editor saves the painted inline styles with the document. App
- * lists (see isAppList) are not data to compare.
+ * that contain tables are layout, unless the nested tables only lay out a
+ * cell's content (see holdsOnlyCellTables). Those nested tables are skipped
+ * as part of their cell. Tables in an editable region are skipped because an
+ * editor saves the painted inline styles with the document. App lists (see
+ * isAppList) are not data to compare.
  */
 const isLayoutTable = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]): boolean =>
   table.getAttribute("role") === "presentation" ||
-  table.querySelector("table") !== null ||
+  (table.querySelector("table") !== null && !holdsOnlyCellTables(table, rows)) ||
+  isPartOfCell(table) ||
   table.isContentEditable ||
   isAppList(table, rows);
 
@@ -288,8 +339,7 @@ export const extractTable = (
   id: string,
   headings: readonly Element[],
 ): ExtractedTable | null => {
-  // Rows with no cells (StatCan puts one between header and body) carry nothing.
-  const rows = Array.from(table.rows).filter((r) => r.closest("table") === table && r.cells.length > 0);
+  const rows = ownRows(table);
   if (isLayoutTable(table, rows)) return null;
   if (rows.length < 2) return null;
   const grid = buildGrid(rows);

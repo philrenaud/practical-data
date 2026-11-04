@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: tables inside cells</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .inline-table, .inline-table td, .frame, .frame > tbody > tr > td, .tiles, .tiles td { border: 0; margin: 0; }
+  .photo { display: inline-block; width: 28px; height: 32px; background: #bcd; }
+  .num { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Tables inside cells</h1>
+<p>
+  A ranking can lay out each name cell as a small table: a photo that spans
+  two rows, the name, and the position below it. The extension reads the
+  ranking and takes each small table as its cell's text. A page that uses
+  tables for layout, with whole tables in its cells, is still skipped.
+</p>
+
+<h2>Most valuable players</h2>
+<!-- The Player cell of every row is a two-row table. The ranking has a header and must be read. -->
+<table id="ranking">
+  <thead><tr><th>#</th><th>Player</th><th>Age</th><th>Nat.</th><th>Club</th><th class="num">Market value</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Tomas Arendt</a></td></tr><tr><td>Right Winger</td></tr></tbody></table></td><td>21</td><td>Norland</td><td>Harbor Owls</td><td class="num"><a href="#">€190.00M</a>&nbsp;</td></tr>
+    <tr><td>2</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Ravi Okafor</a></td></tr><tr><td>Centre-Forward</td></tr></tbody></table></td><td>25</td><td>Estmark</td><td>Copper Foxes</td><td class="num"><a href="#">€175.00M</a>&nbsp;</td></tr>
+    <tr><td>3</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Lucien Marsh</a></td></tr><tr><td>Attacking Midfield</td></tr></tbody></table></td><td>23</td><td>Valdoria</td><td>Lantern Bay</td><td class="num"><a href="#">€150.00M</a>&nbsp;</td></tr>
+    <tr><td>3</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Jonah Vell</a></td></tr><tr><td>Central Midfield</td></tr></tbody></table></td><td>24</td><td>Norland</td><td>North Quarry</td><td class="num"><a href="#">€150.00M</a>&nbsp;</td></tr>
+    <tr><td>5</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Mateo Brisk</a></td></tr><tr><td>Left Winger</td></tr></tbody></table></td><td>26</td><td>Corvia</td><td>Harbor Owls</td><td class="num"><a href="#">€120.00M</a>&nbsp;</td></tr>
+    <tr><td>6</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Elias Penn</a></td></tr><tr><td>Defensive Midfield</td></tr></tbody></table></td><td>27</td><td>Estmark</td><td>Saltmarsh</td><td class="num"><a href="#">€110.00M</a>&nbsp;</td></tr>
+    <tr><td>7</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Noel Kader</a></td></tr><tr><td>Centre-Back</td></tr></tbody></table></td><td>22</td><td>Valdoria</td><td>Glass Street</td><td class="num"><a href="#">€95.00M</a>&nbsp;</td></tr>
+    <tr><td>8</td><td><table class="inline-table"><tbody><tr><td rowspan="2"><span class="photo"></span></td><td><a href="#">Ilya Strand</a></td></tr><tr><td>Goalkeeper</td></tr></tbody></table></td><td>28</td><td>Corvia</td><td>Copper Foxes</td><td class="num"><a href="#">€80.00M</a>&nbsp;</td></tr>
+  </tbody>
+</table>
+
+<h2>Club page</h2>
+<!-- A layout table: no header row, and its cells hold whole tables. It must stay skipped. The tables inside it are data. -->
+<table id="layout" class="frame" data-e2e-skip>
+  <tbody>
+    <tr>
+      <td>
+        <table id="fixtures-list">
+          <thead><tr><th>Round</th><th>Opponent</th><th>Goals for</th><th>Goals against</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Copper Foxes</td><td>2</td><td>1</td></tr>
+            <tr><td>2</td><td>Lantern Bay</td><td>0</td><td>0</td></tr>
+            <tr><td>3</td><td>Saltmarsh</td><td>3</td><td>2</td></tr>
+            <tr><td>4</td><td>Glass Street</td><td>1</td><td>4</td></tr>
+            <tr><td>5</td><td>North Quarry</td><td>2</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </td>
+      <td>
+        <table class="tiles"><tbody><tr><td>Founded</td><td>1904</td></tr><tr><td>Ground</td><td>Quay Park</td></tr></tbody></table>
+      </td>
+    </tr>
+    <tr><td>Season review</td><td>Squad list</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

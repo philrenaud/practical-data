@@ -51,7 +51,12 @@
   check above covers them. The browser tests check each rule on a synthetic page.
 </p>
 <ul>
-  <li>Tables marked <code>role="presentation"</code>, and tables that contain other tables: page layout.</li>
+  <li>
+    Tables marked <code>role="presentation"</code>, and tables that contain other tables: page layout. One kind of
+    nesting is allowed: a table with a header row whose nested tables are all small (three rows of three cells at most,
+    no header cells), sit in body cells, and share one column, such as a photo beside a name. All of these must be true.
+    The outer table is shaded, and each small table is read as its cell's text.
+  </li>
   <li>Tables in an editable region, because an editor would save the shading with the document.</li>
   <li>
     App lists, such as a mail inbox. Such a table is marked <code>role="grid"</code>, has a checkbox or button in every

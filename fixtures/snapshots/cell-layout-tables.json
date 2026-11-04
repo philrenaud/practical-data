@@ -1,0 +1,141 @@
+{
+ "url": "fixture://synthetic/cell-layout-tables.html",
+ "title": "Practical Data: tables inside cells",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Most valuable players",
+   "headers": [
+    "#",
+    "Player",
+    "Age",
+    "Nat.",
+    "Club",
+    "Market value"
+   ],
+   "rows": [
+    [
+     "1",
+     "Tomas Arendt Right Winger",
+     "21",
+     "Norland",
+     "Harbor Owls",
+     "€190.00M"
+    ],
+    [
+     "2",
+     "Ravi Okafor Centre-Forward",
+     "25",
+     "Estmark",
+     "Copper Foxes",
+     "€175.00M"
+    ],
+    [
+     "3",
+     "Lucien Marsh Attacking Midfield",
+     "23",
+     "Valdoria",
+     "Lantern Bay",
+     "€150.00M"
+    ],
+    [
+     "3",
+     "Jonah Vell Central Midfield",
+     "24",
+     "Norland",
+     "North Quarry",
+     "€150.00M"
+    ],
+    [
+     "5",
+     "Mateo Brisk Left Winger",
+     "26",
+     "Corvia",
+     "Harbor Owls",
+     "€120.00M"
+    ],
+    [
+     "6",
+     "Elias Penn Defensive Midfield",
+     "27",
+     "Estmark",
+     "Saltmarsh",
+     "€110.00M"
+    ],
+    [
+     "7",
+     "Noel Kader Centre-Back",
+     "22",
+     "Valdoria",
+     "Glass Street",
+     "€95.00M"
+    ],
+    [
+     "8",
+     "Ilya Strand Goalkeeper",
+     "28",
+     "Corvia",
+     "Copper Foxes",
+     "€80.00M"
+    ]
+   ]
+  },
+  {
+   "id": "t10",
+   "title": "Club page",
+   "headers": [
+    "Round",
+    "Opponent",
+    "Goals for",
+    "Goals against"
+   ],
+   "rows": [
+    [
+     "1",
+     "Copper Foxes",
+     "2",
+     "1"
+    ],
+    [
+     "2",
+     "Lantern Bay",
+     "0",
+     "0"
+    ],
+    [
+     "3",
+     "Saltmarsh",
+     "3",
+     "2"
+    ],
+    [
+     "4",
+     "Glass Street",
+     "1",
+     "4"
+    ],
+    [
+     "5",
+     "North Quarry",
+     "2",
+     "2"
+    ]
+   ]
+  },
+  {
+   "id": "t11",
+   "title": "Club page",
+   "headers": [
+    "Founded",
+    "1904"
+   ],
+   "rows": [
+    [
+     "Ground",
+     "Quay Park"
+    ]
+   ]
+  }
+ ]
+}
