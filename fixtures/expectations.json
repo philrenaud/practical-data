@@ -2190,6 +2190,38 @@
       "Downloads (laut US-Verzeichnis)": "none"
     }
   },
+  "sort-tools": {
+    "t0": {
+      "aggregateRows": [
+        6
+      ],
+      "Company": "none",
+      "Raised": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Employees": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
+    },
+    "t1": {
+      "Player": "none",
+      "Fee": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
+    }
+  },
   "tier-order": {
     "t0": {
       "@orientation": "columns",

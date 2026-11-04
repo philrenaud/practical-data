@@ -474,6 +474,80 @@ const privateHostScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Sorting by parsed values ────────────────────────────────────────────────
+
+const sortScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const page = await context.newPage();
+  await page.goto(`${base}/synthetic/sort-tools.html`, { waitUntil: "domcontentloaded" });
+  const funding = page.locator("#funding table");
+  await funding.scrollIntoViewIfNeeded();
+  await page
+    .waitForFunction(() => document.documentElement.dataset["pdStatus"] === "done", undefined, {
+      timeout: 15_000,
+      polling: 100,
+    })
+    .catch(() => undefined);
+  const firstColumn = (section: string) =>
+    page.evaluate(
+      (s) => [...document.querySelectorAll(`${s} tbody tr td:first-child`)].map((td) => td.textContent ?? ""),
+      section,
+    );
+  const original = await firstColumn("#funding");
+  const hover = async (locator: ReturnType<typeof page.locator>) => {
+    await page.mouse.move(0, 0);
+    const box = (await locator.boundingBox())!;
+    await page.mouse.move(box.x + 40, box.y + 40);
+    await page.waitForTimeout(200);
+  };
+  const select = page.locator("[data-pd-controls] select");
+  await hover(funding);
+  if ((await select.count()) === 0) {
+    problems.push("sort: the bar shows no sort control on the funding table");
+    await page.close();
+    return problems;
+  }
+  // "Raised" is column 1. Ascending puts the smallest round first; the totals row never moves.
+  await select.selectOption("1:asc");
+  await page.waitForTimeout(250);
+  const asc = await firstColumn("#funding");
+  if (asc.join("|") !== "Oakroute|Fernworks|Brightcap|Harrow Labs|Quellstack|Nimbus Systems|Total")
+    problems.push(`sort: ascending by Raised got ${asc.join(", ")}`);
+  const paintedCells = await page.evaluate(
+    () => document.querySelector("#funding table")!.querySelectorAll("[data-pd-t]:not([data-pd-t=''])").length,
+  );
+  if (paintedCells === 0) problems.push("sort: shading did not move with the rows");
+  await page.screenshot({ path: "artifacts/screens/sort.png" });
+  await hover(funding);
+  await select.selectOption("1:desc");
+  await page.waitForTimeout(250);
+  if ((await firstColumn("#funding"))[0] !== "Nimbus Systems")
+    problems.push("sort: descending should put the largest round first");
+  await hover(funding);
+  await select.selectOption("");
+  await page.waitForTimeout(250);
+  const restored = await firstColumn("#funding");
+  if (restored.join("|") !== original.join("|"))
+    problems.push(`sort: page order should restore exactly, got ${restored.join(", ")}`);
+  const status = await page.evaluate(() => document.documentElement.dataset["pdStatus"]);
+  if (status !== "done") problems.push(`sort: sorting should not re-judge (status "${status}")`);
+
+  // The transfers table sits next to a pager, so its sort says it orders one page.
+  const transfers = page.locator("#transfers table");
+  await transfers.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(800);
+  await hover(transfers);
+  await select.selectOption("1:asc");
+  await page.waitForTimeout(250);
+  await hover(transfers);
+  const note = await page
+    .locator("[data-pd-controls]")
+    .evaluate((host) => host.shadowRoot?.querySelector(".note")?.textContent ?? "");
+  if (!note.includes("sorting this page only")) problems.push(`sort: the paginated table should warn, got "${note}"`);
+  await page.close();
+  return problems;
+};
+
 // ── Reports: the store build's "Looks wrong" dialog ─────────────────────────
 
 const reportScenario = async (): Promise<string[]> => {
@@ -924,6 +998,11 @@ console.log(`${controlsProblems.length === 0 ? "✓" : "✗"} controls: rows/col
 for (const p of controlsProblems) console.log(`    - ${p}`);
 if (controlsProblems.length > 0) failed++;
 
+const sortProblems = await sortScenario();
+console.log(`${sortProblems.length === 0 ? "✓" : "✗"} sort: by parsed values, totals pinned, pagination noted`);
+for (const p of sortProblems) console.log(`    - ${p}`);
+if (sortProblems.length > 0) failed++;
+
 const reportProblems = await reportScenario();
 console.log(`${reportProblems.length === 0 ? "✓" : "✗"} report: the Looks wrong dialog previews, cancels, sends`);
 for (const p of reportProblems) console.log(`    - ${p}`);
@@ -944,7 +1023,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 10 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 11 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

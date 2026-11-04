@@ -1,0 +1,83 @@
+{
+ "url": "fixture://synthetic/sort-tools.html",
+ "title": "Funding and transfers",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Funding rounds",
+   "headers": [
+    "Company",
+    "Raised",
+    "Employees"
+   ],
+   "rows": [
+    [
+     "Nimbus Systems",
+     "$1.5B",
+     "1,200"
+    ],
+    [
+     "Quellstack",
+     "$720M",
+     "310"
+    ],
+    [
+     "Harrow Labs",
+     "$88M",
+     "85"
+    ],
+    [
+     "Brightcap",
+     "$3.2M",
+     "40"
+    ],
+    [
+     "Fernworks",
+     "$950K",
+     "22"
+    ],
+    [
+     "Oakroute",
+     "$410K",
+     "9"
+    ],
+    [
+     "Total",
+     "$2.31B",
+     "1,666"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Transfer fees",
+   "headers": [
+    "Player",
+    "Fee"
+   ],
+   "rows": [
+    [
+     "J. Okafor",
+     "€120M"
+    ],
+    [
+     "M. Viera",
+     "€85M"
+    ],
+    [
+     "T. Lindqvist",
+     "€60M"
+    ],
+    [
+     "R. Castillo",
+     "€45M"
+    ],
+    [
+     "A. Benali",
+     "€35M"
+    ]
+   ]
+  }
+ ]
+}

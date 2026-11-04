@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Funding and transfers</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 16px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td:nth-child(n+2), th:nth-child(n+2) { text-align: right; }
+  tfoot td, tr.total td { font-weight: bold; }
+  .pagination { display: flex; gap: 12px; font-size: 13px; color: #555; margin-bottom: 32px; }
+</style>
+</head>
+<body>
+<h1>Funding and transfers</h1>
+<p>
+  The funding table mixes magnitudes ($410K to $1.5B) and ends in a totals
+  row, so a text sort would order it wrong and a value sort must keep the
+  total at the bottom. The transfer table shows one page of a longer set.
+</p>
+
+<section id="funding">
+  <h2>Funding rounds</h2>
+  <table>
+    <thead><tr><th>Company</th><th>Raised</th><th>Employees</th></tr></thead>
+    <tbody>
+      <tr><td>Nimbus Systems</td><td>$1.5B</td><td>1,200</td></tr>
+      <tr><td>Quellstack</td><td>$720M</td><td>310</td></tr>
+      <tr><td>Harrow Labs</td><td>$88M</td><td>85</td></tr>
+      <tr><td>Brightcap</td><td>$3.2M</td><td>40</td></tr>
+      <tr><td>Fernworks</td><td>$950K</td><td>22</td></tr>
+      <tr><td>Oakroute</td><td>$410K</td><td>9</td></tr>
+      <tr class="total"><td>Total</td><td>$2.31B</td><td>1,666</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="transfers">
+  <h2>Transfer fees</h2>
+  <table>
+    <thead><tr><th>Player</th><th>Fee</th></tr></thead>
+    <tbody>
+      <tr><td>J. Okafor</td><td>€120M</td></tr>
+      <tr><td>M. Viera</td><td>€85M</td></tr>
+      <tr><td>T. Lindqvist</td><td>€60M</td></tr>
+      <tr><td>R. Castillo</td><td>€45M</td></tr>
+      <tr><td>A. Benali</td><td>€35M</td></tr>
+    </tbody>
+  </table>
+  <nav class="pagination" aria-label="Pagination">
+    <span>1–5 of 37</span>
+    <a href="#" rel="next">Next</a>
+  </nav>
+</section>
+</body>
+</html>
