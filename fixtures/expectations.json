@@ -308,6 +308,25 @@
       }
     }
   },
+  "orient-escape": {
+    "t0": {
+      "Instrument": "none",
+      "Price": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "lower_is_better"
+        ]
+      },
+      "Rating": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
+    }
+  },
   "wiki-mlb-career-era-leaders": {
     "t1": {
       "Rank": "none",

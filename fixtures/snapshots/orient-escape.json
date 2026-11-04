@@ -1,0 +1,38 @@
+{
+ "url": "fixture://synthetic/orient-escape.html",
+ "title": "Workshop listings",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Instruments for sale",
+   "headers": [
+    "Instrument",
+    "Price",
+    "Rating"
+   ],
+   "rows": [
+    [
+     "Violin",
+     "$1,250",
+     "4.8"
+    ],
+    [
+     "Cello",
+     "$3,400",
+     "4.2"
+    ],
+    [
+     "Flute",
+     "$640",
+     "3.9"
+    ],
+    [
+     "Oboe",
+     "$1,980",
+     "4.5"
+    ]
+   ]
+  }
+ ]
+}
