@@ -1,0 +1,234 @@
+{
+ "url": "fixture://synthetic/stand-in-words.html",
+ "title": "Practical Data: a word in place of a number",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Starting lineup, week 5",
+   "headers": [
+    "Pos",
+    "Player",
+    "Bye",
+    "Fantasy: Fan Pts",
+    "Fantasy: Proj Pts",
+    "Fantasy: % Start",
+    "Passing: Yds",
+    "Passing: TD",
+    "Receiving: Rec",
+    "Receiving: Yds"
+   ],
+   "rows": [
+    [
+     "QB",
+     "Orrin Vale HBR - QB Final W 27-20 vs CPR",
+     "9",
+     "24.12",
+     "19.60",
+     "91%",
+     "263",
+     "2",
+     "0",
+     "0"
+    ],
+    [
+     "RB",
+     "Dace Holloway LNB - RB Final L 13-17 @ NQY",
+     "6",
+     "11.70",
+     "16.25",
+     "96%",
+     "0",
+     "0",
+     "3",
+     "22"
+    ],
+    [
+     "RB",
+     "Teo Marchetti SLT - RB Final W 30-3 vs GLS",
+     "11",
+     "15.80",
+     "9.14",
+     "38%",
+     "0",
+     "0",
+     "1",
+     "8"
+    ],
+    [
+     "WR",
+     "Bram Kessler OML - WR Final L 7-31 @ WGT",
+     "12",
+     "0.00",
+     "14.02",
+     "93%",
+     "0",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "WR",
+     "Ilse Navarro FRN - WR Final W 21-18 vs IRB",
+     "7",
+     "12.30",
+     "13.88",
+     "95%",
+     "0",
+     "0",
+     "8",
+     "73"
+    ],
+    [
+     "TE",
+     "Quill Ashby MRE - TE Final L 3-14 @ HBR",
+     "10",
+     "2.40",
+     "7.05",
+     "51%",
+     "0",
+     "0",
+     "2",
+     "14"
+    ],
+    [
+     "FLEX",
+     "Rufus Penhale CPR - WR Final L 20-27 @ HBR",
+     "10",
+     "6.90",
+     "8.41",
+     "47%",
+     "0",
+     "0",
+     "4",
+     "39"
+    ],
+    [
+     "FLEX",
+     "Wren Calloway GLS - TE Final L 3-30 @ SLT",
+     "11",
+     "17.60",
+     "7.72",
+     "62%",
+     "0",
+     "0",
+     "9",
+     "136"
+    ],
+    [
+     "BN",
+     "Soren Achebe NQY - RB Final W 17-13 vs LNB",
+     "12",
+     "0.00",
+     "0.00",
+     "19%",
+     "-",
+     "-",
+     "-",
+     "-"
+    ],
+    [
+     "BN",
+     "Linus Farrow WGT - RB Bye",
+     "5",
+     "Bye",
+     "Bye",
+     "Bye",
+     "-",
+     "-",
+     "-",
+     "-"
+    ],
+    [
+     "BN",
+     "Mattias Reyne IRB - QB Final L 18-21 @ FRN",
+     "8",
+     "17.90",
+     "18.36",
+     "66%",
+     "224",
+     "2",
+     "0",
+     "0"
+    ],
+    [
+     "BN",
+     "Cato Brightwell WGT - WR Bye",
+     "5",
+     "Bye",
+     "Bye",
+     "Bye",
+     "-",
+     "-",
+     "-",
+     "-"
+    ],
+    [
+     "BN",
+     "Ezra Lindqvist HBR - RB Final W 27-20 vs CPR",
+     "9",
+     "0.00",
+     "0.00",
+     "3%",
+     "-",
+     "-",
+     "-",
+     "-"
+    ],
+    [
+     "IR",
+     "Hollis Dunmore WGT - QB Bye",
+     "5",
+     "Bye",
+     "Bye",
+     "Bye",
+     "-",
+     "-",
+     "-",
+     "-"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Club tiers",
+   "headers": [
+    "Club",
+    "Tier",
+    "Dues"
+   ],
+   "rows": [
+    [
+     "Harbor Rowing",
+     "Gold",
+     "$120"
+    ],
+    [
+     "Quarry Climbing",
+     "Silver",
+     "$85"
+    ],
+    [
+     "Fernhill Chess",
+     "Bronze",
+     "$40"
+    ],
+    [
+     "Saltmarsh Birding",
+     "Silver",
+     "$70"
+    ],
+    [
+     "Glass Street Choir",
+     "Gold",
+     "$135"
+    ],
+    [
+     "Kiln Row Pottery",
+     "Bronze",
+     "$55"
+    ]
+   ]
+  }
+ ]
+}

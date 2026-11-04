@@ -77,6 +77,64 @@ const mode = <A>(xs: readonly A[]): A | undefined => {
   return best;
 };
 
+/** A word that stands in for a value: "Bye", "Out", "DNP". Letters only, so "3rd" or "4 (tie)" never count. */
+const STAND_IN_RE = /^\p{L}[\p{L}.']{0,11}$/u;
+const MIN_STAND_IN = 2;
+const STAND_IN_NUMERIC_SHARE = 0.5;
+
+/**
+ * Finds a word that a numeric column may write in place of a value. It
+ * qualifies only when every filled cell that does not parse is the same short
+ * word, the word repeats, and at least half the filled cells parse. Two
+ * different words ("Gold", "Silver") keep the column a set of labels.
+ * `confirmStandIns` then checks the rows. Returns the normalized word, or null.
+ */
+const standInCandidate = (cells: readonly string[], convention: NumberConvention): string | null => {
+  const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c, convention)));
+  let word: string | null = null;
+  let count = 0;
+  let numbers = 0;
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i] ?? "";
+    if (isMissing(cell)) continue;
+    if (parsed[i] !== null) {
+      numbers++;
+      continue;
+    }
+    const label = normalizeLabel(cell);
+    if (!STAND_IN_RE.test(label) || (word !== null && label !== word)) return null;
+    word = label;
+    count++;
+  }
+  if (word === null || count < MIN_STAND_IN || numbers < MIN_FILLED) return null;
+  return numbers / (numbers + count) >= STAND_IN_NUMERIC_SHARE ? word : null;
+};
+
+/**
+ * Keeps a candidate word only when another column writes the same word in
+ * every row where this one does, as a fantasy roster writes "Bye" across a
+ * player's points, projection and start share when the team does not play.
+ * The word then marks the row's values as absent, and reads as missing, so
+ * the numbers are compared as numbers instead of as labels ranked next to it.
+ * A word in one column alone, such as "R" for a rookie's years of experience,
+ * is a value and stays one.
+ */
+const confirmStandIns = (table: TableSnapshot, convention: NumberConvention): readonly (string | null)[] => {
+  const label = (row: number, col: number) => normalizeLabel(table.rows[row]?.[col] ?? "");
+  const candidates = table.headers.map((_, col) =>
+    standInCandidate(
+      table.rows.map((r) => r[col] ?? ""),
+      convention,
+    ),
+  );
+  return candidates.map((word, col) => {
+    if (word === null) return null;
+    const rows = table.rows.flatMap((_, i) => (label(i, col) === word ? [i] : []));
+    const shared = table.headers.some((_, other) => other !== col && rows.every((i) => label(i, other) === word));
+    return shared ? word : null;
+  });
+};
+
 /** `display` is the cell text for samples when `cells` were rewritten, as for streaks or ranked values. */
 const profileNumeric = (
   col: number,
@@ -84,9 +142,10 @@ const profileNumeric = (
   cells: readonly string[],
   convention: NumberConvention,
   display: readonly string[] = cells,
+  stand: string | null = null,
 ): NumericProfile | null => {
-  const filled = cells.filter((c) => !isMissing(c));
   const parsed = cells.map((c) => (isMissing(c) ? null : parseNumber(c, convention)));
+  const filled = cells.filter((c) => !isMissing(c) && (stand === null || normalizeLabel(c) !== stand));
   const numeric = parsed.filter((p) => p !== null);
   if (filled.length < MIN_FILLED || numeric.length / filled.length < NUMERIC_SHARE) return null;
 
@@ -225,8 +284,9 @@ const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(c
 export const profileTable = (
   table: TableSnapshot,
   convention: NumberConvention = "dot-decimal",
-): readonly ColumnProfile[] =>
-  table.headers.map((rawHeader, col) => {
+): readonly ColumnProfile[] => {
+  const standIns = confirmStandIns(table, convention);
+  return table.headers.map((rawHeader, col) => {
     const header = stripNoise(rawHeader);
     const cells = table.rows.map((r) => r[col] ?? "");
     const filled = cells.filter((c) => !isMissing(c));
@@ -238,7 +298,7 @@ export const profileTable = (
     const rewritten = streaks ?? readRanked(cells, convention);
     const parsed =
       rewritten === null
-        ? profileNumeric(col, header, cells, convention)
+        ? profileNumeric(col, header, cells, convention, cells, standIns[col] ?? null)
         : profileNumeric(col, header, rewritten, convention, cells);
     const numeric = parsed !== null && streaks !== null ? { ...parsed, unit: "streak" } : parsed;
     if (numeric !== null) {
@@ -257,6 +317,7 @@ export const profileTable = (
       samples: cells.slice(0, 5).map(stripNoise),
     };
   });
+};
 
 /** Describes the spread of a numeric column in words, because Jev reads words better than ratios. */
 export const describeSpread = (p: NumericProfile): string => {

@@ -2327,5 +2327,63 @@
         ]
       }
     }
+  },
+  "stand-in-words": {
+    "t0": {
+      "Pos": "none",
+      "Player": "none",
+      "Fantasy: Fan Pts": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Fantasy: Proj Pts": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Fantasy: % Start": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Passing: Yds": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Passing: TD": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Receiving: Rec": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Receiving: Yds": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "Club": "none",
+      "Tier": {
+        "kind": "ordinal"
+      },
+      "Dues": {
+        "kind": "quantitative"
+      }
+    }
   }
 }
