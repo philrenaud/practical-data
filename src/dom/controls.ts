@@ -37,6 +37,8 @@ export interface TableControlState {
   readonly copy: CopyControlState | null;
   /** The shared-scale toggle, or null when no column shares a scale with another table. */
   readonly isolate: { readonly isolated: boolean } | null;
+  /** True when the table has shading to hide, or hidden shading to show again. */
+  readonly shaded: boolean;
 }
 
 export interface TableControlHandlers {
@@ -266,14 +268,16 @@ const render = () => {
       sep,
     );
   }
-  el.append(
-    button(
-      state.hidden ? "Show shading" : "Hide shading",
-      null,
-      () => handlers.hide(table, !state.hidden),
-      state.hidden ? ICONS.eye : ICONS.eyeOff,
-    ),
-  );
+  if (state.shaded) {
+    el.append(
+      button(
+        state.hidden ? "Show shading" : "Hide shading",
+        null,
+        () => handlers.hide(table, !state.hidden),
+        state.hidden ? ICONS.eye : ICONS.eyeOff,
+      ),
+    );
+  }
   const { flag } = handlers;
   if (flag !== undefined) {
     const sep = document.createElement("span");
@@ -282,6 +286,11 @@ const render = () => {
       sep,
       button("Looks wrong", null, () => flag(table), ICONS.flag),
     );
+  }
+  // A skipped control can leave a separator leading, trailing, or doubled.
+  for (const sep of el.querySelectorAll(".sep")) {
+    const before = sep.previousElementSibling;
+    if (before === null || before.classList.contains("sep") || sep.nextElementSibling === null) sep.remove();
   }
 };
 

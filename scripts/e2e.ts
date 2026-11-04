@@ -2,8 +2,9 @@
  * Loads dist/ as an unpacked extension in Chromium, opens every fixture page,
  * and checks what a user sees.
  *
- *   node scripts/e2e.ts             # calls the decision API and records answers (needs TYPESAFE_API_KEY)
- *   node scripts/e2e.ts --offline   # answers API calls from fixtures/recordings
+ *   node scripts/e2e.ts                  # calls the decision API and records answers (needs TYPESAFE_API_KEY)
+ *   node scripts/e2e.ts --offline        # answers API calls from fixtures/recordings
+ *   node scripts/e2e.ts --record-missing # replays recordings and goes live only for unrecorded questions
  *   node scripts/e2e.ts --live      # also visits the real URLs in fixtures/live/sources.json
  *   node scripts/e2e.ts --headed
  *
@@ -31,6 +32,7 @@ import { PAGE_HOST, buildTestExtension, fixturePages, serve } from "./serve.ts";
 const { values: args } = parseArgs({
   options: {
     offline: { type: "boolean", default: false },
+    "record-missing": { type: "boolean", default: false },
     live: { type: "boolean", default: false },
     headed: { type: "boolean", default: false },
     only: { type: "string" },
@@ -101,6 +103,12 @@ const routeRequest = async (route: Route) => {
       .update(req.postData() ?? "")
       .digest("hex");
     if (!args.offline) {
+      // --record-missing keeps existing recordings as they are: a new fixture's
+      // questions go live, everything already recorded replays.
+      if (args["record-missing"]) {
+        const cached = await readFile(`fixtures/recordings/${key}.json`, "utf8").catch(() => null);
+        if (cached !== null) return route.fulfill({ status: 200, contentType: "application/json", body: cached });
+      }
       // Record each live answer, so an offline run can replay every request that this run made.
       // A failed call reaches the extension as a network error, as it would in a browser.
       try {
@@ -869,6 +877,31 @@ const controlsScenario = async (): Promise<string[]> => {
   if (!(await barOpen())) problems.push("controls: shaded wine table should show the bar");
   await hoverTable("#glossary");
   if (await barOpen()) problems.push("controls: unshaded glossary table should show no bar");
+
+  // A stored orientation that shades nothing must keep the bar. The instruments
+  // table shades by columns, but no row of it makes a comparable series, and
+  // the bar is the user's only way back to Columns.
+  await page.goto(`${base}/synthetic/orient-escape.html`, { waitUntil: "domcontentloaded" });
+  await page.locator("#instruments table").scrollIntoViewIfNeeded();
+  const instrumentsPainted = () =>
+    page.evaluate(() => document.querySelectorAll("#instruments [data-pd-t]:not([data-pd-t=''])").length);
+  if (!(await waitFor(async () => (await instrumentsPainted()) > 0)))
+    problems.push("escape: the instruments table should shade by columns");
+  await hoverTable("#instruments table");
+  const barButton = (name: string) => page.locator("[data-pd-controls] button", { hasText: name });
+  await barButton("Rows").click();
+  if (!(await waitFor(async () => (await instrumentsPainted()) === 0)))
+    problems.push("escape: comparing the instruments table by rows should shade nothing");
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(500);
+  await hoverTable("#instruments table");
+  if (!(await barOpen())) problems.push("escape: the bar must survive an orientation that shades nothing");
+  if ((await barButton("Hide shading").count()) > 0)
+    problems.push("escape: a table with nothing shaded should not offer 'Hide shading'");
+  await page.screenshot({ path: "artifacts/screens/orient-escape.png" });
+  await barButton("Columns").click();
+  if (!(await waitFor(async () => (await instrumentsPainted()) > 0)))
+    problems.push("escape: 'Columns' should shade the table again");
   await page.close();
   return problems;
 };

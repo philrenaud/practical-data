@@ -160,7 +160,10 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     if (sample !== null) sampleCell.set(table.element, sample);
     // A table with nothing shaded gets no controls bar. There is no shading to
     // hide. The dev build's right-click menu can still flag such a table.
-    if (t.encodings.length > 0) control(table, { orientation: t.orientation, hidden: false });
+    // A stored orientation keeps the bar: the user chose an orientation that
+    // shades nothing, and the bar is the only way back.
+    if (t.encodings.length > 0 || choices[fingerprint(table)]?.orientation !== undefined)
+      control(table, { orientation: t.orientation, hidden: false });
     else uncontrol(table.element);
   }
   // Mark tables the judge skipped as handled, so that mutations don't send them again.
@@ -432,11 +435,14 @@ const control = (table: ExtractedTable, state: { orientation: Orientation; hidde
   const sort = sortState(table, state.orientation, state.hidden);
   const copy = state.hidden ? null : { paginated: isPaginated(table.element) };
   const judgment = judged.get(table.element);
+  // A hidden table has shading to show again; an unhidden one only has
+  // shading to hide when the current judgment shades something.
+  const shaded = state.hidden || (judgment !== undefined && judgment.encodings.length > 0);
   const isolate =
     !state.hidden && judgment !== undefined && judgment.encodings.some((e) => e.group !== null)
       ? { isolated: choices[fingerprint(table)]?.isolated === true }
       : null;
-  attachControls(table.element, { ...state, canOrient, sort, copy, isolate }, handlers);
+  attachControls(table.element, { ...state, canOrient, shaded, sort, copy, isolate }, handlers);
 };
 
 /** Removes a table's controls when a new judgment leaves it unshaded. */
