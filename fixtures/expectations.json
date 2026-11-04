@@ -2190,6 +2190,63 @@
       "Downloads (laut US-Verzeichnis)": "none"
     }
   },
+  "tier-order": {
+    "t0": {
+      "@orientation": "columns",
+      "Model": "none",
+      "Release status": "none",
+      "Category": {
+        "kind": "ordinal",
+        "order": [
+          "lightweight",
+          "versatile",
+          "powerful"
+        ]
+      },
+      "Threshold (input tokens)": "none",
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Cached input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Cache write": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Output": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "Data center": "none",
+      "Region": "none",
+      "Status": "none",
+      "Input": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Output": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    }
+  },
   "cell-layout-tables": {
     "t0": {
       "#": "none",
