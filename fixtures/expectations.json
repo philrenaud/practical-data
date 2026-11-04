@@ -2278,5 +2278,35 @@
         ]
       }
     }
+  },
+  "cell-layout-tables": {
+    "t0": {
+      "#": "none",
+      "Player": "none",
+      "Nat.": "none",
+      "Club": "none",
+      "Market value": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    },
+    "t10": {
+      "Round": "none",
+      "Opponent": "none",
+      "Goals for": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Goals against": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    }
   }
 }

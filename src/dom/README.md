@@ -45,6 +45,10 @@ render the README images.
 - **Some tables are skipped.** Tables with `role="presentation"`, tables that
   contain tables, and tables in an editable region (`isContentEditable`) are
   not extracted. An editor would save painted styles with the document.
+  One kind of nesting is allowed: a table with a header row whose nested
+  tables are all small (three rows of three cells at most, no `<th>`), sit
+  in body cells, and share one column, such as a photo beside a name. The
+  outer table is read, and each nested table is read as its cell's text.
 - **Colors come from the real background.** `effectiveBackground` walks up
   from the cell's row to the first background that is more than half
   opaque. `resolveColor` draws the computed color to a one-pixel canvas, so
