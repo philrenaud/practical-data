@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: sectioned standings</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 1100px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  tr.head th { text-transform: uppercase; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>Sectioned standings</h1>
+<p>
+  A league page lists every division in one table. Each division restarts the
+  header inside the body: a group row that is empty except for a band label
+  over the last three columns, then a header row whose first cell names the
+  division. Those rows are headers, not teams. The band label starts with a
+  year, which must not be read as a number in the projection columns.
+</p>
+
+<h2>Conference standings</h2>
+<!-- No thead: every row is in tbody. Header rows are all <th>. The first section's rows become the header. -->
+<table id="conference">
+  <tbody>
+    <tr class="group"><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th colspan="3">2026 Projections</th></tr>
+    <tr class="head"><th>East</th><th>W</th><th>L</th><th>T</th><th>PCT</th><th>PF</th><th>PA</th><th>DIFF</th><th>Home</th><th>Road</th><th>Strk</th><th>W</th><th>Div</th><th>Post</th></tr>
+    <tr><td>Harbor City Herons</td><td>6</td><td>1</td><td>0</td><td>.857</td><td>233</td><td>181</td><td>52</td><td>2-0-0</td><td>4-1-0</td><td>W3</td><td>12.6</td><td>88.3%</td><td>98.9%</td></tr>
+    <tr><td>Kingsmoor Bison</td><td>5</td><td>3</td><td>0</td><td>.625</td><td>184</td><td>162</td><td>22</td><td>3-0-0</td><td>2-3-0</td><td>W1</td><td>9.6</td><td>11.7%</td><td>63.7%</td></tr>
+    <tr><td>Saltgrass Pilots</td><td>2</td><td>6</td><td>0</td><td>.250</td><td>170</td><td>188</td><td>-18</td><td>0-4-0</td><td>2-2-0</td><td>L3</td><td>5.4</td><td>0.0%</td><td>&lt;1.0%</td></tr>
+    <tr><td>Westholm Badgers</td><td>1</td><td>6</td><td>0</td><td>.143</td><td>117</td><td>181</td><td>-64</td><td>0-2-0</td><td>1-4-0</td><td>L1</td><td>3.7</td><td>0.0%</td><td>&lt;1.0%</td></tr>
+    <tr class="group"><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th colspan="3">2026 Projections</th></tr>
+    <tr class="head"><th>North</th><th>W</th><th>L</th><th>T</th><th>PCT</th><th>PF</th><th>PA</th><th>DIFF</th><th>Home</th><th>Road</th><th>Strk</th><th>W</th><th>Div</th><th>Post</th></tr>
+    <tr><td>Ridgeback Elk</td><td>6</td><td>2</td><td>0</td><td>.750</td><td>180</td><td>144</td><td>36</td><td>4-0-0</td><td>2-2-0</td><td>W4</td><td>10.9</td><td>44.8%</td><td>84.3%</td></tr>
+    <tr><td>Port Calder Gulls</td><td>5</td><td>2</td><td>0</td><td>.714</td><td>206</td><td>158</td><td>48</td><td>4-0-0</td><td>1-2-0</td><td>W3</td><td>11.1</td><td>48.2%</td><td>87.8%</td></tr>
+    <tr><td>Ashvale Lynx</td><td>5</td><td>3</td><td>0</td><td>.625</td><td>139</td><td>173</td><td>-34</td><td>0-0-0</td><td>5-3-0</td><td>L1</td><td>8.7</td><td>4.9%</td><td>26.6%</td></tr>
+    <tr><td>Moorfield Rams</td><td>4</td><td>4</td><td>0</td><td>.500</td><td>179</td><td>203</td><td>-24</td><td>3-3-0</td><td>1-1-0</td><td>L3</td><td>7.8</td><td>2.1%</td><td>13.4%</td></tr>
+    <tr class="group"><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th colspan="3">2026 Projections</th></tr>
+    <tr class="head"><th>South</th><th>W</th><th>L</th><th>T</th><th>PCT</th><th>PF</th><th>PA</th><th>DIFF</th><th>Home</th><th>Road</th><th>Strk</th><th>W</th><th>Div</th><th>Post</th></tr>
+    <tr><td>Cinder Bay Hawks</td><td>5</td><td>2</td><td>0</td><td>.714</td><td>196</td><td>111</td><td>85</td><td>0-0-0</td><td>5-2-0</td><td>W1</td><td>11.6</td><td>89.8%</td><td>96.0%</td></tr>
+    <tr><td>Larkspur Wolves</td><td>2</td><td>5</td><td>0</td><td>.286</td><td>165</td><td>170</td><td>-5</td><td>0-4-0</td><td>2-1-0</td><td>L1</td><td>8.5</td><td>9.7%</td><td>30.3%</td></tr>
+    <tr><td>Tidewater Foxes</td><td>2</td><td>6</td><td>0</td><td>.250</td><td>161</td><td>222</td><td>-61</td><td>1-0-0</td><td>1-6-0</td><td>L4</td><td>6.2</td><td>0.0%</td><td>1.8%</td></tr>
+    <tr><td>Granite Pass Owls</td><td>1</td><td>7</td><td>0</td><td>.125</td><td>144</td><td>199</td><td>-55</td><td>0-1-0</td><td>1-6-0</td><td>L2</td><td>3.2</td><td>0.0%</td><td>0.0%</td></tr>
+    <tr class="group"><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th colspan="3">2026 Projections</th></tr>
+    <tr class="head"><th>West</th><th>W</th><th>L</th><th>T</th><th>PCT</th><th>PF</th><th>PA</th><th>DIFF</th><th>Home</th><th>Road</th><th>Strk</th><th>W</th><th>Div</th><th>Post</th></tr>
+    <tr><td>Copperline Stags</td><td>6</td><td>2</td><td>0</td><td>.750</td><td>172</td><td>165</td><td>7</td><td>4-0-0</td><td>2-2-0</td><td>W4</td><td>11.8</td><td>53.0%</td><td>94.1%</td></tr>
+    <tr><td>Driftwood Otters</td><td>5</td><td>2</td><td>0</td><td>.714</td><td>167</td><td>131</td><td>36</td><td>4-2-0</td><td>1-0-0</td><td>L2</td><td>11.4</td><td>46.2%</td><td>93.3%</td></tr>
+    <tr><td>Ember Hollow Cranes</td><td>4</td><td>4</td><td>0</td><td>.500</td><td>221</td><td>230</td><td>-9</td><td>3-0-0</td><td>1-4-0</td><td>W1</td><td>7.6</td><td>0.0%</td><td>9.4%</td></tr>
+    <tr><td>Quarry Point Mules</td><td>0</td><td>7</td><td>0</td><td>.000</td><td>99</td><td>175</td><td>-76</td><td>0-0-0</td><td>0-7-0</td><td>L7</td><td>3.4</td><td>0.0%</td><td>&lt;1.0%</td></tr>
+  </tbody>
+</table>
+
+<h2>Season log</h2>
+<!-- A stats log that repeats its header every few rows, exactly, and ends with a summary row written in <th>. The summary is not a header. -->
+<table id="log">
+  <thead><tr><th>Season</th><th>G</th><th>HR</th><th>RBI</th><th>AVG</th></tr></thead>
+  <tbody>
+    <tr><td>2019</td><td>102</td><td>27</td><td>55</td><td>.272</td></tr>
+    <tr><td>2020</td><td>28</td><td>9</td><td>22</td><td>.257</td></tr>
+    <tr><td>2021</td><td>148</td><td>39</td><td>98</td><td>.287</td></tr>
+    <tr><th>Season</th><th>G</th><th>HR</th><th>RBI</th><th>AVG</th></tr>
+    <tr><td>2022</td><td>157</td><td>62</td><td>131</td><td>.311</td></tr>
+    <tr><td>2023</td><td>106</td><td>37</td><td>75</td><td>.267</td></tr>
+    <tr><td>2024</td><td>158</td><td>58</td><td>144</td><td>.322</td></tr>
+    <tr><th>Avg</th><th>125</th><th>39</th><th>88</th><th>.286</th></tr>
+  </tbody>
+</table>
+</body>
+</html>
