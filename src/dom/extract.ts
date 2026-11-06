@@ -165,6 +165,19 @@ const isFull = (row: readonly (HTMLTableCellElement | undefined)[], width: numbe
   return true;
 };
 
+/**
+ * True when a row stops early: slots 0 to row.length - 1 all hold a cell, and
+ * only trailing slots are missing. An encyclopedia table often leaves out the
+ * cells after the last column with data in its earliest rows. The row must
+ * still reach three quarters of the width and at least three columns, so a
+ * note or a two-cell total under a wide table is still dropped.
+ */
+const stopsEarly = (row: readonly (HTMLTableCellElement | undefined)[], width: number): boolean => {
+  const reach = row.length;
+  if (width < 4 || reach >= width || reach < 3 || reach * 4 < width * 3) return false;
+  return isFull(row, reach);
+};
+
 /** Returns the most common row width, or the widest on a tie, so one malformed row does not set the width. */
 const modalWidth = (grid: readonly (readonly unknown[])[]): number => {
   const counts = new Map<number, number>();
@@ -419,8 +432,12 @@ export const extractTable = (
     // election boxes end with a note ("Party hold") that spans all but an
     // empty color swatch.
     if (width > 2 && isSpanningLabel(g, width)) continue;
-    if (!isFull(g, width)) continue;
-    const cellsInRow = g.slice(0, width);
+    const padded = !isFull(g, width) && stopsEarly(g, width);
+    if (!isFull(g, width) && !padded) continue;
+    // The missing trailing slots get empty cells that are not in the page, so they read as blanks.
+    const cellsInRow = padded
+      ? Array.from({ length: width }, (_, c) => g[c] ?? table.ownerDocument.createElement("td"))
+      : g.slice(0, width);
     const text = cellsInRow.map((cell) => cellText(cell));
     // Repeated header rows inside tbody (baseball-reference every 20 rows, Wikipedia at the foot).
     if (isHeaderRow(row) && isRepeatedHeader(text, headers)) continue;
