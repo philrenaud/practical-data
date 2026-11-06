@@ -61,7 +61,12 @@ const judgeRecorded = async (page: PageSnapshot) => {
 
 const sources = new Map(
   (
-    JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as { slug: string; url: string; title: string }[]
+    JSON.parse(await readFile("fixtures/live/sources.json", "utf8")) as {
+      slug: string;
+      url: string;
+      title: string;
+      feature?: string;
+    }[]
   ).map((s) => [s.slug, s]),
 );
 /** Short, distinct names for site navigation. Page titles are long, and two pages share one title. */
@@ -238,7 +243,12 @@ for (const slug of slugs) {
     source:
       live === undefined
         ? null
-        : { title: attribution?.title ?? live.title, url: live.url, rights: attribution?.rights ?? "" },
+        : {
+            title: attribution?.title ?? live.title,
+            url: live.url,
+            rights: attribution?.rights ?? "",
+            feature: live.feature ?? null,
+          },
     tables: tables.length,
     columns: full.judgment.tables.reduce((n, t) => n + t.encodings.length, 0),
     score: [pageChecks.filter((c) => c.ok).length, pageChecks.length] as const,

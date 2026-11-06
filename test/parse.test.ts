@@ -129,8 +129,23 @@ test("a measurement followed by its conversion to another unit parses as the fir
   assert.equal(parseNumber("300 km/h (310 km/h with +10 tolerance)"), null);
   assert.equal(parseNumber("120 km (120 km)"), null, "same unit");
   assert.equal(parseNumber("45 votes (12%)"), null, "a share is not a conversion");
-  assert.equal(parseNumber("12 km (est.)"), null);
   assert.equal(parseNumber("Route 9 (north)"), null);
+});
+
+test("a value followed by a note in words parses as the value", () => {
+  assert.deepEqual(parseNumber("80 (combined release)"), { value: 80, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("9,633 (combined release)"), { value: 9633, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("1,234 (est.)"), { value: 1234, unit: null, bound: false, range: null });
+  assert.deepEqual(parseNumber("12 km (est.)"), { value: 12, unit: "km", bound: false, range: null });
+  assert.deepEqual(parseNumber("20–25 (approx.)"), { value: 22.5, unit: null, bound: false, range: [20, 25] });
+  assert.deepEqual(parseNumber("≥ 45 (approx.)"), { value: 45, unit: null, bound: true, range: null });
+  // The part before the note must be a number on its own, and a note with a number in it is a second value.
+  assert.equal(parseNumber("Route 9 (north)"), null);
+  assert.equal(parseNumber("Spring 2005 (lot A)"), null);
+  assert.equal(parseNumber("1st (tie)"), null);
+  assert.equal(parseNumber("45 (12)"), null);
+  assert.equal(parseNumber("45 (about 12)"), null);
+  assert.equal(parseNumber("45 (combined release) more"), null);
 });
 
 test("a count followed by its share parses as the count", () => {
