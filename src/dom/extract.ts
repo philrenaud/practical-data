@@ -189,6 +189,27 @@ const repeatsHeader = (cell: string, header: string): boolean => {
   return c === h || h.split(": ").some((part) => withoutFootnotes(part) === c);
 };
 
+/**
+ * True when the text of an all-<th> body row repeats the header. Sectioned
+ * tables restart the header for each section: the first cell names the section
+ * ("North" under "East"), and a group row above it is empty except for a band
+ * label ("Projections") over a few columns. So the first cell may differ, and
+ * cells may be empty, but at least one cell must repeat its header, and every
+ * other non-empty cell must too.
+ */
+const isRepeatedHeader = (text: readonly string[], headers: readonly string[]): boolean => {
+  let repeats = 0;
+  for (let c = 0; c < text.length; c++) {
+    const t = text[c]!;
+    if (repeatsHeader(t, headers[c] ?? "") || repeatsHeader(t.toLowerCase(), (headers[c] ?? "").toLowerCase())) {
+      repeats++;
+    } else if (t !== "" && c !== 0) return false;
+  }
+  // A section label in the first cell needs the rest of the row to carry the header.
+  const firstDiffers = text[0] !== "" && !repeatsHeader(text[0]!.toLowerCase(), (headers[0] ?? "").toLowerCase());
+  return firstDiffers ? repeats >= 2 : repeats >= 1;
+};
+
 /** The shape of a cell's text. Each run of letters becomes "a" and each run of digits becomes "9". */
 const shapeOf = (text: string): string =>
   text
@@ -402,7 +423,7 @@ export const extractTable = (
     const cellsInRow = g.slice(0, width);
     const text = cellsInRow.map((cell) => cellText(cell));
     // Repeated header rows inside tbody (baseball-reference every 20 rows, Wikipedia at the foot).
-    if (isHeaderRow(row) && text.every((t, c) => repeatsHeader(t, headers[c] ?? ""))) continue;
+    if (isHeaderRow(row) && isRepeatedHeader(text, headers)) continue;
     if (row.classList.contains("thead")) continue;
     dataRows.push(cellsInRow);
     texts.push(text);
