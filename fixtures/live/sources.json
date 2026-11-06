@@ -3,6 +3,7 @@
     "slug": "github-copilot-pricing",
     "url": "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing",
     "title": "GitHub Copilot: Models and pricing",
+    "feature": "Per-token prices across seven vendor tables, where cheaper reads greener, and the same price column shares one scale from table to table.",
     "notes": "7 plain <table> elements (no class/id), one per vendor under h3#openai, #anthropic, #google, #fine-tuned-github, #microsoft, #xai, #moonshot-ai. Prices are '$' strings; lower is better (cost). 'Not applicable' mixed into numeric columns. Release status / Category / Tier are categorical text. Footnote digits glued to model names (e.g. 'Gemini 3.7 Flash1').",
     "tables": [
       {
@@ -83,6 +84,7 @@
     "slug": "bbref-aaron-judge",
     "url": "https://www.baseball-reference.com/players/j/judgeaa01.shtml",
     "title": "Aaron Judge Stats | Baseball-Reference.com",
+    "feature": "Home runs and OPS shade green as they climb; strikeouts and double plays shade the other way, because a batter wants fewer.",
     "notes": "Only 8 tables are live DOM; 5 more are inside HTML comments (<!-- <div class=table_container>... -->) and are revealed by bbref JS, so they will NOT exist when opened locally. Main batting table is live. Many identifier-like numbers: Season (year), Age. BA/OBP/SLG/OPS use leading-dot format ('.284'). Footer rows (career totals, 162-game avg) in <tfoot>. Batting: higher better for HR, BA, OBP, SLG, OPS, OPS+; SO and GIDP are lower-better for a batter.",
     "tables": [
       {
@@ -586,6 +588,7 @@
     "slug": "wiki-countries-by-population",
     "url": "https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population",
     "title": "List of countries and dependencies by population - Wikipedia",
+    "feature": "Populations run from about 50 people on Pitcairn to 1.4 billion, so the shading switches to a log scale.",
     "notes": "Population spans ~50 (Pitcairn) to ~1.4 billion: strongest log-scale candidate. First data row is 'World' (an aggregate outlier that should arguably be excluded). '% of world' is a percent string. Date column contains dates (identifier). Uses static-row-numbers class (CSS-generated rank, not in DOM).",
     "tables": [
       {
@@ -614,6 +617,7 @@
     "slug": "wiki-costliest-atlantic-hurricanes",
     "url": "https://en.wikipedia.org/wiki/List_of_costliest_Atlantic_hurricanes",
     "title": "List of costliest Atlantic hurricanes - Wikipedia",
+    "feature": "Damage totals in the billions, redder as they grow, next to a classification column read as ordered text, tropical storm up to Category 5.",
     "notes": "Ordinal text column 'Storm classification at peak intensity': Tropical storm < Category 1 ... < Category 5 hurricane. Damage in '$125.0' billions (skewed, log-scale candidate). Season is a year identifier. Some rows use rowspan (storms sharing a name/season), so ~10 rows have fewer cells and columns shift if rowspan is not resolved. Table index 0 (costliest seasons) has 'Cost' strings like '\u2265 $294.811 billion' - text-embedded numbers with a comparison prefix.",
     "tables": [
       {
@@ -842,6 +846,7 @@
     "slug": "wiki-2022-winter-olympics-medal-table",
     "url": "https://en.wikipedia.org/wiki/2022_Winter_Olympics_medal_table",
     "title": "2022 Winter Olympics medal table - Wikipedia",
+    "feature": "The classic medal table. Gold, silver, bronze, and total all shade toward the leaders; the rank column stays plain because it is just the sort order.",
     "notes": "Medal table: Rank, NOC, Gold, Silver, Bronze, Total; the last row is 'Totals (29 entries)'. Only the medal table is kept."
   },
   {

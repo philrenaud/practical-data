@@ -19,7 +19,13 @@ export interface PageSummary {
   readonly name: string;
   readonly title: string;
   readonly origin: "live" | "synthetic";
-  readonly source: { readonly title: string; readonly url: string; readonly rights: string } | null;
+  readonly source: {
+    readonly title: string;
+    readonly url: string;
+    readonly rights: string;
+    /** When set, the sites page features this source as a good first page to try. */
+    readonly feature: string | null;
+  } | null;
   readonly tables: number;
   readonly columns: number;
   /** Passing checks and all checks on the page. */
