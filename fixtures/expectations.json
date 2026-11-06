@@ -2438,5 +2438,62 @@
         ]
       }
     }
+  },
+  "sectioned-name-row": {
+    "t0": {
+      "Charter Roll of Precedence: Name": "none",
+      "Charter Roll of Precedence: Mark": "none",
+      "Charter Roll of Precedence: Members": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Charter Roll of Precedence: Master members": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      }
+    },
+    "t1": {
+      "Branch": "none",
+      "District": "none",
+      "Books on loan": {
+        "kind": "quantitative"
+      },
+      "Weekly visitors": {
+        "kind": "quantitative"
+      }
+    }
+  },
+  "value-with-note": {
+    "t0": {
+      "Proof": {
+        "kind": "quantitative"
+      },
+      "% ABV": {
+        "kind": "quantitative"
+      },
+      "Number of casks": {
+        "kind": "quantitative"
+      },
+      "Store": "none",
+      "Number of bottles (est.)": {
+        "kind": "quantitative"
+      }
+    },
+    "t1": {
+      "Line": "none",
+      "Terminal": "none",
+      "Daily riders": {
+        "kind": "quantitative"
+      },
+      "Crossings per day": {
+        "kind": "quantitative"
+      }
+    }
   }
 }
