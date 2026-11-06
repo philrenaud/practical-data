@@ -13,6 +13,22 @@
   The checks use copies of the tables on these public pages. Open the pages with the extension to see it on the real
   site.
 </p>
+
+{#if data.featured.length > 0}
+  <h2>Start here</h2>
+  <p class="muted">Just installed? These pages show it off best.</p>
+  <ul class="featured">
+    {#each data.featured as s (s.url)}
+      <li>
+        <a class="name" href={s.url} rel="noopener">{s.title}</a>
+        <span class="host">{s.host}</span>
+        <p class="hook">{s.feature}</p>
+      </li>
+    {/each}
+  </ul>
+{/if}
+
+<h2>The full corpus</h2>
 <p class="muted">We copied the pages in October 2026. The live pages can change after that date.</p>
 
 <ul class="sites">
@@ -34,9 +50,28 @@
 </ul>
 
 <style>
+  .featured {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    max-width: 76ch;
+  }
+  .featured li {
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--pass);
+    border-radius: 6px;
+  }
+  .hook {
+    margin: 4px 0 0;
+    font-size: 14.5px;
+    color: var(--muted);
+  }
   .sites {
     list-style: none;
-    margin: 32px 0 0;
+    margin: 20px 0 0;
     padding: 0;
     display: grid;
     gap: 0;
