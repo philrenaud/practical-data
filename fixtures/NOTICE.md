@@ -1,7 +1,7 @@
 # Fixture sources and attribution
 
-`fixtures/live/` holds excerpts of public web pages, retrieved in October
-2026, for testing table extraction and judging. Each file keeps only the page
+`fixtures/live/` holds excerpts of public web pages, retrieved in October and
+November 2026, for testing table extraction and judging. Each file keeps only the page
 title, the headings, and the tables. Scripts, styles, images, and links are
 removed. The excerpts are included for testing and research, with the
 attribution below. This repository's MIT license applies to the code, not to
@@ -33,3 +33,4 @@ which contain probabilities only, so that the tests can run offline.
 | `wiki-demographics-of-japan` | [Demographics of Japan - Wikipedia](https://en.wikipedia.org/wiki/Demographics_of_Japan) | Wikipedia contributors, CC BY-SA 4.0 |
 | `wiki-earthquakes-2023` | [List of earthquakes in 2023 - Wikipedia](https://en.wikipedia.org/wiki/List_of_earthquakes_in_2023) | Wikipedia contributors, CC BY-SA 4.0 |
 | `bkref-thunder-2025` | [2024-25 Oklahoma City Thunder Roster and Stats - Basketball-Reference.com](https://www.basketball-reference.com/teams/OKC/2025.html) | Sports Reference LLC (Basketball-Reference.com); facts excerpted for testing |
+| `wiki-american-idol` | [American Idol - Wikipedia](https://en.wikipedia.org/wiki/American_Idol) | Wikipedia contributors, CC BY-SA 4.0 |
