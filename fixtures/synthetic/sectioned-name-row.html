@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: column names under a title row</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .names td { font-weight: bold; background: #eef; }
+  .section td, .section th { background: #f4f4f4; font-style: italic; text-align: left; }
+</style>
+</head>
+<body>
+<h1>Column names under a title row</h1>
+<p>
+  An encyclopedia list can put a title row that spans the whole table in the
+  header, then the column names as an ordinary row, then a section label
+  before the first entry. The column names are the header, not an entry, and
+  the title row alone does not name the columns.
+</p>
+
+<h2>Register of craft guilds</h2>
+<!-- The only <th> is the title row. The column names are <td>, and a spanning section label sits between them and the first entry. -->
+<table id="guilds">
+  <thead><tr><th colspan="5">Charter Roll of Precedence</th></tr></thead>
+  <tbody>
+    <tr class="names"><td>Name</td><td>Mark</td><td>Chartered</td><td>Members</td><td>Master members</td></tr>
+    <tr class="section"><td colspan="5">Founding guilds</td></tr>
+    <tr><td>Guild of Lantern Makers</td><td>GLM</td><td>9th century</td><td>4,812</td><td>2,105</td></tr>
+    <tr><td>Fellowship of Rope Walkers</td><td>FRW</td><td>1031</td><td>74</td><td>41</td></tr>
+    <tr><td>Company of Glass Blowers</td><td>CGB</td><td>1102</td><td>1,390</td><td>612</td></tr>
+    <tr><td>Brotherhood of Bell Founders</td><td>BBF</td><td>1102</td><td>1,455</td><td>588</td></tr>
+    <tr class="section"><td colspan="5">Later guilds</td></tr>
+    <tr><td>Union of Map Engravers</td><td>UME</td><td>1340</td><td>930</td><td>402</td></tr>
+    <tr><td>Society of Clock Wrights</td><td>SCW</td><td>1488</td><td>2,260</td><td>1,170</td></tr>
+    <tr><td>Order of Ink Grinders</td><td>OIG</td><td>1521</td><td>318</td><td>129</td></tr>
+    <tr><td>Circle of Kite Weavers</td><td>CKW</td><td>1604</td><td>57</td><td>22</td></tr>
+  </tbody>
+</table>
+
+<h2>Branch libraries by district</h2>
+<!-- A real <th> header, then <td> section labels. The first row under each label is an entry and must stay data. -->
+<table id="libraries">
+  <thead><tr><th>Branch</th><th>District</th><th>Books on loan</th><th>Weekly visitors</th></tr></thead>
+  <tbody>
+    <tr class="section"><td colspan="4">North districts</td></tr>
+    <tr><td>Alder Row</td><td>Northgate</td><td>12,400</td><td>1,930</td></tr>
+    <tr><td>Birch Hill</td><td>Northgate</td><td>8,150</td><td>1,210</td></tr>
+    <tr><td>Cinder Lane</td><td>Moorside</td><td>6,720</td><td>980</td></tr>
+    <tr class="section"><td colspan="4">South districts</td></tr>
+    <tr><td>Dunmore</td><td>Riverbend</td><td>15,980</td><td>2,640</td></tr>
+    <tr><td>Elmstead</td><td>Riverbend</td><td>9,310</td><td>1,475</td></tr>
+    <tr><td>Fallow Cross</td><td>Southmead</td><td>4,060</td><td>620</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

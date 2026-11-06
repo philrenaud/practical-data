@@ -1,0 +1,124 @@
+{
+ "url": "fixture://synthetic/sectioned-name-row.html",
+ "title": "Practical Data: column names under a title row",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Register of craft guilds",
+   "headers": [
+    "Charter Roll of Precedence: Name",
+    "Charter Roll of Precedence: Mark",
+    "Charter Roll of Precedence: Chartered",
+    "Charter Roll of Precedence: Members",
+    "Charter Roll of Precedence: Master members"
+   ],
+   "rows": [
+    [
+     "Guild of Lantern Makers",
+     "GLM",
+     "9th century",
+     "4,812",
+     "2,105"
+    ],
+    [
+     "Fellowship of Rope Walkers",
+     "FRW",
+     "1031",
+     "74",
+     "41"
+    ],
+    [
+     "Company of Glass Blowers",
+     "CGB",
+     "1102",
+     "1,390",
+     "612"
+    ],
+    [
+     "Brotherhood of Bell Founders",
+     "BBF",
+     "1102",
+     "1,455",
+     "588"
+    ],
+    [
+     "Union of Map Engravers",
+     "UME",
+     "1340",
+     "930",
+     "402"
+    ],
+    [
+     "Society of Clock Wrights",
+     "SCW",
+     "1488",
+     "2,260",
+     "1,170"
+    ],
+    [
+     "Order of Ink Grinders",
+     "OIG",
+     "1521",
+     "318",
+     "129"
+    ],
+    [
+     "Circle of Kite Weavers",
+     "CKW",
+     "1604",
+     "57",
+     "22"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Branch libraries by district",
+   "headers": [
+    "Branch",
+    "District",
+    "Books on loan",
+    "Weekly visitors"
+   ],
+   "rows": [
+    [
+     "Alder Row",
+     "Northgate",
+     "12,400",
+     "1,930"
+    ],
+    [
+     "Birch Hill",
+     "Northgate",
+     "8,150",
+     "1,210"
+    ],
+    [
+     "Cinder Lane",
+     "Moorside",
+     "6,720",
+     "980"
+    ],
+    [
+     "Dunmore",
+     "Riverbend",
+     "15,980",
+     "2,640"
+    ],
+    [
+     "Elmstead",
+     "Riverbend",
+     "9,310",
+     "1,475"
+    ],
+    [
+     "Fallow Cross",
+     "Southmead",
+     "4,060",
+     "620"
+    ]
+   ]
+  }
+ ]
+}
