@@ -353,8 +353,17 @@ export const extractTable = (
   while (headerCount < rows.length - 1 && isHeaderRow(rows[headerCount]!)) headerCount++;
   if (headerCount === 0 && !looksLikeData(grid, width)) headerCount = 1;
   // Units rows written as <td> ("Percent", "Index") sit under the real header.
-  // They have no numbers and are directly above a row that has numbers.
+  // They have no numbers and sit above a row that has numbers. Section labels
+  // that span the row ("Monastic orders") can come between them, so the row
+  // checked for numbers is the next one that is not a label. A title row that
+  // spans the table, over column names written as <td>, then section labels,
+  // otherwise leaves the column names as the first data row.
   const hasNumber = (r: number) => (grid[r] ?? []).some((cell) => parseNumber(cellText(cell)) !== null);
+  const nextNonLabel = (r: number) => {
+    let next = r;
+    while (width > 2 && next < rows.length - 1 && isSpanningLabel(grid[next] ?? [], width)) next++;
+    return next;
+  };
   for (let extra = 0; extra < 2 && headerCount > 0 && headerCount < rows.length - 2; extra++) {
     const r = headerCount;
     const row = grid[r] ?? [];
@@ -362,7 +371,7 @@ export const extractTable = (
     // A section label ("Pre-cycle sets") is one cell that spans the row. A units row has short, distinct cells.
     const distinctCells = new Set(row).size;
     if (distinctCells < 2 || texts.some((t) => t.length > 30)) break;
-    if (hasNumber(r) || texts.every((t) => t === "") || !hasNumber(r + 1)) break;
+    if (hasNumber(r) || texts.every((t) => t === "") || !hasNumber(nextNonLabel(r + 1))) break;
     headerCount++;
   }
 
