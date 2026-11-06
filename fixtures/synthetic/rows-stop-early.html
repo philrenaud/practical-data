@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: rows that stop early</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 1100px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; text-align: right; }
+</style>
+</head>
+<body>
+<h1>Rows that stop early</h1>
+<p>
+  An encyclopedia's year-by-year table often leaves out the trailing cells of
+  its earliest rows, where later columns have no records yet. Those rows are
+  still data. The missing cells read as blanks.
+</p>
+
+<h2>Vital statistics</h2>
+<!-- 11 columns. The rows before 1858 have only 9 cells: no infant mortality or life expectancy cells at all. -->
+<table id="vitals">
+  <thead>
+    <tr><th rowspan="2">Year</th><th rowspan="2">Average population</th><th rowspan="2">Live births</th><th rowspan="2">Deaths</th><th rowspan="2">Natural change</th><th colspan="3">Crude rates (per 1000)</th><th rowspan="2">Total fertility rate</th><th rowspan="2">Infant mortality (per 1000 births)</th><th rowspan="2">Life expectancy</th></tr>
+    <tr><th>Births</th><th>Deaths</th><th>Natural change</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1851</td><td>21,400,000</td><td>555,180</td><td>376,712</td><td>178,468</td><td>25.9</td><td>17.6</td><td>8.3</td><td>3.79</td></tr>
+    <tr><td>1852</td><td>21,563,215</td><td>623,773</td><td>374,693</td><td>249,080</td><td>28.9</td><td>17.4</td><td>11.6</td><td>3.72</td></tr>
+    <tr><td>1853</td><td>21,851,913</td><td>590,976</td><td>374,759</td><td>216,217</td><td>27.0</td><td>17.1</td><td>9.9</td><td>3.59</td></tr>
+    <tr><td>1854</td><td>22,052,708</td><td>561,108</td><td>423,504</td><td>137,604</td><td>25.4</td><td>19.2</td><td>6.2</td><td>3.25</td></tr>
+    <tr><td>1855</td><td>22,207,369</td><td>549,472</td><td>397,355</td><td>152,117</td><td>24.7</td><td>17.9</td><td>6.8</td><td>3.76</td></tr>
+    <tr><td>1856</td><td>22,343,540</td><td>613,612</td><td>415,293</td><td>198,319</td><td>27.5</td><td>18.6</td><td>8.9</td><td>4.08</td></tr>
+    <tr><td>1857</td><td>22,524,911</td><td>615,830</td><td>394,922</td><td>220,908</td><td>27.3</td><td>17.5</td><td>9.8</td><td>3.58</td></tr>
+    <tr><td>1858</td><td>22,761,253</td><td>562,356</td><td>415,027</td><td>147,329</td><td>24.7</td><td>18.2</td><td>6.5</td><td>3.93</td><td>146.3</td><td></td></tr>
+    <tr><td>1859</td><td>22,926,697</td><td>628,815</td><td>406,982</td><td>221,833</td><td>27.4</td><td>17.8</td><td>9.7</td><td>3.29</td><td>164.9</td><td></td></tr>
+    <tr><td>1860</td><td>23,165,516</td><td>564,256</td><td>412,898</td><td>151,358</td><td>24.4</td><td>17.8</td><td>6.5</td><td>3.81</td><td>155.0</td><td></td></tr>
+    <tr><td>1861</td><td>23,317,461</td><td>624,758</td><td>482,526</td><td>142,232</td><td>26.8</td><td>20.7</td><td>6.1</td><td>3.53</td><td>148.7</td><td></td></tr>
+    <tr><td>1862</td><td>23,451,474</td><td>661,190</td><td>421,572</td><td>239,618</td><td>28.2</td><td>18.0</td><td>10.2</td><td>3.72</td><td>158.4</td><td></td></tr>
+    <tr><td>1863</td><td>23,728,445</td><td>618,383</td><td>445,984</td><td>172,399</td><td>26.1</td><td>18.8</td><td>7.3</td><td>3.75</td><td>142.6</td><td>38.6</td></tr>
+    <tr><td>1864</td><td>23,891,654</td><td>681,935</td><td>420,682</td><td>261,253</td><td>28.5</td><td>17.6</td><td>10.9</td><td>3.64</td><td>141.4</td><td>39.3</td></tr>
+    <tr><td>1865</td><td>24,183,013</td><td>661,368</td><td>487,441</td><td>173,927</td><td>27.3</td><td>20.2</td><td>7.2</td><td>3.94</td><td>151.9</td><td>37.8</td></tr>
+    <tr><td>1866</td><td>24,369,490</td><td>669,658</td><td>458,751</td><td>210,907</td><td>27.5</td><td>18.8</td><td>8.7</td><td>3.96</td><td>173.1</td><td>38.4</td></tr>
+    <tr><td>1867</td><td>24,603,922</td><td>600,089</td><td>490,224</td><td>109,865</td><td>24.4</td><td>19.9</td><td>4.5</td><td>3.48</td><td>160.2</td><td>39.4</td></tr>
+    <tr><td>1868</td><td>24,722,992</td><td>635,568</td><td>458,442</td><td>177,126</td><td>25.7</td><td>18.5</td><td>7.2</td><td>3.80</td><td>140.8</td><td>38.3</td></tr>
+    <tr><td>1869</td><td>24,891,131</td><td>688,626</td><td>472,303</td><td>216,323</td><td>27.7</td><td>19.0</td><td>8.7</td><td>3.40</td><td>150.1</td><td>39.7</td></tr>
+    <tr><td>1870</td><td>25,113,530</td><td>661,633</td><td>514,467</td><td>147,166</td><td>26.3</td><td>20.5</td><td>5.9</td><td>3.27</td><td>155.7</td><td>38.7</td></tr>
+  </tbody>
+</table>
+
+<h2>Reservoir levels</h2>
+<!-- A short note row (two cells) under a six-column table is not data and must still be dropped. -->
+<table id="reservoirs">
+  <thead><tr><th>Reservoir</th><th>Region</th><th>Capacity (ML)</th><th>Stored (ML)</th><th>Full (%)</th><th>Inflow (ML/day)</th></tr></thead>
+  <tbody>
+    <tr><td>Thornmere</td><td>North</td><td>48,200</td><td>39,850</td><td>82.7</td><td>310</td></tr>
+    <tr><td>Calder Lake</td><td>North</td><td>21,600</td><td>14,020</td><td>64.9</td><td>145</td></tr>
+    <tr><td>Ashby Dam</td><td>East</td><td>65,900</td><td>58,140</td><td>88.2</td><td>402</td></tr>
+    <tr><td>Wrenfold</td><td>South</td><td>12,300</td><td>6,975</td><td>56.7</td><td>88</td></tr>
+    <tr><td>Hollin Water</td><td>West</td><td>33,450</td><td>27,800</td><td>83.1</td><td>226</td></tr>
+    <tr><td>Note</td><td>Figures for Wrenfold are provisional pending the spring survey.</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

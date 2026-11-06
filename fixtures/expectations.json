@@ -2495,5 +2495,55 @@
         "kind": "quantitative"
       }
     }
+  },
+  "rows-stop-early": {
+    "t0": {
+      "Average population": {
+        "kind": "quantitative"
+      },
+      "Live births": {
+        "kind": "quantitative"
+      },
+      "Deaths": {
+        "kind": "quantitative"
+      },
+      "Natural change": {
+        "kind": "quantitative"
+      },
+      "Crude rates (per 1000): Births": {
+        "kind": "quantitative"
+      },
+      "Crude rates (per 1000): Deaths": {
+        "kind": "quantitative"
+      },
+      "Crude rates (per 1000): Natural change": {
+        "kind": "quantitative"
+      },
+      "Total fertility rate": {
+        "kind": "quantitative"
+      },
+      "Infant mortality (per 1000 births)": {
+        "kind": "quantitative"
+      },
+      "Life expectancy": {
+        "kind": "quantitative"
+      }
+    },
+    "t1": {
+      "Reservoir": "none",
+      "Region": "none",
+      "Capacity (ML)": {
+        "kind": "quantitative"
+      },
+      "Stored (ML)": {
+        "kind": "quantitative"
+      },
+      "Full (%)": {
+        "kind": "quantitative"
+      },
+      "Inflow (ML/day)": {
+        "kind": "quantitative"
+      }
+    }
   }
 }
