@@ -407,6 +407,15 @@ const parseAlternative = (text: string, convention: NumberConvention): ParsedNum
   return now;
 };
 
+/**
+ * A value followed by a note in words, as in "80 (combined release)" or
+ * "1,234 (est.)". The note holds only letters, spaces, and light punctuation,
+ * so "45 (12)", "45 (12%)", and "740 (+16)" never match here: a parenthesis
+ * with a number in it is a second value, and the other rules decide it. The
+ * value before the note must parse on its own.
+ */
+const TEXT_NOTE_RE = /^(.*\S)\s*\(\s*(\p{L}[\p{L}\s.,'’&/-]{0,39})\)$/u;
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string, convention: NumberConvention = "dot-decimal"): ParsedNumber | null => {
   const text = stripNoise(raw);
@@ -422,13 +431,16 @@ export const parseNumber = (raw: string, convention: NumberConvention = "dot-dec
     const n = parseSingle(plus[1], convention);
     return n === null ? null : { ...n, bound: true };
   }
-  return (
+  const parsed =
     parseSingle(text, convention) ??
     parseRange(text, convention) ??
     parseConversion(text, convention) ??
     parseCountShare(text, convention) ??
-    parseAlternative(text, convention)
-  );
+    parseAlternative(text, convention);
+  if (parsed !== null) return parsed;
+  // A value with a note in words: the value is the cell's number.
+  const note = TEXT_NOTE_RE.exec(text);
+  return note?.[1] === undefined ? null : parseNumber(note[1], convention);
 };
 
 /** Normalizes a category label for grouping. It removes footnote markers and lowercases the text. */
