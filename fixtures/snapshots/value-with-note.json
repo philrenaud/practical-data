@@ -1,0 +1,135 @@
+{
+ "url": "fixture://synthetic/value-with-note.html",
+ "title": "Practical Data: values with a note",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Releases",
+   "headers": [
+    "Release",
+    "Year distilled",
+    "Proof",
+    "% ABV",
+    "Number of casks",
+    "Store",
+    "Evaporation loss",
+    "Number of bottles (est.)"
+   ],
+   "rows": [
+    [
+     "2011",
+     "N/A",
+     "134.2",
+     "67.1",
+     "N/A",
+     "N/A",
+     "N/A",
+     "N/A"
+    ],
+    [
+     "2012",
+     "Autumn 1996",
+     "128.6",
+     "64.3",
+     "36",
+     "K",
+     "51.40%",
+     "4,620"
+    ],
+    [
+     "Autumn 2013 Lot A: Riverside",
+     "Autumn 1996",
+     "131.4",
+     "65.7",
+     "72 (combined autumn release)",
+     "K",
+     "55.12%",
+     "8,904 (combined autumn release)"
+    ],
+    [
+     "Autumn 2013 Lot B: Hillside",
+     "Autumn 1996",
+     "132.0",
+     "66.0",
+     "72 (combined autumn release)",
+     "K",
+     "55.12%",
+     "8,904 (combined autumn release)"
+    ],
+    [
+     "2014",
+     "Spring 1997",
+     "129.8",
+     "64.9",
+     "58",
+     "M",
+     "57.80%",
+     "6,215"
+    ],
+    [
+     "2015",
+     "Spring 1998",
+     "136.5",
+     "68.25",
+     "44",
+     "M",
+     "60.05%",
+     "4,288"
+    ],
+    [
+     "2016",
+     "Spring 1999",
+     "127.2",
+     "63.6",
+     "61",
+     "K",
+     "53.66%",
+     "6,980"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Ferry lines",
+   "headers": [
+    "Line",
+    "Terminal",
+    "Daily riders",
+    "Crossings per day"
+   ],
+   "rows": [
+    [
+     "Line 4 (harbor)",
+     "Pier Street",
+     "12,400 (est.)",
+     "38"
+    ],
+    [
+     "Line 7 (island)",
+     "Gull Point",
+     "3,150",
+     "14"
+    ],
+    [
+     "Line 9 (north)",
+     "Fen Quay",
+     "6,820 (est.)",
+     "22"
+    ],
+    [
+     "Line 11 (bay)",
+     "Pier Street",
+     "9,075",
+     "30"
+    ],
+    [
+     "Line 12 (river)",
+     "Mill Steps",
+     "1,940",
+     "10"
+    ]
+   ]
+  }
+ ]
+}
