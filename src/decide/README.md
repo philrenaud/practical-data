@@ -28,7 +28,9 @@ Code in `src/core` does the parts that need no model: `profile.ts`,
    kinds. A numeric column has parsed values, a unit, extents, and hints such
    as `isSequence` and `looksLikeYears`. A categorical column has 2 to 12
    distinct short labels. Every other column is text, with a reason such as
-   "every value is unique" or "dates or times".
+   "every value is unique" or "dates or times". A latitude column and a
+   longitude column in one table, with decimal values in range, are text
+   with the reason "map coordinates".
 3. `judgeColumns` sends one request for the table. Its state comes from
    `tableState`: the page and table titles, the row-label column, and one
    description per numeric column. `describeSpread` gives the spread in

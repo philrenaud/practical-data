@@ -161,3 +161,46 @@ test("a word that appears once, or that is most of the column, is not a stand-in
   })[1];
   assert.notEqual(most?.kind, "numeric");
 });
+
+const places = (headers: readonly string[], rows: readonly (readonly string[])[]) =>
+  profileTable({ id: "t0", title: "", headers: [...headers], rows: rows.map((r) => [...r]) });
+
+test("a latitude and longitude pair is map coordinates, not numbers", () => {
+  const p = places(
+    ["Id", "Street", "Persons", "longitude", "latitude"],
+    [
+      ["1", "Alder Rd", "2", "-79.3187976", "43.6995940"],
+      ["2", "Birch Ave", "1", "-79.4012233", "43.6541118"],
+      ["3", "Cedar St", "4", "-79.2875510", "43.7710342"],
+      ["4", "Dogwood Ln", "3", "-79.5120087", "43.7123905"],
+    ],
+  );
+  assert.deepEqual(
+    p.map((c) => (c.kind === "text" ? c.reason : c.kind)),
+    ["numeric", "categorical", "numeric", "map coordinates", "map coordinates"],
+  );
+});
+
+test("a Long column alone, or whole numbers, stay numbers", () => {
+  const yards = places(
+    ["Player", "Att", "Yds", "Long"],
+    [
+      ["A", "12", "88", "31"],
+      ["B", "9", "42", "14"],
+      ["C", "20", "131", "45"],
+    ],
+  );
+  assert.equal(yards[3]?.kind, "numeric");
+  const counts = places(
+    ["Site", "Lat", "Lng"],
+    [
+      ["A", "12", "40"],
+      ["B", "15", "38"],
+      ["C", "19", "52"],
+    ],
+  );
+  assert.deepEqual(
+    counts.map((c) => c.kind),
+    ["categorical", "numeric", "numeric"],
+  );
+});
