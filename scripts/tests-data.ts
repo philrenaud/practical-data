@@ -9,9 +9,11 @@
  *   demo/tests/requests/<slug>.json each table's requests and answers, fetched on demand by the site
  *
  *   node scripts/tests-data.ts
+ *   node scripts/tests-data.ts --quiet   # one line per page with a miss, then the totals
  */
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { parseArgs } from "node:util";
 import { formatDate, parseDate, type DatePrecision, type DateUnit } from "../src/core/dates.ts";
 import { isDateLike, isMissing, parseNumber } from "../src/core/parse.ts";
 import type { PageJudgment, PageSnapshot, TableJudgment, TableSnapshot } from "../src/core/types.ts";
@@ -58,6 +60,9 @@ const judgeRecorded = async (page: PageSnapshot) => {
   const judgment = await judgePage(capture, page);
   return { judgment, exchanges };
 };
+
+// --quiet keeps the pages with misses and the totals, for `npm run web:dev`.
+const { values: args } = parseArgs({ options: { quiet: { type: "boolean", default: false } } });
 
 const sources = new Map(
   (
@@ -274,7 +279,16 @@ for (const slug of slugs) {
   );
   if (unrecorded > 0)
     throw new Error(`${slug}: ${unrecorded} request(s) have no recording; run \`npm run eval\` online to record them.`);
-  console.log(`${slug.padEnd(36)} ${summary.score[0]}/${summary.score[1]} checks  ${tables.length} tables`);
+  const misses = summary.score[1] - summary.score[0];
+  const unexpected = misses - summary.known;
+  const note =
+    misses === 0
+      ? ""
+      : unexpected > 0
+        ? `  ${unexpected} UNEXPECTED ${unexpected === 1 ? "MISS" : "MISSES"}`
+        : `  ${summary.known} known ${summary.known === 1 ? "miss" : "misses"}`;
+  if (!args.quiet || misses > 0)
+    console.log(`${slug.padEnd(36)} ${summary.score[0]}/${summary.score[1]} checks  ${tables.length} tables${note}`);
 }
 
 // ── Unit test results ───────────────────────────────────────────────────────
@@ -396,6 +410,16 @@ await writeFile(
     known,
   }),
 );
+const missed = checks.filter((c) => !c.ok);
+const undocumented = missed.filter((c) => c.known === null).length;
+const misses =
+  missed.length === 0
+    ? ""
+    : ` · ${missed.length} ${
+        undocumented > 0
+          ? `${missed.length === 1 ? "miss" : "misses"}, ${undocumented} UNDOCUMENTED`
+          : `known ${missed.length === 1 ? "miss" : "misses"}`
+      }`;
 console.log(
-  `\n${checks.filter((c) => c.ok).length}/${checks.length} checks · ${units.reduce((n, u) => n + u.tests.length, 0)} unit tests · ${requests} requests replayed`,
+  `\n${checks.filter((c) => c.ok).length}/${checks.length} checks${misses} · ${units.reduce((n, u) => n + u.tests.length, 0)} unit tests · ${requests} requests replayed`,
 );
