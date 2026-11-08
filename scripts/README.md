@@ -22,8 +22,8 @@ Most scripts run offline. A script that calls the decision model needs
 | `eval.ts` | `eval` | Judges every snapshot and scores the result against `fixtures/expectations.json`. Writes `artifacts/eval-<provider>.json`. | Key for unrecorded questions. None with `--offline`. |
 | `e2e.ts` | `e2e` | Loads `dist/` as an unpacked extension, opens every fixture page, and checks the painted result. Needs `npm run build` first. Writes `artifacts/e2e.json` and `artifacts/screens/`. | Key, unless `--offline`. `--live` also visits the real sites. |
 | `api-smoke.ts` | `api:smoke` | Runs the free endpoint in `api/` under `wrangler dev`, against a local stand-in for the TypeSafe API, and checks its responses. | None. It uses the wrangler in devDependencies. |
-| `demo-data.ts` | `demo:data` | Trims tables from the snapshots and judges them for the site. Writes `demo/data.json`. | Key for unrecorded questions |
-| `tests-data.ts` | `tests:data` | Writes the data for the `/tests` site into `demo/tests/`: every eval check, the request and answer behind it, and the unit test results. Fails on any request with no recording. | None |
+| `demo-data.ts` | `demo:data` | Trims tables from the snapshots and judges them for the site. Writes `demo/data.json`. `--quiet` prints one line. | Key for unrecorded questions |
+| `tests-data.ts` | `tests:data` | Writes the data for the `/tests` site into `demo/tests/`: every eval check, the request and answer behind it, and the unit test results. Fails on any request with no recording. `--quiet` prints only pages with misses, then the totals. | None |
 | `prune-recordings.ts` | `recordings:prune` | Deletes recordings that no replay asks for anymore. Rebuilds `dist/`, runs the offline entrypoints under `RECORDINGS_LOG`, and removes every recording none of them read. `--dry-run` only reports. | None |
 | `build-demo.ts` | part of `demo` | Builds the SvelteKit site in `web/` into `site/`, with a zip of `dist/`. | None |
 | `serve.ts` | none | A static file server and the list of fixture pages. The other scripts import it. | None |

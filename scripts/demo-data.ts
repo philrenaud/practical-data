@@ -6,9 +6,13 @@
  * colors.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { parseArgs } from "node:util";
 import type { PageJudgment, PageSnapshot, TableSnapshot } from "../src/core/types.ts";
 import { judgePage } from "../src/decide/judge.ts";
 import { recordedJev } from "./lib/cache.ts";
+
+// --quiet keeps one summary line, for `npm run web:dev`.
+const { values: args } = parseArgs({ options: { quiet: { type: "boolean", default: false } } });
 
 interface Pick {
   readonly table: string;
@@ -174,7 +178,11 @@ for (const section of SECTIONS) {
   const { picks: _picks, slug: _slug, ...meta } = section;
   out.push({ section: meta, page, judgment });
   const colored = judgment.tables.flatMap((t) => t.encodings.map((e) => e.header));
-  console.log(`${section.id.padEnd(11)} ${colored.join(", ")}`);
+  if (!args.quiet) console.log(`${section.id.padEnd(11)} ${colored.join(", ")}`);
 }
 await mkdir("demo", { recursive: true });
 await writeFile("demo/data.json", JSON.stringify(out));
+if (args.quiet) {
+  const columns = out.reduce((n, s) => n + s.judgment.tables.reduce((m, t) => m + t.encodings.length, 0), 0);
+  console.log(`demo/data.json: ${out.length} sections · ${columns} shaded columns`);
+}
