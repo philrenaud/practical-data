@@ -43,6 +43,7 @@ const REASONS: Readonly<Record<string, string>> = {
   "too many distinct values": "names or free text",
   "values are long text": "free text",
   "dates or times": "dates",
+  "map coordinates": "map coordinates (latitude and longitude)",
   "only two levels": "only two levels",
   constant: "every value is the same",
 };

@@ -1,0 +1,193 @@
+{
+ "url": "fixture://synthetic/map-coordinates.html",
+ "title": "Practical Data: map coordinates",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Road incidents, sample records",
+   "headers": [
+    "_id",
+    "record_id",
+    "evdate",
+    "street1",
+    "street2",
+    "surface",
+    "light",
+    "persons",
+    "longitude",
+    "latitude",
+    "vehicles",
+    "age"
+   ],
+   "rows": [
+    [
+     "1",
+     "2014:510233",
+     "Tue, Mar 4, 2014 7:12 AM",
+     "QUARRY RD",
+     "ELMHURST AVE",
+     "Dry",
+     "Daylight",
+     "3",
+     "-75.68120934817201",
+     "45.41275530192846",
+     "2",
+     "34"
+    ],
+    [
+     "2",
+     "2014:510233",
+     "Tue, Mar 4, 2014 7:12 AM",
+     "QUARRY RD",
+     "ELMHURST AVE",
+     "Dry",
+     "Daylight",
+     "3",
+     "-75.68120934817201",
+     "45.41275530192846",
+     "2",
+     "61"
+    ],
+    [
+     "3",
+     "2014:518870",
+     "Fri, Apr 11, 2014 6:40 PM",
+     "HARBOUR LN",
+     "MILLRACE DR",
+     "Wet",
+     "Dusk",
+     "5",
+     "-75.70233871450092",
+     "45.39018826445017",
+     "3",
+     "22"
+    ],
+    [
+     "4",
+     "2014:518870",
+     "Fri, Apr 11, 2014 6:40 PM",
+     "HARBOUR LN",
+     "MILLRACE DR",
+     "Wet",
+     "Dusk",
+     "5",
+     "-75.70233871450092",
+     "45.39018826445017",
+     "3",
+     "47"
+    ],
+    [
+     "5",
+     "2014:522914",
+     "Sun, May 18, 2014 11:05 PM",
+     "WILLOW CRES",
+     "",
+     "Dry",
+     "Dark",
+     "1",
+     "-75.64457102938817",
+     "45.43361407721953",
+     "1",
+     "19"
+    ],
+    [
+     "6",
+     "2014:530041",
+     "Wed, Jun 25, 2014 3:28 PM",
+     "FOUNDRY ST",
+     "TANNERY RD",
+     "Dry",
+     "Daylight",
+     "2",
+     "-75.72981455301266",
+     "45.37740219983150",
+     "2",
+     "58"
+    ],
+    [
+     "7",
+     "2014:530041",
+     "Wed, Jun 25, 2014 3:28 PM",
+     "FOUNDRY ST",
+     "TANNERY RD",
+     "Dry",
+     "Daylight",
+     "2",
+     "-75.72981455301266",
+     "45.37740219983150",
+     "2",
+     "40"
+    ],
+    [
+     "8",
+     "2014:541187",
+     "Sat, Aug 9, 2014 1:50 AM",
+     "ORCHARD WAY",
+     "BELL ST",
+     "Wet",
+     "Dark",
+     "4",
+     "-75.66604318820457",
+     "45.42093318470255",
+     "1",
+     "27"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Rushing, week 9",
+   "headers": [
+    "Player",
+    "Att",
+    "Yds",
+    "Avg",
+    "Long",
+    "TD"
+   ],
+   "rows": [
+    [
+     "Dace Holloway",
+     "22",
+     "131",
+     "6.0",
+     "41",
+     "2"
+    ],
+    [
+     "Teo Marchetti",
+     "11",
+     "48",
+     "4.4",
+     "13",
+     "0"
+    ],
+    [
+     "Orrin Vale",
+     "5",
+     "27",
+     "5.4",
+     "12",
+     "1"
+    ],
+    [
+     "Ezra Lindqvist",
+     "3",
+     "6",
+     "2.0",
+     "4",
+     "0"
+    ],
+    [
+     "Wren Calloway",
+     "1",
+     "9",
+     "9.0",
+     "9",
+     "0"
+    ]
+   ]
+  }
+ ]
+}

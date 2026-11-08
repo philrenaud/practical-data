@@ -2623,5 +2623,45 @@
         "kind": "quantitative"
       }
     }
+  },
+  "map-coordinates": {
+    "t0": {
+      "_id": "none",
+      "record_id": "none",
+      "street1": "none",
+      "longitude": "none",
+      "latitude": "none",
+      "persons": {
+        "kind": "quantitative"
+      }
+    },
+    "t1": {
+      "Player": "none",
+      "Att": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Yds": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Long": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "TD": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    }
   }
 }

@@ -280,13 +280,68 @@ const readRanked = (cells: readonly string[], convention: NumberConvention): rea
 /** A date, a clock time, or a relative time ("3 days ago", which would otherwise parse as 3 days). */
 const looksLikeDate = (cell: string): boolean => isDateLike(cell) || parseDate(cell, { now: 0 }) !== null;
 
+const LATITUDE_HEADER = /^(?:lat|latitude)$/;
+const LONGITUDE_HEADER = /^(?:lon|lng|long|longitude)$/;
+const COORDINATE_FRACTION_SHARE = 0.8;
+
+/** True when a word of the header, split on anything but letters, matches `re`: "Latitude", "LAT", "y_lat (deg)". */
+const headerNames = (header: string, re: RegExp): boolean =>
+  header
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .some((w) => re.test(w));
+
+/** True when every value is within ±`limit` and most carry a fractional part, as decimal degrees do. */
+const looksLikeDegrees = (p: NumericProfile, limit: number): boolean => {
+  const nums = p.values.filter((v) => v !== null);
+  return (
+    p.min >= -limit &&
+    p.max <= limit &&
+    (p.unit === null || p.unit === "°") &&
+    nums.filter((v) => !Number.isInteger(v)).length / nums.length >= COORDINATE_FRACTION_SHARE
+  );
+};
+
+/**
+ * Finds a latitude column and a longitude column that give each row's place
+ * on a map, as an open data portal's table of incidents does. They are
+ * numbers, but a larger one is only further north or east, so they are not
+ * shaded. Every signal must hold: a header that names latitude and one that
+ * names longitude in the same table, values within ±90 and ±180, and mostly
+ * decimal values. A "Long" column alone, such as a longest gain of 45 yards,
+ * stays a number. Returns the two column indexes, or an empty list.
+ */
+const coordinateColumns = (profiles: readonly ColumnProfile[]): readonly number[] => {
+  const numeric = profiles.filter((p): p is NumericProfile => p.kind === "numeric");
+  const lat = numeric.filter((p) => headerNames(p.header, LATITUDE_HEADER) && looksLikeDegrees(p, 90));
+  const lon = numeric.filter((p) => headerNames(p.header, LONGITUDE_HEADER) && looksLikeDegrees(p, 180));
+  return lat.length === 1 && lon.length === 1 ? [lat[0]!.col, lon[0]!.col] : [];
+};
+
 /** Profiles every column of a table. `convention` is the page's number format, from its `lang`. */
 export const profileTable = (
   table: TableSnapshot,
   convention: NumberConvention = "dot-decimal",
 ): readonly ColumnProfile[] => {
+  const profiles = profileColumns(table, convention);
+  const coordinates = coordinateColumns(profiles);
+  if (coordinates.length === 0) return profiles;
+  return profiles.map((p) =>
+    coordinates.includes(p.col)
+      ? {
+          kind: "text",
+          col: p.col,
+          header: p.header,
+          reason: "map coordinates",
+          samples: table.rows.slice(0, 5).map((r) => stripNoise(r[p.col] ?? "")),
+        }
+      : p,
+  );
+};
+
+const profileColumns = (table: TableSnapshot, convention: NumberConvention): readonly ColumnProfile[] => {
   const standIns = confirmStandIns(table, convention);
-  return table.headers.map((rawHeader, col) => {
+  return table.headers.map((rawHeader, col): ColumnProfile => {
     const header = stripNoise(rawHeader);
     const cells = table.rows.map((r) => r[col] ?? "");
     const filled = cells.filter((c) => !isMissing(c));
