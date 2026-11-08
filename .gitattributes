@@ -1,0 +1,3 @@
+# Recorded model answers are generated, content-addressed files. Collapse
+# them in pull request diffs and leave them out of language statistics.
+fixtures/recordings/*.json linguist-generated

@@ -27,6 +27,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { chromium, type BrowserContext, type Page, type Route } from "playwright";
+import { logKey } from "./lib/cache.ts";
 import { PAGE_HOST, buildTestExtension, fixturePages, serve } from "./serve.ts";
 
 const { values: args } = parseArgs({
@@ -102,6 +103,7 @@ const routeRequest = async (route: Route) => {
     const key = createHash("sha256")
       .update(req.postData() ?? "")
       .digest("hex");
+    await logKey(key);
     if (!args.offline) {
       // --record-missing keeps existing recordings as they are: a new fixture's
       // questions go live, everything already recorded replays.

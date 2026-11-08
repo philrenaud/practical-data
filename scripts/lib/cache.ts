@@ -4,7 +4,7 @@
  * The scripts and tests share one set of recordings, so an answer recorded by
  * one replays in all of them.
  */
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import {
   modelFromConfig,
   type AnswerCache,
@@ -15,12 +15,24 @@ import {
 
 const RECORDINGS = "fixtures/recordings";
 
+/**
+ * With RECORDINGS_LOG set, appends every key a replay asks for to that file.
+ * scripts/prune-recordings.ts runs the replay entrypoints under it to learn
+ * which recordings are still referenced.
+ */
+export const logKey = async (key: string): Promise<void> => {
+  const log = process.env["RECORDINGS_LOG"];
+  if (log !== undefined) await appendFile(log, `${key}\n`).catch(() => undefined);
+};
+
 export const fileCache = (dir = RECORDINGS): AnswerCache => ({
-  get: (key) =>
-    readFile(`${dir}/${key}.json`, "utf8").then(
+  get: async (key) => {
+    await logKey(key);
+    return readFile(`${dir}/${key}.json`, "utf8").then(
       (s) => JSON.parse(s) as DecisionResponse,
       () => undefined,
-    ),
+    );
+  },
   set: async (key, value) => {
     await mkdir(dir, { recursive: true });
     // Write to a temporary file, then rename it. Parallel requests can record the same key at once.
