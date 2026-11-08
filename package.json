@@ -36,6 +36,7 @@
     "api:deploy": "wrangler deploy -c api/wrangler.jsonc",
     "demo:data": "node scripts/demo-data.ts",
     "tests:data": "node scripts/tests-data.ts",
+    "recordings:prune": "node scripts/prune-recordings.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
