@@ -40,10 +40,14 @@ const SECTIONS: readonly Section[] = [
     heading: "Figures out which direction is better",
     source: "https://www.baseball-reference.com/players/s/skubata01.shtml",
     caption:
-      "If we shaded all the columns in this table with a uniform \"big numbers = green, small numbers = red\" rule, it would go against the meaning of a few of them (Losses, and ERA is better when it's lower, for example). The model picks the direction for each column, given its title and context.",
+      'If we shaded all the columns in this table with a uniform "big numbers = green, small numbers = red" rule, it would go against the meaning of a few of them (Losses, and ERA is better when it\'s lower, for example). The model picks the direction for each column, given its title and context.',
     checks: "/tests/checks/direction",
     picks: [
-      { table: "t1", columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"], rows: 7 },
+      {
+        table: "t1",
+        columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"],
+        rows: 7,
+      },
     ],
   },
   {

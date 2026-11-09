@@ -5,8 +5,14 @@
 <main class="doc">
   <a class="back" href="/">← Practical Data</a>
   <h1>About</h1>
-  <p>Practical Data is a project by <a href="https://philrenaud.com">Phil Renaud</a> and was started in November 2026.</p>
-  <p>My general thesis is that we have an awful lot more information made available to us than we can reasonably be expected to understand on its own, and we owe it to ourselves to build tools to make sense of it if we don't want to cede the task of understanding to AI.</p>
+  <p>
+    Practical Data is a project by <a href="https://philrenaud.com">Phil Renaud</a> and was started in November 2026.
+  </p>
+  <p>
+    My general thesis is that we have an awful lot more information made available to us than we can reasonably be
+    expected to understand on its own, and we owe it to ourselves to build tools to make sense of it if we don't want to
+    cede the task of understanding to AI.
+  </p>
 
   <h2>Colophon</h2>
   <p>

@@ -41,7 +41,6 @@
     {/if}
   </p>
 
-
   {#each s.page.tables as t, ti (t.id)}
     {@const j = s.judgment.tables[ti]!}
     <div class="table-scroll">

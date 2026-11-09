@@ -58,7 +58,9 @@
     <h1>Every table on the web <br class="wide" />becomes a data visualization.</h1>
     <p class="lede">
       <span class="brand"><img src="icon128.png" alt="" width="22" height="22" /> Practical Data</span>
-      is a Chrome Extension that applies <span class="conditional high">conditional</span> <span class="conditional low">formatting</span> for data tables as you browse. It does tricky stuff automatically, like figuring out which direction is "better", or how to parse messy data, using a decision model.
+      is a Chrome Extension that applies <span class="conditional high">conditional</span>
+      <span class="conditional low">formatting</span> for data tables as you browse. It does tricky stuff automatically, like
+      figuring out which direction is "better", or how to parse messy data, using a decision model.
     </p>
     <div class="actions">
       <a class="button primary" href={storeUrl} onclick={() => track("store_click", { placement: "hero" })}
@@ -137,8 +139,11 @@
       <li>
         <h3>1. Read the page</h3>
         <p>
-          When you scroll a table into view, the extension figures out if it's got data or not. If it does, the extension standardizes its values (for parsing; your view of it doesn't change):
-          Things like <code>$0.025</code>, <code>.312</code>, <code>6' 6"</code>, <code>1.5B</code>, <code>$50–60K</code>, <code>2:59</code>, <code>≤ 272K</code>, etc.
+          When you scroll a table into view, the extension figures out if it's got data or not. If it does, the
+          extension standardizes its values (for parsing; your view of it doesn't change): Things like <code
+            >$0.025</code
+          >, <code>.312</code>, <code>6' 6"</code>, <code>1.5B</code>, <code>$50–60K</code>, <code>2:59</code>,
+          <code>≤ 272K</code>, etc.
         </p>
       </li>
       <li>
@@ -164,23 +169,24 @@
     </ol>
     <ul>
       <li>
-        If you bring your own Jev or Clef key, the extension sends the data to the provider directly. If not, it sends it to an intermediary Cloudflare worker with a (daily limited, but these things are pretty cheap!) Jev API key. I don't retain anything either way (<a href="/privacy">Privacy policy</a>)
+        If you bring your own Jev or Clef key, the extension sends the data to the provider directly. If not, it sends
+        it to an intermediary Cloudflare worker with a (daily limited, but these things are pretty cheap!) Jev API key.
+        I don't retain anything either way (<a href="/privacy">Privacy policy</a>)
       </li>
       <li>
-        Nothing is sent on sites you turn off. The toolbar popup turns a page or a whole site off, and <kbd>⌥⇧H</kbd> pauses the current page.
+        Nothing is sent on sites you turn off. The toolbar popup turns a page or a whole site off, and <kbd>⌥⇧H</kbd> pauses
+        the current page.
       </li>
-      <li>
-        A typical page costs about a tenth of a cent on your own key (or mine).
-      </li>
+      <li>A typical page costs about a tenth of a cent on your own key (or mine).</li>
     </ul>
-
   </section>
 
   <section class="open" id="open-source" aria-labelledby="open-title">
     <div class="open-head">
       <h2 id="open-title">Open Source (MIT)</h2>
       <p>
-        You can Bring Your Own Key (BYOK) for Jev or Clef, or use the extension without a key (with a usage-limited free endpoint). System one models are pretty cheap :)
+        You can Bring Your Own Key (BYOK) for Jev or Clef, or use the extension without a key (with a usage-limited free
+        endpoint). System one models are pretty cheap :)
       </p>
     </div>
     <div class="terminal" role="group" aria-label="Run the test suite">
