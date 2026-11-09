@@ -15,6 +15,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "build": "node scripts/build.ts",
     "dev": "node scripts/build.ts --watch --dev",
     "build:dev": "node scripts/build.ts --dev",
