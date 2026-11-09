@@ -416,6 +416,16 @@ const parseAlternative = (text: string, convention: NumberConvention): ParsedNum
  */
 const TEXT_NOTE_RE = /^(.*\S)\s*\(\s*(\p{L}[\p{L}\s.,'’&/-]{0,39})\)$/u;
 
+/**
+ * A percentage followed by a note in words with no parentheses, as in "49.1%
+ * high effort" or "61% with tools v2". Score tables put the setting a result
+ * was measured under after the score. The note starts with a letter and has
+ * no second percentage, currency, or parenthesis, so "12% to 15%" and
+ * "45% (12)" are left to the other rules, and a cell with two scores ("74.6%
+ * 75.3% (variant)") stays text.
+ */
+const PERCENT_NOTE_RE = /^([+\-−]?\d[\d,.]*\s?%)\s+(\p{L}[^%$€£¥()[\]]{0,39})$/u;
+
 /** Parses one cell. Returns null for missing, non-numeric, or ambiguous text. */
 export const parseNumber = (raw: string, convention: NumberConvention = "dot-decimal"): ParsedNumber | null => {
   const text = stripNoise(raw);
@@ -438,6 +448,9 @@ export const parseNumber = (raw: string, convention: NumberConvention = "dot-dec
     parseCountShare(text, convention) ??
     parseAlternative(text, convention);
   if (parsed !== null) return parsed;
+  // A percentage with a bare note in words: the percentage is the cell's number.
+  const percentNote = PERCENT_NOTE_RE.exec(text);
+  if (percentNote?.[1] !== undefined) return parseSingle(percentNote[1], convention);
   // A value with a note in words: the value is the cell's number.
   const note = TEXT_NOTE_RE.exec(text);
   return note?.[1] === undefined ? null : parseNumber(note[1], convention);

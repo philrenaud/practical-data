@@ -39,6 +39,11 @@ render the README images.
   `modalWidth` sets the table's width from the most common row width, and
   rows that do not fill that width are skipped, so one malformed row does
   not misalign the rest.
+- **Rows hidden from assistive technology are not read.** A row with
+  `aria-hidden="true"`, or in a hidden `<thead>`, `<tbody>`, or `<tfoot>`,
+  repeats content shown elsewhere, such as a row label repeated above its
+  scores for narrow screens. Read as data it would be a blank row, and the
+  first one would join the header.
 - **Cell text is what the user sees.** `cellText` reads `innerText`, which
   leaves out hidden sort keys. It skips buttons, form controls, and
   footnote superscripts by walking the nodes, not by string replacement.

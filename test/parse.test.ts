@@ -94,6 +94,19 @@ test("a value followed by the condition it holds under parses to the value", () 
   assert.equal(parseNumber("Plan for teams"), null);
 });
 
+test("a percentage followed by a note in words parses to the percentage", () => {
+  const pct = (value: number) => ({ value, unit: "%", bound: false, range: null });
+  assert.deepEqual(parseNumber("49.1% High effort"), pct(49.1));
+  assert.deepEqual(parseNumber("67.6% without safeguards"), pct(67.6));
+  assert.deepEqual(parseNumber("61% Model-6 Variant"), pct(61));
+  assert.deepEqual(parseNumber("76.3% Variant 5.2"), pct(76.3));
+  assert.deepEqual(parseNumber("76.3% Variant 5.2†"), pct(76.3));
+  assert.equal(parseNumber("74.6% 75.3% (Variant 5.2)"), null, "two scores in one cell");
+  assert.equal(parseNumber("12% then 15% later"), null, "a second percentage");
+  assert.equal(parseNumber("45% ($12)"), null, "a parenthesis");
+  assert.equal(parseNumber("Up 45% this year"), null, "words before the number");
+});
+
 test("isMissing recognizes placeholders", () => {
   for (const t of ["", "—", "N/A", "Not applicable", " – ", "TBD[3]", "— N/a", "— N/a [p]", "-- n/a --", ".."]) {
     assert.equal(isMissing(t), true, t);
