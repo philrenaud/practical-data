@@ -1,0 +1,11 @@
+#!/bin/sh
+# Checks formatting on the staged files before each commit, so `npm run
+# format:check` cannot fail in CI on a commit that passed locally.
+# `npm install` points git here through the prepare script.
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$files" ] && exit 0
+if ! printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 npx prettier --check --ignore-unknown; then
+  echo >&2 ""
+  echo >&2 "Unformatted staged files. Run: npx prettier --write <the files above>, stage them, and commit again."
+  exit 1
+fi
