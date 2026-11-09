@@ -125,7 +125,7 @@
   --line: #e2dbcf;
   --accent: #5b4bc4;
   --accent-ink: #ffffff;
-  --hero: #16151a;
+  --hero: #121115;
   --hero-ink: #f4f0e8;
   --radius: 14px;
   /*
@@ -151,7 +151,7 @@
     --line: #2c2a31;
     --accent: #9a8ef2;
     --accent-ink: #121115;
-    --hero: #0b0a0d;
+    /* --hero: #0b0a0d; */
     color-scheme: dark;
   }
 }
@@ -164,7 +164,7 @@
   --line: #2c2a31;
   --accent: #9a8ef2;
   --accent-ink: #121115;
-  --hero: #0b0a0d;
+  /* --hero: #0b0a0d; */
   color-scheme: dark;
 }
 
@@ -201,6 +201,28 @@ code {
   padding: 72px 16px 64px;
   position: relative;
   overflow: hidden;
+  /* background-color: #fff; */
+  /* background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.26 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); */
+}
+/* The grid texture: procedural graph paper with a paper-like bend, drawn and
+   animated by HeroGrid.svelte's shader. Strongest toward the bottom right,
+   fading out before it reaches the top left. A canvas is a replaced element:
+   left/right don't stretch it the way inset would, so the 120% box is
+   spelled out. */
+.hero-grid {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  opacity: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 15%, transparent 80%);
+  mask-image: linear-gradient(to bottom, #000 15%, transparent 80%);
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+.hero-grid.live {
+  opacity: 0.5;
 }
 .hero::after {
   /* A band of the extension's palette along the bottom edge. */
@@ -213,18 +235,22 @@ code {
 .hero-inner {
   max-width: 1040px;
   margin: 0 auto;
+  position: relative; /* keeps the text above the paper layer */
 }
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 28px;
+  /* margin: 0 0 28px; */
   font: 600 16px var(--font-ui);
   letter-spacing: 0.01em;
-  color: #e4ded2;
+  color: #eee;
+  display: inline-block;
 }
 .brand img {
   border-radius: 6px;
+  position: relative;
+  top: 4px;
 }
 h1,
 h2,
@@ -244,6 +270,19 @@ h1 {
   font-size: 19px;
   color: #cfc9be;
 }
+
+.lede .conditional {
+  padding: 0 3px;
+  border-radius: 4px;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+.lede .conditional.high {
+  background-color: #ef444475; /* Example color for high conditional formatting */
+}
+.lede .conditional.low {
+  background-color: #22c55e75; /* Example color for low conditional formatting */
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -260,6 +299,7 @@ h1 {
   text-decoration: none;
   border: 1px solid #3a3842;
   color: var(--hero-ink);
+  background: #16151a;
   transition:
     transform 80ms,
     background 120ms;
@@ -409,6 +449,21 @@ main {
   font: 13px var(--font-mono);
   color: var(--faint);
 }
+/* The caption's link row: the checks link and the live page, kept apart. */
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin: 0 0 18px;
+}
+.sources .source {
+  margin-bottom: 0;
+}
+.sources .sep {
+  color: var(--faint);
+  opacity: 0.55;
+}
 
 .table-scroll {
   overflow-x: auto;
@@ -499,11 +554,6 @@ h2 {
   padding: 22px;
   counter-increment: step;
 }
-.steps > li::before {
-  content: "0" counter(step);
-  font: 500 13px var(--font-mono);
-  color: var(--faint);
-}
 .steps h3 {
   margin: 6px 0 8px;
   font-size: 22px;
@@ -522,26 +572,6 @@ h2 {
 .questions li + li {
   margin-top: 4px;
 }
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin: 28px 0 0;
-}
-.stats div {
-  border-top: 2px solid var(--ink);
-  padding-top: 12px;
-}
-.stats dt {
-  font-size: 30px;
-  font-weight: 740;
-  letter-spacing: -0.02em;
-}
-.stats dd {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
 
 .install ol {
   margin: 0;
@@ -555,6 +585,23 @@ h2 {
   color: var(--muted);
   max-width: 70ch;
   margin-top: 18px;
+}
+.proof + .proof {
+  margin-left: 20px;
+}
+.tldr {
+  padding: 64px 0 8px;
+  /* The anchor jump from the hero must clear the sticky palette bar. */
+  scroll-margin-top: 72px;
+}
+.tldr ul {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 17px;
+  max-width: 75ch;
+}
+.tldr li + li {
+  margin-top: 10px;
 }
 
 /* ── Open source ── */
@@ -577,28 +624,6 @@ h2 {
 }
 .open a {
   color: var(--hero-ink);
-}
-.open-points {
-  list-style: none;
-  padding: 0;
-  margin: 32px 0 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-}
-.open-points li {
-  border-top: 1px solid #3a3842;
-  padding-top: 16px;
-}
-.open-points h3 {
-  margin: 0 0 6px;
-  font-size: 19px;
-  font-weight: 700;
-}
-.open-points p {
-  margin: 0;
-  color: #a7a196;
-  font-size: 15.5px;
 }
 .terminal {
   margin-top: 32px;
@@ -685,17 +710,13 @@ footer {
     font-size: 17px;
   }
   .steps,
-  .stats,
-  .open-points {
+  .stats {
     grid-template-columns: 1fr;
   }
   .open {
     padding: 28px 20px;
     margin-left: -8px;
     margin-right: -8px;
-  }
-  .open-points {
-    gap: 20px;
   }
   .text-button {
     width: 100%;
@@ -810,25 +831,19 @@ footer {
 }
 
 /* ── Cambridge typography. The display face ships one cut: Light 300. ── */
-.hero .lede {
+/* .hero .lede {
   font-family: var(--font-display);
   font-weight: 300;
-}
+} */
 h1,
 h2,
 h3,
 .example h3,
 .steps h3,
-.open h2,
-.open-points h3,
-/* .docs doubles the specificity: docs.css loads with the /tests route chunk,
-   after this file, and would win the tie with its 700-range weights. */
-.docs .docs-main h1,
-.docs .docs-main h2 {
+.open h2 {
   font-family: var(--font-display);
   font-weight: 300;
   letter-spacing: -0.05em;
-  /* Tight tracking closes word spaces too; give them back. */
   word-spacing: 0.08em;
 }
 h1 {

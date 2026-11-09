@@ -28,72 +28,42 @@ interface Section {
   readonly heading: string;
   readonly source: string;
   readonly caption: string;
+  /** The tests-site page that checks this capability. */
+  readonly checks: string;
   readonly picks: readonly Pick[];
 }
 
 const SECTIONS: readonly Section[] = [
   {
-    id: "pricing",
-    slug: "github-copilot-pricing",
-    heading: "Model pricing",
-    source: "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing",
-    caption:
-      "Prices are lower-is-better and span two orders of magnitude, so they get a log scale. The two vendor tables share one scale, and Category reads as an ordered set of grades.",
-    picks: [
-      { table: "t0", columns: ["Model", "Category", "Input", "Cached input", "Output"], rows: 10 },
-      { table: "t1", columns: ["Model", "Category", "Input", "Cached input", "Output"], rows: 8 },
-    ],
-  },
-  {
     id: "pitching",
     slug: "bbref-tarik-skubal",
-    heading: "Pitching stats",
+    heading: "Figures out which direction is better",
     source: "https://www.baseball-reference.com/players/s/skubata01.shtml",
     caption:
-      "ERA, WHIP and FIP are lower-is-better; strikeouts per nine are higher-is-better. Season and age are numbers, but they place a row in time, so they stay plain.",
+      "If we shaded all the columns in this table with a uniform \"big numbers = green, small numbers = red\" rule, it would go against the meaning of a few of them (Losses, and ERA is better when it's lower, for example). The model picks the direction for each column, given its title and context.",
+    checks: "/tests/checks/direction",
     picks: [
-      { table: "t1", columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"] },
+      { table: "t1", columns: ["Season", "Age", "Team", "W", "L", "ERA", "IP", "SO", "WHIP", "FIP", "ERA+", "SO9"], rows: 7 },
     ],
   },
   {
-    id: "pace",
-    slug: "bbref-rules-changes",
-    heading: "Pace of play",
-    source: "https://www.baseball-reference.com/friv/rules-changes-stats.shtml",
+    id: "traps",
+    slug: "edge-cases",
+    heading: "Knows which numbers are amounts",
+    source: "",
     caption:
-      "Game length (2:41) and time between plays (2:11) are read as clock durations: 3:00 is one more than 2:59. Shorter is better, so the 2023 pitch clock shows up as a wall of green.",
-    picks: [
-      {
-        table: "t10",
-        columns: ["Year", "G", "AvgTime", "%≥3:30", "Avg Tm Btwn PA", "Avg Tm Btwn BIP"],
-        // Full seasons only (the page also has month rows), 2026 back to 2011.
-        where: /^\d{4}$/,
-        rows: 16,
-      },
-    ],
-  },
-  {
-    id: "benchmarks",
-    slug: "cloudflare-clef",
-    heading: "Benchmarks, by row",
-    source: "https://blog.cloudflare.com/clef-decision-models/",
-    caption:
-      "Here each row is a benchmark and each column a model, so the model judges the table row-wise: every benchmark gets its own scale, and each row's best model is the greenest.",
-    picks: [
-      {
-        table: "t0",
-        columns: ["Benchmark", "Clef", "Clef-flash", "Jev", "DiffusionGemma Jev", "Kev 9B", "Laya"],
-        title: "Benchmark scores by model",
-      },
-    ],
+      "A lot of numbers aren't amounts; if you try to shade everything numeric, identifying things like Jersey # or Zip Code would look like they're on a scale. Practical Data asks the decision model whether a column is really a measure first, so identifiers stay are ignored.",
+    checks: "/tests/checks/shade-or-not",
+    picks: [{ table: "t1", columns: ["Player", "Jersey #", "Born", "Zip code", "Height (in)", "Points per game"] }],
   },
   {
     id: "cards",
     slug: "mtggoldfish-modern-price-index",
-    heading: "Card prices",
+    heading: "Knows when to use a log or linear scale",
     source: "https://www.mtggoldfish.com/index/modern",
     caption:
-      "Rarity is ordered Common → Uncommon → Rare → Mythic from pairwise judgments. Prices run from $4 to $237, so they get a log scale, read as lower-is-better; weekly change reads as higher-is-better.",
+      "On a linear scale, the one $237 card here would flatten everything under $30 into nearly the same red colour. The model notices when ratios matter more than differences and moves that column to a log scale, so the cheap cards still read as different from each other.",
+    checks: "/tests/checks/scale",
     picks: [
       { table: "t1", columns: ["Card", "Set", "Rarity", "Price", "Weekly (%)"], spread: { column: "Rarity", per: 4 } },
     ],
@@ -101,9 +71,11 @@ const SECTIONS: readonly Section[] = [
   {
     id: "storms",
     slug: "wiki-costliest-atlantic-hurricanes",
-    heading: "Hurricanes",
+    heading: "Puts labels in order",
     source: "https://en.wikipedia.org/wiki/List_of_costliest_Atlantic_hurricanes",
-    caption: "Storm classification is text, but the model orders it: Tropical storm, then Category 1 through 5.",
+    caption:
+      "Works on words, not just numbers! The model can put labels in order when the presence of that order is implied (like tropical storms, or card rarity, or medal rankings).",
+    checks: "/tests/checks/label-order",
     picks: [
       {
         table: "t1",
@@ -115,20 +87,59 @@ const SECTIONS: readonly Section[] = [
   {
     id: "population",
     slug: "wiki-countries-by-population",
-    heading: "Populations",
+    heading: "Ignores Total and Average rows",
     source: "https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population",
     caption:
-      "The first row is the World total. The model flags it as an aggregate, so it is left out of the scale instead of washing out every country.",
+      "The first row here is the World total; considered alongside the others, it would dwarf all their numbers and make them almost indistinguishable. The model flags totals and averages as aggregates and scales around them.",
+    checks: "/tests/checks/totals",
     picks: [{ table: "t0", columns: ["Location", "Population", "% of world", "Date"], rows: 12 }],
   },
   {
-    id: "traps",
-    slug: "edge-cases",
-    heading: "Numbers that aren't amounts",
-    source: "",
+    id: "pricing",
+    slug: "github-copilot-pricing",
+    heading: "Multiple tables can share a scale",
+    source: "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing",
     caption:
-      "Jersey numbers, birth years and zip codes are numeric but not comparable, so they stay plain. Height and scoring are measures.",
-    picks: [{ table: "t1", columns: ["Player", "Jersey #", "Born", "Zip code", "Height (in)", "Points per game"] }],
+      "Practical data looks for same-named columns in similar contexts and aligns their scales accordingly so they're more easily compared at a glance.",
+    checks: "/tests/checks/shared-scales",
+    picks: [
+      { table: "t0", columns: ["Model", "Category", "Input", "Cached input", "Output"], rows: 10 },
+      { table: "t1", columns: ["Model", "Category", "Input", "Cached input", "Output"], rows: 8 },
+    ],
+  },
+  {
+    id: "benchmarks",
+    slug: "cloudflare-clef",
+    heading: "Notices when the table is meant to be read row-wise",
+    source: "https://blog.cloudflare.com/clef-decision-models/",
+    caption:
+      "Not every table compares down the column. Here each row is one benchmark and the columns are models, so column-wise shading would compare numbers that have nothing to do with each other. The model reads the orientation and gives each row its own scale.",
+    checks: "/tests/checks/orientation",
+    picks: [
+      {
+        table: "t0",
+        columns: ["Benchmark", "Clef", "Clef-flash", "Jev", "DiffusionGemma Jev", "Kev 9B", "Laya"],
+        title: "Benchmark scores by model",
+      },
+    ],
+  },
+  {
+    id: "pace",
+    slug: "bbref-rules-changes",
+    heading: "Understands times and durations",
+    source: "https://www.baseball-reference.com/friv/rules-changes-stats.shtml",
+    caption:
+      "It would be easy to treat 2:42 as text, or a ratio. Practical Data parses it as a duration, and understands minutes/hours correctly (3:00 is one more than 2:59).",
+    checks: "/tests/units",
+    picks: [
+      {
+        table: "t10",
+        columns: ["Year", "G", "AvgTime", "%≥3:30", "Avg Tm Btwn PA", "Avg Tm Btwn BIP"],
+        // Full seasons only (the page also has month rows), 2026 back to 2011.
+        where: /^\d{4}$/,
+        rows: 16,
+      },
+    ],
   },
 ];
 

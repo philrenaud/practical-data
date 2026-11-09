@@ -30,11 +30,17 @@
     <h3>{s.section.heading}</h3>
   </header>
   <p class="caption">{s.section.caption}</p>
-  {#if s.section.source !== ""}
-    <a class="source" href={s.section.source} rel="noopener">{host(s.section.source)}</a>
-  {:else}
-    <span class="source">synthetic test page</span>
-  {/if}
+  <p class="sources">
+    <a class="source" href={s.section.checks}>docs/tests</a>
+    {#if s.section.source !== ""}
+      <span class="sep" aria-hidden="true">·</span>
+      <a class="source" href={s.section.source} rel="noopener">view it live at {host(s.section.source)}</a>
+    {:else}
+      <span class="sep" aria-hidden="true">·</span>
+      <span class="source">synthetic test page</span>
+    {/if}
+  </p>
+
 
   {#each s.page.tables as t, ti (t.id)}
     {@const j = s.judgment.tables[ti]!}

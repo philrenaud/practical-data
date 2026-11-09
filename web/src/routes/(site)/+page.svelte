@@ -5,6 +5,7 @@
   import { track } from "#lib/analytics.ts";
   import Example from "#lib/Example.svelte";
   import { sections } from "#lib/demo.ts";
+  import HeroGrid from "#lib/HeroGrid.svelte";
 
   const { data } = $props();
   const storeUrl = config.storeUrl;
@@ -52,14 +53,12 @@
 </svelte:head>
 
 <header class="hero">
+  <HeroGrid />
   <div class="hero-inner">
-    <p class="brand">
-      <img src="icon128.png" alt="" width="22" height="22" /> Practical Data
-    </p>
-    <h1>Tables you can read <br class="wide" />at a glance.</h1>
+    <h1>Every table on the web <br class="wide" />becomes a data visualization.</h1>
     <p class="lede">
-      Conditional formatting for every table on the web, with the direction figured out for you. A Chrome extension that
-      shades the comparable columns of any HTML table, so the better and worse rows show without reading every cell.
+      <span class="brand"><img src="icon128.png" alt="" width="22" height="22" /> Practical Data</span>
+      is a Chrome Extension that applies <span class="conditional high">conditional</span> <span class="conditional low">formatting</span> for data tables as you browse. It does tricky stuff automatically, like figuring out which direction is "better", or how to parse messy data, using a decision model.
     </p>
     <div class="actions">
       <a class="button primary" href={storeUrl} onclick={() => track("store_click", { placement: "hero" })}
@@ -71,13 +70,12 @@
             fill="currentColor"
             d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
           /></svg
-        > Source on GitHub</a
+        >GitHub</a
       >
     </div>
-    <a class="proof" href="/tests"
-      ><strong>{data.tests.passed} of {data.tests.total}</strong> hand-labeled checks on real tables pass.
-      <span>See the core data tests</span></a
-    >
+    <a class="proof" href="/tests"><span>Docs and tests</span></a>
+    <a class="proof" href="#what-happens"><span>How it works TLDR</span></a>
+    <a class="proof" href="/about"><span>About this project</span></a>
   </div>
 </header>
 
@@ -133,93 +131,58 @@
     {/each}
   </section>
 
-  <section class="how" aria-labelledby="how-title">
-    <h2 id="how-title">How it works</h2>
+  <section class="how" id="what-happens" aria-labelledby="how-title">
+    <h2 id="how-title">How it works (TLDR)</h2>
     <ol class="steps">
       <li>
-        <h3>Read</h3>
+        <h3>1. Read the page</h3>
         <p>
-          Code extracts each table, resolves merged cells, and parses values: <code>$0.025</code>, <code>.312</code>,
-          <code>6' 6"</code>, <code>1.5B</code>, <code>20–25</code>, <code>2:59</code>, <code>≤ 272K</code>. A
-          <code>2:41</code>
-          game length is a duration; a <code>7:05</code> start time is not. It computes the ranges and spreads, and describes
-          them in words.
+          When you scroll a table into view, the extension figures out if it's got data or not. If it does, the extension standardizes its values (for parsing; your view of it doesn't change):
+          Things like <code>$0.025</code>, <code>.312</code>, <code>6' 6"</code>, <code>1.5B</code>, <code>$50–60K</code>, <code>2:59</code>, <code>≤ 272K</code>, etc.
         </p>
       </li>
       <li>
-        <h3>Judge</h3>
+        <h3>2. Reason about the data</h3>
         <p>
-          A System One model (<a href="https://typesafe.ai">Jev</a>) answers narrow, typed questions with probabilities:
+          A System One model (<a href="https://typesafe.ai">Jev</a>) answers narrow questions with probabilities:
         </p>
         <ul class="questions">
-          <li>Is this column an amount, an identifier, a time, a rank, or a cutoff?</li>
+          <li>Is this column an amount? an identifier? a timestamp? a rank?</li>
           <li>Is a higher value better, worse, or neither?</li>
-          <li>Do ratios matter more than differences (log scale)?</li>
-          <li>Are these labels ordered grades? Which of two is the lower grade?</li>
-          <li>Is this row a total? Do same-named columns in other tables share a scale?</li>
+          <li>Does it make sense to show it in linear or log scale?</li>
+          <li>Is this row a total, or part of the data?</li>
+          <li>Do same-named columns in other tables share a scale?</li>
           <li>Are values compared down each column, or across each row?</li>
         </ul>
       </li>
       <li>
-        <h3>Paint</h3>
+        <h3>3. Paint the table</h3>
         <p>
-          D3 maps each value onto a ColorBrewer scale and blends it over the page's own background. Every cell keeps
-          WCAG AA text contrast, and the extension restores the page exactly when you turn it off.
+          The extension uses D3 to map each value onto a colour scale and applies it over the page's own background.
         </p>
       </li>
     </ol>
-    <dl class="stats">
-      <div>
-        <dt>165 / 165</dt>
-        <dd>
-          hand-labeled columns shaded or left plain correctly, across 21 test pages (a regression check, not an accuracy
-          estimate)
-        </dd>
-      </div>
-      <div>
-        <dt>81 / 81</dt>
-        <dd>directions of "better" judged correctly</dd>
-      </div>
-      <div>
-        <dt>~$0.001</dt>
-        <dd>typical cost to judge a page; repeat visits are free</dd>
-      </div>
-    </dl>
+    <ul>
+      <li>
+        If you bring your own Jev or Clef key, the extension sends the data to the provider directly. If not, it sends it to an intermediary Cloudflare worker with a (daily limited, but these things are pretty cheap!) Jev API key. I don't retain anything either way (<a href="/privacy">Privacy policy</a>)
+      </li>
+      <li>
+        Nothing is sent on sites you turn off. The toolbar popup turns a page or a whole site off, and <kbd>⌥⇧H</kbd> pauses the current page.
+      </li>
+      <li>
+        A typical page costs about a tenth of a cent on your own key (or mine).
+      </li>
+    </ul>
+
   </section>
 
   <section class="open" id="open-source" aria-labelledby="open-title">
     <div class="open-head">
-      <h2 id="open-title">Open source, top to bottom.</h2>
+      <h2 id="open-title">Open Source (MIT)</h2>
       <p>
-        Practical Data is MIT-licensed. The extension, the questions it asks the model, the test pages and the recorded
-        answers are all on GitHub.
+        You can Bring Your Own Key (BYOK) for Jev or Clef, or use the extension without a key (with a usage-limited free endpoint). System one models are pretty cheap :)
       </p>
     </div>
-    <ul class="open-points">
-      <li>
-        <h3>Read what you install</h3>
-        <p>
-          The store package is built unminified from the same repository, so the code running in your browser reads like
-          the source.
-        </p>
-      </li>
-      <li>
-        <h3>No key needed</h3>
-        <p>
-          A free endpoint judges tables without a key and keeps only the answers and
-          <a href="https://github.com/philrenaud/practical-data/blob/main/src/api/usage.ts">anonymous counts</a>. With
-          your own key, table text goes straight to your provider and nothing passes through the author. The extension
-          has no analytics or telemetry. <a href="/privacy">Privacy policy</a>
-        </p>
-      </li>
-      <li>
-        <h3>Check the claims yourself</h3>
-        <p>
-          One command replays every recorded judgment offline: unit tests, the hand-labeled eval, and 21 pages in a real
-          browser. No key needed.
-        </p>
-      </li>
-    </ul>
     <div class="terminal" role="group" aria-label="Run the test suite">
       <pre><code
           ><span class="prompt">$</span> git clone https://github.com/philrenaud/practical-data
@@ -235,12 +198,12 @@
             fill="currentColor"
             d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
           /></svg
-        > View the source on GitHub</a
+        > View source on GitHub</a
       >
       <a href="/tests">See the core data tests</a>
       <a href="https://github.com/philrenaud/practical-data/issues">Report a misread table</a>
       <a href="https://github.com/philrenaud/practical-data/blob/main/docs/decisions.md"
-        >How the questions are designed</a
+        >A bit about how the questions are designed</a
       >
     </p>
   </section>
@@ -254,17 +217,10 @@
         >.
       </li>
       <li>
-        It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> API key on the options
-        page.
+        It works without a key. To use your own, paste a <a href="https://typesafe.ai">TypeSafe</a> or
+        <a href="https://developers.cloudflare.com/workers-ai/models/clef/">Clef</a> API key on the options page.
       </li>
     </ol>
-    <p class="note">
-      Tables are judged as they scroll into view, up to 200 per page. Table text (headers, sample values, a few rows) is
-      sent to be judged, through the free endpoint or straight to your own provider; nothing is sent for sites you turn
-      off. The free endpoint has a daily allowance per browser. A key gives unlimited use, and a typical page costs
-      about a tenth of a cent on it. The toolbar popup turns a page or a whole site off, and ⌥⇧H toggles the current
-      page.
-    </p>
   </section>
 </main>
 
@@ -277,8 +233,7 @@
     Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a
       href="/tests">Tests</a
     >
-    · <a href="/privacy">Privacy policy</a> ·
+    · <a href="/about">About</a> · <a href="/privacy">Privacy policy</a> ·
     <a href="https://github.com/philrenaud/practical-data">Source on GitHub</a>
-    · <a href="https://github.com/philrenaud/practical-data/blob/main/LICENSE">MIT license</a>
   </p>
 </footer>

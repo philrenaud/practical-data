@@ -13,6 +13,8 @@ export interface DemoSection {
     readonly heading: string;
     readonly source: string;
     readonly caption: string;
+    /** The tests-site page that checks this capability. */
+    readonly checks: string;
   };
   readonly page: PageSnapshot;
   readonly judgment: PageJudgment;

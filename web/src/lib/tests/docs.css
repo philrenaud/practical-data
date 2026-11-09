@@ -139,17 +139,11 @@
 .docs-main h1 {
   margin: 0;
   font-size: clamp(32px, 4.4vw, 48px);
-  line-height: 1.1;
-  font-weight: 720;
-  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 .docs-main h2 {
   margin: 64px 0 16px;
   font-size: 26px;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
 }
 .docs-main p {
   max-width: 70ch;
