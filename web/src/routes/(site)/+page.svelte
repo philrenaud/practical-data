@@ -234,11 +234,12 @@
   <p class="brand footer-brand">
     <img src="icon128.png" alt="" width="22" height="22" /> Practical Data
   </p>
-  <p class="signoff">Conditional formatting for every table on the web, with the direction figured out for you.</p>
+  <p class="signoff">
+    Smart conditional formatting for every table on the web. Shading on this page comes from an offline recording using
+    jev-1.13.0.
+  </p>
   <p>
-    Shading on this page comes from recorded judgments of real tables, applied by the extension's own code. <a
-      href="/tests">Tests</a
-    >
+    <a href="/tests">Tests</a>
     · <a href="/about">About</a> · <a href="/privacy">Privacy policy</a> ·
     <a href="https://github.com/philrenaud/practical-data">Source on GitHub</a>
   </p>

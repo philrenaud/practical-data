@@ -23,7 +23,7 @@ export const KINDS: readonly KindInfo[] = [
   {
     kind: "detect",
     slug: "shade-or-not",
-    title: "Shade or ignore",
+    title: "Shade or ignore a table?",
     short: "Is it useful to compare the values in this column?",
     about: [
       "Code sorts each column into numbers, labels, or text. Code does not send text columns to the model.",
@@ -37,7 +37,7 @@ export const KINDS: readonly KindInfo[] = [
   {
     kind: "polarity",
     slug: "direction",
-    title: "Which direction is better",
+    title: "Which direction is better?",
     short: "Is a higher value better, a lower value better, or neither?",
     about: [
       "A low price is better. A high batting average is better. A tall building is not better or worse.",
@@ -50,7 +50,7 @@ export const KINDS: readonly KindInfo[] = [
   {
     kind: "transform",
     slug: "scale",
-    title: "Log or linear scale",
+    title: "Log or linear scale?",
     short: "Are ratios more important than differences?",
     about: [
       "Populations from 50 to 1.4 billion do not show well on a linear scale. Almost all cells get the lightest color. A log scale shows them better.",
@@ -104,7 +104,7 @@ export const KINDS: readonly KindInfo[] = [
   {
     kind: "orientation",
     slug: "orientation",
-    title: "Rows or columns",
+    title: "Rows or columns?",
     short: "Do you compare values down a column or across a row?",
     about: [
       "Some benchmark tables show one benchmark in each row and one model in each column. In these tables, each row is one measure.",

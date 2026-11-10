@@ -21,7 +21,7 @@
   <div class="docs-body">
     <nav class="docs-nav" aria-label="Tests">
       <ul>
-        <li><a href="/tests" aria-current={here("/tests")}>How we test</a></li>
+        <li><a href="/tests" aria-current={here("/tests")}>Testing data decisions about tables</a></li>
       </ul>
       <ul>
         {#each KINDS as k (k.kind)}

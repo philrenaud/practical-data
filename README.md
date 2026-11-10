@@ -81,7 +81,7 @@ storage. The service worker accepts messages only from this extension.
 Install from the
 [store listing](https://chromewebstore.google.com/detail/practical-data/oeoogiokpnkhimnepeepflkpmghiokgm).
 
-The store serves version 1.1.0, which works without a key.
+The store serves version 1.3.0, which works without a key.
 
 ### From source
 
@@ -211,8 +211,8 @@ not count against the limit. When the limit runs out, the toolbar icon shows
 own key.
 
 With your own key, you pay the provider. An offline replay of the test
-corpus sends 290 requests and 739,390 input tokens for 26 pages. At Jev's
-price of $0.042 per million input tokens, that is about $0.03. The extension
+corpus sends 455 requests and 1,022,149 input tokens for 54 pages. At Jev's
+price of $0.042 per million input tokens, that is about $0.04. The extension
 caches answers, so it does not pay twice for an unchanged table.
 
 ## Known limitations
@@ -236,7 +236,7 @@ caches answers, so it does not pay twice for an unchanged table.
 | `npm run build` | Builds the extension into `dist/` | None |
 | `npm run dev` | Rebuilds `dist/` on each change | None |
 | `npm test` | Unit tests: parsing, profiling, ordering, color math, contrast, and the judge against a scripted model | None |
-| `npm run eval` | Asks the model about 26 pages and compares the answers with the hand labels in `fixtures/expectations.json` | Jev, for new questions only |
+| `npm run eval` | Asks the model about 54 pages and compares the answers with the hand labels in `fixtures/expectations.json` | Jev, for new questions only |
 | `npm run eval -- --offline --strict` | Replays recorded answers from `fixtures/recordings/`. Fails on a mismatch not listed under `$known` | None |
 | `npm run e2e -- --offline` | Loads the built extension in Chromium and checks painting, contrast, controls, the popup, and clean removal | None. API calls are replayed |
 | `npm run e2e -- --live` | The same checks against the live sites in `fixtures/live/sources.json` | Jev |
@@ -250,7 +250,7 @@ shaded, run `node scripts/explain-url.ts <url>`.
 
 ### What the scores mean
 
-`fixtures/expectations.json` holds hand labels for 285 columns on 26 pages.
+`fixtures/expectations.json` holds hand labels for 543 columns on 54 pages.
 The labels and the thresholds were tuned on these same pages. The scores are
 therefore a regression check, not an accuracy estimate for new pages. The
 offline replay tests the code against recorded answers. It does not test
@@ -261,13 +261,13 @@ to measure model drift, follow the steps in
 Offline replay with Jev 1.13 at this commit:
 
 ```
-color / don't color   284 of 285
-polarity              156 of 156
-log vs linear          23 of 23
-ordinal order          12 of 13
-aggregate rows          4 of 4
+color / don't color   541 of 543
+polarity              266 of 266
+log vs linear          27 of 27
+ordinal order          15 of 16
+aggregate rows         13 of 13
 shared scales          10 of 11
-rows vs columns         7 of 7
+rows vs columns         8 of 8
 ```
 
 Each miss is listed with its reason under `$known` in
