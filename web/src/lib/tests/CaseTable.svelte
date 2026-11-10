@@ -300,7 +300,9 @@
     box-shadow: inset 0 1px 0 var(--muted);
   }
 
-  tfoot td {
+  /* The strip wraps instead of inheriting the data cells' nowrap, so a long
+     reason never widens its whole column. */
+  .frame tfoot td {
     position: sticky;
     bottom: 0;
     z-index: 1;
@@ -310,6 +312,7 @@
     font-family: var(--sans);
     padding-top: 8px;
     padding-bottom: 8px;
+    white-space: normal;
   }
   tfoot .k,
   .rowstrip .k {
@@ -320,6 +323,7 @@
   }
   tfoot .d {
     display: block;
+    max-width: 18ch;
     font-size: 12px;
     color: var(--muted);
   }
