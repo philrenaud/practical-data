@@ -2663,5 +2663,76 @@
         ]
       }
     }
+  },
+  "score-qualifiers": {
+    "t0": {
+      "@orientation": "rows",
+      "Coding PatchBench 3": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Coding RepoFix-Bench v4": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Office tasks DeskFlowBench": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Lab research LabBench 0.3": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Security FlawHuntBench": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Security KnownBug Recall": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Web search SeekQA (lenient)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Computer use ScreenOps 2": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Reasoning HardQuiz (with tools)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "@orientation": "columns",
+      "Monthly price": {
+        "kind": "quantitative"
+      },
+      "Storage (GB)": {
+        "kind": "quantitative"
+      },
+      "Discount": {
+        "kind": "quantitative"
+      }
+    }
   }
 }

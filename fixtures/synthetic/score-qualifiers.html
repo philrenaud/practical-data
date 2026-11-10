@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: scores with qualifiers</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 960px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 24px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 6px 12px; text-align: left; vertical-align: top; }
+  .category { display: block; font-size: 12px; color: #666; }
+  .benchmark { display: block; font-weight: 600; }
+  .value { display: block; }
+  .qualifier { display: block; font-size: 12px; color: #666; }
+  /* The label rows show only on narrow screens, above each row of scores. */
+  .label-row { display: none; }
+  @media (max-width: 600px) { .label-row { display: table-row; } .label-cell { display: none; } }
+</style>
+</head>
+<body>
+<h1>Scores with qualifiers</h1>
+<p>
+  A model maker's score table: tests as rows, models as columns. A score can
+  carry a qualifier under it in its own element ("High effort", "with
+  tools"), which reads as text after the percentage. For narrow screens the
+  table repeats each test's label in a row of its own above the scores,
+  hidden with aria-hidden. Those rows must not read as blank data rows, and
+  the first must not join the header. The table compares across rows.
+</p>
+
+<h2>Benchmark results: Lark 3 against other models</h2>
+<table id="scores">
+  <thead><tr><td></td><th scope="col">Lark 3</th><th scope="col">Lark 2</th><th scope="col">Wren Pro</th><th scope="col">Finch XL</th><th scope="col">Heron 9</th></tr></thead>
+  <tbody>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Coding</span><span class="benchmark">PatchBench 3</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Coding</span><span class="benchmark">PatchBench 3</span></th><td><span class="value">52.4%</span><span class="qualifier">Max effort</span></td><td><span class="value">38.1%</span><span class="qualifier">Max effort</span></td><td><span class="value">47.0%</span></td><td><span class="value">44.6%</span></td><td><span class="value">40.2%</span><span class="qualifier">Low effort</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Coding</span><span class="benchmark">RepoFix-Bench v4</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Coding</span><span class="benchmark">RepoFix-Bench v4</span></th><td><span class="value">71.2%</span></td><td><span class="value">58.0%</span></td><td><span class="value">63.9%</span></td><td><span class="value">66.4%</span></td><td><span class="value">60.7%</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Office tasks</span><span class="benchmark">DeskFlowBench</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Office tasks</span><span class="benchmark">DeskFlowBench</span></th><td><span class="value">50.3%</span></td><td><span class="value">33.8%</span></td><td><span class="value">41.9%</span></td><td><span class="value">43.2%</span></td><td><span class="value">55.1%</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Lab research</span><span class="benchmark">LabBench 0.3</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Lab research</span><span class="benchmark">LabBench 0.3</span></th><td><span class="value">72.8%</span><span class="qualifier">74.0% (Lark 3 Max)</span></td><td><span class="value">50.9%</span></td><td><span class="value">57.3%</span></td><td><span class="value">66.0%</span></td><td><span class="value">63.5%</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Security</span><span class="benchmark">FlawHuntBench</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Security</span><span class="benchmark">FlawHuntBench</span></th><td><span class="value">78.5%</span><span class="qualifier">Lark 3 Max</span></td><td><span class="value">60.2%</span><span class="qualifier">Lark 2 Max</span></td><td><span class="value">66.1%</span><span class="qualifier">without filters</span></td><td><span class="value">59%</span><span class="qualifier">Finch-2 Sec</span></td><td><span class="value">—</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Security</span><span class="benchmark">KnownBug Recall</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Security</span><span class="benchmark">KnownBug Recall</span></th><td><span class="value">88.0%</span><span class="qualifier">Lark 3 Max</span></td><td><span class="value">76.9%</span><span class="qualifier">Lark 2 Max</span></td><td><span class="value">80.4%</span><span class="qualifier">without filters</span></td><td><span class="value">—</span></td><td><span class="value">—</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Web search</span><span class="benchmark">SeekQA (lenient)</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Web search</span><span class="benchmark">SeekQA (lenient)</span></th><td><span class="value">81.4%</span></td><td><span class="value">67.2%</span></td><td><span class="value">70.8%</span></td><td><span class="value">—</span></td><td><span class="value">—</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Computer use</span><span class="benchmark">ScreenOps 2</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Computer use</span><span class="benchmark">ScreenOps 2</span></th><td><span class="value">88.1%</span></td><td><span class="value">82.0%</span></td><td><span class="value">85.6%</span></td><td><span class="value">78.3%</span></td><td><span class="value">80.9%</span></td></tr>
+    <tr class="label-row" aria-hidden="true"><th><span class="category">Reasoning</span><span class="benchmark">HardQuiz (with tools)</span></th><th colspan="4"></th></tr>
+    <tr><th scope="row" class="label-cell"><span class="category">Reasoning</span><span class="benchmark">HardQuiz (with tools)</span></th><td><span class="value">40.6%</span><span class="qualifier">High effort</span></td><td><span class="value">18.4%</span></td><td><span class="value">22.0%</span></td><td><span class="value">21.1%</span></td><td><span class="value">—</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Plan comparison</h2>
+<!-- Compared down each column. A discount with its condition in words is still the percentage. -->
+<table id="plans">
+  <thead><tr><th>Plan</th><th>Monthly price</th><th>Storage (GB)</th><th>Discount</th></tr></thead>
+  <tbody>
+    <tr><td>Starter</td><td>$6</td><td>50</td><td>10% first year</td></tr>
+    <tr><td>Standard</td><td>$12</td><td>200</td><td>15% first year</td></tr>
+    <tr><td>Plus</td><td>$20</td><td>1,000</td><td>20% billed yearly</td></tr>
+    <tr><td>Team</td><td>$45</td><td>5,000</td><td>25% billed yearly</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -304,10 +304,21 @@ const isAppList = (table: HTMLTableElement, rows: readonly HTMLTableRowElement[]
   return rows.every((r) => r.querySelector(ROW_CONTROLS) !== null);
 };
 
-/** The rows of `table` itself, without those of nested tables or rows with no cells. */
+/**
+ * True for a row the page hides from assistive technology, or that sits in a
+ * hidden <thead>, <tbody>, or <tfoot>. Such a row repeats content shown
+ * elsewhere, as a score table that repeats each row's label in a row of its
+ * own above the scores for narrow screens. Read as data, it is a blank row,
+ * and the first one joins the header.
+ */
+const isAriaHidden = (row: HTMLTableRowElement): boolean =>
+  row.getAttribute("aria-hidden") === "true" ||
+  (row.parentElement !== row.closest("table") && row.parentElement?.getAttribute("aria-hidden") === "true");
+
+/** The rows of `table` itself, without those of nested tables, rows with no cells, or rows hidden from assistive technology. */
 const ownRows = (table: HTMLTableElement): HTMLTableRowElement[] =>
   // Rows with no cells (StatCan puts one between header and body) carry nothing.
-  Array.from(table.rows).filter((r) => r.closest("table") === table && r.cells.length > 0);
+  Array.from(table.rows).filter((r) => r.closest("table") === table && r.cells.length > 0 && !isAriaHidden(r));
 
 /** The most rows, and cells in a row, that a table inside a cell can have and still be that cell's content. */
 const CELL_TABLE_MAX = 3;
