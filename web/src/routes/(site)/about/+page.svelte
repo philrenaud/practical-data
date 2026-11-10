@@ -4,14 +4,27 @@
 
 <main class="doc">
   <a class="back" href="/">← Practical Data</a>
+  <br /><br />
   <h1>About</h1>
   <p>
-    Practical Data is a project by <a href="https://philrenaud.com">Phil Renaud</a> and was started in November 2026.
+    Practical Data was created by <a href="https://philrenaud.com">Phil Renaud</a> and was started in October 2026.
   </p>
+  <p class="phils-thesis">
+    We now have access to more information than we can reasonably be expected to understand on its own. We owe it to
+    ourselves to build tools to make sense of it, if we don't want to cede the task of understanding to AI.
+  </p>
+
   <p>
-    My general thesis is that we have an awful lot more information made available to us than we can reasonably be
-    expected to understand on its own, and we owe it to ourselves to build tools to make sense of it if we don't want to
-    cede the task of understanding to AI.
+    Consider <a
+      href="https://www.research.autodesk.com/publications/same-stats-different-graphs/"
+      target="_blank"
+      rel="noopener">Anscombe's Quartet</a
+    >
+    as a demonstration of our ability to miss the patterns hidden in data, and consider how much more of it we're inundated
+    with when working with LLMs. Addy Osmani talks about
+    <a href="https://x.com/addyosmani/article/2117512471930167377" target="_blank" rel="noopener">cognitive surrender</a
+    > as an inertial tendency when critical thinking becomes too difficult. I hope, in its own small way, Practical Data can
+    help us avoid ceding the responsibility of understanding.
   </p>
 
   <h2>Colophon</h2>
@@ -62,5 +75,12 @@
       500 14px "IBM Plex Mono",
       monospace;
     color: var(--muted);
+  }
+  .phils-thesis {
+    font-style: italic;
+    margin: 16px 0;
+    font-size: 20px !important;
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
   }
 </style>

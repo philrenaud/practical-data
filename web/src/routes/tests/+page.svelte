@@ -14,19 +14,26 @@
   />
 </svelte:head>
 
-<h1>How we test the decisions</h1>
+<h1>Testing data decisions about tables</h1>
 <p class="lede-docs">
-  The extension asks a decision model short questions about each table. The answers tell the extension which columns to
-  shade and which direction is better.
+  The extension pings a decision model (Jev, Clef, etc.) with short questions about each table; this determines which
+  columns to shade, which direction is better, and a handful of other useful things.
 </p>
+
 <p>
-  We copied the tables of {data.pages} public pages and gave hand labels to their columns. Each check compares one decision
-  with its hand label. The checks use recorded answers, thus you can run them again without a model key:
+  These pages serve as both an overview of the kinds of coverage and decisions Practical Data makes about tables, and as
+  a sort of set of evals for the extension's performance going forward. I hope you find them useful for understanding
+  how the tool works.
+</p>
+
+<p>
+  I copied the tables from {data.pages} public pages during build-out and hand-labeled their columns. Each check compares
+  one decision with how I labelled it. The checks answers were recorded, so you don't need a model key to run them again:
   <code>npm run eval -- --offline</code>.
 </p>
 
 <p class="score">
-  <strong>{data.passCount} of {data.checkCount}</strong> checks pass.
+  Practical Data handles <strong>{data.passCount} of {data.checkCount}</strong> hand-labeled checks.
   {#if failing > 0}
     {failing === knownFailing
       ? `The ${failing === 1 ? "failure shows" : `${failing} failures show`}`

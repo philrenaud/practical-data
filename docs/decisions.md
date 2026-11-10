@@ -104,8 +104,8 @@ measured in October 2026, on the 13 pages the corpus had then:
 Jev is the default. The prices are the ones this repository uses throughout,
 including README.md and docs/hosted-api.md.
 
-The corpus now has 54 pages. `npm run eval -- --offline --strict` reports 446
-requests and 1,007,863 input tokens. Those are the recorded token counts, so a
+The corpus now has 54 pages. `npm run eval -- --offline --strict` reports 455
+requests and 1,022,149 input tokens. Those are the recorded token counts, so a
 cold run costs the same. At $0.042 per million input tokens, a full cold run
 with Jev costs about $0.04.
 

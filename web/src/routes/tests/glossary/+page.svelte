@@ -7,11 +7,6 @@
 </svelte:head>
 
 <h1>Glossary</h1>
-<p class="lede-docs">
-  Each question that the extension asks, and what each answer means. The model gives a probability for each answer.
-</p>
-<p class="muted">The text sent to the model has more examples. It is in <code>src/decide/questions.ts</code>.</p>
-
 <h2 class="part">Answers</h2>
 {#each GLOSSARY as g (g.kinds[0])}
   <section class="entry">

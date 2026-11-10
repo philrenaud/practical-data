@@ -9,10 +9,19 @@
 </svelte:head>
 
 <h1>Known limitations</h1>
-<p class="lede-docs">These are mistakes that the tool makes on real pages.</p>
+<p class="lede-docs">
+  When I hand-labelled table decisions for eval reasons in October 2025, these are the mistakes that Practical Data made
+  that, if I were to fix, would break some other rule.
+</p>
 <p>
-  The first ones cause a check to fail. CI accepts these failures, but no other failures. The last ones show only on
-  live pages.
+  I guess the best way to explain this section is to say that data on the web is messy in inconsistent ways. The
+  failures here are happily sparse and (IMO) don't detract from the overall usefulness of the tool, but they're worth
+  noting.
+</p>
+<p>
+  Consider the first one here; a basketball-reference table lists heights using <em>feet-inches</em> format. Practical Data
+  has a "identify ranges like 10-20" rule, which feels overall very useful for shading range-based columns, but that means
+  that someone's height being listed as 5-10 gets us into trouble.
 </p>
 
 {#each data.limitations as l, i (i)}
