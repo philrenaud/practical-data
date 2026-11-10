@@ -488,6 +488,38 @@ test("a row labeled Total needs only one column to add up", () => {
   );
 });
 
+test("a Total row in the middle of a table adds up the rows above it", () => {
+  const columns = (...cols: (number | null)[][]) => cols.map((values) => ({ values }) as unknown as NumericProfile);
+  const labeled = (...labels: string[]) => labels.map((l) => [l, ""]);
+  // A monthly count read by rows: three months, their Total, then a share row and a change row.
+  const months = labeled("Jan", "Feb", "Mar", "Total", "% Share", "MoM");
+  assert.deepEqual(sumRows(columns([2, 1, 3, 6, 40, 0], [0, 1, 1, 2, 13.3, -100]), 6, months), [3]);
+  assert.deepEqual(
+    sumRows(columns([2, 1, 3, 6, 40, 0], [0, 1, 1, 3, 13.3, -100]), 6, months),
+    [],
+    "every column that counts must add up",
+  );
+  assert.deepEqual(
+    sumRows(
+      columns([2, 1, 3, 6, 40, 0], [0, 1, 1, 2, 13.3, -100]),
+      6,
+      labeled("Jan", "Feb", "Mar", "Apr", "May", "Jun"),
+    ),
+    [],
+    "a middle row that adds up needs the label too",
+  );
+  assert.deepEqual(
+    sumRows(columns([9, 19, 29, 49, 99]), 5, labeled("Starter", "Plus", "Total Care", "Team", "Business")),
+    [],
+    "a plan named Total Care is not a total",
+  );
+  assert.deepEqual(
+    sumRows(columns([0, 0, 0, 0, 5], [0, 0, 0, 0, 2]), 5, labeled("A", "B", "Total", "C", "D")),
+    [],
+    "zeros above prove nothing",
+  );
+});
+
 test("a total found by code is left out of the domain even when the model calls it an entry", async () => {
   const box = pricing(
     "t0",

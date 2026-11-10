@@ -386,11 +386,64 @@ const TOTAL_LABEL = /^(?:grand\s+)?totals?\b/i;
  * so there every column that counts must match. A row with a cell that says
  * it is a total ("Total") needs only one column, but every column that counts
  * must match: a worked bill has one cost column and a Total row under it.
+ *
+ * A row in the middle counts only when it says it is a total and its numbers
+ * are the sums of the rows above it, in every column that counts. A monthly
+ * table read row-wise puts its Total row above a share row and a change row,
+ * so the Total is neither first nor last.
  */
 export const sumRows = (
   numeric: readonly NumericProfile[],
   rowCount: number,
   rows: readonly (readonly string[])[] = [],
+): number[] =>
+  [...new Set([...edgeSumRows(numeric, rowCount, rows), ...labeledSubtotalRows(numeric, rowCount, rows)])].sort(
+    (a, b) => a - b,
+  );
+
+/** A row with a cell that names it a total. */
+const namesTotal = (rows: readonly (readonly string[])[], r: number): boolean =>
+  (rows[r] ?? []).some((cell) => TOTAL_LABEL.test(cell.trim()));
+
+const sumOf = (values: readonly number[]): number => values.reduce((a, b) => a + b, 0);
+
+/** Whether `total` is the sum of `parts`, allowing for rounding on display. */
+const sumsTo = (total: number, parts: readonly number[]): boolean => {
+  const sum = sumOf(parts);
+  // Cells are rounded for display, so allow half a percent.
+  return Math.abs(total - sum) <= Math.max(1e-9, 0.005 * Math.abs(sum));
+};
+
+/** Rows between the first and the last that say they are totals and sum every row above them. */
+const labeledSubtotalRows = (
+  numeric: readonly NumericProfile[],
+  rowCount: number,
+  rows: readonly (readonly string[])[],
+): number[] => {
+  const found: number[] = [];
+  // At least two rows above, and a row below, so the edge rule covers the rest.
+  for (let r = 2; r < rowCount - 1; r++) {
+    if (!namesTotal(rows, r)) continue;
+    let matched = 0;
+    let counted = 0;
+    for (const p of numeric) {
+      const total = p.values[r];
+      const above = p.values.slice(0, r).filter((v): v is number => v !== null);
+      if (total === null || total === undefined || above.length < 2) continue;
+      if (sumOf(above) === 0) continue;
+      counted++;
+      if (sumsTo(total, above)) matched++;
+    }
+    if (matched >= 1 && matched === counted) found.push(r);
+  }
+  return found;
+};
+
+/** The first or the last row when its numbers are the sums of the other rows. */
+const edgeSumRows = (
+  numeric: readonly NumericProfile[],
+  rowCount: number,
+  rows: readonly (readonly string[])[],
 ): number[] =>
   (rowCount < 3 ? [] : [...new Set([0, rowCount - 1])]).filter((r) => {
     let matched = 0;
@@ -399,13 +452,11 @@ export const sumRows = (
       const total = p.values[r];
       const others = p.values.filter((v, i): v is number => i !== r && v !== null);
       if (total === null || total === undefined || others.length < 2) continue;
-      const sum = others.reduce((a, b) => a + b, 0);
-      if (sum === 0) continue;
+      if (sumOf(others) === 0) continue;
       counted++;
-      // Cells are rounded for display, so allow half a percent.
-      if (Math.abs(total - sum) <= Math.max(1e-9, 0.005 * Math.abs(sum))) matched++;
+      if (sumsTo(total, others)) matched++;
     }
-    if ((rows[r] ?? []).some((cell) => TOTAL_LABEL.test(cell.trim()))) return matched >= 1 && matched === counted;
+    if (namesTotal(rows, r)) return matched >= 1 && matched === counted;
     if (rowCount < 5) return matched >= MIN_SUM_COLUMNS && matched === counted;
     return matched >= MIN_SUM_COLUMNS && matched * 3 >= counted * 2;
   });
