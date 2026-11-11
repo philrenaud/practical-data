@@ -1,0 +1,55 @@
+name: A table is shaded wrong
+description: A column has the wrong direction, shades when it should stay plain, or stays plain when it should shade.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Report only pages that anyone can open, and do not paste private data.
+
+        In the extension, the **Looks wrong** button in the table bar reports the table without an issue. It shows the whole report before it sends anything.
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      placeholder: https://en.wikipedia.org/wiki/...
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Table and column
+      description: Enough to find it on the page, such as the table's caption and the column header.
+      placeholder: "Season ratings table, the Rank column"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What the extension did
+      description: A screenshot helps.
+      placeholder: Rank 1 is red and rank 30 is green.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: Rank 1 is the best, so it should be green.
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - Free (the default)
+        - My own key
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown on chrome://extensions.
+      placeholder: 1.3.0
