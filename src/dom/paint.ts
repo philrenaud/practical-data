@@ -132,7 +132,8 @@ const paintColumn = (
     if (t === null) return null;
     const base = effectiveBackground(cell, rows);
     const { color, weight } = schemeColor(encoding, palette, t, isDark(base));
-    return { t, ...cellFill(color, weight, base, resolveColor(getComputedStyle(cell).color).rgb) };
+    const ink = resolveColor(getComputedStyle(cell).color).rgb;
+    return { t, ink, ...cellFill(color, weight, base, ink) };
   });
   unique.forEach(({ cell }, i) => {
     const paint = fills[i];
@@ -145,6 +146,20 @@ const paintColumn = (
     cell.dataset["pdT"] = paint.t.toFixed(3);
     cell.dataset["pdCol"] = String(encoding.col);
   });
+  keepInk(unique.flatMap(({ cell }, i) => (fills[i]?.text === null ? [{ el: cell, ink: fills[i].ink }] : [])));
+};
+
+/**
+ * Puts back text colors that changed because of the painter's own styles.
+ * Some pages color text by the style attribute itself: a dark mode can give
+ * any element whose style mentions "background" dark text, to keep inline
+ * light backgrounds readable. The fill was chosen for the text color read
+ * before painting, so that color is pinned again. All reads happen after all
+ * writes, so the page recalculates styles once.
+ */
+const keepInk = (items: readonly { el: HTMLElement; ink: string }[]) => {
+  const changed = items.filter(({ el, ink }) => resolveColor(getComputedStyle(el).color).rgb !== ink);
+  for (const { el, ink } of changed) setStyle(el, "color", ink);
 };
 
 // ── Header underline + hover card ───────────────────────────────────────────
@@ -331,10 +346,12 @@ export const paintTable = (
     });
     byHeader.set(header, [...(byHeader.get(header) ?? []), legend]);
   }
+  const inks = [...byHeader.keys()].map((el) => ({ el, ink: resolveColor(getComputedStyle(el).color).rgb }));
   for (const [header, legends] of byHeader) {
     underline(header, legends[0]!.stops, table.axis);
     attachCard(header, legends);
   }
+  keepInk(inks);
   table.element.dataset["pdTable"] = judgment.id;
   table.element.dataset["pdOrientation"] = judgment.orientation;
   table.element.dataset["pdEncoded"] = judgment.encodings

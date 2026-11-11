@@ -15,7 +15,7 @@
  * - Text on painted cells keeps a contrast ratio of at least 4.5:1.
  * - In a directional column, the best cell is greener than the worst.
  * - Legend headers carry the gradient underline.
- * - Painting changes no column width.
+ * - Painting changes no column width or header text color.
  * - A collapsed table is judged after it expands.
  * - Turning shading off restores the original markup exactly.
  * - A table marked `data-e2e-skip` (an app list) is not judged.
@@ -319,6 +319,10 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     const thWidths = () =>
       page.evaluate(() => [...document.querySelectorAll("th")].map((h) => h.getBoundingClientRect().width));
     const paintedWidths = await thWidths();
+    // Painting must not change a header's text color. Some pages color text by the style attribute itself.
+    const thColors = () =>
+      page.evaluate(() => [...document.querySelectorAll("th")].map((h) => getComputedStyle(h).color));
+    const paintedColors = await thColors();
     // Without the "tabs" permission, the worker cannot match tabs by URL. Only this page is open, so send to every tab.
     await worker.evaluate(async () => {
       for (const tab of await chrome.tabs.query({})) {
@@ -333,6 +337,8 @@ const run = async (name: string, url: string, live: boolean): Promise<PageReport
     const plainWidths = await thWidths();
     const shifted = plainWidths.filter((w, i) => Math.abs(w - (paintedWidths[i] ?? w)) > 1).length;
     if (shifted > 0) report.problems.push(`painting changed the width of ${shifted} header cell(s)`);
+    const recolored = (await thColors()).filter((c, i) => c !== (paintedColors[i] ?? c)).length;
+    if (recolored > 0) report.problems.push(`painting changed the text color of ${recolored} header cell(s)`);
     const leftovers = await page.evaluate(
       () => document.querySelectorAll("[data-pd-styled], [data-pd-t], [data-pd-table], [data-pd-legend]").length,
     );

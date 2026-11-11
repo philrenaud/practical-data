@@ -2768,5 +2768,51 @@
         "kind": "quantitative"
       }
     }
+  },
+  "attribute-styled-dark": {
+    "t0": {
+      "Region": "none",
+      "Bureau A (2026)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Bureau B (2025)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Bureau C (2024)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "aggregateRows": [
+        0
+      ]
+    },
+    "t1": {
+      "Region": "none",
+      "Change (%)": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better",
+          "neutral"
+        ]
+      },
+      "Workforce (thousands)": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      }
+    }
   }
 }

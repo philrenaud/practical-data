@@ -1,0 +1,142 @@
+{
+ "url": "fixture://synthetic/attribute-styled-dark.html",
+ "title": "Practical Data: dark theme that keys text color on the style attribute",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Output estimate (million credits) by region",
+   "headers": [
+    "Region",
+    "Bureau A (2026)",
+    "Bureau B (2025)",
+    "Bureau C (2024)"
+   ],
+   "rows": [
+    [
+     "All regions",
+     "96,412,530",
+     "90,118,204",
+     "85,377,961"
+    ],
+    [
+     "Northmarch",
+     "24,880,312",
+     "23,402,118",
+     "22,051,409"
+    ],
+    [
+     "Calder Coast",
+     "16,204,775",
+     "15,330,690",
+     "14,902,551"
+    ],
+    [
+     "Vellany",
+     "4,112,908",
+     "3,880,442",
+     "3,610,275"
+    ],
+    [
+     "Ostrava Isles",
+     "3,407,116",
+     "3,452,903",
+     "3,166,820"
+    ],
+    [
+     "Merrow",
+     "2,915,640",
+     "2,770,318",
+     "2,604,117"
+    ],
+    [
+     "Thessaly Reach",
+     "2,488,205",
+     "2,301,977",
+     "2,240,068"
+    ],
+    [
+     "Kestrel Bay",
+     "1,906,442",
+     "1,822,630",
+     "1,745,903"
+    ],
+    [
+     "Arden Vale",
+     "1,377,519",
+     "1,290,684",
+     "1,251,722"
+    ],
+    [
+     "Lowmere",
+     "846,233",
+     "812,507",
+     "790,445"
+    ],
+    [
+     "Saltmarsh",
+     "402,118",
+     "388,940",
+     "371,206"
+    ],
+    [
+     "Fenwick",
+     "96,705",
+     "92,311",
+     "88,054"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Annual change by region",
+   "headers": [
+    "Region",
+    "Change (%)",
+    "Workforce (thousands)"
+   ],
+   "rows": [
+    [
+     "Northmarch",
+     "2.4",
+     "41,207"
+    ],
+    [
+     "Calder Coast",
+     "3.1",
+     "38,950"
+    ],
+    [
+     "Vellany",
+     "−0.8",
+     "9,412"
+    ],
+    [
+     "Ostrava Isles",
+     "1.7",
+     "6,033"
+    ],
+    [
+     "Merrow",
+     "−1.9",
+     "5,870"
+    ],
+    [
+     "Thessaly Reach",
+     "0.6",
+     "4,402"
+    ],
+    [
+     "Kestrel Bay",
+     "4.8",
+     "3,315"
+    ],
+    [
+     "Arden Vale",
+     "−0.3",
+     "2,704"
+    ]
+   ]
+  }
+ ]
+}
