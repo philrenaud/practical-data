@@ -2734,5 +2734,39 @@
         "kind": "quantitative"
       }
     }
+  },
+  "total-column": {
+    "t0": {
+      "Crew": "none",
+      "Jan 26": {
+        "kind": "quantitative"
+      },
+      "Total": {
+        "kind": "quantitative"
+      }
+    },
+    "t1": {
+      "aggregateRows": [
+        6,
+        7,
+        8
+      ],
+      "Department": "none",
+      "Budget ($k)": {
+        "kind": "quantitative"
+      },
+      "Spent ($k)": {
+        "kind": "quantitative"
+      }
+    },
+    "t2": {
+      "aggregateRows": [],
+      "Seats": {
+        "kind": "quantitative"
+      },
+      "Storage (GB)": {
+        "kind": "quantitative"
+      }
+    }
   }
 }

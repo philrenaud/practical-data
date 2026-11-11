@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: total column</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 1000px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 8px; }
+  td { text-align: right; }
+  td:first-child { text-align: left; }
+</style>
+</head>
+<body>
+<h1>Service tickets by crew</h1>
+<p>
+  A monthly count table with a Total column after the months, then a share of
+  the total and a month-over-month change. Read across a row, the Total is the
+  sum of the months, so it sits far above them on one scale.
+</p>
+<p>
+  Read by columns, each month and the Total get scales of their own. Read by
+  rows, the Total is a row in the middle of the table, above the share and
+  change rows, and must be left out of each crew's scale. The budget below has
+  the same shape the other way up: a Total row above two more summary rows.
+</p>
+
+<h2>Tickets by crew by month</h2>
+<table id="tickets">
+  <thead><tr><th>Crew</th><th>Jan 26</th><th>Feb 26</th><th>Mar 26</th><th>Apr 26</th><th>May 26</th><th>Jun 26</th><th>Jul 26</th><th>Aug 26</th><th>Sep 26</th><th>Oct 26</th><th>Nov 26</th><th>Total</th><th>% Share</th><th>MoM</th></tr></thead>
+  <tbody>
+    <tr><td>crew-lantern-north</td><td>1</td><td>0</td><td>2</td><td>0</td><td>3</td><td>1</td><td>0</td><td>2</td><td>1</td><td>0</td><td>0</td><td>10</td><td>25.6%</td><td>▬0%</td></tr>
+    <tr><td>crew-orchard-pumps</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>1</td><td>7</td><td>17.9%</td><td>▼50.0%</td></tr>
+    <tr><td>crew-granite-meters</td><td>2</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>4</td><td>10.3%</td><td>▬0%</td></tr>
+    <tr><td>crew-harbor-relay</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>4</td><td>10.3%</td><td>▬0%</td></tr>
+    <tr><td>crew-willow-yard</td><td>0</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>7.7%</td><td>▬0%</td></tr>
+    <tr><td>crew-cedar-dispatch</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>4</td><td>10.3%</td><td>▬0%</td></tr>
+    <tr><td>crew-basalt-signals</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>2</td><td>0</td><td>1</td><td>1</td><td>1</td><td>7</td><td>17.9%</td><td>▲0%</td></tr>
+  </tbody>
+</table>
+
+<h2>Budget by department</h2>
+<!-- The Total row sums the departments above it and sits above an Average
+     row and a Median row, so it is neither the first nor the last row. All
+     three summary rows must stay off the color scale. -->
+<table id="budget">
+  <thead><tr><th>Department</th><th>Budget ($k)</th><th>Spent ($k)</th><th>Remaining ($k)</th></tr></thead>
+  <tbody>
+    <tr><td>Field service</td><td>420</td><td>388</td><td>32</td></tr>
+    <tr><td>Dispatch</td><td>180</td><td>171</td><td>9</td></tr>
+    <tr><td>Fleet</td><td>610</td><td>655</td><td>-45</td></tr>
+    <tr><td>Training</td><td>95</td><td>62</td><td>33</td></tr>
+    <tr><td>Facilities</td><td>260</td><td>241</td><td>19</td></tr>
+    <tr><td>Tooling</td><td>140</td><td>133</td><td>7</td></tr>
+    <tr><td>Total</td><td>1705</td><td>1650</td><td>55</td></tr>
+    <tr><td>Average</td><td>284</td><td>275</td><td>9</td></tr>
+    <tr><td>Median</td><td>220</td><td>206</td><td>14</td></tr>
+  </tbody>
+</table>
+
+<h2>Support plans</h2>
+<!-- A plan named "Total Care" sits in the middle. Its numbers are not the
+     sums of the rows above it, so it stays on the scale. -->
+<table id="plans">
+  <thead><tr><th>Plan</th><th>Monthly price</th><th>Seats</th><th>Storage (GB)</th></tr></thead>
+  <tbody>
+    <tr><td>Starter</td><td>$9</td><td>1</td><td>50</td></tr>
+    <tr><td>Plus</td><td>$19</td><td>3</td><td>200</td></tr>
+    <tr><td>Total Care</td><td>$29</td><td>5</td><td>500</td></tr>
+    <tr><td>Team</td><td>$49</td><td>10</td><td>1000</td></tr>
+    <tr><td>Business</td><td>$99</td><td>25</td><td>2500</td></tr>
+    <tr><td>Enterprise</td><td>$199</td><td>100</td><td>10000</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

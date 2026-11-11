@@ -84,10 +84,11 @@ export const KINDS: readonly KindInfo[] = [
       "A first or last row whose numbers are the sums of the other rows is a total without a question, such as a box score's team row that has no label.",
       "Code asks the model only about tables of five or more rows. In a smaller table, such as an election result with two candidates and a total, only the sums can mark a total, and every numeric column must add up.",
       "A row with a cell that says Total, such as the last row of a worked bill with one cost column, needs only one column to add up, but every numeric column must.",
+      "A Total row in the middle of a table, above an Average row or a share row, is a total when it says Total and its numbers are the sums of the rows above it in every numeric column. A monthly table read by rows puts its Total there. A label alone is not enough: a plan named Total Care stays on the scale.",
     ],
     questions: ["row#.aggregate"],
     rule: (p) =>
-      `Remove a row from the scale when P(total) is ${p.aggregate} or more, or when it sums the other rows in at least two columns and in two thirds of the numeric columns (in every numeric column when the table has three or four rows, or when a cell in the row says Total, where one column is enough).`,
+      `Remove a row from the scale when P(total) is ${p.aggregate} or more, or when it sums the other rows in at least two columns and in two thirds of the numeric columns (in every numeric column when the table has three or four rows, or when a cell in the row says Total, where one column is enough), or when a cell in a middle row says Total and the row sums the rows above it in every numeric column.`,
   },
   {
     kind: "shared",
