@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: dark theme that keys text color on the style attribute</title>
+<style>
+  /* A wiki skin's dark mode. Its tables are dark, and its text is light. */
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 32px auto; max-width: 760px; padding: 0 16px; color: #eaecf0; background: #101418; }
+  table.wikitable { border-collapse: collapse; width: 100%; background: #202122; color: #eaecf0; margin-bottom: 32px; }
+  .wikitable th, .wikitable td { border: 1px solid #54595d; padding: 4px 8px; }
+  .wikitable th { background-color: #27292d; }
+  .wikitable.sortable th {
+    padding-right: 21px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='13'%3E%3Cpath d='M4.5 0 9 5H0zm0 13L0 8h9z' fill='%23a2a9b1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center right 6px;
+  }
+  .wikitable td.num { text-align: right; }
+  .wikitable .neg { color: #fd7865; }
+  /*
+   * Inline light backgrounds written for the light skin keep dark text in
+   * dark mode. The rule matches the style attribute, so any inline
+   * background, including one the extension writes, turns the text dark.
+   */
+  [style*="background"] { color: #202122; }
+</style>
+</head>
+<body>
+<h1>Regional output</h1>
+
+<!-- The failing case: a summary row on top, three source columns, and sortable headers. Shading must keep the light text. -->
+<table class="wikitable sortable" id="output">
+  <caption>Output estimate (million credits) by region</caption>
+  <thead>
+    <tr><th>Region</th><th>Bureau A (2026)</th><th>Bureau B (2025)</th><th>Bureau C (2024)</th></tr>
+  </thead>
+  <tbody>
+    <tr style="font-weight: bold;"><td>All regions</td><td class="num">96,412,530</td><td class="num">90,118,204</td><td class="num">85,377,961</td></tr>
+    <tr><td>Northmarch</td><td class="num">24,880,312</td><td class="num">23,402,118</td><td class="num">22,051,409</td></tr>
+    <tr><td>Calder Coast</td><td class="num">16,204,775</td><td class="num">15,330,690</td><td class="num">14,902,551</td></tr>
+    <tr><td>Vellany</td><td class="num">4,112,908</td><td class="num">3,880,442</td><td class="num">3,610,275</td></tr>
+    <tr><td>Ostrava Isles</td><td class="num">3,407,116</td><td class="num">3,452,903</td><td class="num">3,166,820</td></tr>
+    <tr><td>Merrow</td><td class="num">2,915,640</td><td class="num">2,770,318</td><td class="num">2,604,117</td></tr>
+    <tr><td>Thessaly Reach</td><td class="num">2,488,205</td><td class="num">2,301,977</td><td class="num">2,240,068</td></tr>
+    <tr><td>Kestrel Bay</td><td class="num">1,906,442</td><td class="num">1,822,630</td><td class="num">1,745,903</td></tr>
+    <tr><td>Arden Vale</td><td class="num">1,377,519</td><td class="num">1,290,684</td><td class="num">1,251,722</td></tr>
+    <tr><td>Lowmere</td><td class="num">846,233</td><td class="num">812,507</td><td class="num">790,445</td></tr>
+    <tr><td>Saltmarsh</td><td class="num">402,118</td><td class="num">388,940</td><td class="num">371,206</td></tr>
+    <tr><td>Fenwick</td><td class="num">96,705</td><td class="num">92,311</td><td class="num">88,054</td></tr>
+  </tbody>
+</table>
+
+<!-- Must keep working: text the page colors by class, such as negative changes, keeps its own color. -->
+<table class="wikitable" id="growth">
+  <caption>Annual change by region</caption>
+  <thead>
+    <tr><th>Region</th><th>Change (%)</th><th>Workforce (thousands)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Northmarch</td><td class="num">2.4</td><td class="num">41,207</td></tr>
+    <tr><td>Calder Coast</td><td class="num">3.1</td><td class="num">38,950</td></tr>
+    <tr><td>Vellany</td><td class="num neg">−0.8</td><td class="num">9,412</td></tr>
+    <tr><td>Ostrava Isles</td><td class="num">1.7</td><td class="num">6,033</td></tr>
+    <tr><td>Merrow</td><td class="num neg">−1.9</td><td class="num">5,870</td></tr>
+    <tr><td>Thessaly Reach</td><td class="num">0.6</td><td class="num">4,402</td></tr>
+    <tr><td>Kestrel Bay</td><td class="num">4.8</td><td class="num">3,315</td></tr>
+    <tr><td>Arden Vale</td><td class="num neg">−0.3</td><td class="num">2,704</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
