@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: a column in another unit, read by rows</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td:nth-child(n+2), th:nth-child(n+2) { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Model and hosting comparisons</h1>
+<p>
+  Tables read across each row, where a last column gives a ratio (2.1×)
+  beside values in another unit. The ratio is not one of the row's values,
+  so it must stay off each row's scale. On one scale with the values it can
+  sit far above or below them and take the best or the worst color.
+</p>
+
+<h2>Benchmark results</h2>
+<!-- Read by rows: each benchmark compares three models. The Spread column
+     is the best score over the worst, a ratio, so it is left plain while
+     the scores are shaded across each row. -->
+<table id="benchmarks">
+  <thead><tr><th>Benchmark</th><th>Quill 2</th><th>Quill 2 mini</th><th>Ferro 7B</th><th>Spread</th></tr></thead>
+  <tbody>
+    <tr><td>RecipeQA · accuracy</td><td>91.4%</td><td>86.2%</td><td>62.7%</td><td>1.5×</td></tr>
+    <tr><td>ToolCall-Lite · exact match</td><td>88.0%</td><td>84.9%</td><td>41.3%</td><td>2.1×</td></tr>
+    <tr><td>TicketRoute · macro-F1</td><td>79.6%</td><td>74.1%</td><td>58.8%</td><td>1.4×</td></tr>
+    <tr><td>LongForm Recall · nDCG@10</td><td>52.3%</td><td>47.9%</td><td>18.2%</td><td>2.9×</td></tr>
+    <tr><td>FormFill · accuracy</td><td>83.5%</td><td>80.7%</td><td>27.4%</td><td>3.0×</td></tr>
+  </tbody>
+</table>
+
+<h2>Hosting prices</h2>
+<!-- Must keep working: read by rows, every cell on its row's scale. -->
+<table id="all-prices">
+  <thead><tr><th></th><th>Harbor Cloud</th><th>Lantern Compute</th><th>Pebble Hosting</th></tr></thead>
+  <tbody>
+    <tr><td>Container compute, per GB-hour</td><td>$0.048</td><td>$0.011</td><td>$0.026</td></tr>
+    <tr><td>Worker CPU, per vCPU-hour</td><td>$0.081</td><td>$0.057</td><td>$0.069</td></tr>
+    <tr><td>Block storage, per GB-month</td><td>$0.22</td><td>$0.025</td><td>$0.09</td></tr>
+    <tr><td>Database writes, per million rows</td><td>$1.10</td><td>$0.19</td><td>$0.40</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

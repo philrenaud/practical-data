@@ -110,10 +110,11 @@ export const KINDS: readonly KindInfo[] = [
     about: [
       "Some benchmark tables show one benchmark in each row and one model in each column. In these tables, each row is one measure.",
       "When a table has two or more number columns, the model tells which direction to compare. Code reads a row-based table one row at a time, as if each row is a column.",
+      "A row-based table can end with a column in another unit, such as a ratio (2.1×) beside scores in percent or prices in dollars. That column is not one of the row's values, so code leaves it off every row's scale and leaves it unshaded. Code does this only when most number columns share one unit and the odd column has a unit of its own.",
     ],
     questions: ["table.orientation"],
     rule: (p, rows) =>
-      `Read the table by rows when P(rows) is ${p.rows} or more and the table has ${rows} rows or fewer.`,
+      `Read the table by rows when P(rows) is ${p.rows} or more and the table has ${rows} rows or fewer. Read by rows, leave out a column whose unit differs from the unit shared by at least two and most of the number columns.`,
   },
 ];
 

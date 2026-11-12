@@ -1,0 +1,91 @@
+{
+ "url": "fixture://synthetic/off-unit-rows.html",
+ "title": "Practical Data: a column in another unit, read by rows",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Benchmark results",
+   "headers": [
+    "Benchmark",
+    "Quill 2",
+    "Quill 2 mini",
+    "Ferro 7B",
+    "Spread"
+   ],
+   "rows": [
+    [
+     "RecipeQA · accuracy",
+     "91.4%",
+     "86.2%",
+     "62.7%",
+     "1.5×"
+    ],
+    [
+     "ToolCall-Lite · exact match",
+     "88.0%",
+     "84.9%",
+     "41.3%",
+     "2.1×"
+    ],
+    [
+     "TicketRoute · macro-F1",
+     "79.6%",
+     "74.1%",
+     "58.8%",
+     "1.4×"
+    ],
+    [
+     "LongForm Recall · nDCG@10",
+     "52.3%",
+     "47.9%",
+     "18.2%",
+     "2.9×"
+    ],
+    [
+     "FormFill · accuracy",
+     "83.5%",
+     "80.7%",
+     "27.4%",
+     "3.0×"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Hosting prices",
+   "headers": [
+    "",
+    "Harbor Cloud",
+    "Lantern Compute",
+    "Pebble Hosting"
+   ],
+   "rows": [
+    [
+     "Container compute, per GB-hour",
+     "$0.048",
+     "$0.011",
+     "$0.026"
+    ],
+    [
+     "Worker CPU, per vCPU-hour",
+     "$0.081",
+     "$0.057",
+     "$0.069"
+    ],
+    [
+     "Block storage, per GB-month",
+     "$0.22",
+     "$0.025",
+     "$0.09"
+    ],
+    [
+     "Database writes, per million rows",
+     "$1.10",
+     "$0.19",
+     "$0.40"
+    ]
+   ]
+  }
+ ]
+}
