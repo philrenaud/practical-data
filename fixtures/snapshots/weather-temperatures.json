@@ -1,0 +1,147 @@
+{
+ "url": "fixture://synthetic/weather-temperatures.html",
+ "title": "Practical Data: weather temperatures",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Hour by hour",
+   "headers": [
+    "Hour",
+    "Sky",
+    "Temp.",
+    "Rain mm",
+    "Wind m/s",
+    "Wind description"
+   ],
+   "rows": [
+    [
+     "00",
+     "",
+     "4°",
+     "",
+     "3 m/s from the west, gusts 7 m/s",
+     "Light breeze from the west"
+    ],
+    [
+     "01",
+     "",
+     "3°",
+     "0.2",
+     "3 m/s from the west, gusts 6 m/s",
+     "Light breeze from the west"
+    ],
+    [
+     "02",
+     "",
+     "3°",
+     "0.4",
+     "2 m/s from the west, gusts 5 m/s",
+     "Light air from the west"
+    ],
+    [
+     "03",
+     "",
+     "1°",
+     "",
+     "2 m/s from the southwest, gusts 5 m/s",
+     "Light air from the southwest"
+    ],
+    [
+     "04",
+     "",
+     "0°",
+     "",
+     "2 m/s from the southwest, gusts 4 m/s",
+     "Light air from the southwest"
+    ],
+    [
+     "05",
+     "",
+     "-1°",
+     "",
+     "1 m/s from the south, gusts 3 m/s",
+     "Calm from the south"
+    ],
+    [
+     "06",
+     "",
+     "2°",
+     "",
+     "2 m/s from the south, gusts 4 m/s",
+     "Light air from the south"
+    ],
+    [
+     "07",
+     "",
+     "6°",
+     "1.1",
+     "4 m/s from the south, gusts 9 m/s",
+     "Gentle breeze from the south"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "Ten-day outlook",
+   "headers": [
+    "Day",
+    "High",
+    "Low",
+    "Wind bearing",
+    "Gust km/h"
+   ],
+   "rows": [
+    [
+     "Monday",
+     "11 °C",
+     "4 °C",
+     "250°",
+     "38"
+    ],
+    [
+     "Tuesday",
+     "9 °C",
+     "2 °C",
+     "280°",
+     "45"
+    ],
+    [
+     "Wednesday",
+     "7 °C",
+     "-1 °C",
+     "320°",
+     "52"
+    ],
+    [
+     "Thursday",
+     "6 °C",
+     "-3 °C",
+     "10°",
+     "30"
+    ],
+    [
+     "Friday",
+     "8 °C",
+     "0 °C",
+     "170°",
+     "22"
+    ],
+    [
+     "Saturday",
+     "12 °C",
+     "5 °C",
+     "200°",
+     "28"
+    ],
+    [
+     "Sunday",
+     "14 °C",
+     "7 °C",
+     "220°",
+     "35"
+    ]
+   ]
+  }
+ ]
+}

@@ -126,3 +126,20 @@ test("a column of times without dates reads as times", () => {
   const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
   assert.deepEqual({ status, lo, hi }, { status: "Times · Earliest to latest", lo: "Thu 8:15 PM", hi: "Mon 8:15 PM" });
 });
+
+test("a neutral temperature column reads cold to warm", () => {
+  const e: ColumnEncoding = {
+    kind: "quantitative",
+    col: 2,
+    header: "Temp.",
+    polarity: "neutral",
+    transform: "linear",
+    unit: "°",
+    domain: [2, 5],
+    values: [],
+    group: null,
+    evidence,
+  };
+  const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
+  assert.deepEqual({ status, lo, hi }, { status: "Cold to warm · Linear scale", lo: "2 °", hi: "5 °" });
+});

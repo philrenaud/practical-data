@@ -2814,5 +2814,39 @@
         ]
       }
     }
+  },
+
+  "weather-temperatures": {
+    "t0": {
+      "Hour": "none",
+      "Temp.": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
+    },
+    "t1": {
+      "High": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Low": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral",
+          "higher_is_better"
+        ]
+      },
+      "Wind bearing": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      }
+    }
   }
 }
