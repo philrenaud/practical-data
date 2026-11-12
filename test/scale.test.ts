@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { divergingColor, isPaletteId, PALETTES, type PaletteId } from "../src/core/palettes.ts";
-import { positions, schemeColor } from "../src/core/scale.ts";
+import { isTemperature, legendStops, positions, schemeColor } from "../src/core/scale.ts";
 import type { ColumnEncoding } from "../src/core/types.ts";
 
 const evidence = {
@@ -77,4 +77,66 @@ test("isPaletteId accepts palette names only", () => {
   assert.equal(isPaletteId("calm"), true);
   assert.equal(isPaletteId("constructor"), false);
   assert.equal(isPaletteId("toString"), false);
+});
+
+const temperature = (header: string, unit: string | null, domain: [number, number]): ColumnEncoding => ({
+  kind: "quantitative",
+  col: 2,
+  header,
+  polarity: "neutral",
+  transform: "linear",
+  unit,
+  domain,
+  values: [domain[0], domain[1]],
+  group: null,
+  evidence: { ...evidence, polarity: { higher_is_better: 0.3, lower_is_better: 0.05, neutral: 0.65 } },
+});
+
+/** Red minus blue of a hex or rgb() color: positive is warm, negative is cool. */
+const warmth = (color: string): number => {
+  const rgb = color.startsWith("#")
+    ? [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16))
+    : color.match(/\d+/g)!.map(Number);
+  return rgb[0]! - rgb[2]!;
+};
+
+test("a neutral temperature column runs from blue (coldest) to red (warmest)", () => {
+  for (const e of [
+    temperature("Temp.", "°", [2, 5]),
+    temperature("High", "°C", [-4, 12]),
+    temperature("Low", "°F", [20, 61]),
+  ]) {
+    assert.equal(isTemperature(e), true, e.header);
+    assert.ok(warmth(schemeColor(e, "calm", 0, false).color) < 0, `${e.header} cold end`);
+    assert.ok(warmth(schemeColor(e, "calm", 1, false).color) > 0, `${e.header} warm end`);
+    assert.ok(warmth(schemeColor(e, "calm", 0, true).color) < 0, `${e.header} cold end, dark`);
+    assert.ok(warmth(schemeColor(e, "calm", 1, true).color) > 0, `${e.header} warm end, dark`);
+    assert.equal(schemeColor(e, "calm", 0.5, true).weight, 0);
+  }
+});
+
+test("degrees that are angles, and temperatures with a better end, keep their schemes", () => {
+  // Bearings in bare degrees: the header names a direction, or the values run past 140.
+  assert.equal(isTemperature(temperature("Wind dir", "°", [10, 120])), false);
+  assert.equal(isTemperature(temperature("Bearing", "°", [0, 90])), false);
+  assert.equal(isTemperature(temperature("Lat", "°", [40.1, 44.9])), false);
+  assert.equal(isTemperature(temperature("Heading", "°", [5, 350])), false);
+  assert.equal(isTemperature(temperature("Course", "°", [5, 350])), false);
+  assert.equal(isTemperature(temperature("Reading", "°", [15, 350])), false);
+  // Not degrees at all.
+  assert.equal(isTemperature(temperature("Height", "m", [2, 5])), false);
+  assert.equal(isTemperature(temperature("Count", null, [2, 5])), false);
+  // A temperature the model judged to have a better end stays diverging.
+  const pool = { ...temperature("Water", "°C", [18, 26]), polarity: "higher_is_better" } as ColumnEncoding;
+  assert.equal(isTemperature(pool), false);
+  // A neutral non-temperature column keeps yellow to blue.
+  const height = temperature("Height", "m", [2, 5]);
+  assert.ok(warmth(schemeColor(height, "calm", 1, false).color) < 0);
+});
+
+test("a temperature legend reads cold to warm", () => {
+  const stops = legendStops(temperature("Temp.", "°", [2, 5]), "calm");
+  assert.ok(warmth(stops[0]!) < 0 && warmth(stops.at(-1)!) > 0);
+  const dark = legendStops(temperature("Temp.", "°", [2, 5]), "calm", true, "#3a3840");
+  assert.ok(warmth(dark[0]!) < 0 && warmth(dark.at(-1)!) > 0);
 });

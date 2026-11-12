@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: weather temperatures</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; max-width: 1200px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 3px 8px; }
+  th { background: #f4f4f6; }
+  .num { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Weather temperatures</h1>
+<p>
+  A temperature has no better end, but it has a familiar color: blue for
+  cold, red for warm. A neutral column in degrees is painted that way
+  instead of yellow to blue. A wind bearing, also in degrees, is an angle
+  and keeps the usual neutral scale.
+</p>
+
+<h2>Hour by hour</h2>
+<!-- An hourly forecast: the hour, an empty icon column, temperature in bare degrees, precipitation, and wind as text. The temperature must be shaded neutral, which paints cold to warm. -->
+<table id="hourly">
+  <thead>
+    <tr><th>Hour</th><th>Sky</th><th>Temp.</th><th>Rain mm</th><th>Wind m/s</th><th>Wind description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>00</td><td>&nbsp;</td><td class="num">4°</td><td class="num">&nbsp;</td><td>3 m/s from the west, gusts 7 m/s</td><td>Light breeze from the west</td></tr>
+    <tr><td>01</td><td>&nbsp;</td><td class="num">3°</td><td class="num">0.2</td><td>3 m/s from the west, gusts 6 m/s</td><td>Light breeze from the west</td></tr>
+    <tr><td>02</td><td>&nbsp;</td><td class="num">3°</td><td class="num">0.4</td><td>2 m/s from the west, gusts 5 m/s</td><td>Light air from the west</td></tr>
+    <tr><td>03</td><td>&nbsp;</td><td class="num">1°</td><td class="num">&nbsp;</td><td>2 m/s from the southwest, gusts 5 m/s</td><td>Light air from the southwest</td></tr>
+    <tr><td>04</td><td>&nbsp;</td><td class="num">0°</td><td class="num">&nbsp;</td><td>2 m/s from the southwest, gusts 4 m/s</td><td>Light air from the southwest</td></tr>
+    <tr><td>05</td><td>&nbsp;</td><td class="num">-1°</td><td class="num">&nbsp;</td><td>1 m/s from the south, gusts 3 m/s</td><td>Calm from the south</td></tr>
+    <tr><td>06</td><td>&nbsp;</td><td class="num">2°</td><td class="num">&nbsp;</td><td>2 m/s from the south, gusts 4 m/s</td><td>Light air from the south</td></tr>
+    <tr><td>07</td><td>&nbsp;</td><td class="num">6°</td><td class="num">1.1</td><td>4 m/s from the south, gusts 9 m/s</td><td>Gentle breeze from the south</td></tr>
+  </tbody>
+</table>
+
+<h2>Ten-day outlook</h2>
+<!-- Daily highs and lows in °C beside a wind bearing in bare degrees. High and Low are temperatures; the bearing runs past 140 and names a direction, so it is an angle. -->
+<table id="outlook">
+  <thead>
+    <tr><th>Day</th><th>High</th><th>Low</th><th>Wind bearing</th><th>Gust km/h</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Monday</td><td class="num">11 °C</td><td class="num">4 °C</td><td class="num">250°</td><td class="num">38</td></tr>
+    <tr><td>Tuesday</td><td class="num">9 °C</td><td class="num">2 °C</td><td class="num">280°</td><td class="num">45</td></tr>
+    <tr><td>Wednesday</td><td class="num">7 °C</td><td class="num">-1 °C</td><td class="num">320°</td><td class="num">52</td></tr>
+    <tr><td>Thursday</td><td class="num">6 °C</td><td class="num">-3 °C</td><td class="num">10°</td><td class="num">30</td></tr>
+    <tr><td>Friday</td><td class="num">8 °C</td><td class="num">0 °C</td><td class="num">170°</td><td class="num">22</td></tr>
+    <tr><td>Saturday</td><td class="num">12 °C</td><td class="num">5 °C</td><td class="num">200°</td><td class="num">28</td></tr>
+    <tr><td>Sunday</td><td class="num">14 °C</td><td class="num">7 °C</td><td class="num">220°</td><td class="num">35</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

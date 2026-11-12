@@ -4,6 +4,7 @@
  * The site never calls a model.
  */
 import { isDateUnit } from "../../../src/core/dates.ts";
+import { isTemperature } from "../../../src/core/scale.ts";
 import type { ColumnEncoding, PageJudgment, PageSnapshot, SkippedColumn } from "../../../src/core/types.ts";
 import data from "../../../demo/data.json";
 
@@ -64,7 +65,7 @@ export const describeEncoding = (e: ColumnEncoding): string =>
   e.kind === "quantitative" && isDateUnit(e.unit)
     ? "dates · earliest to latest"
     : e.kind === "quantitative"
-      ? `${POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
+      ? `${isTemperature(e) ? "cold to warm" : POLARITY[e.polarity]} · ${e.transform} scale${e.group === null ? "" : " · shared"}`
       : `ordered: ${e.order.join(" → ")}`;
 
 /** One column of a table's footer strip: the judged kind, and how it reads. */

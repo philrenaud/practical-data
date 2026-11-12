@@ -42,6 +42,7 @@ export const KINDS: readonly KindInfo[] = [
     about: [
       "A low price is better. A high batting average is better. A tall building is not better or worse.",
       "The direction sets which end of the scale gets the good color. When no direction is better, the scale uses one hue. Thus the color does not show a judgment that the data does not have.",
+      "A temperature with no better direction is the one exception. Code paints it from blue for the coldest value to red for the warmest, as a weather map does. A column in °C or °F is a temperature. A column in bare ° is one only when its header does not name an angle, a direction or a coordinate (Wind, Bearing, Lat) and its values stay between -90 and 140, because bearings run to 360.",
     ],
     questions: ["n#.polarity", "c#.polarity"],
     rule: (p) =>

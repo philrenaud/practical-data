@@ -116,6 +116,11 @@ with Jev costs about $0.04.
 - Neutral amounts use YlGnBu. Ordinals use Purples. On dark pages,
   single-hue scales ramp from the page background toward the hue. Otherwise
   the scheme's near-white low end would be the brightest cell.
+- Neutral temperatures use RdYlBu reversed: blue for the coldest value, red
+  for the warmest. `°C` and `°F` always count; a bare `°` counts only when
+  the header names no angle, direction or coordinate and the values stay
+  within -90 to 140. On dark pages the ends carry the color and middling
+  values fade, as the diverging dark ramps do.
 - Tints blend over the row's background, not the cell's. The tint replaces
   the cell's own color, such as Wikipedia's hurricane-category colors.
 - Contrast is checked per cell in `src/core/tint.ts`. The code tries the

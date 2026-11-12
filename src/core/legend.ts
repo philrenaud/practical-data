@@ -4,7 +4,7 @@
  * encoding and the page context.
  */
 import { formatDate, isDateUnit } from "./dates.ts";
-import { legendStops, type Palette } from "./scale.ts";
+import { isTemperature, legendStops, type Palette } from "./scale.ts";
 import type { ColumnEncoding } from "./types.ts";
 
 export interface Legend {
@@ -71,7 +71,7 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
     const log = e.transform === "log" && lo > 0;
     status = isDateUnit(e.unit)
       ? `${e.unit === "weektime" ? "Times" : "Dates"} · Earliest to latest`
-      : `${DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
+      : `${isTemperature(e) ? "Cold to warm" : DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
   } else {
     status = `Ranked categories · ${e.order.length} levels`;
