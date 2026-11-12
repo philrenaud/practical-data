@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DecisionError, type Answer, type DecisionModel, type DecisionRequest } from "../src/decide/model.ts";
-import { judgePage } from "../src/decide/judge.ts";
+import { judgePage, offUnitColumns } from "../src/decide/judge.ts";
 import { followsRows, sumRows } from "../src/decide/questions.ts";
 import type { NumericProfile } from "../src/core/profile.ts";
 import type { PageSnapshot } from "../src/core/types.ts";
@@ -543,4 +543,41 @@ test("a total found by code is left out of the domain even when the model calls 
   const tackles = t.encodings.find((e) => e.header === "Tackles");
   assert.ok(tackles?.kind === "quantitative");
   assert.deepEqual(tackles.domain, [1, 9]);
+});
+
+test("a column in another unit stays off each row's scale when a table is read by rows", async () => {
+  const hosts = pricing(
+    "t0",
+    ["", "Host A", "Host B", "Host C", "Saving"],
+    [
+      ["Compute, per GB-hour", "$0.040", "$0.012", "$0.020", "3.3×"],
+      ["Storage, per GB-month", "$0.25", "$0.03", "$0.10", "8.3×"],
+      ["Writes, per million", "$1.00", "$0.20", "$0.45", "5.0×"],
+    ],
+  );
+  assert.deepEqual(offUnitColumns(hosts), [4]);
+  const model = scripted((id) => {
+    if (id === "table.orientation") return choice({ rows: 0.95, columns: 0.05 });
+    if (id.endsWith(".role")) return choice({ measure: 0.95, identifier: 0.05 });
+    if (id.endsWith(".polarity")) return choice({ lower_is_better: 0.9, neutral: 0.05, higher_is_better: 0.05 });
+    return { type: "noul", noul: 0 };
+  });
+  const t = (await judgePage(model, { ...page, tables: [hosts] })).tables[0]!;
+  assert.equal(t.orientation, "rows");
+  const compute = t.encodings.find((e) => e.header === "Compute, per GB-hour");
+  assert.ok(compute?.kind === "quantitative");
+  assert.deepEqual(compute.values, [0.04, 0.012, 0.02, null]);
+  assert.deepEqual(compute.domain, [0.012, 0.04]);
+});
+
+test("off-unit columns need a unit shared by most value columns", () => {
+  const t = (headers: string[], row: string[]) => pricing("t0", headers, [row, row, row]);
+  // Every column in one unit: nothing is left out.
+  assert.deepEqual(offUnitColumns(t(["", "A", "B", "C"], ["x", "$1", "$2", "$3"])), []);
+  // A share column beside plain counts: counts carry no unit, so nothing is left out.
+  assert.deepEqual(offUnitColumns(t(["", "Jan", "Feb", "Share"], ["x", "1", "2", "25%"])), []);
+  // Two units, one column each: no majority.
+  assert.deepEqual(offUnitColumns(t(["", "Price", "Change"], ["x", "$1", "5%"])), []);
+  // A column with no unit beside prices is not left out.
+  assert.deepEqual(offUnitColumns(t(["", "A", "B", "Count"], ["x", "$1", "$2", "7"])), []);
 });

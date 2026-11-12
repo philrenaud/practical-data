@@ -361,6 +361,32 @@ const judgeColumns = async (
 };
 
 /**
+ * The columns a reading by rows must leave out: those whose unit differs from
+ * the unit most value columns share. A price comparison with a "Cheaper"
+ * column of ratios (4.8×) beside two columns of prices ($0.045, $0.0094) is
+ * read across each row, and the ratio is not a price on that row's scale.
+ * Needs at least two columns that share a unit, a majority of the numeric
+ * columns, and a unit on both sides; a column with no unit is never left out.
+ */
+export const offUnitColumns = (table: TableSnapshot, lang?: string): number[] => {
+  const numeric = profileTable(table, conventionForLang(lang)).filter(
+    (p): p is NumericProfile => p.kind === "numeric" && p.col > 0,
+  );
+  const counts = new Map<string, number>();
+  for (const p of numeric) if (p.unit !== null) counts.set(p.unit, (counts.get(p.unit) ?? 0) + 1);
+  const [shared, count] = [...counts].sort((a, b) => b[1] - a[1])[0] ?? [null, 0];
+  if (shared === null || count < 2 || count * 2 <= numeric.length) return [];
+  return numeric.filter((p) => p.unit !== null && p.unit !== shared).map((p) => p.col);
+};
+
+/** The table read by rows, with the cells of off-unit columns blanked so they stay off every row's scale. */
+const byRows = (table: TableSnapshot, lang?: string): TableSnapshot => {
+  const off = new Set(offUnitColumns(table, lang));
+  if (off.size === 0) return transposeSnapshot(table);
+  return transposeSnapshot({ ...table, rows: table.rows.map((r) => r.map((cell, c) => (off.has(c) ? "" : cell))) });
+};
+
+/**
  * Judges one table. `forced` is the orientation the user chose. Without it,
  * the first pass also asks the orientation question. If P(rows) reaches
  * `Policy.rows`, the table is judged again, transposed. A table with more
@@ -375,12 +401,12 @@ const judgeTable = async (
   forced?: Orientation,
 ): Promise<Planned> => {
   if (forced === "rows" && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-    const { planned } = await judgeColumns(model, page, transposeSnapshot(table), policy, false, now);
+    const { planned } = await judgeColumns(model, page, byRows(table, page.lang), policy, false, now);
     return { ...planned, judgment: { ...planned.judgment, orientation: "rows" as const } } satisfies Planned;
   }
   const { planned, rowsScore } = await judgeColumns(model, page, table, policy, forced === undefined, now);
   if (rowsScore !== null && rowsScore >= policy.rows && table.rows.length <= MAX_TRANSPOSE_ROWS) {
-    const rows = await judgeColumns(model, page, transposeSnapshot(table), policy, false, now);
+    const rows = await judgeColumns(model, page, byRows(table, page.lang), policy, false, now);
     return {
       ...rows.planned,
       judgment: { ...rows.planned.judgment, orientation: "rows" as const, rowsScore },

@@ -2814,5 +2814,67 @@
         ]
       }
     }
+  },
+  "off-unit-rows": {
+    "t0": {
+      "@orientation": "rows",
+      "RecipeQA · accuracy": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "ToolCall-Lite · exact match": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "TicketRoute · macro-F1": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "LongForm Recall · nDCG@10": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "FormFill · accuracy": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "@orientation": "rows",
+      "Container compute, per GB-hour": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Worker CPU, per vCPU-hour": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Block storage, per GB-month": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Database writes, per million rows": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    }
   }
 }
