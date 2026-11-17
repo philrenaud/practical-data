@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: rows named by logos</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  td { text-align: right; }
+  .logo { display: inline-block; width: 18px; height: 18px; border-radius: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<h1>Rows named by logos</h1>
+<p>
+  Some tables name each row with a logo and no text, so every row reads as
+  nameless. A nameless row at the bottom is then no more a summary than the
+  rows above it, and the table cannot be read across its rows: turned on its
+  side, no column would have a name. The first table is read down its columns,
+  so the column of averages across models is shaded like the others. The
+  second table names its rows with tests and is still read across them.
+</p>
+
+<h2>Cost per solved task by tool and model</h2>
+<!-- Every name cell holds only a logo, so the extracted label is empty. The last row is an ordinary tool. -->
+<table id="costs">
+  <thead><tr><th>Tool</th><th>Model A</th><th>Model B</th><th>Model C</th><th>Model D</th><th>All models</th></tr></thead>
+  <tbody>
+    <tr><td><span class="logo" style="background:#d33" aria-label="Kestrel"></span></td><td>$0.812</td><td>$0.231</td><td>$1.62</td><td>$1.74</td><td>$1.10</td></tr>
+    <tr><td><span class="logo" style="background:#3a3" aria-label="Wrenline"></span></td><td>$1.47</td><td>$0.219</td><td>$1.41</td><td>$1.52</td><td>$1.15</td></tr>
+    <tr><td><span class="logo" style="background:#36c" aria-label="Pipitcode"></span></td><td>$1.56</td><td>$0.258</td><td>$1.33</td><td>$1.60</td><td>$1.19</td></tr>
+    <tr><td><span class="logo" style="background:#c90" aria-label="Lark Agent"></span></td><td>$1.71</td><td>$0.276</td><td>$1.24</td><td>$1.43</td><td>$1.16</td></tr>
+    <tr><td><span class="logo" style="background:#909" aria-label="Siskin"></span></td><td>$1.44</td><td>$0.262</td><td>$1.77</td><td>$1.68</td><td>$1.29</td></tr>
+    <tr><td><span class="logo" style="background:#099" aria-label="Plover"></span></td><td>$1.38</td><td>$0.244</td><td>$1.52</td><td>$1.49</td><td>$1.17</td></tr>
+    <tr><td><span class="logo" style="background:#555" aria-label="Grebe CLI"></span></td><td>$2.05</td><td>$0.301</td><td>$1.91</td><td>$2.12</td><td>$1.60</td></tr>
+  </tbody>
+</table>
+
+<h2>Benchmark scores by model</h2>
+<!-- The rows are named tests, so values compare across each row. This table must still be read by rows. -->
+<table id="benchmarks">
+  <thead><tr><th>Benchmark</th><th>Model A</th><th>Model B</th><th>Model C</th><th>Model D</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:left">Code repair (pass@1)</td><td>61.2%</td><td>48.5%</td><td>55.0%</td><td>66.9%</td></tr>
+    <tr><td style="text-align:left">Long-context recall</td><td>88.4</td><td>71.0</td><td>79.3</td><td>90.2</td></tr>
+    <tr><td style="text-align:left">Tool-use tasks solved</td><td>412</td><td>305</td><td>377</td><td>451</td></tr>
+    <tr><td style="text-align:left">Median latency (s)</td><td>3.1</td><td>1.4</td><td>2.2</td><td>4.0</td></tr>
+    <tr><td style="text-align:left">Cost per 1k tasks</td><td>$18.40</td><td>$4.75</td><td>$9.90</td><td>$26.10</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

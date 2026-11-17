@@ -212,8 +212,12 @@ const judgeColumns = async (
     .map((p) => ({ profile: p, ...categoricalQuestions(p) }));
   const aggregates = aggregateQuestions(table.headers, table.rows);
   // Orientation only matters when several numeric columns could be read either way.
+  // Read by rows, the first column's cells become the column headers. When they
+  // are all empty, as when each row is named only by a logo, no column would
+  // have a name, and an average column would be dropped as a summary row.
+  const labeled = table.rows.some((r) => (r[0] ?? "").trim() !== "");
   const orientation =
-    askOrientation && numeric.length >= 2
+    askOrientation && numeric.length >= 2 && labeled
       ? orientationQuestion({
           header: table.headers[0] ?? "",
           examples: table.rows.slice(0, 5).map((r) => r[0] ?? ""),
