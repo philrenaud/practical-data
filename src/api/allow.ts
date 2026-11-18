@@ -185,6 +185,13 @@ const categorical = {
   display: {},
 } as unknown as CategoricalProfile;
 const numericRefs = numericQuestions(INDEX, numeric).questions;
+/** A temperature column's polarity question carries a note about weather temperatures. */
+const temperatureRefs = numericQuestions(INDEX, {
+  ...numeric,
+  unit: "°C",
+  min: 0,
+  max: 0,
+} as NumericProfile).questions;
 const categoricalRefs = categoricalQuestions(categorical).questions;
 const pairRef = pairQuestions("p", HOLE, [HOLE, HOLE]).questions["p.lt0_1"]!;
 const aggregateRef = aggregateQuestions(
@@ -211,7 +218,7 @@ const dataBytes = (q: Question): number => {
 /** Maps a question id pattern to the references that a question with that id may match. */
 const RULES: readonly (readonly [RegExp, readonly Parser[]])[] = [
   [/^n\d{1,4}\.role$/, [compile(numericRefs["n0.role"])]],
-  [/^n\d{1,4}\.polarity$/, [compile(numericRefs["n0.polarity"])]],
+  [/^n\d{1,4}\.polarity$/, [compile(numericRefs["n0.polarity"]), compile(temperatureRefs["n0.polarity"])]],
   [/^n\d{1,4}\.log$/, [compile(numericRefs["n0.log"])]],
   [/^c\d{1,4}\.relation$/, [compile(categoricalRefs["c0.relation"])]],
   [/^c\d{1,4}\.polarity$/, [compile(categoricalRefs["c0.polarity"])]],

@@ -121,6 +121,12 @@ with Jev costs about $0.04.
   the header names no angle, direction or coordinate and the values stay
   within -90 to 140. On dark pages the ends carry the color and middling
   values fade, as the diverging dark ramps do.
+- The polarity question for a temperature column says it is a temperature,
+  and that air and weather temperatures are neutral. Asked plainly, the
+  model read a forecast's feels-like as better when warmer (0.8 to 0.96), so
+  a forecast was painted as a judgment of the weather. A temperature with a
+  better end whatever the weather, such as a processor's load temperature,
+  still gets one.
 - Tints blend over the row's background, not the cell's. The tint replaces
   the cell's own color, such as Wikipedia's hurricane-category colors.
 - Contrast is checked per cell in `src/core/tint.ts`. The code tries the

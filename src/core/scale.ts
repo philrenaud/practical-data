@@ -21,6 +21,7 @@ import { interpolateLab } from "d3-interpolate";
 import { scaleSequential, scaleSequentialLog } from "d3-scale";
 import { interpolatePurples, interpolateRdYlBu, interpolateYlGnBu } from "d3-scale-chromatic";
 import { divergingColor, divergingStops, type PaletteId } from "./palettes.ts";
+import { isTemperatureColumn } from "./temperature.ts";
 import type { ColumnEncoding } from "./types.ts";
 
 export type { PaletteId as Palette } from "./palettes.ts";
@@ -40,29 +41,15 @@ const TEMPERATURE = clampRange((t) => interpolateRdYlBu(1 - t), 0.06, 0.94);
 /** On dark pages the ends carry the color and middling values fade, as the diverging dark ramps do. */
 const TEMPERATURE_DARK = { cold: "#6f9bd6", warm: "#e0533f" } as const;
 
-/** Units that always mean a temperature. */
-const TEMPERATURE_UNITS = new Set(["°C", "°F"]);
-/** Header words for a bare `°` that is an angle, a direction or a coordinate, not a temperature. */
-const ANGLE_HEADER =
-  /^(?:dir|direction|bearing|heading|course|angle|azimuth|lat|latitude|lon|lng|long|longitude|slope|incline|inclination|tilt|pitch|roll|yaw|rotation|elevation|altitude|declination|wind)$/;
-/** A bare `°` beyond this is more likely an angle (0–360) than a temperature. */
-const TEMPERATURE_RANGE: readonly [number, number] = [-90, 140];
-
 /**
  * True when a neutral number column is a temperature, so it gets the cool to
- * warm scheme instead of yellow to blue. `°C` and `°F` always count. A bare
- * `°` counts only when the header names no angle, direction or coordinate
- * ("Wind", "Bearing", "Lat") and every value is within -90 to 140, since
- * bearings run to 360. A column with a better end keeps its diverging scale.
+ * warm scheme instead of yellow to blue. See `isTemperatureColumn` for what
+ * counts as a temperature. A column with a better end keeps its diverging
+ * scale. The polarity question tells the model that weather temperatures have
+ * no better end (see `TEMPERATURE_NOTE` in src/decide/questions.ts).
  */
-export const isTemperature = (e: ColumnEncoding): boolean => {
-  if (e.kind !== "quantitative" || e.polarity !== "neutral" || e.unit === null) return false;
-  if (TEMPERATURE_UNITS.has(e.unit)) return true;
-  if (e.unit !== "°") return false;
-  const words = e.header.toLowerCase().split(/[^a-z]+/);
-  if (words.some((w) => ANGLE_HEADER.test(w))) return false;
-  return e.domain[0] >= TEMPERATURE_RANGE[0] && e.domain[1] <= TEMPERATURE_RANGE[1];
-};
+export const isTemperature = (e: ColumnEncoding): boolean =>
+  e.kind === "quantitative" && e.polarity === "neutral" && isTemperatureColumn(e.header, e.unit, e.domain);
 
 const temperatureColor = (t: number, dark: boolean): { color: string; weight: number } => {
   const clamped = Math.min(1, Math.max(0, t));
