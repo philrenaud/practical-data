@@ -17,6 +17,19 @@ export interface Legend {
   readonly hi: string;
   /** Short qualifiers: "Found in 3 tables", "Excludes total: World". */
   readonly facts: readonly string[];
+  /** The ends of the scale as numbers, for editing. Null when the column has no numeric range to edit. */
+  readonly range: LegendRange | null;
+}
+
+export interface LegendRange {
+  readonly lo: number;
+  readonly hi: number;
+  /** The column's unit ("$", "%", "GB"), or null. */
+  readonly unit: string | null;
+  /** True when the user set the range. */
+  readonly custom: boolean;
+  /** Ranges to offer in one step. A null range puts the fitted range back. */
+  readonly presets: readonly { readonly label: string; readonly range: readonly [number, number] | null }[];
 }
 
 export interface LegendContext {
@@ -62,6 +75,36 @@ const DIRECTION: Readonly<Record<ColumnEncoding["polarity"], string>> = {
 const spread = (lo: number, hi: number): string =>
   `${new Intl.NumberFormat("en-US", { notation: hi / lo >= 1e4 ? "compact" : "standard", maximumSignificantDigits: 2 }).format(hi / lo)}× range`;
 
+/** Units whose values are not plain numbers on the page: clock times and win or loss streaks. */
+const CODED_UNITS = new Set([":", "streak"]);
+
+/**
+ * The editable range of a number column, with the presets that would change
+ * it. Presets come from the range fitted to the data, so they stay the same
+ * while the user tries others. Dates, clock times and streaks have none,
+ * because a number input can't write them the way the page does.
+ */
+const editableRange = (e: Extract<ColumnEncoding, { kind: "quantitative" }>): LegendRange | null => {
+  if (isDateUnit(e.unit) || (e.unit !== null && CODED_UNITS.has(e.unit))) return null;
+  const [lo, hi] = e.domain;
+  const [fitLo, fitHi] = e.fit ?? e.domain;
+  const presets: { label: string; range: readonly [number, number] | null }[] = [];
+  if (e.fit !== undefined) presets.push({ label: "Fit to data", range: null });
+  // A log scale has no zero.
+  if (e.transform !== "log") {
+    if (fitLo > 0) presets.push({ label: "From zero", range: [0, fitHi] });
+    if (fitHi < 0) presets.push({ label: "To zero", range: [fitLo, 0] });
+    if (e.unit === "%" && fitLo >= 0 && fitHi <= 100) presets.push({ label: "0 to 100", range: [0, 100] });
+  }
+  return {
+    lo,
+    hi,
+    unit: e.unit,
+    custom: e.fit !== undefined,
+    presets: presets.filter((p) => p.range === null || p.range[0] !== lo || p.range[1] !== hi),
+  };
+};
+
 /** The legend for one shaded column. */
 export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolean, ctx: LegendContext): Legend => {
   const facts: string[] = [];
@@ -73,6 +116,7 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
       ? `${e.unit === "weektime" ? "Times" : "Dates"} · Earliest to latest`
       : `${isTemperature(e) ? "Cold to warm" : DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
+    if (e.fit !== undefined) facts.push("Custom range");
   } else {
     status = `Ranked categories · ${e.order.length} levels`;
   }
@@ -85,5 +129,6 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
     lo: e.kind === "quantitative" ? withUnit(e.domain[0], e.unit) : (e.labels[0] ?? ""),
     hi: e.kind === "quantitative" ? withUnit(e.domain[1], e.unit) : (e.labels.at(-1) ?? ""),
     facts,
+    range: e.kind === "quantitative" ? editableRange(e) : null,
   };
 };

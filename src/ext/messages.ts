@@ -2,6 +2,7 @@
 import type { FlagReport } from "../api/flag.ts";
 import type { PageJudgment, PageSnapshot } from "../core/types.ts";
 import type { Orientation } from "../core/orient.ts";
+import type { PageRanges } from "../core/range.ts";
 import type { Palette } from "../core/scale.ts";
 import type { FlagCapture } from "./flags.ts";
 import type { TableChoice } from "./settings.ts";
@@ -10,12 +11,14 @@ import type { TableChoice } from "./settings.ts";
 export type ToWorker =
   /**
    * Asks whether the extension is on for this page, and for the page's saved
-   * table choices. Content scripts can't read extension storage, so only the
-   * worker reads it.
+   * table choices and column ranges. Content scripts can't read extension
+   * storage, so only the worker reads it.
    */
   | { readonly type: "pageConfig"; readonly url: string }
   /** Saves the page's table choices until the browser session ends. */
   | { readonly type: "saveTableChoices"; readonly url: string; readonly choices: Readonly<Record<string, TableChoice>> }
+  /** Saves the ranges the user set on the page's columns. They outlast the browser session. */
+  | { readonly type: "saveRanges"; readonly url: string; readonly ranges: PageRanges }
   | {
       readonly type: "judge";
       readonly page: PageSnapshot;
@@ -63,4 +66,6 @@ export interface PageConfig {
   readonly enabled: boolean;
   /** The saved table choices for the page, keyed by table fingerprint. */
   readonly choices: Readonly<Record<string, TableChoice>>;
+  /** The ranges the user set on the page's columns. */
+  readonly ranges: PageRanges;
 }

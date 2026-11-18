@@ -719,6 +719,138 @@ const isolateScenario = async (): Promise<string[]> => {
   return problems;
 };
 
+// ── Setting a column's range ────────────────────────────────────────────────
+
+const rangeScenario = async (): Promise<string[]> => {
+  const problems: string[] = [];
+  const page = await context.newPage();
+  const ready = () =>
+    page
+      .waitForFunction(
+        () =>
+          ["#store-a", "#store-b"].every(
+            (id) => (document.querySelector(id)?.getAttribute("data-pd-encoded") ?? "") !== "",
+          ),
+        undefined,
+        { timeout: 15_000, polling: 100 },
+      )
+      .catch(() => undefined);
+  await page.goto(`${base}/synthetic/edge-cases.html`, { waitUntil: "domcontentloaded" });
+  await page.locator("#store-a").scrollIntoViewIfNeeded();
+  await ready();
+  // Blender is $89 in Store A and $120 in Store B, mid-scale on the shared [35, 249] domain.
+  const CELL_A = "#store-a tbody tr:nth-child(3) td:nth-child(2)";
+  const CELL_B = "#store-b tbody tr:nth-child(3) td:nth-child(2)";
+  const fill = (selector: string) => page.locator(selector).evaluate((td) => getComputedStyle(td).backgroundColor);
+  const changes = (selector: string, from: string) =>
+    page
+      .waitForFunction(
+        ([sel, prev]) => {
+          const td = document.querySelector(sel!);
+          return td !== null && getComputedStyle(td).backgroundColor !== prev;
+        },
+        [selector, from],
+        { timeout: 10_000, polling: 100 },
+      )
+      .catch(() => undefined);
+  const openCard = async (table: string) => {
+    await page.mouse.move(0, 0);
+    const box = (await page.locator(`${table} thead th:nth-child(2)`).boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
+    await page.waitForTimeout(250);
+  };
+  const lo = page.locator('[data-pd-card] input[data-end="lo"]');
+  const hi = page.locator('[data-pd-card] input[data-end="hi"]');
+  const preset = (label: string) => page.locator("[data-pd-card] button", { hasText: label });
+  const cardText = () => page.locator("[data-pd-card]").evaluate((host) => host.shadowRoot?.textContent ?? "");
+  const stored = async () =>
+    JSON.stringify((await worker.evaluate(() => chrome.storage.local.get("ranges")))["ranges"] ?? {});
+
+  const sharedA = await fill(CELL_A);
+  const sharedB = await fill(CELL_B);
+  await openCard("#store-a");
+  if ((await hi.count()) === 0) {
+    problems.push("range: the card of a number column should offer its two ends for editing");
+    await page.close();
+    return problems;
+  }
+  if ((await lo.inputValue()) !== "35" || (await hi.inputValue()) !== "249")
+    problems.push(
+      `range: the ends should start at the fitted range, got ${await lo.inputValue()} to ${await hi.inputValue()}`,
+    );
+
+  // A wider range on a shared scale moves both tables.
+  await hi.fill("1000");
+  await hi.press("Enter");
+  await changes(CELL_A, sharedA);
+  const wideA = await fill(CELL_A);
+  if (wideA === sharedA) problems.push("range: a wider range should change Store A's tint");
+  if ((await fill(CELL_B)) === sharedB) problems.push("range: a range on a shared scale should change Store B too");
+  await page.waitForTimeout(300);
+  if ((await page.locator("[data-pd-card] .card.open").count()) === 0)
+    problems.push("range: the card should stay open after a range is set");
+  if (!(await cardText()).includes("Custom range")) problems.push("range: the card should say the range is custom");
+  if ((await stored()).includes("edge-cases")) problems.push("range: storage should not hold the page's address");
+  await page.screenshot({ path: "artifacts/screens/range.png" });
+
+  // An unusable range is refused and the ends go back.
+  await lo.fill("5000");
+  await lo.press("Enter");
+  await page.waitForTimeout(300);
+  if ((await fill(CELL_A)) !== wideA) problems.push("range: a low end above the high end should change nothing");
+
+  // The range outlasts the page.
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.locator("#store-a").scrollIntoViewIfNeeded();
+  await ready();
+  if ((await fill(CELL_A)) !== wideA) problems.push("range: the range should still apply after a reload");
+
+  // An isolated table leaves the shared range and takes its own.
+  const wideB = await fill(CELL_B);
+  await page.mouse.move(0, 0);
+  const tableBox = (await page.locator("#store-a").boundingBox())!;
+  await page.mouse.move(tableBox.x + 30, tableBox.y + 30);
+  await page.waitForTimeout(200);
+  await page.locator("[data-pd-controls] button", { hasText: "Isolate scales" }).click();
+  await changes(CELL_A, wideA);
+  const isolatedA = await fill(CELL_A);
+  if (isolatedA === wideA) problems.push("range: an isolated table should drop the shared range");
+  await openCard("#store-a");
+  if ((await lo.inputValue()) !== "39" || (await hi.inputValue()) !== "89")
+    problems.push(
+      `range: an isolated table should show its own extent, got ${await lo.inputValue()} to ${await hi.inputValue()}`,
+    );
+  // On the table's own [39, 89] the Blender is the dearest either way, so the Toaster ($54) shows the change.
+  const MID_A = "#store-a tbody tr:nth-child(2) td:nth-child(2)";
+  const isolatedMid = await fill(MID_A);
+  await preset("From zero").click();
+  await changes(MID_A, isolatedMid);
+  const ownMid = await fill(MID_A);
+  if (ownMid === isolatedMid) problems.push("range: From zero should rescale the isolated table");
+  if ((await fill(CELL_B)) !== wideB) problems.push("range: an isolated table's range should leave Store B alone");
+
+  // Fit to data puts each range back.
+  await openCard("#store-a");
+  await preset("Fit to data").click();
+  await changes(MID_A, ownMid);
+  if ((await fill(MID_A)) !== isolatedMid)
+    problems.push("range: Fit to data should restore the isolated table's own extent");
+  await page.mouse.move(tableBox.x + 30, tableBox.y + 30);
+  await page.waitForTimeout(200);
+  await page.locator("[data-pd-controls] button", { hasText: "Share scales" }).click();
+  await changes(CELL_A, isolatedA);
+  await openCard("#store-b");
+  await preset("Fit to data").click();
+  await changes(CELL_B, wideB);
+  if ((await fill(CELL_A)) !== sharedA || (await fill(CELL_B)) !== sharedB)
+    problems.push("range: Fit to data on the shared scale should restore both tables");
+  await page.waitForTimeout(200);
+  if ((await stored()) !== "{}")
+    problems.push(`range: clearing every range should empty storage, got ${await stored()}`);
+  await page.close();
+  return problems;
+};
+
 // ── Reports: the store build's "Looks wrong" dialog ─────────────────────────
 
 const reportScenario = async (): Promise<string[]> => {
@@ -1209,6 +1341,11 @@ console.log(`${isolateProblems.length === 0 ? "✓" : "✗"} isolate: a table le
 for (const p of isolateProblems) console.log(`    - ${p}`);
 if (isolateProblems.length > 0) failed++;
 
+const rangeProblems = await rangeScenario();
+console.log(`${rangeProblems.length === 0 ? "✓" : "✗"} range: a column's range is set, saved, isolated, and reset`);
+for (const p of rangeProblems) console.log(`    - ${p}`);
+if (rangeProblems.length > 0) failed++;
+
 const reportProblems = await reportScenario();
 console.log(`${reportProblems.length === 0 ? "✓" : "✗"} report: the Looks wrong dialog previews, cancels, sends`);
 for (const p of reportProblems) console.log(`    - ${p}`);
@@ -1229,7 +1366,7 @@ await writeFile("artifacts/e2e.json", JSON.stringify(results, null, 1));
 // Those requests fail without effect, and the request for the full set of tables replays.
 if (args.offline && replayMisses > 0) console.log(`\n${replayMisses} intermediate API requests had no recording.`);
 console.log(
-  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 13 scenarios checked. Screenshots: artifacts/screens/`,
+  `\n${failed === 0 ? "All" : `${failed} failure(s);`} ${selected.length} pages and 14 scenarios checked. Screenshots: artifacts/screens/`,
 );
 await context.close();
 server.close();

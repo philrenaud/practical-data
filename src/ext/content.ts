@@ -16,6 +16,7 @@
  * "idle" means the page has tables but none is near the viewport yet.
  */
 import { isolateJudgment } from "../core/isolate.ts";
+import { applyRanges, EMPTY_RANGES, rangeTableKey, setRange, type PageRanges } from "../core/range.ts";
 import { transposeSnapshot, type Orientation } from "../core/orient.ts";
 import { conventionForLang, normalizeLabel, parseNumber, stripNoise } from "../core/parse.ts";
 import { toCSV } from "../core/tabular.ts";
@@ -153,8 +154,16 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     if (!table?.element.isConnected) continue;
     // `judged` keeps the reply's judgment, so the bar still knows the table
     // shares scales and can offer to rejoin them.
-    const shown = choices[fingerprint(table)]?.isolated === true ? isolateJudgment(t) : t;
-    paintTable(t.orientation === "rows" ? transposeExtracted(table) : table, shown, reply.palette, groupSizes);
+    const scaled = choices[fingerprint(table)]?.isolated === true ? isolateJudgment(t) : t;
+    const rangeKey = rangeTableKey(table.snapshot);
+    paintTable(
+      t.orientation === "rows" ? transposeExtracted(table) : table,
+      applyRanges(scaled, rangeKey, ranges),
+      reply.palette,
+      groupSizes,
+      // `scaled` says whether the column is on a shared scale now, which decides whose range this is.
+      (col, range) => saveRanges(setRange(ranges, scaled, rangeKey, col, range)),
+    );
     judged.set(table.element, t);
     const sample = table.element.querySelector<HTMLElement>("[data-pd-t]:not([data-pd-t=''])");
     if (sample !== null) sampleCell.set(table.element, sample);
@@ -191,6 +200,16 @@ const choose = (table: HTMLTableElement, change: TableChoice) => {
   if (key === undefined) return;
   choices = { ...choices, [key]: { ...choices[key], ...change } };
   void send({ type: "saveTableChoices", url: location.href, choices }).catch(() => undefined);
+  void run(true);
+};
+
+/** The ranges the user set on this page's columns. They outlast the browser session. */
+let ranges: PageRanges = EMPTY_RANGES;
+
+const saveRanges = (next: PageRanges) => {
+  if (next === ranges) return;
+  ranges = next;
+  void send({ type: "saveRanges", url: location.href, ranges }).catch(() => undefined);
   void run(true);
 };
 
@@ -605,8 +624,10 @@ const start = async () => {
   const config = await send<PageConfig>({ type: "pageConfig", url: location.href }).catch((): PageConfig => ({
     enabled: false,
     choices: {},
+    ranges: EMPTY_RANGES,
   }));
   choices = config.choices;
+  ranges = config.ranges;
   enabled = config.enabled && !optedOut();
   setPolling(enabled);
   if (!enabled) {

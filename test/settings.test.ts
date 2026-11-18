@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_SETTINGS, isPrivateHost, setSiteEnabledIn, siteEnabled } from "../src/ext/settings.ts";
+import {
+  DEFAULT_SETTINGS,
+  isPrivateHost,
+  pageRangesKey,
+  putPageRanges,
+  setSiteEnabledIn,
+  siteEnabled,
+} from "../src/ext/settings.ts";
 
 test("local and private-network hosts are private", () => {
   for (const host of [
@@ -70,4 +77,32 @@ test("in chosen-sites mode, private and public hosts are off until the user turn
   assert.equal(siteEnabled(s, "en.wikipedia.org"), false);
   assert.equal(siteEnabled(s, "localhost"), false);
   assert.equal(siteEnabled(setSiteEnabledIn(s, "localhost", true), "localhost"), true);
+});
+
+const RANGES = { shared: {}, tables: { k: { "Win rate": [0, 100] as const } } };
+
+test("a page's ranges are stored with the time they were saved", () => {
+  assert.deepEqual(putPageRanges({}, "p1", RANGES, 1000), { p1: { at: 1000, ranges: RANGES } });
+});
+
+test("saving empty ranges removes the page", () => {
+  const store = putPageRanges({}, "p1", RANGES, 1000);
+  assert.deepEqual(putPageRanges(store, "p1", { shared: {}, tables: {} }, 2000), {});
+});
+
+test("past the cap, the pages saved longest ago are dropped", () => {
+  let store = {};
+  for (let i = 0; i < 5; i++) store = putPageRanges(store, `p${i}`, RANGES, 1000 + i, 3);
+  assert.deepEqual(Object.keys(store).sort(), ["p2", "p3", "p4"]);
+  // Saving a page again makes it the newest.
+  store = putPageRanges(store, "p2", RANGES, 2000, 3);
+  store = putPageRanges(store, "p9", RANGES, 2001, 3);
+  assert.deepEqual(Object.keys(store).sort(), ["p2", "p4", "p9"]);
+});
+
+test("a page's storage key hides its address and ignores the fragment", async () => {
+  const key = await pageRangesKey("https://example.com/standings?year=2026#west");
+  assert.match(key, /^[0-9a-f]{24}$/);
+  assert.equal(await pageRangesKey("https://example.com/standings?year=2026#east"), key);
+  assert.notEqual(await pageRangesKey("https://example.com/standings?year=2025"), key);
 });

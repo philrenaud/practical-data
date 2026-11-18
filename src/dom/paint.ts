@@ -3,10 +3,12 @@
  * `paintTable` makes, and restores the original value of each inline style
  * property that the painter set. A gradient bar on the header cell marks each
  * shaded column. The hover card is in a shadow root, so page CSS does not
- * reach it.
+ * reach it. When the caller passes `onRange`, the card of a number column
+ * lets the user set the ends of its scale.
  */
 import { select } from "d3-selection";
 import { describeColumn, type Legend } from "../core/legend.ts";
+import { isUsableRange, type ScaleRange } from "../core/range.ts";
 import { positions, schemeColor, type Palette } from "../core/scale.ts";
 import { cellFill, isDark, luminance } from "../core/tint.ts";
 import type { ColumnEncoding, TableJudgment } from "../core/types.ts";
@@ -212,7 +214,7 @@ const underline = (header: HTMLElement, stops: readonly string[], axis: Orientat
 const CARD_CSS = `
 :host { all: initial; }
 .card {
-  position: fixed; z-index: 2147483646; pointer-events: none;
+  position: fixed; z-index: 2147483646; pointer-events: none; box-sizing: border-box;
   width: 240px; padding: 12px 14px;
   border-radius: 12px; background: rgb(22 22 26 / 0.97); color: #f3f1ec;
   font: 13px/1.5 "Bricolage Grotesque", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
@@ -220,17 +222,60 @@ const CARD_CSS = `
   opacity: 0; transform: translateY(4px); transition: opacity 120ms ease-out, transform 120ms ease-out;
 }
 .card.open { opacity: 1; transform: none; }
+.card.open.editable { pointer-events: auto; }
 .section + .section { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgb(255 255 255 / 0.1); }
 .title { font-weight: 650; font-size: 14px; }
 .status { margin: 2px 0 10px; font-size: 12px; letter-spacing: 0.02em; color: #c9c3b8; }
 .ramp { height: 8px; border-radius: 4px; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14); }
 .ends { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; font: 12px ui-monospace, "IBM Plex Mono", monospace; color: #e2ddd3; }
+.ends.edit { align-items: center; gap: 8px; }
+.unit { flex: 1; text-align: center; color: #a7a196; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+input {
+  all: unset; box-sizing: border-box; width: 78px; padding: 3px 6px; border-radius: 5px;
+  font: inherit; color: #f3f1ec; background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12); -moz-appearance: textfield;
+}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[data-end="hi"] { text-align: right; }
+input:hover { background: rgb(255 255 255 / 0.12); }
+input:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
+.ends.bad input { box-shadow: 0 0 0 1px #e0705f; }
+.presets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+button {
+  all: unset; cursor: pointer; padding: 3px 8px; border-radius: 6px; font-size: 12px; line-height: 1.5;
+  color: #d9d4ca; background: rgb(255 255 255 / 0.08);
+}
+button:hover { background: rgb(255 255 255 / 0.16); color: #fff; }
+button:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
 .fact { margin-top: 8px; font-size: 12px; color: #a7a196; }
 .fact + .fact { margin-top: 2px; }
 `;
 
-let card: { host: HTMLElement; el: HTMLDivElement } | null = null;
+/** One column's legend in a card, and the handler that sets its range when the card can edit it. */
+interface CardSection {
+  readonly legend: Legend;
+  readonly col: number;
+  readonly setRange: ((range: ScaleRange | null) => void) | null;
+}
+
+let card: { host: HTMLElement; root: ShadowRoot; el: HTMLDivElement } | null = null;
 let scrollWatched = false;
+/** The header whose card is open. */
+let anchored: Element | null = null;
+let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** The mouse has this long to cross from a header to its card before the card closes. */
+const HIDE_DELAY_MS = 180;
+
+/**
+ * The card to open again after the repaint that a new range causes. Painting
+ * replaces every card, and the user is still in this one, often about to type
+ * the other end.
+ */
+let reopen: { table: HTMLTableElement; col: number; end: string | null; until: number } | null = null;
+const REOPEN_MS = 5000;
+
+const editing = (): boolean => card !== null && card.root.activeElement !== null;
 
 const ensureCard = () => {
   if (card !== null && card.host.isConnected) return card;
@@ -242,38 +287,143 @@ const ensureCard = () => {
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `<style>${CARD_CSS}</style><div class="card" role="tooltip"></div>`;
   document.documentElement.append(host);
-  card = { host, el: root.querySelector(".card")! };
-  if (!scrollWatched) addEventListener("scroll", hideCard, { passive: true, capture: true });
+  const el = root.querySelector<HTMLDivElement>(".card")!;
+  card = { host, root, el };
+  el.addEventListener("pointerenter", () => clearTimeout(hideTimer));
+  el.addEventListener("pointerleave", (ev) => ev.pointerType === "mouse" && hideCardSoon());
+  // The mouse may have left while an end was being typed, so the card closes when focus leaves it too.
+  el.addEventListener("focusout", () => setTimeout(() => !editing() && !el.matches(":hover") && hideCard()));
+  // Page shortcuts must not fire while the user types a number.
+  for (const type of ["keydown", "keyup", "keypress"]) el.addEventListener(type, (ev) => ev.stopPropagation());
+  if (!scrollWatched) {
+    // A scroll moves the header away from the card, unless the scroll came from focusing an end.
+    addEventListener("scroll", () => !editing() && hideCard(), { passive: true, capture: true });
+    // With touch nothing "leaves" the header, so a press anywhere else closes the card.
+    addEventListener(
+      "pointerdown",
+      (ev) => {
+        if (anchored === null) return;
+        const path = ev.composedPath();
+        if (!path.includes(card!.host) && !path.includes(anchored)) hideCard();
+      },
+      { capture: true },
+    );
+  }
   scrollWatched = true;
   return card;
 };
 
-const showCard = (anchor: Element, legends: readonly Legend[]) => {
+/** The number as an input shows it: at most six significant digits, so a parsed 0.1 + 0.2 reads 0.3. */
+const inputValue = (v: number): string => String(Number(v.toPrecision(6)));
+
+/**
+ * Makes the two ends of a number column's scale editable, with the legend's
+ * presets under them. A new range is sent when an end changes, which is on
+ * Enter or when focus leaves the end. A range that can't make a scale is
+ * refused, and both ends go back to the current range.
+ */
+const editableEnds = (
+  ends: HTMLElement,
+  section: CardSection,
+  table: HTMLTableElement,
+  setRange: (range: ScaleRange | null) => void,
+) => {
+  const range = section.legend.range!;
+  const input = (end: "lo" | "hi", value: number): HTMLInputElement => {
+    const el = document.createElement("input");
+    el.type = "number";
+    el.step = "any";
+    el.dataset["end"] = end;
+    el.value = inputValue(value);
+    el.setAttribute("aria-label", `${end === "lo" ? "Low" : "High"} end of the ${section.legend.title} scale`);
+    return el;
+  };
+  const lo = input("lo", range.lo);
+  const hi = input("hi", range.hi);
+  const label = document.createElement("span");
+  label.className = "unit";
+  label.textContent = range.unit ?? "";
+  ends.classList.add("edit");
+  ends.replaceChildren(lo, label, hi);
+
+  const send = (next: ScaleRange | null) => {
+    // Read the focus after the browser has moved it: Enter keeps it on this end, Tab moves it to the other.
+    setTimeout(() => {
+      const end = (card?.root.activeElement as HTMLElement | null)?.dataset["end"] ?? null;
+      reopen = { table, col: section.col, end, until: Date.now() + REOPEN_MS };
+      setRange(next);
+    });
+  };
+  const commit = () => {
+    const next: ScaleRange = [lo.valueAsNumber, hi.valueAsNumber];
+    if (next[0] === Number(inputValue(range.lo)) && next[1] === Number(inputValue(range.hi))) return;
+    if (!isUsableRange(next)) {
+      lo.value = inputValue(range.lo);
+      hi.value = inputValue(range.hi);
+      ends.classList.add("bad");
+      setTimeout(() => ends.classList.remove("bad"), 700);
+      return;
+    }
+    send(next);
+  };
+  for (const el of [lo, hi]) {
+    el.addEventListener("change", commit);
+    el.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Escape") return;
+      lo.value = inputValue(range.lo);
+      hi.value = inputValue(range.hi);
+      el.blur();
+    });
+  }
+
+  if (range.presets.length === 0) return;
+  const presets = document.createElement("div");
+  presets.className = "presets";
+  for (const preset of range.presets) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = preset.label;
+    button.addEventListener("click", () => send(preset.range));
+    presets.append(button);
+  }
+  ends.after(presets);
+};
+
+const showCard = (anchor: Element, sections: readonly CardSection[], table: HTMLTableElement) => {
   const { el } = ensureCard();
+  clearTimeout(hideTimer);
+  anchored = anchor;
   const box = select(el);
   box.selectAll("*").remove();
-  const section = box.selectAll(".section").data(legends).join("div").attr("class", "section");
+  const section = box.selectAll(".section").data(sections).join("div").attr("class", "section");
   section
     .append("div")
     .attr("class", "title")
-    .text((d) => d.title);
+    .text((d) => d.legend.title);
   section
     .append("div")
     .attr("class", "status")
-    .text((d) => d.status);
+    .text((d) => d.legend.status);
   section
     .append("div")
     .attr("class", "ramp")
-    .style("background", (d) => gradient(d.stops));
+    .style("background", (d) => gradient(d.legend.stops));
   const ends = section.append("div").attr("class", "ends");
-  ends.append("span").text((d) => d.lo);
-  ends.append("span").text((d) => d.hi);
+  ends.append("span").text((d) => d.legend.lo);
+  ends.append("span").text((d) => d.legend.hi);
+  ends.each(function (d) {
+    if (d.setRange !== null && d.legend.range !== null) editableEnds(this, d, table, d.setRange);
+  });
   section
     .selectAll(".fact")
-    .data((d) => d.facts)
+    .data((d) => d.legend.facts)
     .join("div")
     .attr("class", "fact")
     .text((d) => d);
+  const editable = sections.some((d) => d.setRange !== null && d.legend.range !== null);
+  el.classList.toggle("editable", editable);
+  // A card with inputs is more than a tooltip.
+  el.setAttribute("role", editable ? "group" : "tooltip");
 
   const r = anchor.getBoundingClientRect();
   const width = 240;
@@ -286,7 +436,18 @@ const showCard = (anchor: Element, legends: readonly Legend[]) => {
 };
 
 function hideCard() {
-  card?.el.classList.remove("open");
+  clearTimeout(hideTimer);
+  anchored = null;
+  if (card === null) return;
+  // A hidden card must not keep the focus, or typing would go to an input nobody can see.
+  (card.root.activeElement as HTMLElement | null)?.blur();
+  card.el.classList.remove("open");
+}
+
+/** Closes the card unless the mouse reaches it first, or the user is typing in it. */
+function hideCardSoon() {
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => !editing() && hideCard(), HIDE_DELAY_MS);
 }
 
 const LONG_PRESS_MS = 450;
@@ -294,13 +455,15 @@ const detach = new WeakMap<HTMLElement, () => void>();
 
 /**
  * Opens the card while the mouse is over the header. With touch or a pen, a
- * press and hold opens it, so a tap still sorts the table.
+ * press and hold opens it, so a tap still sorts the table. A card that can
+ * edit a range stays open while the mouse crosses to it.
  */
-const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
+const attachCard = (header: HTMLElement, sections: readonly CardSection[], table: HTMLTableElement) => {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const open = () => showCard(header, legends);
+  const editable = sections.some((d) => d.setRange !== null && d.legend.range !== null);
+  const open = () => showCard(header, sections, table);
   const enter = (ev: PointerEvent) => ev.pointerType === "mouse" && open();
-  const leave = (ev: PointerEvent) => ev.pointerType === "mouse" && hideCard();
+  const leave = (ev: PointerEvent) => ev.pointerType === "mouse" && (editable ? hideCardSoon() : hideCard());
   const down = (ev: PointerEvent) => {
     if (ev.pointerType !== "mouse") timer = setTimeout(open, LONG_PRESS_MS);
   };
@@ -310,7 +473,7 @@ const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
   header.addEventListener("pointerdown", down);
   header.addEventListener("pointerup", up);
   header.addEventListener("pointercancel", up);
-  header.dataset["pdLegend"] = legends.map((l) => l.title).join("|");
+  header.dataset["pdLegend"] = sections.map((d) => d.legend.title).join("|");
   detach.set(header, () => {
     clearTimeout(timer);
     header.removeEventListener("pointerenter", enter);
@@ -320,21 +483,41 @@ const attachCard = (header: HTMLElement, legends: readonly Legend[]) => {
     header.removeEventListener("pointercancel", up);
     delete header.dataset["pdLegend"];
   });
+  // This paint followed a new range from this column's card: open it again, with the focus where it was.
+  if (reopen !== null && reopen.table === table && sections.some((d) => d.col === reopen!.col)) {
+    const { col, end, until } = reopen;
+    reopen = null;
+    if (Date.now() > until) return;
+    open();
+    if (end === null) return;
+    const at = sections.findIndex((d) => d.col === col);
+    const input = card?.el
+      .querySelectorAll(".section")
+      [at]?.querySelector<HTMLInputElement>(`input[data-end="${end}"]`);
+    input?.focus();
+    input?.select();
+  }
 };
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
-/** Shades the encoded columns of one table and attaches a legend card to each shaded header. */
+/**
+ * Shades the encoded columns of one table and attaches a legend card to each
+ * shaded header. With `onRange`, the card of a number column can set the
+ * column's range, or clear it with null. The caller saves the range and
+ * paints again.
+ */
 export const paintTable = (
   table: ExtractedTable,
   judgment: TableJudgment,
   palette: Palette,
   groupSizes: ReadonlyMap<string, number>,
+  onRange?: (col: number, range: ScaleRange | null) => void,
 ) => {
   const excluded = new Set(judgment.aggregateRows);
   const aggregates = judgment.aggregateRows.map((r) => table.snapshot.rows[r]?.[0] ?? "").filter((x) => x !== "");
   // A spanning header can be over several shaded columns. It gets one card with a section for each.
-  const byHeader = new Map<HTMLTableCellElement, Legend[]>();
+  const byHeader = new Map<HTMLTableCellElement, CardSection[]>();
   const rows = new Map<Element, string>();
   for (const e of judgment.encodings) {
     paintColumn(table, e, palette, excluded, rows);
@@ -344,12 +527,13 @@ export const paintTable = (
       sharedWith: e.group === null ? 1 : (groupSizes.get(e.group) ?? 1),
       aggregates,
     });
-    byHeader.set(header, [...(byHeader.get(header) ?? []), legend]);
+    const setRange = onRange === undefined ? null : (range: ScaleRange | null) => onRange(e.col, range);
+    byHeader.set(header, [...(byHeader.get(header) ?? []), { legend, col: e.col, setRange }]);
   }
   const inks = [...byHeader.keys()].map((el) => ({ el, ink: resolveColor(getComputedStyle(el).color).rgb }));
-  for (const [header, legends] of byHeader) {
-    underline(header, legends[0]!.stops, table.axis);
-    attachCard(header, legends);
+  for (const [header, sections] of byHeader) {
+    underline(header, sections[0]!.legend.stops, table.axis);
+    attachCard(header, sections, table.element);
   }
   keepInk(inks);
   table.element.dataset["pdTable"] = judgment.id;

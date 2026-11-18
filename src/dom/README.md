@@ -67,6 +67,12 @@ render the README images.
   nothing else changed, it restores the original `style` attribute exactly.
   The painter adds no elements to the table. The header mark is extra
   background layers on the header cell, so column widths do not change.
+- **The hover card edits a number column's range.** When `paintTable` gets
+  `onRange`, the two ends of the scale are number inputs, with the legend's
+  presets under them. The card stays open while the mouse crosses to it and
+  while an end has the focus. A new range makes the caller paint again, which
+  replaces every card, so `attachCard` opens the same card again and puts
+  the focus back. The site passes no `onRange`, so its cards only describe.
 - **Overlays are isolated.** The hover card and the controls bar are in
   shadow roots. Their host `<span>` elements are appended to `<html>`, not
   `<body>`, and carry an important inline `all: initial`, so page rules that
