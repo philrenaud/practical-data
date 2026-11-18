@@ -4,11 +4,11 @@
  * property that the painter set. A gradient bar on the header cell marks each
  * shaded column. The hover card is in a shadow root, so page CSS does not
  * reach it. When the caller passes `onRange`, the card of a number column
- * lets the user set the ends of its scale.
+ * has a slider for the ends of its scale.
  */
 import { select } from "d3-selection";
-import { describeColumn, type Legend } from "../core/legend.ts";
-import { isUsableRange, type ScaleRange } from "../core/range.ts";
+import { describeColumn, withUnit, type Legend } from "../core/legend.ts";
+import { isUsableRange, trackPosition, trackValue, type ScaleRange } from "../core/range.ts";
 import { positions, schemeColor, type Palette } from "../core/scale.ts";
 import { cellFill, isDark, luminance } from "../core/tint.ts";
 import type { ColumnEncoding, TableJudgment } from "../core/types.ts";
@@ -228,18 +228,23 @@ const CARD_CSS = `
 .status { margin: 2px 0 10px; font-size: 12px; letter-spacing: 0.02em; color: #c9c3b8; }
 .ramp { height: 8px; border-radius: 4px; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14); }
 .ends { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; font: 12px ui-monospace, "IBM Plex Mono", monospace; color: #e2ddd3; }
-.ends.edit { align-items: center; gap: 8px; }
-.unit { flex: 1; text-align: center; color: #a7a196; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-input {
-  all: unset; box-sizing: border-box; width: 78px; padding: 3px 6px; border-radius: 5px;
-  font: inherit; color: #f3f1ec; background: rgb(255 255 255 / 0.08);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12); -moz-appearance: textfield;
+.slider { position: relative; height: 24px; touch-action: none; }
+.span { position: absolute; left: 6px; right: 6px; top: 0; bottom: 0; pointer-events: none; }
+.track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; border-radius: 4px; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14); }
+/* Where the column's own values lie on the track. */
+.data { position: absolute; top: 18px; height: 2px; min-width: 2px; border-radius: 1px; background: rgb(255 255 255 / 0.55); }
+input[type="range"] {
+  all: unset; -webkit-appearance: none; appearance: none; position: absolute; left: 0; top: 0;
+  width: 100%; height: 18px; margin: 0; background: none; pointer-events: none;
 }
-input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[data-end="hi"] { text-align: right; }
-input:hover { background: rgb(255 255 255 / 0.12); }
-input:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
-.ends.bad input { box-shadow: 0 0 0 1px #e0705f; }
+input[type="range"]::-webkit-slider-runnable-track { -webkit-appearance: none; height: 18px; background: none; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; pointer-events: auto; cursor: ew-resize;
+  width: 12px; height: 18px; border-radius: 4px; background: #f3f1ec;
+  box-shadow: 0 0 0 1.5px rgb(22 22 26), 0 1px 4px rgb(0 0 0 / 0.5);
+}
+input[type="range"]::-webkit-slider-thumb:hover { background: #fff; }
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 1.5px rgb(22 22 26), 0 0 0 3.5px #8f82f0; }
 .presets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 button {
   all: unset; cursor: pointer; padding: 3px 8px; border-radius: 6px; font-size: 12px; line-height: 1.5;
@@ -255,7 +260,18 @@ button:focus-visible { outline: 2px solid #8f82f0; outline-offset: 1px; }
 interface CardSection {
   readonly legend: Legend;
   readonly col: number;
-  readonly setRange: ((range: ScaleRange | null) => void) | null;
+  readonly edit: {
+    readonly preview: (range: ScaleRange) => void;
+    readonly set: (range: ScaleRange | null) => void;
+  } | null;
+}
+
+/** How a card reports a new range for the column at `col`. */
+export interface RangeHandlers {
+  /** Shows a range while the user drags a thumb. Nothing is saved. */
+  readonly preview: (col: number, range: ScaleRange) => void;
+  /** Saves the range, or clears it with null. The caller paints again. */
+  readonly set: (col: number, range: ScaleRange | null) => void;
 }
 
 let card: { host: HTMLElement; root: ShadowRoot; el: HTMLDivElement } | null = null;
@@ -313,68 +329,125 @@ const ensureCard = () => {
   return card;
 };
 
-/** The number as an input shows it: at most six significant digits, so a parsed 0.1 + 0.2 reads 0.3. */
-const inputValue = (v: number): string => String(Number(v.toPrecision(6)));
+/** A thumb's range input counts positions along the track in this many steps. */
+const POSITIONS = 1000;
+
+/** The track's colors: the scale between the two thumbs, and its end colors beyond them. */
+const trackGradient = (stops: readonly string[], lo: number, hi: number): string => {
+  const pct = (p: number) => `${(p * 100).toFixed(2)}%`;
+  const inner = stops.map((c, i) => `${c} ${pct(lo + ((hi - lo) * i) / (stops.length - 1))}`);
+  return `linear-gradient(90deg, ${stops[0]} 0%, ${inner.join(", ")}, ${stops.at(-1)} 100%)`;
+};
 
 /**
- * Makes the two ends of a number column's scale editable, with the legend's
- * presets under them. A new range is sent when an end changes, which is on
- * Enter or when focus leaves the end. A range that can't make a scale is
- * refused, and both ends go back to the current range.
+ * Turns a number column's ramp into a slider with a thumb at each end of the
+ * scale. The track is wider than the data, and a mark under it shows where
+ * the data lies, so dragging a thumb away from the mark calms the colors and
+ * dragging it past the mark gives every value beyond it the end color.
+ * Dragging previews the range on the page; letting go sets it. The legend's
+ * presets go under the ends.
  */
-const editableEnds = (
+const rangeSlider = (
+  ramp: HTMLElement,
   ends: HTMLElement,
   section: CardSection,
   table: HTMLTableElement,
-  setRange: (range: ScaleRange | null) => void,
+  edit: NonNullable<CardSection["edit"]>,
 ) => {
-  const range = section.legend.range!;
-  const input = (end: "lo" | "hi", value: number): HTMLInputElement => {
+  const { legend } = section;
+  const range = legend.range!;
+  const { track, fit, unit } = range;
+  // A thumb near an end of the data, or near zero, lands on it.
+  const marks = [fit[0], fit[1], 0];
+  let current: [number, number] = [range.lo, range.hi];
+
+  const span = document.createElement("div");
+  span.className = "span";
+  const bar = document.createElement("div");
+  bar.className = "track";
+  const data = document.createElement("div");
+  data.className = "data";
+  data.style.left = `${trackPosition(track, fit[0]) * 100}%`;
+  data.style.width = `${(trackPosition(track, fit[1]) - trackPosition(track, fit[0])) * 100}%`;
+  span.append(bar, data);
+  const thumb = (end: "lo" | "hi", value: number): HTMLInputElement => {
     const el = document.createElement("input");
-    el.type = "number";
-    el.step = "any";
+    el.type = "range";
+    el.min = "0";
+    el.max = String(POSITIONS);
+    el.step = "1";
     el.dataset["end"] = end;
-    el.value = inputValue(value);
-    el.setAttribute("aria-label", `${end === "lo" ? "Low" : "High"} end of the ${section.legend.title} scale`);
+    el.value = String(Math.round(trackPosition(track, value) * POSITIONS));
+    el.setAttribute("aria-label", `${end === "lo" ? "Low" : "High"} end of the ${legend.title} scale`);
     return el;
   };
-  const lo = input("lo", range.lo);
-  const hi = input("hi", range.hi);
-  const label = document.createElement("span");
-  label.className = "unit";
-  label.textContent = range.unit ?? "";
-  ends.classList.add("edit");
-  ends.replaceChildren(lo, label, hi);
+  const lo = thumb("lo", range.lo);
+  const hi = thumb("hi", range.hi);
+  ramp.className = "slider";
+  ramp.style.background = "";
+  ramp.replaceChildren(span, lo, hi);
+  const [loLabel, hiLabel] = [...ends.children] as HTMLElement[];
 
+  const draw = () => {
+    bar.style.background = trackGradient(
+      legend.stops,
+      trackPosition(track, current[0]),
+      trackPosition(track, current[1]),
+    );
+    loLabel!.textContent = withUnit(current[0], unit);
+    hiLabel!.textContent = withUnit(current[1], unit);
+    lo.setAttribute("aria-valuetext", loLabel!.textContent);
+    hi.setAttribute("aria-valuetext", hiLabel!.textContent);
+  };
+  draw();
+
+  // The thumbs overlap when the range is narrow. The one nearer the pointer goes on top.
+  ramp.addEventListener("pointermove", (ev) => {
+    if (ev.buttons !== 0) return;
+    const box = ramp.getBoundingClientRect();
+    const p = (ev.clientX - box.left) / box.width;
+    const nearLo =
+      Math.abs(p - trackPosition(track, current[0])) < Math.abs(p - trackPosition(track, current[1])) ||
+      p < trackPosition(track, current[0]);
+    lo.style.zIndex = nearLo ? "2" : "1";
+    hi.style.zIndex = nearLo ? "1" : "2";
+  });
+
+  let frame = 0;
+  const preview = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => edit.preview(current));
+  };
   const send = (next: ScaleRange | null) => {
-    // Read the focus after the browser has moved it: Enter keeps it on this end, Tab moves it to the other.
+    cancelAnimationFrame(frame);
+    // Read the focus after the browser has settled it, so the same thumb gets it back after the repaint.
     setTimeout(() => {
       const end = (card?.root.activeElement as HTMLElement | null)?.dataset["end"] ?? null;
       reopen = { table, col: section.col, end, until: Date.now() + REOPEN_MS };
-      setRange(next);
+      edit.set(next);
     });
   };
-  const commit = () => {
-    const next: ScaleRange = [lo.valueAsNumber, hi.valueAsNumber];
-    if (next[0] === Number(inputValue(range.lo)) && next[1] === Number(inputValue(range.hi))) return;
+  const slide = (el: HTMLInputElement, at: 0 | 1) => {
+    const value = trackValue(track, el.valueAsNumber / POSITIONS, marks);
+    const next: [number, number] = at === 0 ? [value, current[1]] : [current[0], value];
+    // A thumb stops short of the other one.
     if (!isUsableRange(next)) {
-      lo.value = inputValue(range.lo);
-      hi.value = inputValue(range.hi);
-      ends.classList.add("bad");
-      setTimeout(() => ends.classList.remove("bad"), 700);
+      el.value = String(Math.round(trackPosition(track, current[at]) * POSITIONS));
       return;
     }
-    send(next);
+    current = next;
+    draw();
+    preview();
   };
-  for (const el of [lo, hi]) {
-    el.addEventListener("change", commit);
-    el.addEventListener("keydown", (ev) => {
-      if (ev.key !== "Escape") return;
-      lo.value = inputValue(range.lo);
-      hi.value = inputValue(range.hi);
-      el.blur();
-    });
-  }
+  const commit = () => {
+    if (current[0] === range.lo && current[1] === range.hi) return;
+    // Both thumbs back on the ends of the data is the fitted range, so nothing custom is kept.
+    send(current[0] === fit[0] && current[1] === fit[1] ? null : current);
+  };
+  lo.addEventListener("input", () => slide(lo, 0));
+  hi.addEventListener("input", () => slide(hi, 1));
+  lo.addEventListener("change", commit);
+  hi.addEventListener("change", commit);
 
   if (range.presets.length === 0) return;
   const presets = document.createElement("div");
@@ -411,8 +484,10 @@ const showCard = (anchor: Element, sections: readonly CardSection[], table: HTML
   const ends = section.append("div").attr("class", "ends");
   ends.append("span").text((d) => d.legend.lo);
   ends.append("span").text((d) => d.legend.hi);
-  ends.each(function (d) {
-    if (d.setRange !== null && d.legend.range !== null) editableEnds(this, d, table, d.setRange);
+  section.each(function (d) {
+    if (d.edit === null || d.legend.range === null) return;
+    const el = this as HTMLElement;
+    rangeSlider(el.querySelector(".ramp")!, el.querySelector(".ends")!, d, table, d.edit);
   });
   section
     .selectAll(".fact")
@@ -420,7 +495,7 @@ const showCard = (anchor: Element, sections: readonly CardSection[], table: HTML
     .join("div")
     .attr("class", "fact")
     .text((d) => d);
-  const editable = sections.some((d) => d.setRange !== null && d.legend.range !== null);
+  const editable = sections.some((d) => d.edit !== null && d.legend.range !== null);
   el.classList.toggle("editable", editable);
   // A card with inputs is more than a tooltip.
   el.setAttribute("role", editable ? "group" : "tooltip");
@@ -460,7 +535,7 @@ const detach = new WeakMap<HTMLElement, () => void>();
  */
 const attachCard = (header: HTMLElement, sections: readonly CardSection[], table: HTMLTableElement) => {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const editable = sections.some((d) => d.setRange !== null && d.legend.range !== null);
+  const editable = sections.some((d) => d.edit !== null && d.legend.range !== null);
   const open = () => showCard(header, sections, table);
   const enter = (ev: PointerEvent) => ev.pointerType === "mouse" && open();
   const leave = (ev: PointerEvent) => ev.pointerType === "mouse" && (editable ? hideCardSoon() : hideCard());
@@ -503,16 +578,15 @@ const attachCard = (header: HTMLElement, sections: readonly CardSection[], table
 
 /**
  * Shades the encoded columns of one table and attaches a legend card to each
- * shaded header. With `onRange`, the card of a number column can set the
- * column's range, or clear it with null. The caller saves the range and
- * paints again.
+ * shaded header. With `onRange`, the card of a number column has a slider
+ * that previews and sets the column's range.
  */
 export const paintTable = (
   table: ExtractedTable,
   judgment: TableJudgment,
   palette: Palette,
   groupSizes: ReadonlyMap<string, number>,
-  onRange?: (col: number, range: ScaleRange | null) => void,
+  onRange?: RangeHandlers,
 ) => {
   const excluded = new Set(judgment.aggregateRows);
   const aggregates = judgment.aggregateRows.map((r) => table.snapshot.rows[r]?.[0] ?? "").filter((x) => x !== "");
@@ -527,8 +601,14 @@ export const paintTable = (
       sharedWith: e.group === null ? 1 : (groupSizes.get(e.group) ?? 1),
       aggregates,
     });
-    const setRange = onRange === undefined ? null : (range: ScaleRange | null) => onRange(e.col, range);
-    byHeader.set(header, [...(byHeader.get(header) ?? []), { legend, col: e.col, setRange }]);
+    const edit =
+      onRange === undefined
+        ? null
+        : {
+            preview: (range: ScaleRange) => onRange.preview(e.col, range),
+            set: (range: ScaleRange | null) => onRange.set(e.col, range),
+          };
+    byHeader.set(header, [...(byHeader.get(header) ?? []), { legend, col: e.col, edit }]);
   }
   const inks = [...byHeader.keys()].map((el) => ({ el, ink: resolveColor(getComputedStyle(el).color).rgb }));
   for (const [header, sections] of byHeader) {
@@ -543,6 +623,22 @@ export const paintTable = (
       e.kind === "quantitative" ? `${e.col}:${e.polarity}:${e.transform}` : `${e.col}:ordinal:${e.order.join(">")}`,
     )
     .join("|");
+};
+
+/**
+ * Paints one column again with a new encoding, such as a range the user is
+ * dragging. The header mark and the cards stay as they are, because a
+ * column's colors do not depend on its range.
+ */
+export const repaintColumn = (
+  table: ExtractedTable,
+  encoding: ColumnEncoding,
+  palette: Palette,
+  aggregateRows: readonly number[],
+) => {
+  // Put the page's own styles back first. The painter reads each cell's text color to choose its fill.
+  for (const cell of new Set(table.cells.map((row) => row[encoding.col]!))) restoreStyles(cell);
+  paintColumn(table, encoding, palette, new Set(aggregateRows), new Map());
 };
 
 /** `root` and its descendants that match `selector`. */

@@ -22,7 +22,7 @@ all import it.
 | `scale.ts` | `positions` (value to 0–1), `schemeColor` (position to color), `legendStops` |
 | `tint.ts` | `cellFill`, `luminance`, `contrast`, `isDark` |
 | `legend.ts` | `describeColumn`: the text of a header's hover card, and the range and presets it offers for editing |
-| `range.ts` | `applyRanges` and `setRange`: the user's own range for a number column, per table or per shared scale |
+| `range.ts` | `applyRanges` and `setRange`: the user's own range for a number column, per table or per shared scale. `rangeTrack`, `trackValue`: the span and the steps of the range slider |
 
 ## Data flow
 

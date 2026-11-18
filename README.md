@@ -192,9 +192,9 @@ stay plain. The table below is an example made for the README.
 
 ## Use it
 
-- Hover a shaded header to see its scale. On a number column, type new
-  ends for the scale, or select a preset such as **From zero**. A range you
-  set stays until you select **Fit to data**.
+- Hover a shaded header to see its scale. On a number column, drag either
+  end of the scale to widen or narrow it, or select a preset such as
+  **From zero**. A range you set stays until you select **Fit to data**.
 - Hover a table to switch it between columns and rows, or to hide its
   shading. These choices last for the browser session.
 - Use the toolbar popup to turn the current page or site off.

@@ -4,6 +4,7 @@
  * encoding and the page context.
  */
 import { formatDate, isDateUnit } from "./dates.ts";
+import { rangeTrack, type RangeTrack } from "./range.ts";
 import { isTemperature, legendStops, type Palette } from "./scale.ts";
 import type { ColumnEncoding } from "./types.ts";
 
@@ -26,6 +27,10 @@ export interface LegendRange {
   readonly hi: number;
   /** The column's unit ("$", "%", "GB"), or null. */
   readonly unit: string | null;
+  /** The range fitted to the data. It equals `lo` and `hi` unless the user set a range. */
+  readonly fit: readonly [number, number];
+  /** The span the range slider covers. */
+  readonly track: RangeTrack;
   /** True when the user set the range. */
   readonly custom: boolean;
   /** Ranges to offer in one step. A null range puts the fitted range back. */
@@ -75,6 +80,9 @@ const DIRECTION: Readonly<Record<ColumnEncoding["polarity"], string>> = {
 const spread = (lo: number, hi: number): string =>
   `${new Intl.NumberFormat("en-US", { notation: hi / lo >= 1e4 ? "compact" : "standard", maximumSignificantDigits: 2 }).format(hi / lo)}× range`;
 
+/** A header that says its numbers are percentages. */
+const PERCENT_HEADER = /%|\bpercent|\bpct\b/i;
+
 /** Units whose values are not plain numbers on the page: clock times and win or loss streaks. */
 const CODED_UNITS = new Set([":", "streak"]);
 
@@ -88,18 +96,22 @@ const editableRange = (e: Extract<ColumnEncoding, { kind: "quantitative" }>): Le
   if (isDateUnit(e.unit) || (e.unit !== null && CODED_UNITS.has(e.unit))) return null;
   const [lo, hi] = e.domain;
   const [fitLo, fitHi] = e.fit ?? e.domain;
+  // Some pages write percentages without the sign and name it in the header.
+  const percent = e.unit === "%" || (e.unit === null && PERCENT_HEADER.test(e.header));
   const presets: { label: string; range: readonly [number, number] | null }[] = [];
   if (e.fit !== undefined) presets.push({ label: "Fit to data", range: null });
   // A log scale has no zero.
   if (e.transform !== "log") {
     if (fitLo > 0) presets.push({ label: "From zero", range: [0, fitHi] });
     if (fitHi < 0) presets.push({ label: "To zero", range: [fitLo, 0] });
-    if (e.unit === "%" && fitLo >= 0 && fitHi <= 100) presets.push({ label: "0 to 100", range: [0, 100] });
+    if (percent && fitLo >= 0 && fitHi <= 100) presets.push({ label: "0 to 100", range: [0, 100] });
   }
   return {
     lo,
     hi,
     unit: e.unit,
+    fit: [fitLo, fitHi],
+    track: rangeTrack([fitLo, fitHi], [lo, hi], { log: e.transform === "log", percent }),
     custom: e.fit !== undefined,
     presets: presets.filter((p) => p.range === null || p.range[0] !== lo || p.range[1] !== hi),
   };
@@ -116,7 +128,8 @@ export const describeColumn = (e: ColumnEncoding, palette: Palette, dark: boolea
       ? `${e.unit === "weektime" ? "Times" : "Dates"} · Earliest to latest`
       : `${isTemperature(e) ? "Cold to warm" : DIRECTION[e.polarity]} · ${log ? "Log scale" : "Linear scale"}`;
     if (log) facts.push(spread(lo, hi));
-    if (e.fit !== undefined) facts.push("Custom range");
+    if (e.fit !== undefined)
+      facts.push(`Custom range · Data ${withUnit(e.fit[0], e.unit)} to ${withUnit(e.fit[1], e.unit)}`);
   } else {
     status = `Ranked categories · ${e.order.length} levels`;
   }

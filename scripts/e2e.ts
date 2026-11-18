@@ -763,6 +763,13 @@ const rangeScenario = async (): Promise<string[]> => {
   const hi = page.locator('[data-pd-card] input[data-end="hi"]');
   const preset = (label: string) => page.locator("[data-pd-card] button", { hasText: label });
   const cardText = () => page.locator("[data-pd-card]").evaluate((host) => host.shadowRoot?.textContent ?? "");
+  /** The two ends as the card prints them, such as "$35 to $249". */
+  const ends = () =>
+    page
+      .locator("[data-pd-card]")
+      .evaluate((host) =>
+        [...(host.shadowRoot?.querySelectorAll(".ends span") ?? [])].map((x) => x.textContent).join(" to "),
+      );
   const stored = async () =>
     JSON.stringify((await worker.evaluate(() => chrome.storage.local.get("ranges")))["ranges"] ?? {});
 
@@ -770,18 +777,38 @@ const rangeScenario = async (): Promise<string[]> => {
   const sharedB = await fill(CELL_B);
   await openCard("#store-a");
   if ((await hi.count()) === 0) {
-    problems.push("range: the card of a number column should offer its two ends for editing");
+    problems.push("range: the card of a number column should have a thumb for each end of its scale");
     await page.close();
     return problems;
   }
-  if ((await lo.inputValue()) !== "35" || (await hi.inputValue()) !== "249")
-    problems.push(
-      `range: the ends should start at the fitted range, got ${await lo.inputValue()} to ${await hi.inputValue()}`,
-    );
+  if ((await ends()) !== "$35 to $249")
+    problems.push(`range: the ends should start at the fitted range, got ${await ends()}`);
 
-  // A wider range on a shared scale moves both tables.
-  await hi.fill("1000");
-  await hi.press("Enter");
+  // Dragging the high thumb repaints the page before the mouse is let go, and saves nothing until then.
+  const slider = (await hi.boundingBox())!;
+  const thumbY = slider.y + slider.height / 2;
+  // $249 is halfway along the 0 to 498 track.
+  const thumbX = slider.x + slider.width / 2;
+  await page.mouse.move(thumbX, thumbY);
+  await page.mouse.down();
+  await page.mouse.move(thumbX + 50, thumbY, { steps: 5 });
+  await changes(CELL_A, sharedA);
+  if ((await fill(CELL_A)) === sharedA) problems.push("range: dragging a thumb should repaint the column as it moves");
+  if ((await fill(CELL_B)) === sharedB)
+    problems.push("range: dragging a thumb on a shared scale should repaint Store B");
+  if ((await stored()) !== "{}") problems.push("range: a drag should save nothing before the mouse is let go");
+  await page.screenshot({ path: "artifacts/screens/range-drag.png" });
+  // Back near the data's top, the thumb lands on it, which is where it started.
+  await page.mouse.move(thumbX + 1, thumbY, { steps: 5 });
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  if ((await fill(CELL_A)) !== sharedA || (await ends()) !== "$35 to $249")
+    problems.push(`range: a thumb dragged back to the data's end should restore the fitted range, got ${await ends()}`);
+  if ((await stored()) !== "{}") problems.push("range: a thumb let go where it started should save nothing");
+
+  // The high thumb at the end of its track widens the shared scale, which moves both tables.
+  await hi.focus();
+  await hi.press("End");
   await changes(CELL_A, sharedA);
   const wideA = await fill(CELL_A);
   if (wideA === sharedA) problems.push("range: a wider range should change Store A's tint");
@@ -793,11 +820,14 @@ const rangeScenario = async (): Promise<string[]> => {
   if ((await stored()).includes("edge-cases")) problems.push("range: storage should not hold the page's address");
   await page.screenshot({ path: "artifacts/screens/range.png" });
 
-  // An unusable range is refused and the ends go back.
-  await lo.fill("5000");
-  await lo.press("Enter");
+  if ((await ends()) !== "$35 to $498") problems.push(`range: the card should print the new ends, got ${await ends()}`);
+
+  // The low thumb stops short of the high one.
+  await lo.focus();
+  await lo.press("End");
   await page.waitForTimeout(300);
-  if ((await fill(CELL_A)) !== wideA) problems.push("range: a low end above the high end should change nothing");
+  if ((await fill(CELL_A)) !== wideA || (await ends()) !== "$35 to $498")
+    problems.push(`range: the low thumb should not pass the high one, got ${await ends()}`);
 
   // The range outlasts the page.
   await page.reload({ waitUntil: "domcontentloaded" });
@@ -816,10 +846,8 @@ const rangeScenario = async (): Promise<string[]> => {
   const isolatedA = await fill(CELL_A);
   if (isolatedA === wideA) problems.push("range: an isolated table should drop the shared range");
   await openCard("#store-a");
-  if ((await lo.inputValue()) !== "39" || (await hi.inputValue()) !== "89")
-    problems.push(
-      `range: an isolated table should show its own extent, got ${await lo.inputValue()} to ${await hi.inputValue()}`,
-    );
+  if ((await ends()) !== "$39 to $89")
+    problems.push(`range: an isolated table should show its own extent, got ${await ends()}`);
   // On the table's own [39, 89] the Blender is the dearest either way, so the Toaster ($54) shows the change.
   const MID_A = "#store-a tbody tr:nth-child(2) td:nth-child(2)";
   const isolatedMid = await fill(MID_A);

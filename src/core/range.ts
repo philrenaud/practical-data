@@ -142,3 +142,87 @@ export const readRanges = (v: unknown): PageRanges => {
   }
   return { shared: readColumns(v["shared"]), tables };
 };
+
+// ── Slider track ────────────────────────────────────────────────────────────
+
+/** The span of values a range slider covers. Its two thumbs are the ends of the scale. */
+export interface RangeTrack {
+  readonly min: number;
+  readonly max: number;
+  /** True when positions are spaced by ratio, for a log scale. */
+  readonly log: boolean;
+}
+
+/** A log track reaches at least this many times past each end of the data. */
+const MIN_LOG_REACH = 3;
+
+/**
+ * The track for a column's slider. It leaves room past both ends of the
+ * fitted range `fit`, so the user can widen the scale by sliding:
+ *
+ * - Data at or above zero: from zero to as far past the top as the top is
+ *   from zero, or one more span if that is longer. A percent column within
+ *   0 to 100 gets exactly 0 to 100.
+ * - Data at or below zero: the mirror of that.
+ * - Data on both sides of zero: one more span each way.
+ * - A log scale: the same ratio past each end, so the data is the middle half.
+ *
+ * The track stretches to hold `current` when a saved range lies beyond it.
+ */
+export const rangeTrack = (
+  fit: ScaleRange,
+  current: ScaleRange,
+  opts: { readonly log: boolean; readonly percent: boolean },
+): RangeTrack => {
+  const [lo, hi] = fit;
+  const widen = (min: number, max: number, log: boolean): RangeTrack => ({
+    min: Math.min(min, current[0]),
+    max: Math.max(max, current[1]),
+    log,
+  });
+  if (opts.log && lo > 0 && current[0] > 0) {
+    const reach = Math.max(Math.sqrt(hi / lo), MIN_LOG_REACH);
+    return widen(lo / reach, hi * reach, true);
+  }
+  // A single value has no span; its distance from zero stands in.
+  const span = hi - lo || Math.abs(hi) || 1;
+  if (lo >= 0) return widen(0, opts.percent && hi <= 100 ? 100 : hi + Math.max(span, hi), false);
+  if (hi <= 0) return widen(lo - Math.max(span, -lo), 0, false);
+  return widen(lo - span, hi + span, false);
+};
+
+/** Where `v` sits on the track, from 0 to 1. Values beyond the track sit at its ends. */
+export const trackPosition = (t: RangeTrack, v: number): number => {
+  const p = t.log ? Math.log(v / t.min) / Math.log(t.max / t.min) : (v - t.min) / (t.max - t.min);
+  return Number.isFinite(p) ? Math.min(1, Math.max(0, p)) : 0;
+};
+
+/** The smallest of 1, 2 or 5 times a power of ten that is at least `target`. */
+const roundStep = (target: number): number => {
+  const power = 10 ** Math.floor(Math.log10(target));
+  const m = target / power;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * power;
+};
+
+/** A slider position within this distance of a marked value lands on it. */
+const SNAP = 0.015;
+/** A linear track has about this many steps. */
+const STEPS = 200;
+
+/**
+ * The value at position `p` (0 to 1) on the track, rounded so it reads
+ * well: a step of 1, 2 or 5 times a power of ten on a linear track, two
+ * significant digits on a log track. A position close to one of `marks`,
+ * such as an end of the data, returns that mark exactly. The ends of the
+ * track return its own ends.
+ */
+export const trackValue = (t: RangeTrack, p: number, marks: readonly number[] = []): number => {
+  if (p <= 0) return t.min;
+  if (p >= 1) return t.max;
+  const near = marks.find((m) => m > t.min && m < t.max && Math.abs(trackPosition(t, m) - p) <= SNAP);
+  if (near !== undefined) return near;
+  if (t.log) return Number((t.min * (t.max / t.min) ** p).toPrecision(2));
+  const step = roundStep((t.max - t.min) / STEPS);
+  const raw = t.min + (t.max - t.min) * p;
+  return Number((Math.round(raw / step) * step).toPrecision(12));
+};

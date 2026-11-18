@@ -24,9 +24,10 @@ import { attachControls, detachControls, type SortControlState, type SortOption 
 import { extractPage, transposeExtracted, type ExtractedTable } from "../dom/extract.ts";
 import { isPaginated } from "../dom/paginated.ts";
 import { canSortRows, restoreRows, sortRows } from "../dom/sort.ts";
-import { paintTable, unpaint } from "../dom/paint.ts";
+import { paintTable, repaintColumn, unpaint } from "../dom/paint.ts";
 import { confirmReport } from "../dom/report.ts";
 import { toast } from "../dom/toast.ts";
+import type { Palette } from "../core/scale.ts";
 import type { TableJudgment } from "../core/types.ts";
 import { buildFlagReport } from "./flag-report.ts";
 import { MAX_HTML, type FlagCapture, type FlagReply } from "./flags.ts";
@@ -141,6 +142,7 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     return;
   }
   unpaint();
+  paintedTables = new Map();
   sampleCell = new WeakMap();
   judged = new WeakMap();
   judgedBy = reply.judgment.model;
@@ -156,14 +158,14 @@ const judgeAndPaint = async (gen: number, force: boolean, paced: boolean) => {
     // shares scales and can offer to rejoin them.
     const scaled = choices[fingerprint(table)]?.isolated === true ? isolateJudgment(t) : t;
     const rangeKey = rangeTableKey(table.snapshot);
-    paintTable(
-      t.orientation === "rows" ? transposeExtracted(table) : table,
-      applyRanges(scaled, rangeKey, ranges),
-      reply.palette,
-      groupSizes,
-      // `scaled` says whether the column is on a shared scale now, which decides whose range this is.
-      (col, range) => saveRanges(setRange(ranges, scaled, rangeKey, col, range)),
-    );
+    const oriented = t.orientation === "rows" ? transposeExtracted(table) : table;
+    const shown = applyRanges(scaled, rangeKey, ranges);
+    // `scaled` says whether the column is on a shared scale now, which decides whose range this is.
+    paintTable(oriented, shown, reply.palette, groupSizes, {
+      preview: (col, range) => previewRanges(setRange(ranges, scaled, rangeKey, col, range)),
+      set: (col, range) => saveRanges(setRange(ranges, scaled, rangeKey, col, range)),
+    });
+    paintedTables.set(table.element, { table: oriented, scaled, shown, rangeKey, palette: reply.palette });
     judged.set(table.element, t);
     const sample = table.element.querySelector<HTMLElement>("[data-pd-t]:not([data-pd-t=''])");
     if (sample !== null) sampleCell.set(table.element, sample);
@@ -205,6 +207,35 @@ const choose = (table: HTMLTableElement, change: TableChoice) => {
 
 /** The ranges the user set on this page's columns. They outlast the browser session. */
 let ranges: PageRanges = EMPTY_RANGES;
+
+/** What painted each table, kept so a range can be previewed without a new judgment. */
+let paintedTables = new Map<
+  HTMLTableElement,
+  { table: ExtractedTable; scaled: TableJudgment; shown: TableJudgment; rangeKey: string; palette: Palette }
+>();
+
+/**
+ * Paints `next` without saving it, while the user drags a thumb. Only the
+ * columns whose scale changed are painted again, in every table that shares it.
+ */
+const previewRanges = (next: PageRanges) => {
+  mutations.disconnect();
+  try {
+    for (const ctx of paintedTables.values()) {
+      if (!ctx.table.element.isConnected) continue;
+      const shown = applyRanges(ctx.scaled, ctx.rangeKey, next);
+      shown.encodings.forEach((e, i) => {
+        const was = ctx.shown.encodings[i];
+        if (e.kind !== "quantitative" || was?.kind !== "quantitative") return;
+        if (e.domain[0] === was.domain[0] && e.domain[1] === was.domain[1] && e.transform === was.transform) return;
+        repaintColumn(ctx.table, e, ctx.palette, shown.aggregateRows);
+      });
+      ctx.shown = shown;
+    }
+  } finally {
+    if (enabled) observeMutations();
+  }
+};
 
 const saveRanges = (next: PageRanges) => {
   if (next === ranges) return;

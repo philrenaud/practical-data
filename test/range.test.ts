@@ -6,8 +6,11 @@ import {
   EMPTY_RANGES,
   RANGE_LIMITS,
   rangeTableKey,
+  rangeTrack,
   readRanges,
   setRange,
+  trackPosition,
+  trackValue,
   type PageRanges,
 } from "../src/core/range.ts";
 import { positions } from "../src/core/scale.ts";
@@ -195,4 +198,61 @@ test("ranges read from a message are capped in count and key length", () => {
     Object.keys(read.shared).every((k) => k.length <= RANGE_LIMITS.keyLength),
     true,
   );
+});
+
+test("a slider track leaves room on both sides of the data", () => {
+  const linear = { log: false, percent: false };
+  // Data above zero: the track starts at zero and runs as far past the top as the top is from zero.
+  assert.deepEqual(rangeTrack([25, 28], [25, 28], linear), { min: 0, max: 56, log: false });
+  assert.deepEqual(rangeTrack([39, 249], [39, 249], linear), { min: 0, max: 498, log: false });
+  // A percent column within 0 to 100 gets exactly that.
+  assert.deepEqual(rangeTrack([25, 28], [25, 28], { log: false, percent: true }), { min: 0, max: 100, log: false });
+  assert.deepEqual(rangeTrack([80, 140], [80, 140], { log: false, percent: true }), { min: 0, max: 280, log: false });
+  // Data on both sides of zero: one more span each way.
+  assert.deepEqual(rangeTrack([-9, 4], [-9, 4], linear), { min: -22, max: 17, log: false });
+  // Data below zero mirrors data above it.
+  assert.deepEqual(rangeTrack([-9, -2], [-9, -2], linear), { min: -18, max: 0, log: false });
+  // A single value still gets a track.
+  assert.deepEqual(rangeTrack([5, 5], [5, 5], linear), { min: 0, max: 10, log: false });
+});
+
+test("a slider track stretches to hold a range set beyond it", () => {
+  assert.deepEqual(rangeTrack([25, 28], [-10, 500], { log: false, percent: false }), {
+    min: -10,
+    max: 500,
+    log: false,
+  });
+});
+
+test("on a log track the data sits in the middle half", () => {
+  const track = rangeTrack([2, 2000], [2, 2000], { log: true, percent: false });
+  assert.equal(track.log, true);
+  assert.ok(Math.abs(trackPosition(track, 2) - 0.25) < 1e-9);
+  assert.ok(Math.abs(trackPosition(track, 2000) - 0.75) < 1e-9);
+  assert.ok(Math.abs(trackPosition(track, 63.2455532) - 0.5) < 1e-6);
+});
+
+test("positions on a track are clamped to its ends", () => {
+  const track = { min: 0, max: 56, log: false };
+  assert.equal(trackPosition(track, -5), 0);
+  assert.equal(trackPosition(track, 28), 0.5);
+  assert.equal(trackPosition(track, 99), 1);
+});
+
+test("a slider position reads as a round value", () => {
+  const track = { min: 0, max: 56, log: false };
+  assert.equal(trackValue(track, 0), 0);
+  assert.equal(trackValue(track, 1), 56);
+  // 16.8 on a track whose step is 0.5.
+  assert.equal(trackValue(track, 0.3), 17);
+  const log = rangeTrack([2, 2000], [2, 2000], { log: true, percent: false });
+  // Two significant digits on a log track.
+  assert.equal(trackValue(log, 0.5), 63);
+});
+
+test("a slider position near a marked value lands on it", () => {
+  const track = { min: 0, max: 56, log: false };
+  // 25.3 is close enough to the data's low end to mean it.
+  assert.equal(trackValue(track, 25.3 / 56, [25, 28]), 25);
+  assert.equal(trackValue(track, 26.5 / 56, [25, 28]), 26.5);
 });

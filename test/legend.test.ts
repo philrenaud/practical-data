@@ -165,6 +165,8 @@ test("a number column offers its range for editing, with presets that would chan
     lo: 25,
     hi: 28,
     unit: "%",
+    fit: [25, 28],
+    track: { min: 0, max: 100, log: false },
     custom: false,
     presets: [
       { label: "From zero", range: [0, 28] },
@@ -180,6 +182,8 @@ test("a custom range is named, and Fit to data puts the fitted range back", () =
     lo: 0,
     hi: 100,
     unit: "%",
+    fit: [25, 28],
+    track: { min: 0, max: 100, log: false },
     custom: true,
     presets: [
       { label: "Fit to data", range: null },
@@ -188,7 +192,7 @@ test("a custom range is named, and Fit to data puts the fitted range back", () =
   });
   assert.equal(legend.lo, "0%");
   assert.equal(legend.hi, "100%");
-  assert.deepEqual(legend.facts, ["Custom range"]);
+  assert.deepEqual(legend.facts, ["Custom range · Data 25% to 28%"]);
 });
 
 test("presets leave out what the data does not allow", () => {
@@ -223,4 +227,12 @@ test("dates, clock times, streaks and ranked labels have no range to edit", () =
     evidence,
   };
   assert.equal(rangeOf(ordinal), null);
+});
+
+test("a column of percentages written without the sign still offers 0 to 100", () => {
+  const presets = (header: string) => rangeOf(percent({ unit: null, header }))?.presets.map((p) => p.label);
+  assert.deepEqual(presets("Win %"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("Percent of total"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("FG pct"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("Wins"), ["From zero"]);
 });
