@@ -223,6 +223,15 @@ const isRepeatedHeader = (text: readonly string[], headers: readonly string[]): 
   return firstDiffers ? repeats >= 2 : repeats >= 1;
 };
 
+/**
+ * True when every cell of a row repeats its column's header, with at least
+ * three headers. A section can restart the column names in <td> cells, which
+ * isRepeatedHeader does not read. A data row does not hold every column name.
+ */
+const repeatsEveryHeader = (text: readonly string[], headers: readonly string[]): boolean =>
+  headers.filter((h) => h !== "").length >= 3 &&
+  text.every((t, c) => t.toLowerCase() === (headers[c] ?? "").toLowerCase());
+
 /** The shape of a cell's text. Each run of letters becomes "a" and each run of digits becomes "9". */
 const shapeOf = (text: string): string =>
   text
@@ -404,6 +413,16 @@ export const extractTable = (
   // spans the table, over column names written as <td>, then section labels,
   // otherwise leaves the column names as the first data row.
   const hasNumber = (r: number) => (grid[r] ?? []).some((cell) => parseNumber(cellText(cell)) !== null);
+  // Under a header row with no text, the column names can be the first body
+  // row. A name can start with a digit ("3PT" in a box score), so there the
+  // row counts as names when most of its cells are not numbers.
+  const blankHeader =
+    headerCount > 0 && grid.slice(0, headerCount).every((row) => row.every((c) => headerText(c) === ""));
+  const isNumberRow = (r: number) => {
+    if (!blankHeader) return hasNumber(r);
+    const texts = [...new Set(grid[r] ?? [])].map((cell) => cellText(cell)).filter((t) => t !== "");
+    return texts.length < 3 || texts.filter((t) => parseNumber(t) !== null).length * 2 >= texts.length;
+  };
   const nextNonLabel = (r: number) => {
     let next = r;
     while (width > 2 && next < rows.length - 1 && isSpanningLabel(grid[next] ?? [], width)) next++;
@@ -416,7 +435,7 @@ export const extractTable = (
     // A section label ("Pre-cycle sets") is one cell that spans the row. A units row has short, distinct cells.
     const distinctCells = new Set(row).size;
     if (distinctCells < 2 || texts.some((t) => t.length > 30)) break;
-    if (hasNumber(r) || texts.every((t) => t === "") || !hasNumber(nextNonLabel(r + 1))) break;
+    if (isNumberRow(r) || texts.every((t) => t === "") || !hasNumber(nextNonLabel(r + 1))) break;
     headerCount++;
   }
 
@@ -452,6 +471,8 @@ export const extractTable = (
     const text = cellsInRow.map((cell) => cellText(cell));
     // Repeated header rows inside tbody (baseball-reference every 20 rows, Wikipedia at the foot).
     if (isHeaderRow(row) && isRepeatedHeader(text, headers)) continue;
+    // A section that repeats every column name in <td> cells (a box score's bench).
+    if (repeatsEveryHeader(text, headers)) continue;
     if (row.classList.contains("thead")) continue;
     dataRows.push(cellsInRow);
     texts.push(text);

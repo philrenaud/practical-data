@@ -2885,5 +2885,67 @@
         ]
       }
     }
+  },
+  "blank-header-names": {
+    "t1": {
+      "PTS": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "REB": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "AST": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "TO": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "STL": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "BLK": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "PF": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
+    },
+    "t3": {
+      "Zone": "none",
+      "Made": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      },
+      "Pct": {
+        "kind": "quantitative",
+        "polarity": [
+          "higher_is_better"
+        ]
+      }
+    }
   }
 }
