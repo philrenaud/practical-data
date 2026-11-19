@@ -143,3 +143,96 @@ test("a neutral temperature column reads cold to warm", () => {
   const { status, lo, hi } = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
   assert.deepEqual({ status, lo, hi }, { status: "Cold to warm · Linear scale", lo: "2 °", hi: "5 °" });
 });
+
+const percent = (over: Partial<Extract<ColumnEncoding, { kind: "quantitative" }>> = {}): ColumnEncoding => ({
+  kind: "quantitative",
+  col: 1,
+  header: "Win rate",
+  polarity: "higher_is_better",
+  transform: "linear",
+  unit: "%",
+  domain: [25, 28],
+  values: [25, 28],
+  group: null,
+  evidence,
+  ...over,
+});
+
+const rangeOf = (e: ColumnEncoding) => describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] }).range;
+
+test("a number column offers its range for editing, with presets that would change it", () => {
+  assert.deepEqual(rangeOf(percent()), {
+    lo: 25,
+    hi: 28,
+    unit: "%",
+    fit: [25, 28],
+    track: { min: 0, max: 100, log: false },
+    custom: false,
+    presets: [
+      { label: "From zero", range: [0, 28] },
+      { label: "0 to 100", range: [0, 100] },
+    ],
+  });
+});
+
+test("a custom range is named, and Fit to data puts the fitted range back", () => {
+  const e = percent({ domain: [0, 100], fit: [25, 28] });
+  const legend = describeColumn(e, "calm", false, { sharedWith: 1, aggregates: [] });
+  assert.deepEqual(legend.range, {
+    lo: 0,
+    hi: 100,
+    unit: "%",
+    fit: [25, 28],
+    track: { min: 0, max: 100, log: false },
+    custom: true,
+    presets: [
+      { label: "Fit to data", range: null },
+      { label: "From zero", range: [0, 28] },
+    ],
+  });
+  assert.equal(legend.lo, "0%");
+  assert.equal(legend.hi, "100%");
+  assert.deepEqual(legend.facts, ["Custom range · Data 25% to 28%"]);
+});
+
+test("presets leave out what the data does not allow", () => {
+  // Values past 100% rule out 0 to 100.
+  assert.deepEqual(
+    rangeOf(percent({ domain: [80, 140] }))?.presets.map((p) => p.label),
+    ["From zero"],
+  );
+  // A scale that already starts at zero has nothing to add.
+  assert.deepEqual(rangeOf(percent({ unit: "$", domain: [0, 40] }))?.presets, []);
+  // All-negative values run up to zero.
+  assert.deepEqual(rangeOf(percent({ unit: null, domain: [-9, -2] }))?.presets, [{ label: "To zero", range: [-9, 0] }]);
+  // Values on both sides of zero have no zero end to add.
+  assert.deepEqual(rangeOf(percent({ unit: null, domain: [-9, 4] }))?.presets, []);
+  // A log scale can't start at zero.
+  assert.deepEqual(rangeOf(percent({ unit: "$", transform: "log", domain: [2, 2000] }))?.presets, []);
+});
+
+test("dates, clock times, streaks and ranked labels have no range to edit", () => {
+  assert.equal(rangeOf(percent({ unit: ":", domain: [120, 190] })), null);
+  assert.equal(rangeOf(percent({ unit: "streak", domain: [-3, 5] })), null);
+  assert.equal(rangeOf(percent({ unit: "date", domain: [1.7e12, 1.8e12] })), null);
+  const ordinal: ColumnEncoding = {
+    kind: "ordinal",
+    col: 1,
+    header: "Tier",
+    polarity: "neutral",
+    order: ["low", "high"],
+    labels: ["Low", "High"],
+    values: ["low", "high"],
+    group: null,
+    evidence,
+  };
+  assert.equal(rangeOf(ordinal), null);
+});
+
+test("a column of percentages written without the sign still offers 0 to 100", () => {
+  const presets = (header: string) => rangeOf(percent({ unit: null, header }))?.presets.map((p) => p.label);
+  assert.deepEqual(presets("Win %"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("Percent of total"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("FG pct"), ["From zero", "0 to 100"]);
+  assert.deepEqual(presets("Wins"), ["From zero"]);
+});

@@ -74,6 +74,9 @@ All in your browser's extension storage, on your device:
   cache is capped; the oldest entries are evicted. Options has a button to
   clear it.
 - **Your settings**: palette, mode, and the sites you turned on or off.
+- **Scale ranges you set on a column.** They are stored under a hash of the
+  page's address, not the address, and with the column's header. At most
+  200 pages are kept; the oldest are dropped.
 - **For the current browser session only**: pages you paused and per-table
   choices (rows or columns, hidden).
 

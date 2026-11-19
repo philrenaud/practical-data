@@ -128,6 +128,12 @@ The user can take one table off a shared scale from its bar ("Isolate
 scales"). That is applied at paint time (`src/core/isolate.ts`), so it sends
 no new requests and leaves the other members' shared scale as it is.
 
+The user can also set the range of a number column from its hover card. That
+too is applied at paint time (`src/core/range.ts`): the range replaces the
+encoding's `domain`, and the fitted extent moves to `fit`. A range on a
+shared scale applies to every member table. An isolated table ignores it and
+keeps its own.
+
 ## Provider layer
 
 `model.ts` defines `DecisionModel`, an interface with `name` and

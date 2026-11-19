@@ -2,6 +2,7 @@
  * The service worker. It holds the credentials and makes every call to the
  * decision model. The content script receives only judgments.
  */
+import { EMPTY_RANGES } from "../core/range.ts";
 import { DEFAULT_POLICY, judgePage } from "../decide/judge.ts";
 import { DecisionError, modelFromConfig, type Allowance } from "../decide/model.ts";
 import { mergeAllowance, type StoredAllowance } from "./allowance.ts";
@@ -14,9 +15,11 @@ import {
   getInstallId,
   isPagePaused,
   loadSettings,
+  loadPageRanges,
   loadTableChoices,
   providerConfig,
   saveSettings,
+  savePageRanges,
   saveTableChoices,
   setPagePaused,
   setSiteEnabledIn,
@@ -120,12 +123,22 @@ chrome.runtime.onMessage.addListener((msg: ToWorker, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) return false;
   if (msg.type === "pageConfig") {
     if (!sameOrigin(msg.url, sender.url)) return false;
-    pageConfig(msg.url).then(sendResponse, () => sendResponse({ enabled: false, choices: {} } satisfies PageConfig));
+    pageConfig(msg.url).then(sendResponse, () =>
+      sendResponse({ enabled: false, choices: {}, ranges: EMPTY_RANGES } satisfies PageConfig),
+    );
     return true;
   }
   if (msg.type === "saveTableChoices") {
     if (!sameOrigin(msg.url, sender.url)) return false;
     saveTableChoices(msg.url, msg.choices).then(
+      () => sendResponse(true),
+      () => sendResponse(false),
+    );
+    return true;
+  }
+  if (msg.type === "saveRanges") {
+    if (!sameOrigin(msg.url, sender.url)) return false;
+    savePageRanges(msg.url, msg.ranges).then(
       () => sendResponse(true),
       () => sendResponse(false),
     );
@@ -204,8 +217,13 @@ const sameOrigin = (url: string, senderUrl: string | undefined): boolean => {
 
 const pageConfig = async (url: string): Promise<PageConfig> => {
   const host = new URL(url).hostname;
-  const [settings, paused, choices] = await Promise.all([loadSettings(), isPagePaused(url), loadTableChoices(url)]);
-  return { enabled: siteEnabled(settings, host) && !paused, choices };
+  const [settings, paused, choices, ranges] = await Promise.all([
+    loadSettings(),
+    isPagePaused(url),
+    loadTableChoices(url),
+    loadPageRanges(url),
+  ]);
+  return { enabled: siteEnabled(settings, host) && !paused, choices, ranges };
 };
 
 const enableSite = async (tabId: number, host: string, enabled: boolean) => {
