@@ -112,10 +112,11 @@ export const KINDS: readonly KindInfo[] = [
     about: [
       "Some benchmark tables show one benchmark in each row and one model in each column. In these tables, each row is one measure.",
       "When a table has two or more number columns, the model tells which direction to compare. Code reads a row-based table one row at a time, as if each row is a column.",
+      "Code does not ask when every cell in the first column is empty, as when each row is named only by a logo. Read by rows, those cells would become the column names, so no column would have one, and a column of averages would be left out as a summary row.",
     ],
     questions: ["table.orientation"],
     rule: (p, rows) =>
-      `Read the table by rows when P(rows) is ${p.rows} or more and the table has ${rows} rows or fewer.`,
+      `Read the table by rows when P(rows) is ${p.rows} or more, the table has ${rows} rows or fewer, and the first column has at least one label.`,
   },
 ];
 

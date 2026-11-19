@@ -2815,7 +2815,6 @@
       }
     }
   },
-
   "weather-temperatures": {
     "t0": {
       "Hour": "none",
@@ -2847,7 +2846,6 @@
       }
     }
   },
-
   "temperature-direction": {
     "t0": {
       "Comfort: Feels Like": {
@@ -2884,6 +2882,33 @@
           "lower_is_better"
         ]
       }
+    }
+  },
+  "nameless-rows": {
+    "t0": {
+      "@orientation": "columns",
+      "aggregateRows": [],
+      "Model A": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Model B": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "All models": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      }
+    },
+    "t1": {
+      "@orientation": "rows"
     }
   }
 }
