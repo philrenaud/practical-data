@@ -1,0 +1,233 @@
+{
+ "url": "fixture://synthetic/temperature-direction.html",
+ "title": "Practical Data: temperature direction",
+ "lang": "en",
+ "tables": [
+  {
+   "id": "t0",
+   "title": "Two-week outlook",
+   "headers": [
+    "Day",
+    "Conditions",
+    "Conditions: Temperature",
+    "Conditions: Weather",
+    "Comfort: Feels Like",
+    "Comfort: Wind",
+    "Comfort",
+    "Comfort: Humidity",
+    "Precipitation: Chance",
+    "Precipitation: Amount",
+    "Sun: UV",
+    "Sun: Sunrise",
+    "Sun: Sunset"
+   ],
+   "rows": [
+    [
+     "Mon Mar 2",
+     "",
+     "9 / 2 °C",
+     "Mostly sunny.",
+     "7 °C",
+     "11 km/h",
+     "↑",
+     "52%",
+     "0%",
+     "0.0 mm",
+     "2 (Low)",
+     "6:41 am",
+     "6:02 pm"
+    ],
+    [
+     "Tue Mar 3",
+     "",
+     "11 / 4 °C",
+     "Passing clouds.",
+     "10 °C",
+     "9 km/h",
+     "↑",
+     "58%",
+     "3%",
+     "0.0 mm",
+     "2 (Low)",
+     "6:39 am",
+     "6:03 pm"
+    ],
+    [
+     "Wed Mar 4",
+     "",
+     "6 / -3 °C",
+     "Windy. Clearing.",
+     "-2 °C",
+     "26 km/h",
+     "↑",
+     "41%",
+     "8%",
+     "0.0 mm",
+     "2 (Low)",
+     "6:37 am",
+     "6:05 pm"
+    ],
+    [
+     "Thu Mar 5",
+     "",
+     "1 / -6 °C",
+     "Cold. Sunny.",
+     "-8 °C",
+     "19 km/h",
+     "↑",
+     "38%",
+     "0%",
+     "0.0 mm",
+     "3 (Moderate)",
+     "6:35 am",
+     "6:06 pm"
+    ],
+    [
+     "Fri Mar 6",
+     "",
+     "4 / -1 °C",
+     "Light snow late.",
+     "-3 °C",
+     "14 km/h",
+     "↑",
+     "71%",
+     "62%",
+     "2.1 mm",
+     "1 (Low)",
+     "6:34 am",
+     "6:07 pm"
+    ],
+    [
+     "Sat Mar 7",
+     "",
+     "7 / 3 °C",
+     "Rain. Overcast.",
+     "4 °C",
+     "17 km/h",
+     "↑",
+     "93%",
+     "88%",
+     "14.7 mm",
+     "1 (Low)",
+     "6:32 am",
+     "6:08 pm"
+    ],
+    [
+     "Sun Mar 8",
+     "",
+     "10 / 5 °C",
+     "Showers. Cloudy.",
+     "8 °C",
+     "12 km/h",
+     "↑",
+     "80%",
+     "57%",
+     "4.2 mm",
+     "2 (Low)",
+     "6:30 am",
+     "6:10 pm"
+    ],
+    [
+     "Mon Mar 9",
+     "",
+     "13 / 6 °C",
+     "Partly sunny.",
+     "12 °C",
+     "8 km/h",
+     "↑",
+     "60%",
+     "12%",
+     "0.0 mm",
+     "3 (Moderate)",
+     "6:28 am",
+     "6:11 pm"
+    ],
+    [
+     "Tue Mar 10",
+     "",
+     "15 / 8 °C",
+     "Sunny.",
+     "15 °C",
+     "6 km/h",
+     "↑",
+     "49%",
+     "0%",
+     "0.0 mm",
+     "3 (Moderate)",
+     "6:26 am",
+     "6:12 pm"
+    ],
+    [
+     "Wed Mar 11",
+     "",
+     "12 / 7 °C",
+     "Drizzle. Fog.",
+     "11 °C",
+     "10 km/h",
+     "↑",
+     "96%",
+     "54%",
+     "0.8 mm",
+     "1 (Low)",
+     "6:24 am",
+     "6:13 pm"
+    ]
+   ]
+  },
+  {
+   "id": "t1",
+   "title": "CPU cooler round-up",
+   "headers": [
+    "Cooler",
+    "Idle temp",
+    "Load temp",
+    "Noise (dBA)",
+    "Price"
+   ],
+   "rows": [
+    [
+     "Breeze Tower 120",
+     "31 °C",
+     "78 °C",
+     "34",
+     "$39"
+    ],
+    [
+     "Glacier Duo 240",
+     "28 °C",
+     "66 °C",
+     "38",
+     "$109"
+    ],
+    [
+     "Northwind Slim",
+     "35 °C",
+     "89 °C",
+     "31",
+     "$29"
+    ],
+    [
+     "Arcfin Pro 360",
+     "26 °C",
+     "61 °C",
+     "41",
+     "$159"
+    ],
+    [
+     "Quietcore 140",
+     "30 °C",
+     "74 °C",
+     "29",
+     "$69"
+    ],
+    [
+     "Frostline Mini",
+     "33 °C",
+     "84 °C",
+     "36",
+     "$24"
+    ]
+   ]
+  }
+ ]
+}

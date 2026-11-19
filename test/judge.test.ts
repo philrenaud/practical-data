@@ -544,3 +544,33 @@ test("a total found by code is left out of the domain even when the model calls 
   assert.ok(tackles?.kind === "quantitative");
   assert.deepEqual(tackles.domain, [1, 9]);
 });
+
+test("the polarity question says when a column is a temperature", async () => {
+  const asked: string[] = [];
+  const model = scripted((id, req) => {
+    if (id.endsWith(".polarity")) asked.push(String(req.questions[id]!.instructions));
+    if (id.endsWith(".role")) return choice({ measure: 0.95, identifier: 0.05 });
+    return { type: "noul", noul: 0 };
+  });
+  await judgePage(model, {
+    url: "https://example.test",
+    title: "Forecast",
+    tables: [
+      {
+        id: "t0",
+        title: "Forecast",
+        headers: ["Day", "Feels like", "Wind", "Wind dir"],
+        rows: [
+          ["Mon", "12 °C", "13 km/h", "250°"],
+          ["Tue", "-5 °C", "21 km/h", "280°"],
+          ["Wed", "3 °C", "8 km/h", "10°"],
+          ["Thu", "7 °C", "17 km/h", "170°"],
+        ],
+      },
+    ],
+  });
+  const note = (header: string) => asked.find((q) => q.includes(`("${header}")`))?.includes("is a temperature");
+  assert.equal(note("Feels like"), true);
+  assert.equal(note("Wind"), false);
+  assert.equal(note("Wind dir"), false);
+});

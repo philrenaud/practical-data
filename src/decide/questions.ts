@@ -16,6 +16,7 @@
  */
 import type { CategoricalProfile, ColumnProfile, NumericProfile, TextProfile } from "../core/profile.ts";
 import { describeSpread } from "../core/profile.ts";
+import { isTemperatureColumn } from "../core/temperature.ts";
 import type { Polarity } from "../core/types.ts";
 import type { Answer, Question } from "./model.ts";
 
@@ -134,6 +135,15 @@ const POLARITY_CRITERIA: Readonly<Record<Polarity, string>> = {
     "Neither direction is generally preferable; larger is just different (for example height, population, year, weight, count of items).",
 };
 
+/**
+ * Added to the polarity question for a temperature column. Asked plainly, the
+ * model reads a forecast's temperatures as better when warmer (0.8 to 0.96),
+ * which turns a forecast into a judgment of the weather. A temperature whose
+ * better end does not depend on the season keeps its direction.
+ */
+const TEMPERATURE_NOTE =
+  " The column is a temperature. Whether warmer weather is better depends on the season, the place and the reader, so air and weather temperatures (a forecast's highs, lows or feels-like, a climate table) are neutral. Choose a direction only when one end is better whatever the weather, for example a processor's load temperature, where cooler is better.";
+
 /** A missing polarity answer reads as neutral. */
 const readPolarity = (answers: Answers, id: string): Record<Polarity, number> => {
   const p = probabilities(answers, id);
@@ -214,7 +224,7 @@ export const numericQuestions = (k: number, p: NumericProfile) => {
     },
     [id("polarity")]: {
       type: "choice",
-      instructions: `For a typical reader of this table, is a higher value in ${ref} better or worse?`,
+      instructions: `For a typical reader of this table, is a higher value in ${ref} better or worse?${isTemperatureColumn(p.header, p.unit, [p.min, p.max]) ? TEMPERATURE_NOTE : ""}`,
       criteria: POLARITY_CRITERIA,
     },
   };

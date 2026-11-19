@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: temperature direction</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; max-width: 1200px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 3px 8px; }
+  th { background: #f4f4f6; }
+  .num { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Temperature direction</h1>
+<p>
+  Whether warmer is better depends on the season and the reader, so a
+  forecast's temperatures lean only mildly toward "higher is better". Such a
+  lean is not enough: the column reads neutral and paints cold to warm. A
+  temperature with a clear better end, such as a cooler's load temperature,
+  keeps its direction, and the forecast's other columns keep theirs.
+</p>
+
+<h2>Two-week outlook</h2>
+<!-- A daily forecast with grouped headers: Conditions (icon, a high / low range, a description), Comfort (feels-like in °C, wind, a wind-arrow column, humidity), Precipitation (chance, amount) and Sun (UV, sunrise, sunset). Feels Like must read neutral, which paints cold to warm. Wind, Humidity and Chance keep their own directions. -->
+<table id="outlook">
+  <thead>
+    <tr><th rowspan="2">Day</th><th colspan="3">Conditions</th><th colspan="4">Comfort</th><th colspan="2">Precipitation</th><th colspan="3">Sun</th></tr>
+    <tr><th></th><th>Temperature</th><th>Weather</th><th>Feels Like</th><th>Wind</th><th></th><th>Humidity</th><th>Chance</th><th>Amount</th><th>UV</th><th>Sunrise</th><th>Sunset</th></tr>
+  </thead>
+  <tbody>
+    <tr><th>Mon Mar 2</th><td>&nbsp;</td><td>9 / 2 °C</td><td>Mostly sunny.</td><td class="num">7 °C</td><td class="num">11 km/h</td><td>↑</td><td class="num">52%</td><td class="num">0%</td><td class="num">0.0 mm</td><td>2 (Low)</td><td>6:41 am</td><td>6:02 pm</td></tr>
+    <tr><th>Tue Mar 3</th><td>&nbsp;</td><td>11 / 4 °C</td><td>Passing clouds.</td><td class="num">10 °C</td><td class="num">9 km/h</td><td>↑</td><td class="num">58%</td><td class="num">3%</td><td class="num">0.0 mm</td><td>2 (Low)</td><td>6:39 am</td><td>6:03 pm</td></tr>
+    <tr><th>Wed Mar 4</th><td>&nbsp;</td><td>6 / -3 °C</td><td>Windy. Clearing.</td><td class="num">-2 °C</td><td class="num">26 km/h</td><td>↑</td><td class="num">41%</td><td class="num">8%</td><td class="num">0.0 mm</td><td>2 (Low)</td><td>6:37 am</td><td>6:05 pm</td></tr>
+    <tr><th>Thu Mar 5</th><td>&nbsp;</td><td>1 / -6 °C</td><td>Cold. Sunny.</td><td class="num">-8 °C</td><td class="num">19 km/h</td><td>↑</td><td class="num">38%</td><td class="num">0%</td><td class="num">0.0 mm</td><td>3 (Moderate)</td><td>6:35 am</td><td>6:06 pm</td></tr>
+    <tr><th>Fri Mar 6</th><td>&nbsp;</td><td>4 / -1 °C</td><td>Light snow late.</td><td class="num">-3 °C</td><td class="num">14 km/h</td><td>↑</td><td class="num">71%</td><td class="num">62%</td><td class="num">2.1 mm</td><td>1 (Low)</td><td>6:34 am</td><td>6:07 pm</td></tr>
+    <tr><th>Sat Mar 7</th><td>&nbsp;</td><td>7 / 3 °C</td><td>Rain. Overcast.</td><td class="num">4 °C</td><td class="num">17 km/h</td><td>↑</td><td class="num">93%</td><td class="num">88%</td><td class="num">14.7 mm</td><td>1 (Low)</td><td>6:32 am</td><td>6:08 pm</td></tr>
+    <tr><th>Sun Mar 8</th><td>&nbsp;</td><td>10 / 5 °C</td><td>Showers. Cloudy.</td><td class="num">8 °C</td><td class="num">12 km/h</td><td>↑</td><td class="num">80%</td><td class="num">57%</td><td class="num">4.2 mm</td><td>2 (Low)</td><td>6:30 am</td><td>6:10 pm</td></tr>
+    <tr><th>Mon Mar 9</th><td>&nbsp;</td><td>13 / 6 °C</td><td>Partly sunny.</td><td class="num">12 °C</td><td class="num">8 km/h</td><td>↑</td><td class="num">60%</td><td class="num">12%</td><td class="num">0.0 mm</td><td>3 (Moderate)</td><td>6:28 am</td><td>6:11 pm</td></tr>
+    <tr><th>Tue Mar 10</th><td>&nbsp;</td><td>15 / 8 °C</td><td>Sunny.</td><td class="num">15 °C</td><td class="num">6 km/h</td><td>↑</td><td class="num">49%</td><td class="num">0%</td><td class="num">0.0 mm</td><td>3 (Moderate)</td><td>6:26 am</td><td>6:12 pm</td></tr>
+    <tr><th>Wed Mar 11</th><td>&nbsp;</td><td>12 / 7 °C</td><td>Drizzle. Fog.</td><td class="num">11 °C</td><td class="num">10 km/h</td><td>↑</td><td class="num">96%</td><td class="num">54%</td><td class="num">0.8 mm</td><td>1 (Low)</td><td>6:24 am</td><td>6:13 pm</td></tr>
+  </tbody>
+</table>
+
+<h2>CPU cooler round-up</h2>
+<!-- A review table where temperature has a clear better end: the cooler that keeps the processor coolest under load wins. Load temperature must keep lower is better. -->
+<table id="coolers">
+  <thead>
+    <tr><th>Cooler</th><th>Idle temp</th><th>Load temp</th><th>Noise (dBA)</th><th>Price</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Breeze Tower 120</td><td class="num">31 °C</td><td class="num">78 °C</td><td class="num">34</td><td class="num">$39</td></tr>
+    <tr><td>Glacier Duo 240</td><td class="num">28 °C</td><td class="num">66 °C</td><td class="num">38</td><td class="num">$109</td></tr>
+    <tr><td>Northwind Slim</td><td class="num">35 °C</td><td class="num">89 °C</td><td class="num">31</td><td class="num">$29</td></tr>
+    <tr><td>Arcfin Pro 360</td><td class="num">26 °C</td><td class="num">61 °C</td><td class="num">41</td><td class="num">$159</td></tr>
+    <tr><td>Quietcore 140</td><td class="num">30 °C</td><td class="num">74 °C</td><td class="num">29</td><td class="num">$69</td></tr>
+    <tr><td>Frostline Mini</td><td class="num">33 °C</td><td class="num">84 °C</td><td class="num">36</td><td class="num">$24</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
