@@ -1,8 +1,9 @@
 /**
- * Extension settings in chrome.storage.local, and per-page state in
- * chrome.storage.session.
+ * Extension settings and the user's column ranges in chrome.storage.local,
+ * and per-page state in chrome.storage.session.
  */
 import { DEFAULT_PALETTE, isPaletteId, type PaletteId as Palette } from "../core/palettes.ts";
+import { EMPTY_RANGES, readRanges, type PageRanges } from "../core/range.ts";
 import type { ProviderConfig } from "../decide/model.ts";
 
 /** The user's settings, stored under the `settings` key. */
@@ -168,3 +169,58 @@ export const loadTableChoices = async (url: string): Promise<Record<string, Tabl
 /** Saves the table choices for a page until the browser session ends. */
 export const saveTableChoices = (url: string, choices: Record<string, TableChoice>) =>
   chrome.storage.session.set({ [tablesKey(url)]: choices });
+
+// ── Column ranges (local) ───────────────────────────────────────────────────
+
+const RANGES = "ranges";
+
+/** The most pages that keep ranges. Past it, the pages saved longest ago are dropped. */
+export const MAX_RANGE_PAGES = 200;
+
+/** Every page's saved ranges, by `pageRangesKey`, with the time each was last saved. */
+export type RangeStore = Readonly<Record<string, { readonly at: number; readonly ranges: PageRanges }>>;
+
+/**
+ * Returns the storage key for a page's ranges: part of the SHA-256 of the
+ * address without its fragment. The ranges outlive the browser session, and
+ * the hash keeps the addresses of visited pages out of storage.
+ */
+export const pageRangesKey = async (url: string): Promise<string> => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pageKey(url)));
+  return [...new Uint8Array(digest).slice(0, 12)].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+/**
+ * Returns `store` with the ranges of the page at `key` replaced. A page with
+ * no ranges left is removed. Past `cap` pages, the oldest are dropped.
+ */
+export const putPageRanges = (
+  store: RangeStore,
+  key: string,
+  ranges: PageRanges,
+  now: number,
+  cap: number = MAX_RANGE_PAGES,
+): RangeStore => {
+  const { [key]: _, ...rest } = store;
+  const empty = Object.keys(ranges.shared).length === 0 && Object.keys(ranges.tables).length === 0;
+  const next = empty ? rest : { ...rest, [key]: { at: now, ranges } };
+  const newest = Object.entries(next)
+    .sort(([, a], [, b]) => b.at - a.at)
+    .slice(0, cap);
+  return newest.length === Object.keys(next).length ? next : Object.fromEntries(newest);
+};
+
+const loadRangeStore = async (): Promise<RangeStore> =>
+  ((await chrome.storage.local.get(RANGES))[RANGES] as RangeStore | undefined) ?? {};
+
+/** Returns the ranges the user set on a page. They last until the user clears them or the page ages out. */
+export const loadPageRanges = async (url: string): Promise<PageRanges> => {
+  const entry = (await loadRangeStore())[await pageRangesKey(url)];
+  return entry === undefined ? EMPTY_RANGES : readRanges(entry.ranges);
+};
+
+/** Saves the ranges the user set on a page. `ranges` may come from a content script, so it is read defensively. */
+export const savePageRanges = async (url: string, ranges: unknown): Promise<void> => {
+  const store = putPageRanges(await loadRangeStore(), await pageRangesKey(url), readRanges(ranges), Date.now());
+  await chrome.storage.local.set({ [RANGES]: store });
+};

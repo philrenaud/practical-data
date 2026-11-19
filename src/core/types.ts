@@ -40,6 +40,8 @@ export type ColumnEncoding =
       readonly unit: string | null;
       /** Extent used for the color scale. Shared across tables when `group` is set. */
       readonly domain: readonly [number, number];
+      /** The extent fitted to the data, present only when the user's own range replaced it in `domain`. */
+      readonly fit?: readonly [number, number];
       /** The parsed value of each data row. Null for missing or unparseable cells. */
       readonly values: readonly (number | null)[];
       readonly group: string | null;

@@ -27,8 +27,9 @@ extensions can't send them.
 
 | Message | From | To | Effect |
 | --- | --- | --- | --- |
-| `pageConfig` | content | worker | Returns `PageConfig`, which says whether the page is on and carries its saved table choices. Sent at start-up and after in-app navigation. |
+| `pageConfig` | content | worker | Returns `PageConfig`, which says whether the page is on and carries its saved table choices and column ranges. Sent at start-up and after in-app navigation. |
 | `saveTableChoices` | content | worker | Saves the page's table choices for the browser session. |
+| `saveRanges` | content | worker | Saves the ranges the user set on the page's columns. They outlast the session. |
 | `judge` | content | worker | Returns `JudgeReply`, with the judgment and the palette or an error reason. |
 | `setPagePaused` | popup | worker | Pauses or resumes one page for the browser session. |
 | `setSiteEnabled` | popup | worker | Turns a host on or off in the saved settings. |
@@ -39,9 +40,10 @@ extensions can't send them.
 | `flagAt` | worker | content | Dev build only. Flags the table under the last right-click. |
 
 The worker's `onMessage` listener checks `sender.id`. It accepts `judge` only
-from a tab. It accepts `pageConfig` and `saveTableChoices` only for a URL with
-the sender's origin, so a content script reaches only its own site's session
-state. It accepts the two switches only from a sender URL under the
+from a tab. It accepts `pageConfig`, `saveTableChoices` and `saveRanges` only
+for a URL with the sender's origin, so a content script reaches only its own
+site's state. It reads the ranges in `saveRanges` with `readRanges`, which
+drops malformed entries and caps their number. It accepts the two switches only from a sender URL under the
 extension's origin. A content script runs inside a web page, so the worker
 never takes a switch from one.
 
@@ -62,12 +64,12 @@ The extension has no `scripting`, `tabs`, `cookies`, `webRequest`, or
 ## Storage
 
 Only the worker and the extension pages read or write storage. The content
-script gets what it needs in the `pageConfig` reply and saves table choices
-with `saveTableChoices`.
+script gets what it needs in the `pageConfig` reply, saves table choices
+with `saveTableChoices`, and saves column ranges with `saveRanges`.
 
 | Area | Access level | Keys |
 | --- | --- | --- |
-| `storage.local` | `TRUSTED_CONTEXTS` | `settings` (provider, keys, palette, mode, host lists), `installId`, `allowance`, `answers:v2:<sha-256>`, `answers:v2:index` |
+| `storage.local` | `TRUSTED_CONTEXTS` | `settings` (provider, keys, palette, mode, host lists), `installId`, `allowance`, `answers:v2:<sha-256>`, `answers:v2:index`, `ranges` (column ranges by a hash of the page URL) |
 | `storage.session` | `TRUSTED_CONTEXTS` | `pausedPages` (URLs without fragments), `tables:<URL without fragment>` (per-table choices) |
 
 `TRUSTED_CONTEXTS` means the worker and the extension's own pages.
@@ -214,6 +216,12 @@ the same reason.
   `PageState`, so the popup needs only `activeTab`.
 - **Pauses and table choices live in `storage.session`.** They are meant for
   one sitting and are gone when the browser closes.
+- **Column ranges live in `storage.local`.** A range is typed by hand, so it
+  should still be there on the next visit. The key is part of the SHA-256 of
+  the page URL, so the stored ranges do not list visited pages. Column
+  headers are stored as they are. `putPageRanges` keeps the 200 pages saved
+  most recently. A table is keyed by its title and headers
+  (`rangeTableKey`), not its rows, so the range holds when the numbers change.
 - **Navigation polling runs only on shaded pages.** Off pages rely on the
   Navigation API and `popstate`, so an off page costs no timer.
 - **Table choices are keyed by content.** `fingerprint` hashes the headers and

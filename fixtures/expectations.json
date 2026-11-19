@@ -2829,21 +2829,57 @@
       "High": {
         "kind": "quantitative",
         "polarity": [
-          "neutral",
-          "higher_is_better"
+          "neutral"
         ]
       },
       "Low": {
         "kind": "quantitative",
         "polarity": [
-          "neutral",
-          "higher_is_better"
+          "neutral"
         ]
       },
       "Wind bearing": {
         "kind": "quantitative",
         "polarity": [
           "neutral"
+        ]
+      }
+    }
+  },
+  "temperature-direction": {
+    "t0": {
+      "Comfort: Feels Like": {
+        "kind": "quantitative",
+        "polarity": [
+          "neutral"
+        ]
+      },
+      "Comfort: Wind": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      },
+      "Precipitation: Chance": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better",
+          "neutral"
+        ]
+      }
+    },
+    "t1": {
+      "Load temp": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
+        ]
+      },
+      "Noise (dBA)": {
+        "kind": "quantitative",
+        "polarity": [
+          "lower_is_better"
         ]
       }
     }
