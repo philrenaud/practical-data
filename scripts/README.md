@@ -19,7 +19,7 @@ Most scripts run offline. A script that calls the decision model needs
 | `build.ts` | `build`, `dev` | Bundles `src/` and copies `static/` into `dist/`. Also writes `dist-probe/probe.js`, which exposes the extractor to Playwright. `--watch` rebuilds on change. | None |
 | `package.ts` | `package` | Builds `release/practical-data-<version>.zip` for the Chrome Web Store. | None |
 | `snapshot.ts` | `snapshot` | Runs the extractor on every fixture page and writes `fixtures/snapshots/<slug>.json`. Needs `npm run build` first. | None. It blocks all outside requests. |
-| `eval.ts` | `eval` | Judges every snapshot and scores the result against `fixtures/expectations.json`. Writes `artifacts/eval-<provider>.json`. | Key for unrecorded questions. None with `--offline`. |
+| `eval.ts` | `eval` | Judges every snapshot and scores the result against `fixtures/expectations.json`. Writes `artifacts/eval-<provider>.json`, with the model id in the name when `--model` is given. | Key for unrecorded questions. None with `--offline`. |
 | `e2e.ts` | `e2e` | Loads `dist/` as an unpacked extension, opens every fixture page, and checks the painted result. Needs `npm run build` first. Writes `artifacts/e2e.json` and `artifacts/screens/`. | Key, unless `--offline`. `--live` also visits the real sites. |
 | `api-smoke.ts` | `api:smoke` | Runs the free endpoint in `api/` under `wrangler dev`, against a local stand-in for the TypeSafe API, and checks its responses. | None. It uses the wrangler in devDependencies. |
 | `demo-data.ts` | `demo:data` | Trims tables from the snapshots and judges them for the site. Writes `demo/data.json`. `--quiet` prints one line. | Key for unrecorded questions |

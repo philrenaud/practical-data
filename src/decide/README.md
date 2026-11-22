@@ -14,7 +14,7 @@ The entry point is `judgePage(model, page, policy, orientations, now)` in
 | --- | --- |
 | `questions.ts` | Builds the request state and the questions, and reads the answers into `NumericReading` and `CategoricalReading`. |
 | `judge.ts` | `judgePage`, `Policy`, and `DEFAULT_POLICY`. Sends the requests and applies the thresholds. Handles orientation, summary rows, date columns, and shared scales. |
-| `model.ts` | The `DecisionModel` interface, the providers (`hosted`, `jev`, `clef`), retries, rate limiting, `decodeDecisionResponse`, `validateAnswers`, and the `AnswerCache` interface. |
+| `model.ts` | The `DecisionModel` interface, the providers (`hosted`, `jev`, `clef`, `openrouter`), retries, rate limiting, `decodeDecisionResponse`, `validateAnswers`, and the `AnswerCache` interface. |
 | `concurrency.ts` | `mapConcurrent`, a bounded map that stops at the first failure, and an abortable `sleep`. |
 
 Code in `src/core` does the parts that need no model: `profile.ts`,
@@ -141,7 +141,8 @@ keeps its own.
 `AnswerCache`:
 
 - `evaluate` splits the questions into chunks of `maxQuestions`: 200 for
-  `jev` and `hosted`, and 64 for `clef`. Each chunk has the full state.
+  `jev` and `hosted`, and 64 for `clef` and `openrouter`. Each chunk has the
+  full state.
 - Each chunk body is `{ model, state, questions }`. Its cache key is
   `hashJson(body)`, the SHA-256 of its JSON.
 - On a cache hit, `validateAnswers` checks the stored response against the
@@ -166,6 +167,13 @@ The providers:
 - `jev` sends requests to TypeSafe with the user's API key.
 - `clef` sends requests to Cloudflare Workers AI with the user's account id
   and token.
+- `openrouter` sends requests to OpenRouter's alpha Decisions API with an
+  API key and an OpenRouter model id, such as `typesafe/jev-1.14`. Only
+  `scripts/eval.ts` uses it; the extension does not offer it. OpenRouter's
+  schema makes `probabilities` and `confidence` optional, so an answer
+  without them gets probability 1 on its own answer and its highest
+  probability as confidence. A question that the provider refuses fails the
+  request with a `decode` error.
 
 `modelFromConfig` picks one from a `ProviderConfig`. Each provider takes an
 optional `AnswerCache`. Without one, it uses `noCache`. The extension passes

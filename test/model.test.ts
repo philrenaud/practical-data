@@ -138,3 +138,156 @@ test("the hosted endpoint retries a 503 only once, because each attempt spends f
 test("Jev retries a 503 four times", async () => {
   assert.equal(await callsOn503("jev"), 5);
 });
+
+// ── OpenRouter ──────────────────────────────────────────────────────────────
+
+/** Replaces fetch with `respond` for one call of `run`, and returns the requests it received. */
+const withFetch = async (
+  respond: (body: { questions: Record<string, unknown> }) => unknown,
+  run: () => Promise<void>,
+): Promise<{ url: string; headers: Headers; body: { model: string; state: unknown; questions: object } }[]> => {
+  const seen: { url: string; headers: Headers; body: { model: string; state: unknown; questions: object } }[] = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body));
+    seen.push({ url: String(input), headers: new Headers(init?.headers), body });
+    return new Response(JSON.stringify(respond(body)));
+  };
+  try {
+    await run();
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  return seen;
+};
+
+test("OpenRouter gets the System One body at its decisions endpoint, with the model id and a bearer key", async () => {
+  const { modelFromConfig } = await import("../src/decide/model.ts");
+  const seen = await withFetch(
+    () => ({ ...ok, id: "gen-dec-1", provider: "Microsoft", model: "microsoft/microsoft-decision-1.1-20261117" }),
+    async () => {
+      const model = modelFromConfig({
+        provider: "openrouter",
+        apiKey: "sk-or-test",
+        model: "microsoft/microsoft-decision-1.1",
+      });
+      const response = await model.evaluate({ state: { table: 1 }, questions });
+      assert.equal(model.name, "microsoft/microsoft-decision-1.1");
+      assert.equal(response.model, "microsoft/microsoft-decision-1.1-20261117");
+      assert.deepEqual(response.answers, ok.answers);
+    },
+  );
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0]!.url, "https://openrouter.ai/api/alpha/decisions");
+  assert.equal(seen[0]!.headers.get("authorization"), "Bearer sk-or-test");
+  assert.deepEqual(seen[0]!.body, { model: "microsoft/microsoft-decision-1.1", state: { table: 1 }, questions });
+});
+
+test("OpenRouter answers without probabilities or confidence get them from the answer itself", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const asked: Record<string, Question> = {
+    role: questions["role"]!,
+    order: { type: "score", instructions: "?", criteria: ["low", "mid", "high"] },
+    keep: { type: "choice", instructions: "?", criteria: { yes: null, no: null } },
+  };
+  await withFetch(
+    () => ({
+      model: "m",
+      usage: { input_tokens: 3, output_tokens: 0 },
+      answers: {
+        role: { type: "choice", choice: "measure" },
+        order: { type: "score", score: 1.6, legend: { "0": "low", "1": "mid", "2": "high" } },
+        keep: { type: "choice", choice: "yes", probabilities: { yes: 0.7, no: 0.3 } },
+      },
+    }),
+    async () => {
+      const { answers } = await openrouter("k", "m").evaluate({ state: {}, questions: asked });
+      assert.deepEqual(answers["role"], {
+        type: "choice",
+        choice: "measure",
+        probabilities: { measure: 1 },
+        confidence: 1,
+      });
+      assert.deepEqual(answers["order"], { type: "score", score: 1.6, probabilities: { "2": 1 }, confidence: 1 });
+      assert.deepEqual(answers["keep"], {
+        type: "choice",
+        choice: "yes",
+        probabilities: { yes: 0.7, no: 0.3 },
+        confidence: 0.7,
+      });
+    },
+  );
+});
+
+test("a question that OpenRouter's provider refuses fails the request and names the question", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  await withFetch(
+    () => ({ ...ok, answers: { role: ok.answers.role, log: { type: "refusal" } } }),
+    async () => {
+      const error = await rejection(openrouter("k", "m").evaluate({ state: {}, questions }));
+      assert.equal(error.reason, "decode");
+      assert.match(error.message, /log: refused/);
+    },
+  );
+});
+
+test("OpenRouter requests carry at most 64 questions", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const many = Object.fromEntries(Array.from({ length: 150 }, (_, i) => [`q${i}`, questions["log"]!]));
+  const seen = await withFetch(
+    (body) => ({
+      model: "m",
+      usage: { input_tokens: 1 },
+      answers: Object.fromEntries(Object.keys(body.questions).map((id) => [id, { type: "noul", noul: 0.5 }])),
+    }),
+    async () => {
+      const response = await openrouter("k", "m").evaluate({ state: {}, questions: many });
+      assert.equal(Object.keys(response.answers).length, 150);
+      assert.equal(response.usage.input_tokens, 3);
+    },
+  );
+  assert.deepEqual(seen.map((s) => Object.keys(s.body.questions).length).sort(), [22, 64, 64]);
+});
+
+test("Google models on OpenRouter get question keys without dots, and the answers come back under the original ids", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const asked = {
+    "c0.relation": questions["log"]!,
+    "table.orientation": questions["role"]!,
+    plain_1: questions["log"]!,
+  };
+  const seen = await withFetch(
+    (body) => ({
+      model: "google/gemini-decision-1",
+      usage: { input_tokens: 1 },
+      answers: Object.fromEntries(
+        Object.entries(body.questions).map(([id, q]) => [
+          id,
+          (q as Question).type === "noul" ? ok.answers.log : ok.answers.role,
+        ]),
+      ),
+    }),
+    async () => {
+      const { answers } = await openrouter("k", "google/gemini-decision-1").evaluate({ state: {}, questions: asked });
+      assert.deepEqual(Object.keys(answers).sort(), ["c0.relation", "plain_1", "table.orientation"]);
+      assert.equal(answers["table.orientation"]!.type, "choice");
+    },
+  );
+  const sent = Object.keys(seen[0]!.body.questions);
+  assert.deepEqual(sent, ["c0-2Erelation", "table-2Eorientation", "plain_1"]);
+  assert.ok(sent.every((k) => /^[A-Za-z0-9_-]{1,64}$/.test(k)));
+});
+
+test("other OpenRouter models get the question ids unchanged", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const seen = await withFetch(
+    () => ({ model: "m", usage: { input_tokens: 1 }, answers: { "c0.relation": ok.answers.log } }),
+    async () => {
+      await openrouter("k", "typesafe/jev-1.14").evaluate({
+        state: {},
+        questions: { "c0.relation": questions["log"]! },
+      });
+    },
+  );
+  assert.deepEqual(Object.keys(seen[0]!.body.questions), ["c0.relation"]);
+});

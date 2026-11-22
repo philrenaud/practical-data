@@ -3,6 +3,8 @@
  *
  *   node scripts/eval.ts                      # Jev, records new answers
  *   node scripts/eval.ts --provider clef      # Clef (needs CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN)
+ *   node scripts/eval.ts --provider openrouter --model microsoft/microsoft-decision-1.1
+ *                                             # any decision model on OpenRouter (needs OPENROUTER_API_KEY)
  *   node scripts/eval.ts --offline            # replay recordings only; fails on a miss
  *   node scripts/eval.ts --only edge-cases --verbose
  *   node scripts/eval.ts --offline --strict   # CI gate: fails on undocumented mismatches
@@ -22,6 +24,7 @@ import { describeEncoding, scorePage, type Check, type CheckKind, type PageExpec
 const { values: args } = parseArgs({
   options: {
     provider: { type: "string", default: "jev" },
+    model: { type: "string" },
     offline: { type: "boolean", default: false },
     only: { type: "string" },
     verbose: { type: "boolean", default: false },
@@ -30,7 +33,16 @@ const { values: args } = parseArgs({
 });
 
 const config = (): ProviderConfig => {
-  if (args.provider === "jev") return { provider: "jev", apiKey: process.env["TYPESAFE_API_KEY"] ?? "" };
+  if (args.provider === "jev")
+    return {
+      provider: "jev",
+      apiKey: process.env["TYPESAFE_API_KEY"] ?? "",
+      ...(args.model === undefined ? {} : { model: args.model }),
+    };
+  if (args.provider === "openrouter") {
+    if (args.model === undefined) throw new Error("--provider openrouter needs --model <OpenRouter model id>");
+    return { provider: "openrouter", apiKey: process.env["OPENROUTER_API_KEY"] ?? "", model: args.model };
+  }
   return {
     provider: "clef",
     accountId: process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "",
@@ -90,12 +102,14 @@ for (const slug of slugs) {
 }
 
 await mkdir("artifacts", { recursive: true });
-await writeFile(`artifacts/eval-${args.provider}.json`, JSON.stringify(out, null, 1));
+/** The provider, and the model id when one is given, as it appears in the report and the artifact's file name. */
+const label = args.model === undefined ? args.provider : `${args.provider}:${args.model}`;
+await writeFile(`artifacts/eval-${label.replace(/[^a-z0-9.-]+/gi, "-")}.json`, JSON.stringify(out, null, 1));
 
 const pct = ([a, b]: [number, number]) =>
   b === 0 ? "  n/a" : `${((100 * a) / b).toFixed(0).padStart(4)}%  (${a}/${b})`;
 console.log(`
-model ${args.provider}${args.offline ? " (offline replay)" : ""} · ${requests} requests · ${tokens.toLocaleString()} input tokens · ${Math.round(performance.now() - started)} ms
+model ${label}${args.offline ? " (offline replay)" : ""} · ${requests} requests · ${tokens.toLocaleString()} input tokens · ${Math.round(performance.now() - started)} ms
   color / don't color  ${pct(tallyOf("detect"))}
   polarity             ${pct(tallyOf("polarity"))}
   log vs linear        ${pct(tallyOf("transform"))}
