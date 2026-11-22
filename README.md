@@ -277,6 +277,8 @@ Each miss is listed with its reason under `$known` in
 
 To compare providers, set `CLOUDFLARE_ACCOUNT_ID` and
 `CLOUDFLARE_API_TOKEN`, then run `node scripts/eval.ts --provider clef`.
+To score any decision model on OpenRouter, set `OPENROUTER_API_KEY`, then
+run `node scripts/eval.ts --provider openrouter --model <model id>`.
 
 ### Site
 

@@ -1,7 +1,7 @@
 /**
  * The provider layer for the decision model. The hosted endpoint, TypeSafe's
- * Jev, and Cloudflare's Clef take the same System One request and return the
- * same answers. Each provider is a `Transport` with a per-request question
+ * Jev, Cloudflare's Clef, and the decision models on OpenRouter take the same
+ * System One request and return the same answers. Each provider is a `Transport` with a per-request question
  * limit. Code outside this file sees only decoded and validated answers.
  */
 import { mapConcurrent, sleep } from "./concurrency.ts";
@@ -387,7 +387,9 @@ export type ProviderConfig =
       readonly accountId: string;
       readonly apiToken: string;
       readonly model?: "clef" | "clef-flash";
-    };
+    }
+  /** `model` is an OpenRouter model id, such as "typesafe/jev-1.14". */
+  | { readonly provider: "openrouter"; readonly apiKey: string; readonly model: string };
 
 /**
  * TypeSafe's Jev. Requests are split into chunks of 200 questions. The
@@ -487,10 +489,57 @@ export const clef = (
   );
 };
 
+/**
+ * Fills in what OpenRouter's schema leaves optional on one answer. A choice
+ * or score answer with no probabilities gets probability 1 on its own
+ * answer, and one with no confidence gets its highest probability. Throws a
+ * `decode` error for a question that the provider refused. Other values pass
+ * through for `decodeDecisionResponse` to check.
+ */
+const completeAnswer = (id: string, answer: unknown): unknown => {
+  if (!isRecord(answer)) return answer;
+  if (answer["type"] === "refusal") throw new DecisionError({ reason: "decode", message: `${id}: refused` });
+  if (answer["type"] !== "choice" && answer["type"] !== "score") return answer;
+  const own = answer["type"] === "choice" ? answer["choice"] : answer["score"];
+  const key = typeof own === "number" ? String(Math.round(own)) : typeof own === "string" ? own : null;
+  if (key === null) return answer;
+  const probabilities = decodeProbabilities(answer["probabilities"]) ?? { [key]: 1 };
+  const confidence =
+    typeof answer["confidence"] === "number" ? answer["confidence"] : Math.max(0, ...Object.values(probabilities));
+  return { ...answer, probabilities, confidence };
+};
+
+/**
+ * A decision model through OpenRouter's alpha Decisions API. It takes the
+ * System One request body, with an OpenRouter model id in `model`. The spec
+ * states no question limit and says limits depend on the provider, so
+ * requests use Clef's limit of 64, the lowest known.
+ */
+export const openrouter = (apiKey: string, model: string, options: { readonly cache?: AnswerCache | undefined } = {}) =>
+  makeModel(
+    {
+      name: model,
+      maxQuestions: 64,
+      send: (body, signal) => postJson("https://openrouter.ai/api/alpha/decisions", apiKey, body, signal),
+      unwrap: (json) =>
+        isRecord(json) && isRecord(json["answers"])
+          ? {
+              ...json,
+              answers: Object.fromEntries(
+                Object.entries(json["answers"]).map(([id, answer]) => [id, completeAnswer(id, answer)]),
+              ),
+            }
+          : json,
+    },
+    options.cache,
+  );
+
 /** Returns the `DecisionModel` for `config`, with `cache` in front of the provider. */
 export const modelFromConfig = (config: ProviderConfig, cache?: AnswerCache): DecisionModel =>
   config.provider === "hosted"
     ? hosted(config.installId, { onAllowance: config.onAllowance, cache })
     : config.provider === "jev"
       ? jev(config.apiKey, { model: config.model, cache })
-      : clef(config.accountId, config.apiToken, { model: config.model, cache });
+      : config.provider === "openrouter"
+        ? openrouter(config.apiKey, config.model, { cache })
+        : clef(config.accountId, config.apiToken, { model: config.model, cache });
