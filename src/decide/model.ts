@@ -510,29 +510,63 @@ const completeAnswer = (id: string, answer: unknown): unknown => {
 };
 
 /**
+ * Google's Decisions API allows only letters, digits, `_` and `-` in a
+ * question key. `encodeKey` writes every other character, and `-` itself, as
+ * `-` and two hex digits of its code, so "c0.relation" becomes
+ * "c0-2Erelation". `decodeKey` reverses it. Characters above U+00FF are not
+ * supported; the judge's ids are ASCII.
+ */
+const encodeKey = (id: string): string =>
+  id.replace(/[^A-Za-z0-9_]/g, (c) => `-${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`);
+const decodeKey = (key: string): string =>
+  key.replace(/-([0-9A-F]{2})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+
+const mapKeys = (record: Readonly<Record<string, unknown>>, f: (key: string) => string) =>
+  Object.fromEntries(Object.entries(record).map(([k, v]) => [f(k), v]));
+
+/**
  * A decision model through OpenRouter's alpha Decisions API. It takes the
  * System One request body, with an OpenRouter model id in `model`. The spec
  * states no question limit and says limits depend on the provider, so
- * requests use Clef's limit of 64, the lowest known.
+ * requests use Clef's limit of 64, the lowest known. OpenRouter passes
+ * question keys to the provider as they are, so keys for a `google/` model
+ * are encoded on the way out and decoded on the way back.
  */
-export const openrouter = (apiKey: string, model: string, options: { readonly cache?: AnswerCache | undefined } = {}) =>
-  makeModel(
+export const openrouter = (
+  apiKey: string,
+  model: string,
+  options: { readonly cache?: AnswerCache | undefined } = {},
+) => {
+  const safeKeys = model.startsWith("google/");
+  return makeModel(
     {
       name: model,
       maxQuestions: 64,
-      send: (body, signal) => postJson("https://openrouter.ai/api/alpha/decisions", apiKey, body, signal),
+      send: (body, signal) =>
+        postJson(
+          "https://openrouter.ai/api/alpha/decisions",
+          apiKey,
+          safeKeys && isRecord(body) && isRecord(body["questions"])
+            ? { ...body, questions: mapKeys(body["questions"], encodeKey) }
+            : body,
+          signal,
+        ),
       unwrap: (json) =>
         isRecord(json) && isRecord(json["answers"])
           ? {
               ...json,
               answers: Object.fromEntries(
-                Object.entries(json["answers"]).map(([id, answer]) => [id, completeAnswer(id, answer)]),
+                Object.entries(json["answers"]).map(([key, answer]) => {
+                  const id = safeKeys ? decodeKey(key) : key;
+                  return [id, completeAnswer(id, answer)];
+                }),
               ),
             }
           : json,
     },
     options.cache,
   );
+};
 
 /** Returns the `DecisionModel` for `config`, with `cache` in front of the provider. */
 export const modelFromConfig = (config: ProviderConfig, cache?: AnswerCache): DecisionModel =>

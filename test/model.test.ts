@@ -248,3 +248,46 @@ test("OpenRouter requests carry at most 64 questions", async () => {
   );
   assert.deepEqual(seen.map((s) => Object.keys(s.body.questions).length).sort(), [22, 64, 64]);
 });
+
+test("Google models on OpenRouter get question keys without dots, and the answers come back under the original ids", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const asked = {
+    "c0.relation": questions["log"]!,
+    "table.orientation": questions["role"]!,
+    plain_1: questions["log"]!,
+  };
+  const seen = await withFetch(
+    (body) => ({
+      model: "google/gemini-decision-1",
+      usage: { input_tokens: 1 },
+      answers: Object.fromEntries(
+        Object.entries(body.questions).map(([id, q]) => [
+          id,
+          (q as Question).type === "noul" ? ok.answers.log : ok.answers.role,
+        ]),
+      ),
+    }),
+    async () => {
+      const { answers } = await openrouter("k", "google/gemini-decision-1").evaluate({ state: {}, questions: asked });
+      assert.deepEqual(Object.keys(answers).sort(), ["c0.relation", "plain_1", "table.orientation"]);
+      assert.equal(answers["table.orientation"]!.type, "choice");
+    },
+  );
+  const sent = Object.keys(seen[0]!.body.questions);
+  assert.deepEqual(sent, ["c0-2Erelation", "table-2Eorientation", "plain_1"]);
+  assert.ok(sent.every((k) => /^[A-Za-z0-9_-]{1,64}$/.test(k)));
+});
+
+test("other OpenRouter models get the question ids unchanged", async () => {
+  const { openrouter } = await import("../src/decide/model.ts");
+  const seen = await withFetch(
+    () => ({ model: "m", usage: { input_tokens: 1 }, answers: { "c0.relation": ok.answers.log } }),
+    async () => {
+      await openrouter("k", "typesafe/jev-1.14").evaluate({
+        state: {},
+        questions: { "c0.relation": questions["log"]! },
+      });
+    },
+  );
+  assert.deepEqual(Object.keys(seen[0]!.body.questions), ["c0.relation"]);
+});
