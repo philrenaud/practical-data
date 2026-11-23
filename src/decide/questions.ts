@@ -393,7 +393,12 @@ const TOTAL_LABEL = /^(?:grand\s+)?totals?\b/i;
  * of the columns that count, so a jersey number or an average in one column
  * does not hide the total. A table of three or four rows, such as an
  * election result with two candidates and a total, gets no model question,
- * so there every column that counts must match. A row with a cell that says
+ * so there every column that counts must match, with one exception: a column
+ * where the row's value lies within the other rows' values is set aside, as
+ * long as at least half the columns that count add up. A team row in a short
+ * box score sums carries and yards, but its average is the team's average and
+ * its longest gain is the longest of the others; neither is a sum, and both
+ * sit inside the others' range. A row with a cell that says
  * it is a total ("Total") needs only one column, but every column that counts
  * must match: a worked bill has one cost column and a Total row under it.
  *
@@ -458,6 +463,8 @@ const edgeSumRows = (
   (rowCount < 3 ? [] : [...new Set([0, rowCount - 1])]).filter((r) => {
     let matched = 0;
     let counted = 0;
+    // Columns that do not add up but whose value lies within the others' range: an average or a longest.
+    let within = 0;
     for (const p of numeric) {
       const total = p.values[r];
       const others = p.values.filter((v, i): v is number => i !== r && v !== null);
@@ -465,9 +472,10 @@ const edgeSumRows = (
       if (sumOf(others) === 0) continue;
       counted++;
       if (sumsTo(total, others)) matched++;
+      else if (total >= Math.min(...others) && total <= Math.max(...others)) within++;
     }
     if (namesTotal(rows, r)) return matched >= 1 && matched === counted;
-    if (rowCount < 5) return matched >= MIN_SUM_COLUMNS && matched === counted;
+    if (rowCount < 5) return matched >= MIN_SUM_COLUMNS && matched + within === counted && matched * 2 >= counted;
     return matched >= MIN_SUM_COLUMNS && matched * 3 >= counted * 2;
   });
 

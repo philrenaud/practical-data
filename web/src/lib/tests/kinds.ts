@@ -84,7 +84,7 @@ export const KINDS: readonly KindInfo[] = [
       "A Total row or an Average row can make the scale too wide. Then all other rows look small.",
       "Code finds the rows that can be totals and asks the model about them. Code ignores total rows: they are not on the scale and not shaded.",
       "A first or last row whose numbers are the sums of the other rows is a total without a question, such as a box score's team row that has no label.",
-      "Code asks the model only about tables of five or more rows. In a smaller table, such as an election result with two candidates and a total, only the sums can mark a total, and every numeric column must add up.",
+      "Code asks the model only about tables of five or more rows. In a smaller table, such as an election result with two candidates and a total, only the sums can mark a total, and every numeric column must add up, with one exception. A column whose value in that row lies within the other rows' values, such as a short box score's average or longest gain, is set aside, as long as at least half the numeric columns add up.",
       "A row with a cell that says Total, such as the last row of a worked bill with one cost column, needs only one column to add up, but every numeric column must.",
       "A Total row in the middle of a table, above an Average row or a share row, is a total when it says Total and its numbers are the sums of the rows above it in every numeric column. A monthly table read by rows puts its Total there. A label alone is not enough: a plan named Total Care stays on the scale.",
     ],

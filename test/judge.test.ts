@@ -458,6 +458,22 @@ test("a row whose numbers add up to the other rows is a total", () => {
     [],
     "a small table needs every column to add up",
   );
+  // A short rushing table: carries, yards and touchdowns add up; the average and the longest do not.
+  assert.deepEqual(
+    sumRows(columns([14, 6, 2, 22], [71, 20, -3, 88], [5.1, 3.3, -1.5, 4.0], [1, 0, 0, 1], [19, 8, -1, 19]), 4),
+    [3],
+    "a small table's average and longest sit inside the others' range",
+  );
+  assert.deepEqual(
+    sumRows(columns([14, 6, 2, 22], [71, 20, -3, 88], [5.1, 3.3, -1.5, 4.0], [19, 8, -1, 19], [7, 3, 4, 5]), 4),
+    [],
+    "a small table still needs at least half its columns to add up",
+  );
+  assert.deepEqual(
+    sumRows(columns([14, 6, 2, 22], [71, 20, -3, 88], [19, 8, -1, 30]), 4),
+    [],
+    "a value outside the others' range still counts against",
+  );
   assert.deepEqual(sumRows(columns([2, 1], [2, 1]), 2), [], "two rows cannot hold a total");
   assert.deepEqual(sumRows(columns([1, 0, 0, 0, 1], [9, 7, 4, 2, 1]), 5), [], "one column adding up by chance");
   assert.deepEqual(sumRows(columns([5, 3, 2, 1, 11], [2, 1, 1, 0, 1]), 5), [], "one column of two is not enough");
