@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Practical Data: short box score totals</title>
+<style>
+  body { font: 15px/1.5 Georgia, serif; max-width: 900px; margin: 32px auto; padding: 0 16px; color: #222; background: #fff; }
+  .split { display: flex; gap: 0; align-items: flex-start; }
+  table { border-collapse: collapse; margin: 8px 0 32px; }
+  th, td { border: 1px solid #ccc; padding: 4px 10px; }
+  .split td, .split th { height: 22px; }
+  .stats td { text-align: right; }
+</style>
+</head>
+<body>
+<h1>Short box score totals</h1>
+<p>
+  A football box score splits each team's rushing into a names table and a
+  numbers table, and ends the numbers with an unlabeled team row. With only
+  three runners, the team row sums carries, yards and touchdowns, but its
+  average is the team's average and its longest run is the longest of the
+  others. Neither adds up, and both sit inside the other rows' range. The
+  team row must still be left out of the color scale. The short standings
+  below end with an ordinary team, which stays on the scale.
+</p>
+
+<h2>Harbor City rushing</h2>
+<div class="split">
+  <!-- The names, laid out beside the numbers. -->
+  <table id="names">
+    <thead><tr><th></th></tr></thead>
+    <tbody>
+      <tr><td>M. Ferreira #24</td></tr>
+      <tr><td>L. Achterberg #9</td></tr>
+      <tr><td>O. Brandt #31</td></tr>
+      <tr><td>TEAM</td></tr>
+    </tbody>
+  </table>
+  <!-- The numbers. The last row is the team row: CAR, YDS and TD add up, AVG and LONG do not. -->
+  <table id="rushing" class="stats">
+    <thead><tr><th>CAR</th><th>YDS</th><th>AVG</th><th>TD</th><th>LONG</th></tr></thead>
+    <tbody>
+      <tr><td>17</td><td>84</td><td>4.9</td><td>1</td><td>21</td></tr>
+      <tr><td>6</td><td>19</td><td>3.2</td><td>0</td><td>9</td></tr>
+      <tr><td>2</td><td>-3</td><td>-1.5</td><td>0</td><td>-1</td></tr>
+      <tr><td>25</td><td>100</td><td>4.0</td><td>1</td><td>21</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Group standings</h2>
+<!-- Four rows and the last is a team, not a total. It must stay on the scale. -->
+<table id="standings">
+  <thead><tr><th>Team</th><th>W</th><th>L</th><th>Goals for</th><th>Goals against</th></tr></thead>
+  <tbody>
+    <tr><td>Harbor City</td><td>3</td><td>0</td><td>8</td><td>2</td></tr>
+    <tr><td>North Vale</td><td>2</td><td>1</td><td>5</td><td>4</td></tr>
+    <tr><td>Westbrook</td><td>1</td><td>2</td><td>3</td><td>6</td></tr>
+    <tr><td>Elm Park</td><td>0</td><td>3</td><td>2</td><td>6</td></tr>
+  </tbody>
+</table>
+</body>
+</html>
